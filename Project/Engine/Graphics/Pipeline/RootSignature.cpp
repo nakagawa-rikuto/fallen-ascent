@@ -577,27 +577,40 @@ namespace {
 
 	/// ===OffScreen(ShatterGlass)=== ///
 	ComPtr<ID3D12RootSignature> TypeOffScreenShatterGlass(ID3D12Device* device) {
-		// DescriptorRangeの生成
-		D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
-		descriptorRange[0].BaseShaderRegister = 0; // 0から始める (t0)
-		descriptorRange[0].NumDescriptors = 1; // 数は1つ
-		descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う
-		descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetを自動計算
+		// DescriptroRangeの生成
+		D3D12_DESCRIPTOR_RANGE descriptorRange0 = {};
+		descriptorRange0.BaseShaderRegister = 0; // 0から始める
+		descriptorRange0.NumDescriptors = 1; // 数は1つ
+		descriptorRange0.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う
+		descriptorRange0.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetを自動計算
+		// t1用
+		D3D12_DESCRIPTOR_RANGE descriptorRange1 = {};
+		descriptorRange1.BaseShaderRegister = 1; // t0
+		descriptorRange1.NumDescriptors = 1; // 数は1つ
+		descriptorRange1.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う
+		descriptorRange1.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetを自動計算
+
 
 		// RootParameterの生成
-		D3D12_ROOT_PARAMETER rootParameters[2]{}; // 2つに増やす
+		D3D12_ROOT_PARAMETER rootParameters[3]{}; // 2つに増やす
 
 		// [0] SRV (テクスチャ)
 		rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // DescriptorTableを使う
 		rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
-		rootParameters[0].DescriptorTable.pDescriptorRanges = descriptorRange; // Tableの中身の配列を指定
-		rootParameters[0].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange); // Tableで利用する数
+		rootParameters[0].DescriptorTable.pDescriptorRanges = &descriptorRange0; // Tableの中身の配列を指定
+		rootParameters[0].DescriptorTable.NumDescriptorRanges = 1; // Tableで利用する数
 
-		// [1] CBV (定数バッファ) - 追加
-		rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを直接指定
+		// [1] SRV (テクスチャ)
+		rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // DescriptorTableを使う
 		rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
-		rootParameters[1].Descriptor.ShaderRegister = 0; // b0
-		rootParameters[1].Descriptor.RegisterSpace = 0; // space0
+		rootParameters[1].DescriptorTable.pDescriptorRanges = &descriptorRange1; // Tableの中身の配列を指定
+		rootParameters[1].DescriptorTable.NumDescriptorRanges = 1; // Tableで利用する数
+
+		// [2] CBV (定数バッファ)
+		rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを直接指定
+		rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
+		rootParameters[2].Descriptor.ShaderRegister = 0; // b0
+		rootParameters[2].Descriptor.RegisterSpace = 0; // space0
 
 		// Samplerの設定
 		D3D12_STATIC_SAMPLER_DESC staticSamplers[1]{};

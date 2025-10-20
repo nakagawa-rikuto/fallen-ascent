@@ -52,7 +52,7 @@ void MyGame::Initialize(const wchar_t* title) {
 	// シーンマネージャの初期化
 	sceneManager_ = std::make_unique<SceneManager>();
 	sceneManager_->SetSceneFactory(sceneFactory_.get());
-	sceneManager_->ChangeScene(SceneType::Game);
+	sceneManager_->ChangeScene(SceneType::Title);
 }
  
 ///-------------------------------------------/// 
@@ -106,6 +106,7 @@ void MyGame::LoadTexture() {
 	// DebugSceneで使用。
 	Loader::LoadTexture("uvChecker", "uvChecker.png");
 	Loader::LoadTexture("monsterBall", "monsterBall.png");
+	Loader::LoadTexture("White", "WhiteTexture.png");
 	// Particleで使用。
 	Loader::LoadTexture("circle", "circle.png");
 	Loader::LoadTexture("circle2", "circle2.png");

@@ -35,6 +35,8 @@ GameScene::~GameScene() {
 	ground_.reset();
 	// Enemy
 	enemyManager_.reset();
+	// Transitionのリセット
+	transiton_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -54,6 +56,10 @@ void GameScene::Initialize() {
 
 	/// ===Line=== ///
 	line_ = std::make_unique<Line>();
+
+	/// ===Transition=== ///
+	transiton_ = std::make_unique<SceneTransition>();
+	fadeInDuration_ = 2.0f;
 
 	/// ===Camera=== ///
 	camera_ = std::make_shared<GameCamera>();
@@ -89,9 +95,8 @@ void GameScene::Initialize() {
 	startAnimation_->Initialize(player_.get(), camera_.get());
 
 	// 初期フェーズをFadeInに設定
-	// 現状はアニメーションから
-	currentPhase_ = GamePhase::StartAnimation;
-	fadeInTimer_ = 0.0f;
+	currentPhase_ = GamePhase::FadeIn;
+	transiton_->StartFadeOut(fadeInDuration_); // フェードイン開始
 }
 
 ///-------------------------------------------/// 
@@ -175,8 +180,11 @@ void GameScene::Draw() {
 ///-------------------------------------------///
 void GameScene::UpdateFadeIn() {
 
+	// FadeIn更新
+	transiton_->FadeOutUpdate();
+
 	// FadeIn完了でStartAnimationフェーズへ
-	if (fadeInTimer_ >= fadeInDuration_) {
+	if (transiton_->GetState() == FadeState::Finished) {
 		currentPhase_ = GamePhase::StartAnimation;
 	}
 }
