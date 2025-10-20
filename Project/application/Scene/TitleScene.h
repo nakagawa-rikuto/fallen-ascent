@@ -111,12 +111,4 @@ private:/// ===プライベート関数=== ///
 	/// モデルトランジションの更新処理
 	/// </summary>
 	void UpdateModelTransition();
-
-	/// <summary>
-	/// イージング
-	/// </summary>
-	/// <param name="t"></param>
-	/// <returns></returns>
-	float EaseInOutCubic(float t);
-
 };

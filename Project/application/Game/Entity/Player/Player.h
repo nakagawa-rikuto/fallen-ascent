@@ -24,16 +24,37 @@ public:
 	Player() = default;
 	~Player();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
 	void Initialize()override;
-	// 更新
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	void Update()override;
-	// 描画
+
+	/// <summary>
+	/// 開始アニメーション時の更新処理
+	/// </summary>
+	void UpdateStartAnimation();
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	/// <param name="mode"></param>
 	void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
-	// ImGui
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
 	void Information() override;
 
 public: /// ===衝突判定=== ///
+	/// <summary>
+	/// 衝突処理
+	/// </summary>
+	/// <param name="collider">衝突した相手の Collider へのポインター。</param>
 	void OnCollision(Collider* collider) override;
 
 public: /// ===Getter=== ///
@@ -46,6 +67,9 @@ public: /// ===Getter=== ///
 	float GetTimer(actionType type);
 
 public: /// ===Setter=== ///
+
+	// Camera
+	void SetCameraTargetPlayer();
 
 	// フラグ
 	void SetStateFlag(actionType type, bool flag);

@@ -2,78 +2,174 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include "sMath.h"
+namespace Easing {
+    // リニア（線形補間）
+    float Linear(float t) {
+        return t;
+    }
 
-///-------------------------------------------/// 
-/// Lerp関数
-///-------------------------------------------///
-// float
-float Math::Lerp(float start, float end, float t) {
-    return start * (1.0f - t) + end * t;
-}
-// Vector3
-Vector3 Math::Lerp(const Vector3& start, const Vector3& end, float t) {
-	Vector3 result;
+    // Quad（2次関数）
+    float EaseInQuad(float t) {
+        return t * t;
+    }
 
-	result.x = (1.0f - t) * start.x + t * end.x;
-	result.y = (1.0f - t) * start.y + t * end.y;
-	result.z = (1.0f - t) * start.z + t * end.z;
+    float EaseOutQuad(float t) {
+        return 1.0f - (1.0f - t) * (1.0f - t);
+    }
 
-	return result;
-}
-// Quaternion
-Quaternion Math::Lerp(const Quaternion& start, const Quaternion& end, float t) {
-	Quaternion result;
+    float EaseInOutQuad(float t) {
+        if (t < 0.5f) {
+            return 2.0f * t * t;
+        }
+        return 1.0f - std::pow(-2.0f * t + 2.0f, 2.0f) / 2.0f;
+    }
 
-	result.x = (1.0f - t) * start.x + t * end.x;
-	result.y = (1.0f - t) * start.y + t * end.y;
-	result.z = (1.0f - t) * start.z + t * end.z;
-	result.w = (1.0f - t) * start.w + t * end.w;
+    // Cubic（3次関数）
+    float EaseInCubic(float t) {
+        return t * t * t;
+    }
 
-	return result;
-}
+    float EaseOutCubic(float t) {
+        return 1.0f - std::pow(1.0f - t, 3.0f);
+    }
 
-///-------------------------------------------/// 
-/// SLerp関数
-///-------------------------------------------///
-// Vector3
-Vector3 Math::SLerp(const Vector3& start, const Vector3& end, float t) {
-	// なす角の計算
-	float angle = std::cosf(Dot(start, end));
+    float EaseInOutCubic(float t) {
+        if (t < 0.5f) {
+            return 4.0f * t * t * t;
+        }
+        return 1.0f - std::pow(-2.0f * t + 2.0f, 3.0f) / 2.0f;
+    }
 
-	// 線形補間を計算する
-	float scalestart = std::sinf((1.0f - t) * angle) / std::sinf(angle);
+    // Quart（4次関数）
+    float EaseInQuart(float t) {
+        return t * t * t * t;
+    }
 
-	float scaleend = std::sinf(t * angle) / std::sinf(angle);
+    float EaseOutQuart(float t) {
+        return 1.0f - std::pow(1.0f - t, 4.0f);
+    }
 
-	Vector3 result;
+    float EaseInOutQuart(float t) {
+        if (t < 0.5f) {
+            return 8.0f * t * t * t * t;
+        }
+        return 1.0f - std::pow(-2.0f * t + 2.0f, 4.0f) / 2.0f;
+    }
 
-	result.x = scalestart * start.x + scaleend * end.x;
-	result.y = scalestart * start.y + scaleend * end.y;
-	result.z = scalestart * start.z + scaleend * end.z;
+    // Quint（5次関数）
+    float EaseInQuint(float t) {
+        return t * t * t * t * t;
+    }
 
-	return result;
-}
-// Quaternion
-Quaternion Math::SLerp(const Quaternion& start, const Quaternion& end, float t) {
-	Quaternion q2Modified = end;
-	float dot = Dot(start, end);
+    float EaseOutQuint(float t) {
+        return 1.0f - std::pow(1.0f - t, 5.0f);
+    }
 
-	// 逆方向補間を防ぐために符号を反転
-	if (dot < 0.0f) {
-		q2Modified = Conjugate(q2Modified);
-		dot = -dot;
-	}
+    float EaseInOutQuint(float t) {
+        if (t < 0.5f) {
+            return 16.0f * t * t * t * t * t;
+        }
+        return 1.0f - std::pow(-2.0f * t + 2.0f, 5.0f) / 2.0f;
+    }
 
-	// クォータニオン補間
-	if (dot > 0.9995f) {
-		// 角度が小さい場合は Lerp で近似
-		return Normalize(start + (q2Modified - start) * t);
-	}
+    // Sine（正弦波）
+    float EaseInSine(float t) {
+        return 1.0f - std::cos(t * static_cast<float>(M_PI) / 2.0f);
+    }
 
-	float theta_0 = acosf(dot); // 初期角度
-	float theta = theta_0 * t;  // 補間後の角度
+    float EaseOutSine(float t) {
+        return std::sin(t * static_cast<float>(M_PI) / 2.0f);
+    }
 
-	Quaternion q3 = Normalize(q2Modified - start * dot); // 直交成分
-	return start * cosf(theta) + q3 * sinf(theta);
+    float EaseInOutSine(float t) {
+        return -(std::cos(static_cast<float>(M_PI) * t) - 1.0f) / 2.0f;
+    }
+
+    // Expo（指数関数）
+    float EaseInExpo(float t) {
+        if (t == 0.0f) return 0.0f;
+        return std::pow(2.0f, 10.0f * t - 10.0f);
+    }
+
+    float EaseOutExpo(float t) {
+        if (t == 1.0f) return 1.0f;
+        return 1.0f - std::pow(2.0f, -10.0f * t);
+    }
+
+    float EaseInOutExpo(float t) {
+        if (t == 0.0f) return 0.0f;
+        if (t == 1.0f) return 1.0f;
+        if (t < 0.5f) {
+            return std::pow(2.0f, 20.0f * t - 10.0f) / 2.0f;
+        }
+        return (2.0f - std::pow(2.0f, -20.0f * t + 10.0f)) / 2.0f;
+    }
+
+    // Circ（円運動）
+    float EaseInCirc(float t) {
+        return 1.0f - std::sqrt(1.0f - t * t);
+    }
+
+    float EaseOutCirc(float t) {
+        return std::sqrt(1.0f - std::pow(t - 1.0f, 2.0f));
+    }
+
+    float EaseInOutCirc(float t) {
+        if (t < 0.5f) {
+            return (1.0f - std::sqrt(1.0f - std::pow(2.0f * t, 2.0f))) / 2.0f;
+        }
+        return (std::sqrt(1.0f - std::pow(-2.0f * t + 2.0f, 2.0f)) + 1.0f) / 2.0f;
+    }
+
+    // Back（バックオーバーシュート）
+    float EaseInBack(float t) {
+        const float c1 = 1.70158f;
+        const float c3 = c1 + 1.0f;
+        return c3 * t * t * t - c1 * t * t;
+    }
+
+    float EaseOutBack(float t) {
+        const float c1 = 1.70158f;
+        const float c3 = c1 + 1.0f;
+        return 1.0f + c3 * std::pow(t - 1.0f, 3.0f) + c1 * std::pow(t - 1.0f, 2.0f);
+    }
+
+    float EaseInOutBack(float t) {
+        const float c1 = 1.70158f;
+        const float c2 = c1 * 1.525f;
+        if (t < 0.5f) {
+            return (std::pow(2.0f * t, 2.0f) * ((c2 + 1.0f) * 2.0f * t - c2)) / 2.0f;
+        }
+        return (std::pow(2.0f * t - 2.0f, 2.0f) * ((c2 + 1.0f) * (t * 2.0f - 2.0f) + c2) + 2.0f) / 2.0f;
+    }
+
+    // Bounce（バウンド）
+    float EaseOutBounce(float t) {
+        const float n1 = 7.5625f;
+        const float d1 = 2.75f;
+
+        if (t < 1.0f / d1) {
+            return n1 * t * t;
+        } else if (t < 2.0f / d1) {
+            t -= 1.5f / d1;
+            return n1 * t * t + 0.75f;
+        } else if (t < 2.5f / d1) {
+            t -= 2.25f / d1;
+            return n1 * t * t + 0.9375f;
+        } else {
+            t -= 2.625f / d1;
+            return n1 * t * t + 0.984375f;
+        }
+    }
+
+    float EaseInBounce(float t) {
+        return 1.0f - EaseOutBounce(1.0f - t);
+    }
+
+    float EaseInOutBounce(float t) {
+        if (t < 0.5f) {
+            return (1.0f - EaseOutBounce(1.0f - 2.0f * t)) / 2.0f;
+        }
+        return (1.0f + EaseOutBounce(2.0f * t - 1.0f)) / 2.0f;
+    }
 }

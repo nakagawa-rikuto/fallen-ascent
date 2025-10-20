@@ -2,6 +2,8 @@
 #include <algorithm>
 // Service
 #include "Engine/System/Service/OffScreenService.h"
+// Math
+#include "Math/EasingMath.h"
 
 
 ///-------------------------------------------/// 
@@ -64,7 +66,7 @@ void SceneTransition::Update() {
 	float normalizedTime = (std::min)(currentTime_ / duration_, 1.0f);
 
 	// イージング適用（最初は速く、後でゆっくり）
-	float easedTime = EaseOutCubic(normalizedTime);
+	float easedTime = Easing::EaseOutCubic(normalizedTime);
 
 	if (data_.progress < 0.5f) {
 		// 各フェーズでの動きを調整
@@ -77,7 +79,7 @@ void SceneTransition::Update() {
 			data_.crackDensity = 15.0f;
 			data_.dispersion = 4.0f;
 			float phaseTime = (normalizedTime - 0.5f) / 0.5f;
-			data_.progress = 0.25f + EaseOutCubic(phaseTime) * 0.3f;
+			data_.progress = 0.25f + Easing::EaseOutCubic(phaseTime) * 0.3f;
 		}
 	} else {
 		// エフェクト終了判定
@@ -97,19 +99,3 @@ void SceneTransition::Update() {
 bool SceneTransition::IsFading() const { return isPlaying_; }
 bool SceneTransition::IsFinished() const { return isFinished_; }
 FadeState SceneTransition::GetState() const { return currentState_; }
-
-///-------------------------------------------/// 
-/// イージング
-///-------------------------------------------///
-float SceneTransition::EaseOutCubic(float t) {
-	float f = t - 1.0f;
-	return f * f * f + 1.0f;
-}
-float SceneTransition::EaseInOutQuad(float t) {
-	if (t < 0.5f) {
-		return 2.0f * t * t;
-	} else {
-		float f = 2.0f * t - 2.0f;
-		return -0.5f * (f * (f - 2.0f) - 1.0f);
-	}
-}

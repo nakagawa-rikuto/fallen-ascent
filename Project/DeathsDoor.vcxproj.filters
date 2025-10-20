@@ -472,6 +472,7 @@
     <ClCompile Include="Engine\Graphics\2d\Base\Object2DCommon.cpp">
       <Filter>Engine\Graphics\2D\Base</Filter>
     </ClCompile>
+    <ClCompile Include="application\Game\Animation\StartAnimation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -909,6 +910,7 @@
     <ClInclude Include="Engine\Graphics\2d\Base\Object2DCommon.h">
       <Filter>Engine\Graphics\2D\Base</Filter>
     </ClInclude>
+    <ClInclude Include="application\Game\Animation\StartAnimation.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

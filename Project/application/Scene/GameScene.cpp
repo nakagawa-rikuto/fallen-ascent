@@ -25,6 +25,8 @@ GameScene::~GameScene() {
 	IScene::~IScene();
 	// Colliderのリセット
 	ColliderService::Reset();
+	// StartAnimation
+	startAnimation_.reset();
 	// Camera
 	camera_.reset();
 	// Player
@@ -42,6 +44,17 @@ void GameScene::Initialize() {
 	// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 	IScene::Initialize();
 
+	// Particleの追加
+	ParticleService::AddParticle("Confetti", std::make_unique<ConfettiParticle>());
+	ParticleService::AddParticle("Explosion", std::make_unique<ExplosionParticle>());
+	ParticleService::AddParticle("Wind", std::make_unique<WindParticle>());
+	ParticleService::AddParticle("Ring", std::make_unique<RingParticle>());
+	ParticleService::AddParticle("HitEffect", std::make_unique<HitEffectParticle>());
+	ParticleService::AddParticle("Cylinder", std::make_unique<CylinderParticle>());
+
+	/// ===Line=== ///
+	line_ = std::make_unique<Line>();
+
 	/// ===Camera=== ///
 	camera_ = std::make_shared<GameCamera>();
 	camera_->Init(CameraType::Follow);
@@ -58,28 +71,27 @@ void GameScene::Initialize() {
 	player_->Initialize();
 
 	/// ===Enemy=== ///
-	enemyManager_ = std::make_unique<EnemyManager>();
+	//enemyManager_ = std::make_unique<EnemyManager>();
 	//enemyManager_->Spawn(EnemyType::CloseRange, { -10.0f, 1.0f, 10.0f });
 	//enemyManager_->Spawn(EnemyType::CloseRange, { 10.0f, 1.0f, 10.0f });
-	enemyManager_->Spawn(EnemyType::CloseRange, { 15.0f, 1.0f, 15.0f });
+	//enemyManager_->Spawn(EnemyType::CloseRange, { 15.0f, 1.0f, 15.0f });
 	//enemyManager_->Spawn(EnemyType::CloseRange, {- 10.0f, 1.0f, -10.0f });
-	enemyManager_->Spawn(EnemyType::LongRange, { -15.0f, 1.0f, 15.0f });
+	//enemyManager_->Spawn(EnemyType::LongRange, { -15.0f, 1.0f, 15.0f });
 	// EnemyのSpaw後に呼ぶ
-	enemyManager_->SetPlayer(player_.get()); // Playerを設定
+	//enemyManager_->SetPlayer(player_.get()); // Playerを設定
+
 	/// ===Ground=== ///
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize();
 
-	/// ===Line=== ///
-	line_ = std::make_unique<Line>();
+	/// ===StartAnimation=== ///
+	startAnimation_ = std::make_unique<StartAnimation>();
+	startAnimation_->Initialize(player_.get(), camera_.get());
 
-	// Particleの追加
-	ParticleService::AddParticle("Confetti", std::make_unique<ConfettiParticle>());
-	ParticleService::AddParticle("Explosion", std::make_unique<ExplosionParticle>());
-	ParticleService::AddParticle("Wind", std::make_unique<WindParticle>());
-	ParticleService::AddParticle("Ring", std::make_unique<RingParticle>());
-	ParticleService::AddParticle("HitEffect", std::make_unique<HitEffectParticle>());
-	ParticleService::AddParticle("Cylinder", std::make_unique<CylinderParticle>());
+	// 初期フェーズをFadeInに設定
+	// 現状はアニメーションから
+	currentPhase_ = GamePhase::StartAnimation;
+	fadeInTimer_ = 0.0f;
 }
 
 ///-------------------------------------------/// 
@@ -99,23 +111,29 @@ void GameScene::Update() {
 	player_->Information();
 
 	// Enemy
-	enemyManager_->UpdateImGui();
+	//enemyManager_->UpdateImGui();
 
 #endif // USE_IMGUI
 
-	/// ===DebugCamera=== ///
-	camera_->DebugUpdate();
-
-	/// ===Playerの更新=== ///
-	player_->Update();
-
-	/// ===Enemy=== ///
-	enemyManager_->Update();
-
-	/// ===Groundの更新=== ///
-	ground_->Update();
-
-	/// ===ColliderManager=== ///
+	/// ===フェーズ別更新=== ///
+	switch (currentPhase_) {
+	// フェードイン
+	case GamePhase::FadeIn:
+		UpdateFadeIn();
+		break;
+	// 開始アニメーション
+	case GamePhase::StartAnimation:
+		UpdateStartAnimation();
+		break;
+	// ゲームプレイ
+	case GamePhase::Game:
+		UpdateGame();
+		break;
+	// フェードアウト
+	case GamePhase::FadeOut:
+		UpdateFadeOut();
+		break;
+	}
 
 	/// ===ISceneの更新=== ///
 	IScene::Update();
@@ -126,7 +144,6 @@ void GameScene::Update() {
 ///-------------------------------------------///
 void GameScene::Draw() {
 #pragma region 背景スプライト描画
-
 #pragma endregion
 
 #pragma region モデル描画
@@ -136,9 +153,14 @@ void GameScene::Draw() {
 	// Ground
 	//ground_->Draw();
 	// Enemy
-	enemyManager_->Draw();
+	//enemyManager_->Draw();
 	// Player
 	player_->Draw();
+
+	// StartAnimation
+	if (startAnimation_ && !startAnimation_->IsCompleted()) {
+		startAnimation_->Draw();
+	}
 
 	/// ===ISceneの描画=== ///
 	IScene::Draw();
@@ -146,6 +168,62 @@ void GameScene::Draw() {
 
 #pragma region 前景スプライト描画
 #pragma endregion
+}
+
+///-------------------------------------------/// 
+/// フェードイン時の更新処理
+///-------------------------------------------///
+void GameScene::UpdateFadeIn() {
+
+	// FadeIn完了でStartAnimationフェーズへ
+	if (fadeInTimer_ >= fadeInDuration_) {
+		currentPhase_ = GamePhase::StartAnimation;
+	}
+}
+
+///-------------------------------------------/// 
+/// 開始アニメーション時の更新処理
+///-------------------------------------------///
+void GameScene::UpdateStartAnimation() {
+	// アニメーション更新
+	startAnimation_->Update();
+
+	// プレイヤーのStartAnimation専用更新
+	player_->UpdateStartAnimation();
+
+	// アニメーション完了でGameフェーズへ
+	if (startAnimation_->IsCompleted()) {
+		// カメラターゲットをPlayerに設定
+		player_->SetCameraTargetPlayer(); // ぎこちなさが残る
+		currentPhase_ = GamePhase::Game;
+	}
+}
+
+///-------------------------------------------/// 
+/// ゲーム時の更新処理
+///-------------------------------------------///
+void GameScene::UpdateGame() {
+	/// ===Playerの更新=== ///
+	player_->Update();
+
+	/// ===Enemy=== ///
+	//enemyManager_->Update();
+
+	/// ===Groundの更新=== ///
+	ground_->Update();
+
+	// ゲームが終わったらFadeOutへ
+}
+
+///-------------------------------------------/// 
+/// フェードアウト時の更新処理
+///-------------------------------------------///
+void GameScene::UpdateFadeOut() {
+	// FadeOut完了で次のシーンへ
+	if (fadeOutTimer_ >= fadeOutDuration_) {
+		// TODO: シーン遷移処理
+		// SceneManager::ChangeScene("Result");
+	}
 }
 
 ///-------------------------------------------/// 

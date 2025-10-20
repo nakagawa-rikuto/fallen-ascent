@@ -242,6 +242,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp" />
     <ClCompile Include="Engine\Scene\Transition\SceneTransition.cpp" />
     <ClCompile Include="Engine\Graphics\2d\Base\Object2DCommon.cpp" />
+    <ClCompile Include="application\Game\Animation\StartAnimation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
@@ -389,6 +390,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h" />
     <ClInclude Include="Engine\Scene\Transition\SceneTransition.h" />
     <ClInclude Include="Engine\Graphics\2d\Base\Object2DCommon.h" />
+    <ClInclude Include="application\Game\Animation\StartAnimation.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
