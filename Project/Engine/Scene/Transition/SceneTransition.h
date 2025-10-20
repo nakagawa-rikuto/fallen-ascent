@@ -45,9 +45,5 @@ private:
     float duration_ = 1.2f; // エフェクトの総時間（秒）
 
     FadeState currentState_ = FadeState::None;
-
-    // イージング関数
-    float EaseOutCubic(float t);
-    float EaseInOutQuad(float t);
 };
 

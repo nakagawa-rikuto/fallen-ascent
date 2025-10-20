@@ -7,6 +7,7 @@
 #include "Engine/System/Service/OffScreenService.h"
 // Math
 #include "Math/sMath.h"
+#include "Math/EasingMath.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -378,7 +379,7 @@ void TitleScene::UpdateModelTransition() {
 	}
 
 	// イージング適用
-	float easedProgress = EaseInOutCubic(progress);
+	float easedProgress = Easing::EaseInOutCubic(progress);
 
 	// 位置を補間
 	if (transitionDirection_) {
@@ -425,16 +426,4 @@ void TitleScene::UpdateModelTransition() {
 
 	Quaternion nextRotation = models_[nextModelIndex_]->GetTransform().rotate;
 	models_[nextModelIndex_]->SetRotate(Multiply(rotationDelta, nextRotation));
-}
-
-///-------------------------------------------/// 
-/// イージング関数（Ease In Out Cubic）
-///-------------------------------------------///
-float TitleScene::EaseInOutCubic(float t) {
-	if (t < 0.5f) {
-		return 4.0f * t * t * t;
-	} else {
-		float f = (2.0f * t - 2.0f);
-		return 0.5f * f * f * f + 1.0f;
-	}
 }

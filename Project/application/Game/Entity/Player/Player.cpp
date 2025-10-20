@@ -56,9 +56,14 @@ float Player::GetTimer(actionType type) {
 	}
 }
 
+
+
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
+// Cameraの追従対象としてPlaeyrを設定
+void Player::SetCameraTargetPlayer() { camera_->SetTarget(&transform_.translate, &transform_.rotate); }
+
 // フラグ
 void Player::SetStateFlag(actionType type, bool falg) {
 	switch (type) {
@@ -146,13 +151,18 @@ void Player::Update() {
 		currentState_->Update(this, camera_);
 	}
 
-	/// ===camera=== ///
-	camera_->SetTarget(&transform_.translate, &transform_.rotate);
-
 	/// ===SphereColliderの更新=== ///
 	GameCharacter::Update();
 }
 
+///-------------------------------------------/// 
+/// 開始アニメーション時の更新
+///-------------------------------------------///
+void Player::UpdateStartAnimation() {
+
+	/// ===SphereColliderの更新=== ///
+	GameCharacter::Update();
+}
 
 ///-------------------------------------------///  
 /// 描画
