@@ -1,6 +1,7 @@
 #include "Fullscreen.hlsli"
 
-Texture2D<float4> gTexture : register(t0);
+Texture2D<float4> gBackgroundTexture : register(t0); // 背景テクスチャ（割れる前）
+Texture2D<float4> gGlassTexture : register(t1); // ガラステクスチャ（割れる）
 SamplerState gSampler : register(s0);
 
 cbuffer ShatterParams : register(b0)
@@ -15,7 +16,7 @@ cbuffer ShatterParams : register(b0)
     float randomSeed; // ランダムシード値
 };
 
-// ハッシュ関数（ノイズ生成用）
+// ハッシュ関数
 float hash(float2 p)
 {
     float3 p3 = frac(float3(p.xyx) * 0.1031);
@@ -23,85 +24,68 @@ float hash(float2 p)
     return frac((p3.x + p3.y) * p3.z + randomSeed * 0.01);
 }
 
-// 2Dノイズ関数
-float noise(float2 p)
-{
-    float2 i = floor(p);
-    float2 f = frac(p);
-    
-    float a = hash(i);
-    float b = hash(i + float2(1.0, 0.0));
-    float c = hash(i + float2(0.0, 1.0));
-    float d = hash(i + float2(1.0, 1.0));
-    
-    float2 u = f * f * (3.0 - 2.0 * f);
-    
-    return lerp(lerp(a, b, u.x), lerp(c, d, u.x), u.y);
-}
-
-// 改善されたVoronoiノイズ（より不規則なヒビ割れパターン）
-float2 voronoi(float2 p)
+// Voronoiノイズ（セルIDと最近接点の距離を返す）
+float3 voronoi(float2 p)
 {
     float2 n = floor(p);
     float2 f = frac(p);
     
     float minDist = 8.0;
-    float secondMinDist = 8.0;
     float2 minPoint = float2(0.0, 0.0);
+    float2 minCell = float2(0.0, 0.0);
     
-    // より広い範囲を探索してより不規則なパターンを生成
-    for (int j = -2; j <= 2; j++)
+    // 3x3の近傍セルを探索
+    for (int j = -1; j <= 1; j++)
     {
-        for (int i = -2; i <= 2; i++)
+        for (int i = -1; i <= 1; i++)
         {
             float2 neighbor = float2(float(i), float(j));
-            // より複雑なランダム位置生成
-            float2 pos = neighbor + float2(
-                hash(n + neighbor),
-                hash(n + neighbor + float2(10.5, 20.3))
+            float2 cellPos = n + neighbor;
+            
+            // セル内のランダムな点
+            float2 pos = float2(
+                hash(cellPos),
+                hash(cellPos + float2(10.5, 20.3))
             );
             
-            float2 diff = pos - f;
+            float2 diff = neighbor + pos
+            -f;
             float dist = length(diff);
             
             if (dist < minDist)
             {
-                secondMinDist = minDist;
                 minDist = dist;
-                minPoint = n + neighbor + pos;
-            }
-            else if (dist < secondMinDist)
-            {
-                secondMinDist = dist;
+                minPoint = pos;
+                minCell = cellPos;
             }
         }
     }
     
-    // セル境界の距離（ヒビを表現）
-    float edgeDist = secondMinDist - minDist;
+    // セルID（ユニークな値）
+    float cellId = hash(minCell);
     
-    return float2(edgeDist, hash(minPoint));
+    return float3(minDist, cellId, hash(minCell + float2(5.5, 15.3)));
 }
 
-// 2D回転行列
+// 2D回転
 float2 rotate(float2 p, float angle)
 {
     float c = cos(angle);
     float s = sin(angle);
-    return float2(
-        p.x * c - p.y * s,
-        p.x * s + p.y * c
-    );
+    return float2(p.x * c - p.y * s, p.x * s + p.y * c);
 }
 
 float4 main(VertexShaderOutPut input) : SV_TARGET
 {
     float2 uv = input.texcoord;
     
-    // progressが0の時は元のテクスチャをそのまま返す
+    // 背景テクスチャをサンプリング（常に必要）
+    float4 bgColor = gBackgroundTexture.Sample(gSampler, uv);
+    
+    // progressが0の時は背景テクスチャをそのまま返す
     if (progress <= 0.0)
     {
-        return gTexture.Sample(gSampler, uv);
+        return bgColor;
     }
     
     float2 impactPoint = float2(impactX, impactY);
@@ -109,87 +93,98 @@ float4 main(VertexShaderOutPut input) : SV_TARGET
     // 衝撃点からの距離と方向
     float2 toCenter = uv - impactPoint;
     float dist = length(toCenter);
-    float2 dir = normalize(toCenter + float2(0.0001, 0.0001)); // ゼロ除算回避
+    float2 dir = normalize(toCenter + float2(0.0001, 0.0001));
     
-    // Voronoiノイズでひび割れパターンを生成
-    float2 voronoiResult = voronoi(uv * crackDensity);
+    // Voronoiでセル情報を取得
+    float3 voronoiResult = voronoi(uv * crackDensity);
     float cellDist = voronoiResult.x;
     float cellId = voronoiResult.y;
+    float cellId2 = voronoiResult.z;
     
-    // 放射状のヒビ割れパターンを追加
-    float angleFromImpact = atan2(toCenter.y, toCenter.x);
-    float radialCrack = abs(sin(angleFromImpact * 8.0 + hash(float2(cellId, 3.0)) * 6.28)) * 0.5;
+    // 衝撃点からの距離による進行度の遅延（波紋効果）
+    float distanceDelay = dist * 0.5;
+    float localProgress = saturate((progress - distanceDelay) * 2.0);
     
-    // ヒビ割れパターンを組み合わせる
-    cellDist = min(cellDist, radialCrack * dist * 2.0);
-    
-    // 衝撃点からの距離に応じて進行度を調整（波紋のように広がる）
-    float distanceDelay = dist * 0.4; // 距離による遅延
-    float shardProgress = saturate((progress - distanceDelay) * 2.5);
+    // 破片ごとの遅延（バラバラに割れる）
+    float shardDelay = cellId * 0.3;
+    float shardProgress = saturate((localProgress - shardDelay) * 3.0);
     shardProgress = smoothstep(0.0, 1.0, shardProgress);
     
-    // 破片ごとのランダムな動き
-    float2 randomOffset = float2(
+    // 破片が飛散し始めるタイミング
+    float flyProgress = smoothstep(0.2, 1.0, shardProgress);
+    
+    // 破片ごとのランダムな方向
+    float2 randomDir = float2(
         hash(float2(cellId, 0.0)) - 0.5,
         hash(float2(cellId, 1.0)) - 0.5
-    ) * 2.0;
+    );
+    randomDir = normalize(randomDir + dir * 0.5);
     
-    // 放射状の動き + ランダムな動き + 重力効果
-    float gravity = shardProgress * shardProgress * 0.2; // 下方向への重力
-    float2 displacement = (dir + randomOffset * 0.5) * shardProgress * dispersion * 0.4;
-    displacement.y += gravity; // 重力を追加
+    // 重力効果
+    float gravity = flyProgress * flyProgress * 0.3;
     
-    // 破片の回転（遠くの破片ほど回転が大きい）
-    float rotationAmount = (hash(float2(cellId, 2.0)) - 0.5) * rotation * shardProgress * 3.14159;
-    rotationAmount *= (1.0 + dist * 0.5); // 距離に応じて回転量を増加
+    // 破片の移動
+    float2 displacement = randomDir * flyProgress * dispersion * 0.5;
+    displacement.y += gravity;
     
-    // 衝撃点を中心に回転
-    float2 centeredUV = uv - impactPoint;
+    // 破片の回転（各破片が独立して回転）
+    float rotationAmount = (cellId2 - 0.5) * rotation * flyProgress * 6.28;
+    
+    // セルの中心を計算（回転の中心点）
+    float2 cellCenter = floor(uv * crackDensity) / crackDensity + 0.5 / crackDensity;
+    
+    // セル中心を基準に回転
+    float2 centeredUV = uv - cellCenter;
     centeredUV = rotate(centeredUV, rotationAmount);
-    float2 rotatedUV = centeredUV + impactPoint;
+    float2 rotatedUV = centeredUV + cellCenter;
     
     // 最終的なUV座標
     float2 finalUV = rotatedUV + displacement;
     
-    // ひび割れのエッジ検出（より鋭いヒビを生成）
-    float crackThreshold = lerp(0.015, 0.005, progress);
-    float crackEdge = smoothstep(crackThreshold, crackThreshold + 0.01, cellDist);
+    // UV範囲外チェック（先に行う）
+    bool outOfBounds = finalUV.x < 0.0 || finalUV.x > 1.0 || finalUV.y < 0.0 || finalUV.y > 1.0;
     
-    // テクスチャサンプリング
-    float4 color = gTexture.Sample(gSampler, finalUV);
-    
-    // ひび割れの暗い線を追加（より鋭く、細く）
-    float crackLine = 1.0 - smoothstep(0.0, 0.02, cellDist);
-    float crackVisibility = saturate(1.0 - shardProgress * 1.5) * smoothstep(0.05, 0.15, progress);
-    color.rgb = lerp(color.rgb, color.rgb * 0.1, crackLine * crackVisibility * 1.5);
-    
-    // 破片のエッジを暗くして立体感を出す
-    float edgeDarkness = lerp(1.0, 0.6, (1.0 - crackEdge) * shardProgress);
-    color.rgb *= edgeDarkness;
-    
-    // ハイライト効果（ガラスの反射）
-    float highlight = pow(1.0 - cellDist, 3.0) * 0.3 * (1.0 - shardProgress * 0.5);
-    highlight *= smoothstep(0.1, 0.2, progress); // 進行度が低い時は表示しない
-    color.rgb += highlight;
-    
-    // UV範囲外は透明に
-    if (finalUV.x < 0.0 || finalUV.x > 1.0 || finalUV.y < 0.0 || finalUV.y > 1.0)
+    // UV範囲外なら背景を返す
+    if (outOfBounds)
     {
-        color.a *= max(0.0, 1.0 - shardProgress * 2.0);
+        return bgColor;
     }
     
-    // フェードアウト効果（滑らかに）
-    float fadeAmount = fadeOut * smoothstep(0.3, 1.0, shardProgress);
-    color.a *= 1.0 - fadeAmount;
+    // ひび割れのエッジ検出
+    float crackThreshold = 0.02 / crackDensity;
+    float crackEdge = smoothstep(0.0, crackThreshold, cellDist / crackDensity);
     
-    // 破片が飛散した後は急速に透明に
-    color.a *= 1.0 - smoothstep(0.75, 1.0, shardProgress);
+    // ガラステクスチャをサンプリング（範囲内のみ）
+    float4 glassColor = gGlassTexture.Sample(gSampler, finalUV);
     
-    // アルファが0に近い場合は完全に透明に
-    if (color.a < 0.01)
+    // ひび割れの線（黒い線）
+    float crackLine = 1.0 - smoothstep(0.0, crackThreshold * 0.5, cellDist / crackDensity);
+    float crackVisibility = saturate(1.0 - flyProgress * 2.0) * smoothstep(0.0, 0.3, localProgress);
+    glassColor.rgb = lerp(glassColor.rgb, glassColor.rgb * 0.1, crackLine * crackVisibility);
+    
+    // 破片のエッジを暗くする
+    float edgeDarkness = lerp(1.0, 0.7, (1.0 - crackEdge) * flyProgress);
+    glassColor.rgb *= edgeDarkness;
+    
+    // ガラスの反射ハイライト
+    float highlight = pow(1.0 - cellDist / crackDensity, 4.0) * 0.2 * (1.0 - flyProgress * 0.7);
+    glassColor.rgb += highlight * smoothstep(0.1, 0.3, localProgress);
+    
+    // フェードアウト効果
+    float fadeAmount = fadeOut * smoothstep(0.3, 1.0, flyProgress);
+    glassColor.a *= 1.0 - fadeAmount;
+    
+    // 破片が飛散した後は透明に
+    glassColor.a *= 1.0 - smoothstep(0.7, 1.0, flyProgress);
+    
+    // アルファが非常に小さい場合は背景を返す
+    if (glassColor.a < 0.01)
     {
-        discard;
+        return bgColor;
     }
     
-    return color;
+    // 背景とガラスをアルファブレンド
+    float4 finalColor = lerp(bgColor, glassColor, glassColor.a);
+    
+    return finalColor;
 }

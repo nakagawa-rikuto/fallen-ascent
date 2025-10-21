@@ -14,6 +14,9 @@ void ShatterGlassEffect::Initialize(ID3D12Device* device, std::shared_ptr<Render
 	// RenderTextureを取得
 	renderTexture_ = RenderTexture;
 
+	// テクスチャ名を設定
+	textureKeyName_ = "White";
+
 	// Bufferの作成
 	buffer_ = std::make_unique<BufferBase>();
 	buffer_->Create(device, sizeof(ShatterGlassData));
@@ -45,11 +48,11 @@ void ShatterGlassEffect::Draw(ID3D12GraphicsCommandList* commandList) {
 	// パイプラインの設定
 	Render::SetPSO(commandList, PipelineType::ShatterGlass, BlendMode::kBlendModeNone);
 
-	commandList->SetGraphicsRootConstantBufferView(1, buffer_->GetBuffer()->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(2, buffer_->GetBuffer()->GetGPUVirtualAddress());
 
 	// テクスチャとパラメータをセット
 	commandList->SetGraphicsRootDescriptorTable(0, renderTexture_->GetSRVHandle());
-	
+	Render::SetGraphicsRootDescriptorTable(commandList, 1, textureKeyName_);
 
 	// 頂点3つを描画（フルスクリーン三角形）
 	commandList->DrawInstanced(3, 1, 0, 0);
@@ -104,3 +107,8 @@ void ShatterGlassEffect::GenerateNewPattern() {
 	// 0.0 ~ 1000.0 の範囲でランダムなシード値を生成
 	data_->randomSeed = static_cast<float>(rand() % 10000) / 10.0f;
 }
+
+///-------------------------------------------/// 
+/// テクスチャの設定
+///-------------------------------------------///
+void ShatterGlassEffect::SetGlassTexture(const std::string& textureName) { textureKeyName_ = textureName; }

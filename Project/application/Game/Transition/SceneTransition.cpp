@@ -5,22 +5,26 @@
 // Math
 #include "Math/EasingMath.h"
 
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+SceneTransition::~SceneTransition() {
+	if (sprite_) {
+		sprite_.reset();
+	}
+}
 
 ///-------------------------------------------/// 
 /// 
 ///-------------------------------------------///
 void SceneTransition::StartFadeIn(float duration) {
-	// デフォルトパラメータの設定
-	data_.progress = 0.1f;
-	data_.impactX = 0.5f;
-	data_.impactY = 0.5f;
-	data_.crackDensity = 20.0f;  // ひび割れ
-	data_.dispersion = 1.2f;     // 飛散度
-	data_.rotation = 1.5f;       // 回転
-	data_.fadeOut = 0.0f;        // フェードアウトを有効に
-
-	// 新しいランダムパターンを生成
-	data_.randomSeed = static_cast<float>(rand() % 10000) / 10.0f;
+	
+	// Sprite
+	sprite_ = std::make_unique<Sprite>();
+	sprite_->Initialize("White");
+	sprite_->SetSize({ 1280.0f, 720.0f });
+	sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 黒で初期化
+	sprite_->Update();
 
 	isPlaying_ = true;
 	isFinished_ = false;
@@ -33,6 +37,9 @@ void SceneTransition::StartFadeIn(float duration) {
 /// 
 ///-------------------------------------------///
 void SceneTransition::StartFadeOut(float duration) {
+	// エフェクトタイプの設定
+	//OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
+
 	// デフォルトパラメータの設定
 	data_.progress = 0.0f;
 	data_.impactX = 0.5f;
@@ -55,7 +62,7 @@ void SceneTransition::StartFadeOut(float duration) {
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
-void SceneTransition::Update() {
+void SceneTransition::FadeOutUpdate() {
 	if (!isPlaying_ || isFinished_) {
 		return;
 	}
@@ -91,6 +98,39 @@ void SceneTransition::Update() {
 
 	// 設定
 	OffScreenService::SetShatterGlassData(data_);
+}
+
+///-------------------------------------------/// 
+/// 更新
+///-------------------------------------------///
+void SceneTransition::FadeInUpdate() {
+	if (!isPlaying_ || isFinished_) {
+		return;
+	}
+
+	// スプライトの色（アルファ値のみ更新）
+	Vector4 color = sprite_->GetColor();
+	color.w += 0.01f; // アルファ値を更新
+	
+
+	// 透明度が1.0に到達したら終了
+	if (color.w >= 1.0f) {
+		isPlaying_ = false;
+		isFinished_ = true;
+		currentState_ = FadeState::Finished;
+	}
+
+	sprite_->SetColor(color);
+	sprite_->Update();
+}
+
+///-------------------------------------------/// 
+/// 描画
+///-------------------------------------------///
+void SceneTransition::Draw() {
+	if (sprite_) {
+		sprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
+	}
 }
 
 ///-------------------------------------------/// 

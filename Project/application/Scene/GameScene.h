@@ -1,7 +1,6 @@
 #pragma once
 /// ===Includ=== ///
 #include "Engine/Scene/IScene.h"
-
 // Entity
 #include "application/Game/Entity/Player/Player.h"
 #include "application/Game/Entity/Enemy/Manager/EnemyManager.h"
@@ -9,6 +8,8 @@
 #include "application/Game/Object/Ground/Ground.h"
 // Animation
 #include "application/Game/Animation/StartAnimation.h"
+// Transition
+#include "application/Game/Transition/SceneTransition.h"
 
 /// ===GameSceneのフェーズ=== ///
 enum class GamePhase {
@@ -46,10 +47,12 @@ private:/// ===メンバ変数=== ///
 	/// <summary>
 	/// シーン用
 	/// </summary>
-	
+
 	/// ===Classの宣言=== /// 
 	// Line
 	std::unique_ptr<Line> line_;
+	// Transition
+	std::unique_ptr<SceneTransition> transiton_;
 	// Camera
 	std::shared_ptr<GameCamera> camera_;
 	// Player
@@ -72,7 +75,6 @@ private:/// ===メンバ変数=== ///
 	GamePhase currentPhase_ = GamePhase::FadeIn;
 
 	/// ===FadeIn用=== ///
-	float fadeInTimer_ = 0.0f;
 	float fadeInDuration_ = 1.0f;
 
 	/// ===FadeOut用=== ///

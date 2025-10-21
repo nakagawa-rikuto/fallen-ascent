@@ -1,5 +1,6 @@
 #pragma once
 #include "Engine/Graphics/OffScreen/Effect/ShatterGlassEffect.h"
+#include "application/Drawing/2d/Sprite.h"
 
 enum class FadeState {
     None,
@@ -15,14 +16,18 @@ class SceneTransition {
 public: 
 
     SceneTransition() = default;
-    ~SceneTransition() = default;
+    ~SceneTransition();
 
     // フェード開始
     void StartFadeIn(float duration = 1.2f);   // 真っ暗→通常
     void StartFadeOut(float duration = 1.0f);  // 通常→真っ暗
 
     // 更新
-    void Update();
+    void FadeOutUpdate();
+	void FadeInUpdate();
+
+    // 描画
+    void Draw();
 
     // フェード中か
     bool IsFading() const;
@@ -34,6 +39,9 @@ public:
     FadeState GetState() const;
 
 private: 
+
+    // Sprite
+	std::unique_ptr<Sprite> sprite_;
 
     // Data
     ShatterGlassData data_;

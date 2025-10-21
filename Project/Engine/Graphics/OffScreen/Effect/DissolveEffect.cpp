@@ -20,6 +20,7 @@ void DissolveEffect::Initialize(ID3D12Device* device, std::shared_ptr<RenderText
 	buffer_ = std::make_unique<BufferBase>();
 	buffer_->Create(device, sizeof(DissolveData));
 	buffer_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&data_));
+
 	// Dissolveエフェクトのデータを初期化
 	data_->edgeColor = { 1.0f, 0.4f, 0.3f }; // エッジ色を白に設定
 	data_->threshold = 0.5f; // デフォルトの閾値

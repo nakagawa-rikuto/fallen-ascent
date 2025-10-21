@@ -15,6 +15,18 @@
 TitleScene::~TitleScene() {
 	// ISceneのデストラクタ
 	IScene::~IScene();
+	// Transitionのリセット
+	transiton_.reset();
+	// スプライトのリセット
+	bgSprite_.reset();
+	bgKiriSprite_.reset();
+	titleSprite_.reset();
+	startSprite_.reset();
+	optionSprite_.reset();
+	exitSprite_.reset();
+	selectOverlay_.reset();
+	dimSprite_.reset();
+	optionMenuSprite_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -142,7 +154,8 @@ void TitleScene::Update() {
 	ImGui::End();
 #endif // USE_IMGUI
 	
-	transiton_->Update();
+	/// ===フェードアウトの更新=== ///
+	transiton_->FadeInUpdate();
 
 	/// ===スプライトの更新=== ///
 	bgSprite_->Update();
@@ -193,6 +206,8 @@ void TitleScene::Update() {
 
 		/// ===シーンの切り替え=== ///
 		if (transiton_->GetState() == FadeState::Finished) {
+			// OffScreenEffectの設定
+			OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
 			// ゲームシーンへ遷移
 			sceneManager_->ChangeScene(SceneType::Game);
 		}
@@ -244,6 +259,9 @@ void TitleScene::Draw() {
 		dimSprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
 		optionMenuSprite_->Draw(GroundType::Front);
 	}
+
+	// トランジション描画
+	transiton_->Draw();
 #pragma endregion
 }
 
@@ -290,8 +308,7 @@ void TitleScene::UpdateMenuSelection() {
 void TitleScene::ConfirmSelection() {
 	switch (currentSelection_) {
 	case MenuSelection::Start:
-		OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
-		transiton_->StartFadeOut(2.0f);
+		transiton_->StartFadeIn(1.0f);
 		break;
 	case MenuSelection::Option:
 		// オプション画面を開く

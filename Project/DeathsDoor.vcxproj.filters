@@ -445,9 +445,6 @@
     <ClCompile Include="Engine\System\Service\Loader.cpp">
       <Filter>Engine\System\Service</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Scene\Transition\SceneTransition.cpp">
-      <Filter>Engine\Scene\Transition</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp">
       <Filter>Engine\Graphics\OffScreen\Effect</Filter>
     </ClCompile>
@@ -473,6 +470,7 @@
       <Filter>Engine\Graphics\2D\Base</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Animation\StartAnimation.cpp" />
+    <ClCompile Include="application\Game\Transition\SceneTransition.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -883,9 +881,6 @@
     <ClInclude Include="Engine\System\Service\Loader.h">
       <Filter>Engine\System\Service</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Scene\Transition\SceneTransition.h">
-      <Filter>Engine\Scene\Transition</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h">
       <Filter>Engine\Graphics\OffScreen\Effect</Filter>
     </ClInclude>
@@ -911,6 +906,7 @@
       <Filter>Engine\Graphics\2D\Base</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Animation\StartAnimation.h" />
+    <ClInclude Include="application\Game\Transition\SceneTransition.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
