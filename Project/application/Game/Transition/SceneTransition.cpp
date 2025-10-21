@@ -38,7 +38,7 @@ void SceneTransition::StartFadeIn(float duration) {
 ///-------------------------------------------///
 void SceneTransition::StartFadeOut(float duration) {
 	// エフェクトタイプの設定
-	OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
+	//OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
 
 	// デフォルトパラメータの設定
 	data_.progress = 0.0f;

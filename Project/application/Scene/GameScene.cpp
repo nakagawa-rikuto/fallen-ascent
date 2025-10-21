@@ -7,6 +7,7 @@
 #include "Engine/System/Service/ColliderService.h"
 #include "Engine/System/Service/InputService.h"
 #include "Engine/System/Service/GraphicsResourceGetter.h"
+#include "Engine/System/Service/OffScreenService.h"
 // Particle
 #include "Engine/Graphics/Particle/Derivative/ConfettiParticle.h"
 #include "Engine/Graphics/Particle/Derivative/ExplosionParticle.h"
@@ -60,6 +61,7 @@ void GameScene::Initialize() {
 	/// ===Transition=== ///
 	transiton_ = std::make_unique<SceneTransition>();
 	fadeInDuration_ = 2.0f;
+	transiton_->StartFadeOut(fadeInDuration_); // フェードイン開始
 
 	/// ===Camera=== ///
 	camera_ = std::make_shared<GameCamera>();
@@ -89,6 +91,7 @@ void GameScene::Initialize() {
 	/// ===Ground=== ///
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize();
+	ground_->Update();
 
 	/// ===StartAnimation=== ///
 	startAnimation_ = std::make_unique<StartAnimation>();
@@ -182,9 +185,12 @@ void GameScene::UpdateFadeIn() {
 
 	// FadeIn更新
 	transiton_->FadeOutUpdate();
+	// プレイヤーのStartAnimation専用更新
+	player_->UpdateStartAnimation();
 
 	// FadeIn完了でStartAnimationフェーズへ
 	if (transiton_->GetState() == FadeState::Finished) {
+		OffScreenService::SetOffScreenType(OffScreenType::CopyImage);
 		currentPhase_ = GamePhase::StartAnimation;
 	}
 }
