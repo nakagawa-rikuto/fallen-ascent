@@ -42,4 +42,6 @@ void Ground::Draw(BlendMode mode) {
 ///-------------------------------------------/// 
 /// 衝突判定
 ///-------------------------------------------///
-void Ground::OnCollision(Collider* collider) {}
+void Ground::OnCollision(Collider* collider) {
+	collider;
+}

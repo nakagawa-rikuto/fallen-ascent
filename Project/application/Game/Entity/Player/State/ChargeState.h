@@ -11,11 +11,23 @@ public:
 	ChargeState(const Vector3& direction);
 	~ChargeState() override = default;
 
-	// 状態に入ったときに呼ばれる
+	/// <summary>
+	/// ステートに入った時に呼ばれる処理
+	/// </summary>
+	/// <param name="player">操作対象または影響を受けるプレイヤーを指すポインタ。入力やプレイヤー固有の初期化に使用される。</param>
+	/// <param name="camera">現在のゲームカメラを指すポインタ。表示や視点の設定・初期化に使用される。</param>
 	void Enter(Player* player, GameCamera* camera) override;
-	// 状態の更新処理
+
+	/// <summary>
+	/// ステート時の更新処理
+	/// </summary>
+	/// <param name="player">更新処理で使用するプレイヤーを指すポインタ。</param>
+	/// <param name="camera">更新処理で使用するゲームカメラを指すポインタ。</param>
 	void Update(Player* player, GameCamera* camera) override;
-	// 終了処理はPlayerStateのFinalizeを呼び出す
+
+	/// <summary>
+	/// ステートの終了処理
+	/// </summary>
 	void Finalize() override;
 
 private: 

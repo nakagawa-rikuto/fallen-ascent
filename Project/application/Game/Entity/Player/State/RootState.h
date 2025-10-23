@@ -10,11 +10,23 @@ public:
 
 	~RootState() override = default;
 
-	// 状態に入ったときに呼ばれる
+	/// <summary>
+	/// ステートに入った時に呼ばれる処理
+	/// </summary>
+	/// <param name="player">処理対象の Player オブジェクトへのポインタ。</param>
+	/// <param name="camera">使用する GameCamera オブジェクトへのポインタ。</param>
 	void Enter(Player* player, GameCamera* camera) override;
-	// 状態の更新処理
+
+	/// <summary>
+	/// ステート時の更新処理
+	/// </summary>
+	/// <param name="player">更新対象の Player オブジェクトを指すポインタ。</param>
+	/// <param name="camera">更新対象の GameCamera オブジェクトを指すポインタ。</param>
 	void Update(Player* player, GameCamera* camera) override;
-	// 終了処理はPlayerStateのFinalizeを呼び出す
+
+	/// <summary>
+	/// ステートの終了処理
+	/// </summary>
 	void Finalize() override;
 
 private:

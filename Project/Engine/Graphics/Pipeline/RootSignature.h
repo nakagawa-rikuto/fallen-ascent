@@ -21,9 +21,11 @@ public:
 	RootSignature() = default;
 	~RootSignature();
 
-	/// <summary> 
-	/// ルートシグネイチャの生成
+	/// <summary>
+	/// ルートシグネイチャの生成処理
 	/// </summary>
+	/// <param name="dxCommon">DXCommon インスタンスへのポインタ。デバイスやコマンドキューなどの共通 DirectX リソースとコンテキストを提供します。</param>
+	/// <param name="Type">作成するパイプラインの種類を指定する PipelineType 値（例: グラフィックス、コンピュート）。</param>
 	void Create(DXCommon* dxCommon, PipelineType Type);
 
 	/// <summary>

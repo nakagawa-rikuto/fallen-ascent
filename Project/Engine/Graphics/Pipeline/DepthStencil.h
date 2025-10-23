@@ -16,8 +16,9 @@ public:
 	~DepthStencil() = default;
 
 	/// <summary>
-	/// デプスステンシルの生成
+	/// デプスステンシルの生成処理
 	/// </summary>
+	/// <param name="Type">作成するパイプラインの種類を指定する PipelineType 型の値。</param>
 	void Create(PipelineType Type);
 
 	/// <summary>

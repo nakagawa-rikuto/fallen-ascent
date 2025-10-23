@@ -11,19 +11,36 @@ public:
 	SphereCollider() = default;
 	~SphereCollider() = default;
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
 	virtual void Initialize() override;
-	// 更新
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	virtual void Update() override;
-	// 描画
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	/// <param name="mode">描画に使用するブレンドモード。BlendMode 型の値で合成方法を指定します。</param>
 	virtual void Draw(BlendMode mode) override;
-	// 情報
+
+	/// <summary>
+	/// ImGui情報の更新
+	/// </summary>
 	virtual void Information()override;
 
 public: /// ===衝突=== ///
+	/// <summary>
+	/// 衝突処理
+	/// </summary>
+	/// <param name="collider">衝突対象のコライダへのポインタ。衝突したオブジェクトの情報にアクセスするために使用される。</param>
 	virtual void OnCollision(Collider* collider) override = 0;
 
 public: /// ===Getter=== ///
+	// Sphereの取得
 	Sphere GetSphere()const;
 
 protected:

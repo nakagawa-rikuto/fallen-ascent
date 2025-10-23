@@ -12,11 +12,23 @@ public:
 	AvoidanceState(const Vector3& direction);
 	~AvoidanceState() override = default;
 
-	// 状態に入ったときに呼ばれる
+	/// <summary>
+	/// ステートに入った時に呼ばれる処理
+	/// </summary>
+	/// <param name="player">処理対象のプレイヤーを指すポインタ。</param>
+	/// <param name="camera">現在のゲームカメラを指すポインタ。エントリ処理でカメラの状態や視点を使用する可能性がある。</param>
 	void Enter(Player* player, GameCamera* camera) override;
-	// 状態の更新処理
+
+	/// <summary>
+	/// ステート時の更新処理
+	/// </summary>
+	/// <param name="player">更新対象のプレイヤーを指すポインタ。</param>
+	/// <param name="camera">更新処理に使用するゲームカメラを指すポインタ。</param>
 	void Update(Player* player, GameCamera* camera) override;
-	// 終了処理はPlayerStateのFinalizeを呼び出す
+
+	/// <summary>
+	/// ステートの終了処理
+	/// </summary>
 	void Finalize() override;
 
 private:

@@ -10,19 +10,37 @@ public:
 	NormalCaemra() = default;
 	virtual ~NormalCaemra() = default;
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
 	virtual void Initialize();
-	// 更新
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	virtual void Update();
-	// カメラ情報
+
+	/// <summary>
+	/// ImGui情報の更新
+	/// </summary>
 	virtual void ImGuiUpdate();
 
-	// デバッグ用の更新
+	/// <summary>
+	/// デバッグ用の更新
+	/// </summary>
 	void DebugUpdate();
-	// カメラシェイク開始
-	//NOTE: intensity = 強度, duration = 継続時間, frequency = 周波数
+
+	/// <summary>
+	/// シェイク（振動）効果を開始する処理
+	/// </summary>
+	/// <param name="intensity">シェイクの強さ。値が大きいほど振動が大きくなる。</param>
+	/// <param name="duration">シェイクの継続時間（秒）。</param>
+	/// <param name="frequency">シェイクの周波数（1秒あたりの振動回数）。省略時の既定値は 10.0f。</param>
 	void StartShake(float intensity, float duration, float frequency = 10.0f);
-	// カメラシェイク停止
+
+	/// <summary>
+	/// カメラシェイク処理を停止
+	/// </summary>
 	void StopShake();
 
 
@@ -80,8 +98,13 @@ protected:/// ===変数=== ///
 	float shakeTimeOffset_;         // ランダムな時間オフセット
 
 private:
-	// 行列の更新処理
+	/// <summary>
+	/// 行列の更新処理
+	/// </summary>
 	void UpdateMatrices();
-	// シェイク
+	
+	/// <summary>
+	/// シェイクの更新処理
+	/// </summary>
 	void UpdateShake();
 };

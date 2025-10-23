@@ -8,6 +8,9 @@
 void OutLineEffect::Initialize(ID3D12Device* device, std::shared_ptr<RenderTexture> RenderTexture) {
 	// RenderTextureを取得
 	renderTexture_ = RenderTexture;
+	// Deviceの初期化
+	ID3D12Device* devicePtr = device;
+	devicePtr;
 }
 
 ///-------------------------------------------/// 

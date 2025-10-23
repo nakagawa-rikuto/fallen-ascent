@@ -180,6 +180,7 @@ ComPtr<ID3D12Resource> TextureManager::CreateTextureResource(const DirectX::TexM
 		nullptr, // Clear最適値。
 		IID_PPV_ARGS(&resource)); // 作成するResourceポインタへのポインタ
 	assert(SUCCEEDED(hr));
+	hr;
 	return resource;
 }
 

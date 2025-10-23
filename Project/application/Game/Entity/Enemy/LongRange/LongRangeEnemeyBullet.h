@@ -11,22 +11,43 @@ public:
 	LongRangeEnemeyBullet() = default;
 	~LongRangeEnemeyBullet();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
 	void Initialize()override;
-	// 更新
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	void Update()override;
-	// 描画
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	/// <param name="mode">描画時に使用するブレンドモード。省略時は BlendMode::KBlendModeNormal が使われます。</param>
 	void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
-	// 生成
-	//NOTE:pos = 配置場所, direction = 方向
+
+	/// <summary>
+	/// 生成処理
+	/// </summary>
+	/// <param name="pos">作成するオブジェクトの位置を表す 3 次元ベクトル（const 参照）。</param>
+	/// <param name="direction">オブジェクトの向きまたは進行方向を表す 3 次元ベクトル（const 参照）。</param>
 	void Create(const Vector3& pos, const Vector3& direction);
-	// 情報
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
 	void Information() override {};
 
 public: /// ===衝突判定=== ///
+	/// <summary>
+	/// 衝突処理
+	/// </summary>
+	/// <param name="collider">衝突したオブジェクトを表す Collider へのポインタ。衝突処理に使用される対象を示します。</param>
 	void OnCollision(Collider* collider) override;
 
 public: /// ===Getter=== ///
+	// 生存フラグの取得
 	bool GetIsAlive();
 
 private: /// ===変数=== ///
@@ -49,9 +70,14 @@ private: /// ===変数=== ///
 
 private:
 
-	// 移動処理
+	/// <summary>
+	/// 移動処理
+	/// </summary>
 	void Move();
-	// タイマー
+
+	/// <summary>
+	/// タイマーの更新処理
+	/// </summary>
 	void PromoteTimer();
 };
 

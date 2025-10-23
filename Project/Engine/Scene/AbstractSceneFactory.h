@@ -10,9 +10,14 @@
 ///=====================================================///
 class AbstractSceneFactory {
 public:
-	// 仮想デストラクタ
+	
 	virtual ~AbstractSceneFactory() = default;
-	// シーン生成
+	
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="type"></param>
+	/// <returns></returns>
 	virtual std::unique_ptr<IScene> CreateScene(SceneType type) = 0;
 };
 

@@ -17,8 +17,9 @@ public:
 	~InputLayout() = default;
 
 	/// <summary>
-	/// InputLayoutを設定
+	/// インプットレイアウトの生成処理
 	/// </summary>
+	/// <param name="Type">作成するパイプラインの種類を指定します。</param>
 	void Create(PipelineType Type);
 
 	/// <summary>

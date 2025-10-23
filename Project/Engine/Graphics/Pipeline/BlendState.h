@@ -17,9 +17,9 @@ public:
 	~BlendState() = default;
 
 	/// <summary>
-	/// ブレンドステートの生成
+	///  ブレンドステートの生成
 	/// </summary>
-	/// <returns></returns>
+	/// <param name="mode">使用するブレンド（合成）モード。BlendMode 列挙型の値を指定します。</param>
 	void Create(BlendMode mode);
 
 	/// <summary>

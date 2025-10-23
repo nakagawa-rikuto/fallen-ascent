@@ -146,7 +146,9 @@ void OffScreenRenderer::Draw(ID3D12GraphicsCommandList* commandList) {
 ///-------------------------------------------/// 
 /// 描画後処理
 ///-------------------------------------------///
-void OffScreenRenderer::PostDraw(ID3D12GraphicsCommandList* commandList) {}
+void OffScreenRenderer::PostDraw(ID3D12GraphicsCommandList* commandList) {
+	commandList;
+}
 
 ///-------------------------------------------/// 
 /// ImGuiの描画

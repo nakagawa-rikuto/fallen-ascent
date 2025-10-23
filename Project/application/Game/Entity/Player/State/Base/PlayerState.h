@@ -10,13 +10,23 @@ class PlayerState {
 public:
 	virtual ~PlayerState() = default;
 
-	// 状態に入ったときに呼ばれる
+	/// <summary>
+	/// ステートに入った時に呼ばれる処理、純粋仮想関数
+	/// </summary>
+	/// <param name="player">Enter 処理の対象となる Player オブジェクトへのポインタ。</param>
+	/// <param name="camera">処理時に参照または操作する GameCamera オブジェクトへのポインタ。</param>
 	virtual void Enter(Player* player, GameCamera* camera) = 0;
 
-	// 状態の更新処理
+	/// <summary>
+	/// ステート時の更新処理、純粋仮想関数
+	/// </summary>
+	/// <param name="player">更新対象のプレイヤーを指すポインタ。</param>
+	/// <param name="camera">現在のゲームカメラを指すポインタ。</param>
 	virtual void Update(Player* player, GameCamera* camera) = 0;
 
-	// 終了処理
+	/// <summary>
+	/// ステートの終了処理
+	/// </summary>
 	virtual void Finalize();
 
 protected:

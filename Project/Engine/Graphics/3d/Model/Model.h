@@ -12,11 +12,22 @@ public: /// ===基本的な関数=== ///
 	Model();
 	~Model();
 
-	// 初期化
-	void Initialize(const std::string& filename, LightType type = LightType::None) override; // オブジェクトを読み込まない場合の初期化
-	// 更新
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="filename">初期化に使用するファイルのパスまたは名前（const std::string&）。</param>
+	/// <param name="type">使用するライトの種類。省略時は LightType::None が使用されます（デフォルト引数）。</param>
+	void Initialize(const std::string& filename, LightType type = LightType::None) override; 
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	void Update() override;
-	// 描画
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	/// <param name="mode">描画に使用する合成（ブレンド）モードを指定します。</param>
 	void Draw(BlendMode mode) override;
 
 public: /// ===Getter=== ///

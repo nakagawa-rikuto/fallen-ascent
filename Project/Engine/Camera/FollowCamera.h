@@ -30,8 +30,9 @@ public:
 	void Update() override;
 
 	/// <summary>
-	/// FollowTypeの設定
+	/// 追従カメラの種類を設定
 	/// </summary>
+	/// <param name="type">設定するフォローカメラの種類（FollowCameraType 型）。</param>
 	void SetFollowCamera(FollowCameraType type);
 
 public:/// ===Setter=== ///
@@ -62,16 +63,33 @@ private:/// ===変数=== ///
 	FollowCameraType cameraType_ = FollowCameraType::FixedOffset; // デフォルトカメラタイプ
 
 private:
-	// カメラの種類に応じた更新処理
+	/// <summary>
+	/// 追従カメラの更新処理
+	/// </summary>
 	void UpdateFollowCamera();
-	// 固定オフセット型カメラの処理 
+
+	/// <summary>
+	/// 固定オフセット型カメラの処理 
+	/// </summary>
 	void FollowFixedOffset();
-	// スムージング追従型カメラの処理 
+
+	/// <summary>
+	/// スムージング追従型カメラの処理 
+	/// </summary>
 	void FollowInterpolated();
-	// 回転可能型カメラの処理 
+
+	/// <summary>
+	/// 回転可能型カメラの処理 
+	/// </summary>
 	void FollowOrbiting();
-	// 衝突回避型カメラの処理 
+
+	/// <summary>
+	/// 衝突回避型カメラの処理 
+	/// </summary>
 	void FollowCollisionAvoidance();
-	// 上からの見下ろし追従カメラの処理
+
+	/// <summary>
+	/// 上からの見下ろし追従カメラの処理
+	/// </summary>
 	void FollowTopDown();
 };

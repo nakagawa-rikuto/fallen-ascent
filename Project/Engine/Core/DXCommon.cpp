@@ -233,6 +233,7 @@ ComPtr<ID3D12DescriptorHeap> DXCommon::CreateDescriptorHeap(
 	descriptorHeapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	HRESULT hr = device_->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap));
 	assert(SUCCEEDED(hr));
+	hr;
 	return descriptorHeap;
 }
 ///-------------------------------------------/// 

@@ -18,16 +18,34 @@ public:
     SceneTransition() = default;
     ~SceneTransition();
 
-    // フェード開始
-    void StartFadeIn(float duration = 1.2f);   // 真っ暗→通常
+    /// <summary>
+    /// フェードイン開始処理
+    /// </summary>
+    /// <param name="duration">フェードインにかかる時間（秒）。省略時は1.2秒が使用されます。</param>
+    void StartFadeIn(float duration = 1.2f);
+
+    /// <summary>
+    /// フェードアウト開始処理
+    /// </summary>
+    /// <param name="duration">フェードアウトの継続時間（秒）。省略した場合の既定値は1.0秒です。</param>
     void StartFadeOut(float duration = 1.0f);  // 通常→真っ暗
 
-    // 更新
-    void FadeOutUpdate();
-	void FadeInUpdate();
+    /// <summary>
+    /// フェードインの更新処理
+    /// </summary>
+    void FadeInUpdate();
 
-    // 描画
+    /// <summary>
+    /// フェードアウトの更新処理
+    /// </summary>
+    void FadeOutUpdate();
+
+    /// <summary>
+    /// 描画処理
+    /// </summary>
     void Draw();
+
+public: /// ===Getter=== ///
 
     // フェード中か
     bool IsFading() const;

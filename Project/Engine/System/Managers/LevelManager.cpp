@@ -54,9 +54,9 @@ void LevelManager::LoadLevelJson(const std::string& basePath, const std::string&
     m_objectMap[file_path] = std::move(levelData);
 }
 // 走査関数
-void LevelManager::LoadobjectRecursive(nlohmann::json object, LevelData* levelData) {
+void LevelManager::LoadobjectRecursive(nlohmann::json obj, LevelData* levelData) {
 
-    for (nlohmann::json& object : object["objects"]) {
+    for (nlohmann::json& object : obj["objects"]) {
         assert(object.contains("type"));
 
         // 無効オプション

@@ -21,20 +21,37 @@ public:
 	LineObject3D() = default;
 	~LineObject3D();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="device">初期化に使用する Direct3D 12 デバイスへのポインタ。リソース作成やデバイス機能へのアクセスに使用される。</param>
 	void Initialize(ID3D12Device* device);
-	// 更新
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	void Update();
-	// 描画
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
 	void Draw();
 
-	// Lineの作成
+	/// <summary>
+	/// 開始点から終点までの線の生成処理
+	/// </summary>
+	/// <param name="start">線の開始点。3次元座標を表す Vector3 型の参照。</param>
+	/// <param name="end">線の終点。3次元座標を表す Vector3 型の参照。</param>
+	/// <param name="color">線の色。4成分のベクトル（例: RGBA）を表す Vector4 型の参照。</param>
 	void CreateLine(const Vector3& start, const Vector3& end, const Vector4& color);
 
-	// LineIndexのリセット
+	/// <summary>
+	/// オブジェクトまたは状態を既定の（初期）状態にリセットします。
+	/// </summary>
 	void Reset();
 
 public: /// ===Getter=== ///
+	// ワールドTransformの取得
 	const std::vector<Vector3> GetSphereData();
 
 private:
@@ -66,7 +83,9 @@ private:
 
 private:
 
-	// 
+	/// <summary>
+	/// 球の頂点データを生成または初期化処理
+	/// </summary>
 	void SphereVertexData();
 };
 

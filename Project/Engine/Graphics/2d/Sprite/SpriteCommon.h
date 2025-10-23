@@ -21,13 +21,22 @@ public: /// ===基本的な関数=== ///
 	SpriteCommon() = default;
 	~SpriteCommon();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="textureFilePath">読み込むテクスチャファイルへのパス。関数はこのファイルからテクスチャを読み込み初期化を行います。</param>
 	virtual void Initialize(const std::string textureFilePath);
 
-	// 更新
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	virtual void Update();
 
-	// 描画
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	/// <param name="type">描画する地面の種類を指定します（GroundType）。</param>
+	/// <param name="mode">描画に使用するブレンドモードを指定します（BlendMode）。</param>
 	virtual void Draw(GroundType type, BlendMode mode);
 
 private:/// ===Variables(変数)=== ///
@@ -69,19 +78,40 @@ protected:
 
 private:/// ===Functions(関数)=== ///
 
-	// VertexResourceへの書き込み
+	/// <summary>
+	/// VertexResourceへの書き込み処理
+	/// </summary>
 	void VertexDataWrite();
-	// IndexResourceへの書き込み
+
+	/// <summary>
+	/// IndexResourceへの書き込み処理
+	/// </summary>
 	void IndexDataWrite();
-	// MateialDataへの書き込み
+
+	/// <summary>
+	/// MateialDataへの書き込み処理
+	/// </summary>
 	void MateialDataWrite();
-	// Transform情報の書き込み
+
+	/// <summary>
+	/// Transform情報の書き込み処理
+	/// </summary>
 	void TransformDataWrite();
-	// UpdateVertexDataWrite
+
+	/// <summary>
+	/// 頂点データの書き込み更新処理
+	/// </summary>
 	void UpdateVertexDataWrite();
-	// テクスチャ範囲指定
+
+	/// <summary>
+	/// テクスチャの範囲指定処理
+	/// </summary>
 	void SpecifyRange();
-	// テクスチャサイズをイメージに合わせる
+
+	/// <summary>
+	/// 指定されたテクスチャファイルのサイズを調整処理
+	/// </summary>
+	/// <param name="filePath">サイズを調整するテクスチャファイルへのパス。</param>
 	void AdjustTextureSize(const std::string& filePath);
 };
 

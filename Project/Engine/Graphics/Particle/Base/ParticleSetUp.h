@@ -31,9 +31,19 @@ public:
 	ParticleSetUp();
 	~ParticleSetUp();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="filename">初期化に使用するファイルのパスまたは名前（const std::string&）。</param>
+	/// <param name="kNumMaxInstance">許可される最大インスタンス数（const uint32_t）。</param>
+	/// <param name="type">初期化対象の形状の種類を示す shapeType 値。</param>
 	void Initialze(const std::string& filename, const uint32_t kNumMaxInstance, shapeType type);
-	// 描画
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	/// <param name="instance">描画対象を示す uint32_t 型の識別子。関数内で変更されない（const）。</param>
+	/// <param name="mode">描画時に使用するブレンドモードを指定する（BlendMode 型の値）。</param>
 	void Darw(const uint32_t instance, BlendMode mode);
 
 public: /// ===Setter=== ///
@@ -72,10 +82,15 @@ private:
 	uint32_t kNumMaxInstance_;
 
 private:
-	/// ===VertexBufferの設定=== ///
-	// 円
+	
+	/// <summary>
+	/// 円形の頂点バッファを設定
+	/// </summary>
 	void SetVertexBufferCircle();
-	// Cylinder
+
+	/// <summary>
+	/// 円柱の頂点バッファを設定
+	/// </summary>
 	void SetVertexBufferCylinder();
 };
 

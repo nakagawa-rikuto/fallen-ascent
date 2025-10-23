@@ -11,6 +11,7 @@ void BoxFilter3x3Effect::Initialize(ID3D12Device* device, std::shared_ptr<Render
 
 	// Deviceの初期化
 	ID3D12Device* devicePtr = device;
+	devicePtr;
 }
 
 ///-------------------------------------------/// 

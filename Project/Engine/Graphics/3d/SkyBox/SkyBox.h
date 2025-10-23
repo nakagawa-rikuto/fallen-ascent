@@ -21,11 +21,22 @@ public:
 	SkyBox() = default;
 	~SkyBox();
 	
-	// 初期化　
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="fileName">初期化に使用するファイルの名前またはパス。</param>
+	/// <param name="type">初期化時に使用するライトの種類を表す LightType の値。</param>
 	void Initialize(const std::string& fileName, LightType type);
-	// 更新
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	void Update();
-	// 描画
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	/// <param name="mode">描画時に使用するブレンドモード。省略した場合は BlendMode::kBlendModeNone（ブレンドなし）が使用されます。</param>
 	void Draw(BlendMode mode = BlendMode::kBlendModeNone);
 
 public: /// ===Getter=== ///
@@ -96,17 +107,34 @@ private:
 
 private: /// ===Functions(関数)=== ///
 
-	// VertexDataの書き込み
+	/// <summary>
+	/// VertexDataの書き込み処理
+	/// </summary>
 	void VertexDataWrite();
-	// MaterialDataの書き込み
+
+	/// <summary>
+	/// MaterialDataの書き込み処理
+	/// </summary>
 	void MateialDataWrite();
-	// Transform情報の書き込み
+
+	/// <summary>
+	/// Transform情報の書き込み処理
+	/// </summary>
 	void TransformDataWrite();
-	// LightData書き込み
+
+	/// <summary>
+	/// LightData書き込み処理
+	/// </summary>
 	void LightDataWrite();
-	// CameraData書き込み
+
+	/// <summary>
+	/// CameraData書き込み処理
+	/// </summary>
 	void CameraDataWrite();
-	// EnvironmentMapData書き込み
+
+	/// <summary>
+	/// EnvironmentMapData書き込み処理
+	/// </summary>
 	void EnviromentMapDataWrite();
 };
 

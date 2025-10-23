@@ -27,27 +27,51 @@ public:
 	DXCommon() = default;
 	~DXCommon();
 
-	// 初期化
-	void Initialize(
-		WinApp* winApp, int32_t backBufferWidth, int32_t backBufferHeight);
-	// 描画前処理(RenderTexture)
-	// <param name="resource">描画前に準備するレンダーテクスチャを表す ID3D12Resource へのポインタ。</param>
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="winApp">初期化対象の WinApp オブジェクトへのポインタ。</param>
+	/// <param name="backBufferWidth">バックバッファの幅（ピクセル単位）。</param>
+	/// <param name="backBufferHeight">バックバッファの高さ（ピクセル単位）。</param>
+	void Initialize(WinApp* winApp, int32_t backBufferWidth, int32_t backBufferHeight);
+
+	/// <summary>
+	/// RenderTextureへの描画前処理
+	/// </summary>
+	/// <param name="resource">準備対象のレンダーテクスチャを表す ID3D12Resource へのポインタ。nullptr を渡さないことが想定されます。</param>
 	void PreDrawRenderTexture(ID3D12Resource* resource);
+
 	// 描画前処理(swapChain)
 	// <param name="rtv">レンダーターゲットビューを管理する RTVManager オブジェクトへのポインタ。</param>
+
+	/// <summary>
+	/// SwapChainへの描画前処理
+	/// </summary>
+	/// <param name="rtv">RTVManager 型へのポインタ。レンダーターゲットビュー（RTV）を管理するオブジェクトへの参照として使用される。</param>
 	void PreDrawImGui(RTVManager* rtv);
-	// コマンドを積む
+
+	/// <summary>
+	/// コマンドを積む
+	/// </summary>
 	void BeginCommand();
-	// バリアの状態遷移
+
+	/// <summary>
+	/// バリアの状態遷移
+	/// </summary>
 	void TransitionRenderTarget();
-	// 描画後処理
+
+	/// <summary>
+	/// 描画前処理
+	/// </summary>
 	void PostDraw();
 
-	// ディスクリプタヒープの生成
-	// <param name="heapType">作成するディスクリプタ ヒープの種類を指定します (D3D12_DESCRIPTOR_HEAP_TYPE 列挙型)。</param>
-	// <param name="numDescriptors">ディスクリプタ ヒープ内に作成するディスクリプタの数を指定します。</param>
-	// <param name="shaderVisible">ヒープがシェーダーから可視かどうかを指定します。true の場合、シェーダー可視ヒープが作成されます。</param>
-	// <returns>作成された ID3D12DescriptorHeap オブジェクトへの ComPtr スマートポインター。</returns>
+	/// <summary>
+	/// ディスクリプタヒープの生成
+	/// </summary>
+	/// <param name="heapType">作成するディスクリプタヒープの種類（D3D12_DESCRIPTOR_HEAP_TYPE）。</param>
+	/// <param name="numDescriptors">ヒープに含めるディスクリプタの数（UINT）。</param>
+	/// <param name="shaderVisible">true の場合、ヒープはシェーダーからアクセス可能（GPU 可視）になります。false の場合はシェーダーからはアクセスできません。</param>
+	/// <returns>作成されたID3D12DescriptorHeapへのComPtr。作成に失敗した場合は空のComPtrが返される可能性があります。</returns>
 	ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 
 	/// ===DescriptorSizeの取得=== ///
@@ -143,30 +167,62 @@ private: // メンバ変数
 
 private:/// ===関数=== ///
 
-	// デバッグレイヤー
+	/// <summary>
+	/// デバッグレイヤー
+	/// </summary>
 	void DebugLayer();
-	// エラー・警告
+
+	/// <summary>
+	/// エラー・警告
+	/// </summary>
 	void DebugInfo();
-	// DXGIデバイス初期化
+
+	/// <summary>
+	/// DXGIデバイス初期化処理
+	/// </summary>
 	void InitializeDXGIDevice();
-	// コマンド関連の初期化
+
+	/// <summary>
+	/// コマンド関連の初期化処理
+	/// </summary>
 	void InitializeCommand();
-	// スワップチェーンの生成
+
+	/// <summary>
+	/// スワップチェーンの生成処理
+	/// </summary>
 	void CreateSwapChain();
-	// フェンスの生成
+
+	/// <summary>
+	/// フェンスの生成処理
+	/// </summary>
 	void CreateFence();
-	// DXCの初期化
+
+	/// <summary>
+	/// DXCの初期化処理
+	/// </summary>
 	void InitializeCompiler();
-	// ビューポート
-	// <param name="kClientWindth">クライアント領域の幅（ピクセル単位）。</param>
-	// <param name="kClientHeight">クライアント領域の高さ（ピクセル単位）。</param>
+
+	/// <summary>
+	/// ビューポートの生成処理
+	/// </summary>
+	/// <param name="kClientWindth">クライアント領域の幅（ピクセル）。</param>
+	/// <param name="kClientHeight">クライアント領域の高さ（ピクセル）。</param>
 	void CreateViewport(const int32_t kClientWindth, const int32_t kClientHeight);
-	// シザー矩形
-	// <param name="kClientWindth">クライアント領域の幅（ピクセル単位）。</param>
-	// <param name="kClientHeight">クライアント領域の高さ（ピクセル単位）。</param>
+
+	/// <summary>
+	/// シザー矩形の生成処理
+	/// </summary>
+	/// <param name="kClientWindth">クライアント領域の幅（int32_t、ピクセル単位）。関数内で使用される読み取り専用の値です。</param>
+	/// <param name="kClientHeight">クライアント領域の高さ（int32_t、ピクセル単位）。関数内で使用される読み取り専用の値です。</param>
 	void CreateScissor(const int32_t kClientWindth, const int32_t kClientHeight);
-	// FPS固定の初期化
+
+	/// <summary>
+	/// FPS固定の初期化処理
+	/// </summary>
 	void InitializeFixFPS();
-	// FPS固定の更新
+
+	/// <summary>
+	/// FPS固定の更新処理
+	/// </summary>
 	void UpdateFixFPS();
 };

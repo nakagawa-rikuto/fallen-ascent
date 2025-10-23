@@ -164,7 +164,7 @@ void ParticleSetUp::SetVertexBufferCylinder() {
 		float u = static_cast<float>(index) / static_cast<float>(kCylinderDivide);
 		float uNext = static_cast<float>(index + 1) / static_cast<float>(kCylinderDivide);
 
-		uint32_t base = index * 6;
+		//uint32_t base = index * 6;
 
 		vertexData_[0].position = { -sin * kTopRadius, kHeight, cos * kTopRadius, 1.0f };
 		vertexData_[0].texcoord = { u, 0.0f };

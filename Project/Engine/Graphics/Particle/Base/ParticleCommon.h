@@ -21,9 +21,17 @@ public:
 	ParticleCommon();
 	~ParticleCommon();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="device">初期化に使用する ID3D12Device へのポインタ。</param>
+	/// <param name="kNumMaxInstance">初期化時に確保または許容する最大インスタンス数（uint32_t）。</param>
 	void Initlize(ID3D12Device* device, const uint32_t kNumMaxInstance);
-	// 描画準備
+
+	/// <summary>
+	/// 描画準備処理
+	/// </summary>
+	/// <param name="commandList">バインド先のID3D12GraphicsCommandListへのポインター。コマンドの記録に使用されます。</param>
 	void Bind(ID3D12GraphicsCommandList* commandList);
 
 public: /// ===Geter=== ///
@@ -50,7 +58,11 @@ private:
 
 private:
 
-	// Bufferの生成
+	/// <summary>
+	/// Bufferの生成処理
+	/// </summary>
+	/// <param name="device">リソース作成に使用する ID3D12Device へのポインタ。</param>
+	/// <param name="sizeInBytes">作成するリソースのサイズ（バイト単位）。</param>
 	void Create(ID3D12Device* device, size_t sizeInBytes);
 };
 

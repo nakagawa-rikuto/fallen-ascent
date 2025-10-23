@@ -100,7 +100,7 @@ ParticleData RingParticle::MakeParticle(std::mt19937& randomEngine, const Vector
 std::list<ParticleData> RingParticle::Emit(const Group& group, std::mt19937& randomEngine) {
 	std::list<ParticleData> particles;
 	for (uint32_t i = 0; i < group_.maxInstance; ++i) {
-		particles.push_back(MakeParticle(randomEngine_, group.transform.translate));
+		particles.push_back(MakeParticle(randomEngine, group.transform.translate));
 	}
 	return particles;
 }

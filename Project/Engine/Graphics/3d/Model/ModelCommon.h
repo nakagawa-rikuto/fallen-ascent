@@ -21,16 +21,35 @@ public:
 	ModelCommon();
 	~ModelCommon();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理、順数仮想関数
+	/// </summary>
+	/// <param name="modelName">初期化に使用するモデル名。</param>
+	/// <param name="type">ライトの種類を表す値（LightType）。</param>
 	virtual void Initialize(const std::string& modelName, LightType type) = 0;
-	// 更新
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	virtual void Update();
-	// 描画
+
+	/// <summary>
+	/// 描画処理、純粋仮想関数
+	/// </summary>
+	/// <param name="mode">描画に使用するブレンドモード。BlendMode 列挙型で合成方法を指定します。</param>
 	virtual void Draw(BlendMode mode) = 0;
 
-	// 作成
+	/// <summary>
+	/// 生成処理
+	/// </summary>
+	/// <param name="device">リソースの作成に使用するID3D12Deviceへのポインター。nullであってはなりません。</param>
+	/// <param name="type">作成するライトの種類を示すLightTypeの値。</param>
 	void Create(ID3D12Device* device, LightType type);
-	// 描画処理
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	/// <param name="commandList">バインドおよび操作に使用する ID3D12GraphicsCommandList へのポインター。</param>
 	void Bind(ID3D12GraphicsCommandList* commandList);
 
 public: /// ===親子関係=== ///
@@ -79,15 +98,29 @@ private:/// ===Variables(変数)=== ///
 	std::unique_ptr<ObjectCommon> common_;
 
 private:
-	// MaterialDataの書き込み
+	/// <summary>
+	/// MaterialDataの書き込み処理
+	/// </summary>
 	void MateialDataWrite();
-	// Transform情報の書き込み
+
+	/// <summary>
+	/// Transform情報の書き込み処理
+	/// </summary>
 	void TransformDataWrite();
-	// LightData書き込み
+
+	/// <summary>
+	/// LightData書き込み処理
+	/// </summary>
 	void LightDataWrite();
-	// CameraData書き込み
+
+	/// <summary>
+	/// CameraData書き込み処理
+	/// </summary>
 	void CameraDataWrite();
-	// EnvironmentMapData書き込み
+
+	/// <summary>
+	/// EnvironmentMapData書き込み処理
+	/// </summary>
 	void EnviromentMapDataWrite();
 };
 

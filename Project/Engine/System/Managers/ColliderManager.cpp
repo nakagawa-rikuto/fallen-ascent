@@ -158,22 +158,6 @@ bool ColliderManager::AABBToAABBCollision(AABBCollider* a, AABBCollider* b) {
 	return (aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x) &&
 		(aabb1.min.y <= aabb2.max.y && aabb1.max.y >= aabb2.min.y) &&
 		(aabb1.min.z <= aabb2.max.z && aabb1.max.z >= aabb2.min.z);
-
-	// x軸方向の判定
-	if (aabb1.max.x < aabb2.min.x || aabb1.max.x > aabb2.max.x) {
-		return false;
-	}
-	// y軸方向の判定
-	if (aabb1.max.y < aabb2.min.y || aabb1.min.y > aabb2.max.y) {
-		return false;
-	}
-	// z軸方向の判定
-	if (aabb1.max.z < aabb2.min.z || aabb1.min.z > aabb2.max.z) {
-		return false;
-	}
-
-	// 全ての軸が重なっている場合は衝突
-	return true;
 }
 // OBBとOBB
 bool ColliderManager::OBBToOBBCollision(OBBCollider* a, OBBCollider* b) {

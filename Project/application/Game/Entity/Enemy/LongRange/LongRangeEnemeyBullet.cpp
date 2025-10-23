@@ -82,7 +82,7 @@ void LongRangeEnemeyBullet::Create(const Vector3& pos, const Vector3& vel) {
 /// 衝突判定
 ///-------------------------------------------///
 void LongRangeEnemeyBullet::OnCollision(Collider * collider) {
-	
+	collider;
 }
 
 ///-------------------------------------------/// 

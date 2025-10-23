@@ -42,22 +42,40 @@ public:
     Collider() = default;
     virtual ~Collider() = default;
 
-    // 初期化
+    /// <summary>
+    /// 初期化処理
+    /// </summary>
     virtual void Initialize();
-    // 更新処理
+
+    /// <summary>
+    /// 更新処理
+    /// </summary>
     virtual void Update();
-    // 描画処理
+
+    /// <summary>
+    /// 描画処理
+    /// </summary>
+    /// <param name="mode">描画に使用するブレンドモードを指定します。</param>
     virtual void Draw(BlendMode mode);
-    // 情報
+
+    /// <summary>
+	/// ImGui情報の更新
+    /// </summary>
     virtual void Information();
 
 public: /// ===衝突=== ///
-    // 衝突時の応答処理
+    /// <summary>
+    /// 衝突処理
+    /// </summary>
+    /// <param name="collider">衝突した相手のコライダーへのポインタ。該当するコライダー情報を示すオブジェクトへの参照。</param>
     virtual void OnCollision(Collider* collider) = 0;
 
 public: /// ===親子関係=== ///
+	// 親の設定
     void SetParent(ModelCommon* parent);
+	// 親の解除
 	void ClearParent();
+	// ModelCommonの取得
 	ModelCommon* GetModelCommon();
 
 public: /// ===Setter=== ///

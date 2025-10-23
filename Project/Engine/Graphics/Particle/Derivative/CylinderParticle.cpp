@@ -114,7 +114,7 @@ ParticleData CylinderParticle::MakeParticle(std::mt19937& randomEngine, const Ve
 std::list<ParticleData> CylinderParticle::Emit(const Group& group, std::mt19937& randomEngine) {
 	std::list<ParticleData> particles;
 	for (uint32_t i = 0; i < group_.maxInstance; ++i) {
-		particles.push_back(MakeParticle(randomEngine_, group.transform.translate));
+		particles.push_back(MakeParticle(randomEngine, group.transform.translate));
 	}
 	return particles;
 }

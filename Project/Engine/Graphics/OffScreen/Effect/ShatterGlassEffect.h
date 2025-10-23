@@ -29,21 +29,21 @@ public:
 	/// <summary>
 	/// 初期化処理
 	/// </summary>
-	/// <param name="device">Direct3D 12 デバイスへのポインタ。リソースやコマンド作成など、初期化処理でデバイスを使用します。</param>
-	/// <param name="RenderTexture">初期化対象のレンダーテクスチャを保持する std::shared_ptr。レンダーテクスチャの作成や設定に用いられます。</param>
+	/// <param name="device">初期化に使用する D3D12 デバイスへのポインタ。GPU リソースの作成やコマンド発行に使用されます。</param>
+	/// <param name="RenderTexture">初期化で使用するレンダーテクスチャへの std::shared_ptr。レンダリングの出力先や関連リソースを表します。</param>
 	void Initialize(ID3D12Device* device, std::shared_ptr<RenderTexture> RenderTexture) override;
 
 	/// <summary>
 	/// 描画前処理
 	/// </summary>
-	/// <param name="commandList">描画コマンドを記録するための ID3D12GraphicsCommandList へのポインタ。コマンドの発行先として使用されます。</param>
-	/// <param name="dsvHandle">深度ステンシルビュー（DSV）を示す D3D12_CPU_DESCRIPTOR_HANDLE。深度／ステンシル関連の設定やバインドに使用されます。</param>
+	/// <param name="commandList">描画コマンドを記録するための ID3D12GraphicsCommandList へのポインター。GPU コマンドの発行に使用されます。</param>
+	/// <param name="dsvHandle">深度ステンシルビュー (DSV) を指す D3D12_CPU_DESCRIPTOR_HANDLE。描画前に DSV をバインドまたは設定するために使用されます。</param>
 	void PreDraw(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle) override;
 
 	/// <summary>
 	/// 描画処理
 	/// </summary>
-	/// <param name="commandList">描画コマンドや状態設定を記録する ID3D12GraphicsCommandList へのポインター。コマンドリストに対して描画操作を記録します。</param>
+	/// <param name="commandList">描画コマンドを記録する ID3D12GraphicsCommandList へのポインター。nullptr を渡さないでください。</param>
 	void Draw(ID3D12GraphicsCommandList* commandList) override;
 
 	/// <summary>

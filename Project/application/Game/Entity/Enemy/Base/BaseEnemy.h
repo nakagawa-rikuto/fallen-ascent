@@ -147,7 +147,7 @@ protected: /// ===関数の宣言=== ///
 	/// 派生側で型固有のチューニング値をコピーするための関数
 	/// </summary>
 	/// <param name="enemy">親のBaseEnemy</param>
-	virtual void CopyTypeTuningFromThisTo(BaseEnemy* enemy) const {};
+	virtual void CopyTypeTuningFromThisTo(BaseEnemy* enemy) const = 0;
 
 private:
 

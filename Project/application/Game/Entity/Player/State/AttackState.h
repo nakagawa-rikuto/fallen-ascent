@@ -11,11 +11,23 @@ public:
 
 	~AttackState() override = default;
 
-	// 状態に入ったときに呼ばれる
+	/// <summary>
+	/// ステートに入った時に呼ばれる処理
+	/// </summary>
+	/// <param name="player">状態に入る対象のプレイヤーを指すポインタ。</param>
+	/// <param name="camera">状態で使用するゲームカメラを指すポインタ。</param>
 	void Enter(Player* player, GameCamera* camera) override;
-	// 状態の更新処理
+
+	/// <summary>
+	/// ステート時の更新処理
+	/// </summary>
+	/// <param name="player">更新対象の Player オブジェクトへのポインタ。nullptr の扱いは実装に依存する。</param>
+	/// <param name="camera">更新処理で参照する GameCamera オブジェクトへのポインタ。</param>
 	void Update(Player* player, GameCamera* camera) override;
-	// 終了処理はPlayerStateのFinalizeを呼び出す
+
+	/// <summary>
+	/// ステートの終了処理
+	/// </summary>
 	void Finalize() override;
 
 private:
@@ -48,10 +60,19 @@ private:
 	AttackInfo attackInfo_;
 
 private:
-	// 攻撃の初期化
+	/// <summary>
+	/// 攻撃の初期化処理
+	/// </summary>
+	/// <param name="type">初期化する攻撃の種類を表す AttackType 値。</param>
 	void InitializeAttack(AttackType type);
-	// コンボ入力のチェック
+
+	/// <summary>
+	/// コンポ入力のチェック処理
+	/// </summary>
 	void CheckComboInput();
-	// 次の攻撃へ遷移
+
+	/// <summary>
+	/// 次の攻撃への遷移処理
+	/// </summary>
 	void TransitionToNextCombo();
 };

@@ -15,10 +15,23 @@ public:
 	Object2DCommon();
 	~Object2DCommon();
 
-	// 初期化
+	/// <summary>
+	/// マテリアルの初期化処理
+	/// </summary>
+	/// <param name="device">初期化に使用する Direct3D 12 デバイスへの ID3D12Device ポインタ。</param>
+	/// <param name="Size">初期化で使用するサイズ（バイト数や要素数など、実装に依存します）。</param>
 	void MaterialInitialize(ID3D12Device* device, uint32_t Size);
+
+	/// <summary>
+	/// WVP（ワールド・ビュー・プロジェクション）行列に関する内部リソースの初期化処理
+	/// </summary>
+	/// <param name="device">WVP 行列の初期化に使用する Direct3D 12 デバイスへのポインタ。</param>
 	void WVPMatrixInitialize(ID3D12Device* device);
-	// 描画準備
+
+	/// <summary>
+	/// 描画前処理
+	/// </summary>
+	/// <param name="commandList">バインド対象のID3D12GraphicsCommandListへのポインタ。バインド処理に使用されます。</param>
 	void Bind(ID3D12GraphicsCommandList* commandList);
 
 public:/// ===Setter=== ///

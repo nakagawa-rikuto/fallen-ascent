@@ -20,18 +20,18 @@ void Controller::Initialize() {
 
 	// XInput / DirectInput のボタンマッピング
 	buttonMapping_ = {
-		{ControllerButtonType::A, {XINPUT_GAMEPAD_A, 0}},  // Aボタン
-		{ControllerButtonType::B, {XINPUT_GAMEPAD_B, 1}},  // Bボタン
-		{ControllerButtonType::X, {XINPUT_GAMEPAD_X, 2}},  // Xボタン
-		{ControllerButtonType::Y, {XINPUT_GAMEPAD_Y, 3}},  // Yボタン
-		{ControllerButtonType::RB, {XINPUT_GAMEPAD_RIGHT_SHOULDER, 5}},  // RB
-		{ControllerButtonType::LB, {XINPUT_GAMEPAD_LEFT_SHOULDER, 4}},   // LB
-		{ControllerButtonType::DPadUP, {XINPUT_GAMEPAD_DPAD_UP, 10}},    // DPad ↑
-		{ControllerButtonType::DPadDOWN, {XINPUT_GAMEPAD_DPAD_DOWN, 12}}, // DPad ↓
-		{ControllerButtonType::DPadLEFT, {XINPUT_GAMEPAD_DPAD_LEFT, 13}}, // DPad ←
-		{ControllerButtonType::DPadRIGHT, {XINPUT_GAMEPAD_DPAD_RIGHT, 11}}, // DPad →
-		{ControllerButtonType::LeftStick, {XINPUT_GAMEPAD_LEFT_THUMB, 6}},   // Lスティック押し込み
-		{ControllerButtonType::RightStick, {XINPUT_GAMEPAD_RIGHT_THUMB, 7}}, // Rスティック押し込み
+		{ControllerButtonType::A, {static_cast<WORD>(XINPUT_GAMEPAD_A), 0}},  // Aボタン
+		{ControllerButtonType::B, {static_cast<WORD>(XINPUT_GAMEPAD_B), 1}},  // Bボタン
+		{ControllerButtonType::X, {static_cast<WORD>(XINPUT_GAMEPAD_X), 2}},  // Xボタン
+		{ControllerButtonType::Y, {static_cast<WORD>(XINPUT_GAMEPAD_Y), 3}},  // Yボタン
+		{ControllerButtonType::RB, {static_cast<WORD>(XINPUT_GAMEPAD_RIGHT_SHOULDER), 5}},  // RB
+		{ControllerButtonType::LB, {static_cast<WORD>(XINPUT_GAMEPAD_LEFT_SHOULDER), 4}},   // LB
+		{ControllerButtonType::DPadUP, {static_cast<WORD>(XINPUT_GAMEPAD_DPAD_UP), 10}},    // DPad ↑
+		{ControllerButtonType::DPadDOWN, {static_cast<WORD>(XINPUT_GAMEPAD_DPAD_DOWN), 12}}, // DPad ↓
+		{ControllerButtonType::DPadLEFT, {static_cast<WORD>(XINPUT_GAMEPAD_DPAD_LEFT), 13}}, // DPad ←
+		{ControllerButtonType::DPadRIGHT, {static_cast<WORD>(XINPUT_GAMEPAD_DPAD_RIGHT), 11}}, // DPad →
+		{ControllerButtonType::LeftStick, {static_cast<WORD>(XINPUT_GAMEPAD_LEFT_THUMB), 6}},   // Lスティック押し込み
+		{ControllerButtonType::RightStick, {static_cast<WORD>(XINPUT_GAMEPAD_RIGHT_THUMB), 7}}, // Rスティック押し込み
 	};
 }
 
@@ -86,7 +86,7 @@ std::pair<WORD, int> Controller::ConvertToButton(ControllerButtonType button) co
 	if (it != buttonMapping_.end()) {
 		return it->second;
 	}
-	return { 0, -1 }; // 無効なボタン
+	return std::make_pair(static_cast<WORD>(0), -1); // 無効なボタン
 }
 
 

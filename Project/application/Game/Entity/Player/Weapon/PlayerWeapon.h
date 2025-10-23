@@ -13,25 +13,49 @@ public:
 	PlayerWeapon() = default;
 	~PlayerWeapon() override;
 
-	// 初期化（Player）
+	/// <summary>
+	/// 初期化処理（GameScene）
+	/// </summary>
+	/// <param name="player">初期化する Player オブジェクトへのポインタ。</param>
 	void InitPlayer(Player* player);
-	// 初期化
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
 	void Initialize() override;
-	// 更新
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	void Update() override;
-	// 描画
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	/// <param name="mode">描画に使用するブレンドモード。</param>
 	void Draw(BlendMode mode) override;
-	// ImGui
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
 	void Information() override;
 
-	// 攻撃処理
-	//NOTE:Start, EndPoint = 攻撃の開始、終了地点, time = 時間
+	/// <summary>
+	/// 攻撃処理
+	/// </summary>
+	/// <param name="startPoint">攻撃の開始位置を表す3次元ベクトル（例: ワールド空間の座標）。</param>
+	/// <param name="endPoint">攻撃の終了位置を表す3次元ベクトル（例: ワールド空間の座標）。</param>
+	/// <param name="time">攻撃にかける時間（秒）。float 型で指定します。</param>
 	void Attack(const Vector3& startPoint, const Vector3& endPoint, float time);
 
 public: /// ===衝突=== ///
+	/// <summary>
+	/// 衝突処理
+	/// </summary>
+	/// <param name="collider">衝突した相手の Collider オブジェクトを指すポインター。</param>
 	void OnCollision(Collider* collider) override;
 
-public: /// ===Setter, Getter=== ///
+public: /// ===Getter=== ///
 	// 攻撃フラグ
 	bool GetIsAttack() const;
 
@@ -53,8 +77,12 @@ private:
 
 private: 
 
-	// 攻撃の回転を計算
-	//NOTE: Start, EndPoint = 回転の最初と最後の地点、 time = 時間
+	/// <summary>
+	/// 攻撃の回転を計算する処理
+	/// </summary>
+	/// <param name="startPoint">攻撃の開始位置を表す3Dベクトル（const参照）。</param>
+	/// <param name="endPoint">攻撃の目標または終了位置を表す3Dベクトル（const参照）。</param>
+	/// <param name="time">回転を計算するための時間。経過時間（秒）や正規化された係数など、文脈に依存する。</param>
 	void CalculateAttackRotation(const Vector3& startPoint, const Vector3& endPoint, float time);
 };
 

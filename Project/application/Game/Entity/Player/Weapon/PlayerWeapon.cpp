@@ -71,14 +71,17 @@ void PlayerWeapon::Information() {
 
 }
 
-void PlayerWeapon::Attack(const Vector3& startPoint, const Vector3& endPoint, float time)
-{}
+void PlayerWeapon::Attack(const Vector3& startPoint, const Vector3& endPoint, float time) {
+	startPoint;
+	endPoint;
+	time;
+}
 
 ///-------------------------------------------/// 
 /// 衝突判定
 ///-------------------------------------------///
 void PlayerWeapon::OnCollision(Collider * collider) {
-
+	collider;
 }
 
 bool PlayerWeapon::GetIsAttack() const
@@ -86,5 +89,9 @@ bool PlayerWeapon::GetIsAttack() const
 	return false;
 }
 
-void PlayerWeapon::CalculateAttackRotation(const Vector3& startPoint, const Vector3& endPoint, float time)
-{}
+
+void PlayerWeapon::CalculateAttackRotation(const Vector3& startPoint, const Vector3& endPoint, float time) {
+	startPoint;
+	endPoint;
+	time;
+}

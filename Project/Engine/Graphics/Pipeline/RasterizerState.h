@@ -16,9 +16,9 @@ public:
 	~RasterizerState() = default;
 
 	/// <summary>
-	/// ラスタライザステートの設定
+	/// ラスタライザステートの生成処理
 	/// </summary>
-	/// <returns></returns>
+	/// <param name="Type">作成するパイプラインの種類を指定します。</param>
 	void Create(PipelineType Type);
 
 	/// <summary>

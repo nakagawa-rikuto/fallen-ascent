@@ -12,6 +12,7 @@ void CopyImageEffect::Initialize(ID3D12Device* device, std::shared_ptr<RenderTex
 
 	// Deviceの初期化
 	ID3D12Device* devicePtr = device;
+	devicePtr;
 }
 
 ///-------------------------------------------/// 

@@ -129,8 +129,8 @@ ParticleData ConfettiParticle::MakeParticle(std::mt19937& randomEngine, const Ve
 ///-------------------------------------------///
 std::list<ParticleData> ConfettiParticle::Emit(const Group& group, std::mt19937& randomEngine) {
     std::list<ParticleData> particles;
-    for (uint32_t i = 0; i < group_.maxInstance; ++i) {
-        particles.push_back(MakeParticle(randomEngine_, group_.transform.translate));
+    for (uint32_t i = 0; i < group.maxInstance; ++i) {
+        particles.push_back(MakeParticle(randomEngine, group.transform.translate));
     }
     return particles;
 }

@@ -41,17 +41,38 @@ public:
 
 public:/// ===開発者用関数(システム)=== ///
 
-	// システム全体の初期化
+	/// <summary>
+	/// システム全体の初期化処理
+	/// </summary>
+	/// <param name="title">初期化に使用するタイトルのヌル終端ワイド文字列（const wchar_t*）。</param>
+	/// <param name="width">幅（ピクセル）。省略時の既定値は1920。</param>
+	/// <param name="height">高さ（ピクセル）。省略時の既定値は1080。</param>
 	void Initialize(const wchar_t* title, int width = 1920, int height = 1080);
-	// システム全体の更新
+
+	/// <summary>
+	/// システム全体の更新処理
+	/// </summary>
 	void Update();
-	// システム全体の終了
+			
+	/// <summary>
+	/// システム全体の終了処理
+	/// </summary>
 	void Finalize();
-	// フレーム開始処理
+
+	/// <summary>
+	/// フレーム開始処理
+	/// </summary>
 	void BeginFrame();
-	// フレーム終了処理
+
+	/// <summary>
+	/// フレーム終了処理
+	/// </summary>
 	void EndFrame();
-	// Windowsのメッセージを処理
+
+	/// <summary>
+	/// Windowsのメッセージを処理
+	/// </summary>
+	/// <returns>処理結果を表す整数値（意味は実装に依存します）。</returns>
 	int ProcessMessage();
 
 public:/// ===開発者用関数(Getter)=== ///

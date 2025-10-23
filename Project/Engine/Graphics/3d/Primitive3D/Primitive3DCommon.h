@@ -21,16 +21,35 @@ public:
 	Primitive3DCommon();
 	~Primitive3DCommon();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理、純粋仮想関数
+	/// </summary>
+	/// <param name="modelName">初期化に使用するモデルの名前を表す文字列（const std::string&）。</param>
+	/// <param name="type">ライトの種類を示す LightType 型の値。</param>
 	virtual void Initialize(const std::string& modelName, LightType type) = 0;
-	// 更新
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	virtual void Update();
-	// 描画
+
+	/// <summary>
+	/// 描画処理、純粋仮想関数
+	/// </summary>
+	/// <param name="mode">描画に使用するブレンドモードを指定します。</param>
 	virtual void Draw(BlendMode mode) = 0;
 
-	// 作成
+	/// <summary>
+	/// 生成処理
+	/// </summary>
+	/// <param name="device">ライトを作成するために使用する ID3D12Device へのポインター（Direct3D 12 デバイス）。</param>
+	/// <param name="type">作成するライトの種類を示す値（LightType）。</param>
 	void Create(ID3D12Device* device, LightType type);
-	// 描画処理
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	/// <param name="commandList">バインド操作を実行する Direct3D 12 のグラフィックスコマンドリストへのポインター。</param>
 	void Bind(ID3D12GraphicsCommandList* commandList);
 
 public:/// ===Setter=== ///
@@ -74,15 +93,29 @@ private:/// ===Variables(変数)=== ///
 	std::shared_ptr<ObjectCommon> common_;
 
 private:
-	// MaterialDataの書き込み
+	/// <summary>
+	/// MaterialDataの書き込み処理
+	/// </summary>
 	void MateialDataWrite();
-	// Transform情報の書き込み
+
+	/// <summary>
+	/// Transform情報の書き込み処理
+	/// </summary>
 	void TransformDataWrite();
-	// LightData書き込み
+
+	/// <summary>
+	/// LightData書き込み処理
+	/// </summary>
 	void LightDataWrite();
-	// CameraData書き込み
+
+	/// <summary>
+	/// CameraData書き込み処理
+	/// </summary>
 	void CameraDataWrite();
-	// EnvironmentMapData書き込み
+
+	/// <summary>
+	/// EnvironmentMapData書き込み処理
+	/// </summary>
 	void EnviromentMapDataWrite();
 };
 
