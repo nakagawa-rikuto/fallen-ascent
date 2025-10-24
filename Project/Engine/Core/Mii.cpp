@@ -20,12 +20,12 @@ void Mii::Initialize(const wchar_t* title, int width, int height) {
 	// RTVManagerの生成
 	rtvManager_ = std::make_unique<RTVManager>();
 	rtvManager_->Initialize(dXCommon_.get());
-	rtvManager_->CreateSwapChainRenderTargets();
+	rtvManager_->CreateSwapChainRenderTargetView();
 
 	// DSVManagerの生成
 	dsvManager_ = std::make_unique<DSVManager>();
 	dsvManager_->Initialize(dXCommon_.get());
-	dsvManager_->CreateDepthBuffer(0);
+	dsvManager_->CreateDepthBufferView(0);
 
 	// ImGuiManagerの生成
 	imGuiManager_ = std::make_unique<ImGuiManager>();
@@ -174,7 +174,7 @@ void Mii::BeginFrame() {
 	// OffScreenでRTVとDSVをセットしてRTVをクリアしている
 	offScreenRenderer_->PreDraw(commandList, dsvHandle);
 	// DSVはOffScreenで使用していないのでここでクリア
-	dsvManager_->ClearDepthBuffer(commandList);
+	dsvManager_->ClearDepthBufferView(commandList);
 
 	// コマンドを積む
 	dXCommon_->BeginCommand();

@@ -72,7 +72,7 @@ void RenderTexture::CreateRenderTexture(ID3D12Device* device) {
 	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D; // 2Dテクスチャ
 	// RTVの作成
 	rtvHandleIndex_ = rtvManager_->Allocate(); // RTVのインデックスを確保
-	rtvManager_->CreateRenderTarget(rtvHandleIndex_, buffer_.Get(), rtvDesc);
+	rtvManager_->CreateRenderTargetView(rtvHandleIndex_, buffer_.Get(), rtvDesc);
 
 	/// ===SRV=== ///
 	// DESCの設定
@@ -83,7 +83,7 @@ void RenderTexture::CreateRenderTexture(ID3D12Device* device) {
 	srvDesc.Texture2D.MipLevels = 1;
 	// SRVの作成
 	srvHandleIndex_ = srvManager_->Allocate(); // SRVのインデックスを確保
-	srvManager_->CreateSRV(srvHandleIndex_, buffer_.Get(), srvDesc);
+	srvManager_->CreateShaderResourceView(srvHandleIndex_, buffer_.Get(), srvDesc);
 }
 
 ///-------------------------------------------/// 
@@ -92,7 +92,7 @@ void RenderTexture::CreateRenderTexture(ID3D12Device* device) {
 void RenderTexture::Clear(ID3D12GraphicsCommandList* commandList) {
 	// RTVのクリア
 	const float clearColor[4] = { clearColor_.x, clearColor_.y, clearColor_.z, clearColor_.w };
-	rtvManager_->ClearRenderTarget(commandList, rtvHandleIndex_, clearColor);
+	rtvManager_->ClearRenderTargetView(commandList, rtvHandleIndex_, clearColor);
 }
 
 ///-------------------------------------------/// 

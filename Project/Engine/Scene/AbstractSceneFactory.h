@@ -14,10 +14,10 @@ public:
 	virtual ~AbstractSceneFactory() = default;
 	
 	/// <summary>
-	/// 
+	/// シーン生成処理、純粋仮想関数
 	/// </summary>
-	/// <param name="type"></param>
-	/// <returns></returns>
+	/// <param name="type">シーンの種類</param>
+	/// <returns>ISceneを返す</returns>
 	virtual std::unique_ptr<IScene> CreateScene(SceneType type) = 0;
 };
 

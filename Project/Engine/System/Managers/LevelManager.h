@@ -20,9 +20,14 @@ public:
 	LevelManager() = default;
 	~LevelManager() = default;
 
-	// Load
+	/// <summary>
+	/// Jsonファイルの読み込み処理
+	/// </summary>
+	/// <param name="basePath">読み込み時の基準となるベースディレクトリのパス。</param>
+	/// <param name="file_path">読み込む JSON ファイルへのパス（basePath を基準とする相対パス、または絶対パス）。</param>
 	void LoadLevelJson(const std::string& basePath, const std::string& file_path);
 
+public: /// ===Getter=== ///
 	// レベルデータの取得
 	LevelData* GetLevelData(const std::string& file_path);
 
@@ -33,9 +38,18 @@ private:
 
 private:
 
-	// 再帰用関数
+	/// <summary>
+	/// nlohmann::json のオブジェクトを再帰的に読み込み、LevelData に反映する。
+	/// </summary>
+	/// <param name="object">読み込む JSON データ（nlohmann::json）。関数はこの JSON を再帰的に走査して内容を処理する。</param>
+	/// <param name="levelData">読み込み先の LevelData 構造体へのポインタ。関数はこのポインタが指すデータを更新する。</param>
 	void LoadobjectRecursive(nlohmann::json object, LevelData* levelData);
-	// ClassType変換関数
+	
+	/// <summary>
+	/// 文字列を LevelData::ClassType に変換する静的メンバー関数。
+	/// </summary>
+	/// <param name="str">変換対象の文字列（クラスタイプを表す）。</param>
+	/// <returns>引数の文字列に対応する LevelData::ClassType の値。</returns>
 	static LevelData::ClassType StringToClassType(const std::string& str);
 };
 

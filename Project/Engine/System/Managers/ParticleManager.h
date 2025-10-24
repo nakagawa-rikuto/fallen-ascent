@@ -18,18 +18,42 @@ public:
 	ParticleManager() = default;
 	~ParticleManager();
 
-    // パーティクルの追加
+    /// <summary>
+    /// パーティクルの追加処理
+    /// </summary>
+    /// <param name="name">追加するパーティクルの名前</param>
+    /// <param name="particle">追加するパーティクル</param>
     void AddParticle(const std::string& name, std::unique_ptr<ParticleGroup> particle);
-    // パーティクルの発生
+
+    /// <summary>
+    /// パーティクルの発生処理
+    /// </summary>
+    /// <param name="name">発生させるパーティクルの名前</param>
+    /// <param name="translate">発生させる場所</param>
     void Emit(const std::string& name, const Vector3& translate);
-    // テクスチャの設定
+
+    /// <summary>
+    /// パーティクルのテクスチャを設定
+    /// </summary>
+    /// <param name="name">テクスチャを設定するパーティクルの名前</param>
+    /// <param name="textureName">設定するテクスチャの名前</param>
     void SetTexture(const std::string& name, const std::string& textureName);
-    // パーティクルの削除
+
+    /// <summary>
+    /// パーティクルの削除処理
+    /// </summary>
+    /// <param name="name">削除するパーティクルの名前</param>
     void RemoveParticle(const std::string& name);
 
-    // パーティクルの全体更新
+    /// <summary>
+    /// パーティクル全体の更新処理
+    /// </summary>
     void Update();
-    // すべて描画
+
+    /// <summary>
+    /// パーティクル全体の描画処理
+    /// </summary>
+    /// <param name="mode">ブレンドモード</param>
     void Draw(BlendMode mode = BlendMode::kBlendModeAdd);
 
 private:

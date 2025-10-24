@@ -24,13 +24,18 @@ public:
 	InputCommon() = default;
 	~InputCommon();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="winApp">Class WinApp</param>
 	void Initialize(WinApp* winApp);
-	// Getter
+	
+public: /// ===Getter=== ///
+	// DirectInput
 	ComPtr<IDirectInput8> GetDirectInput();
 
 private:
-
-	ComPtr<IDirectInput8> directInput_; // DirectInputインスタンス
+	// DirectInputインスタンス
+	ComPtr<IDirectInput8> directInput_; 
 };
 

@@ -34,6 +34,7 @@ class ParticleManager;
 // ColliderManager
 class ColliderManager;
 
+/// ===サービス候補=== ///
 struct ServiceRegister {
 	WinApp* winApp = nullptr;
 	DXCommon* dxCommon = nullptr;

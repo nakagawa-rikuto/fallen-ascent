@@ -22,23 +22,44 @@ public:/// ====== ///
 	Framework() = default;
 	virtual ~Framework() = default;
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="title">タイトルの名前</param>
 	virtual void Initialize(const wchar_t* title);
-	// 終了
+	
+	/// <summary>
+	/// 終了処理
+	/// </summary>
 	virtual void Finalize();
-	// 毎フレーム更新
+
+	/// <summary>
+	/// 毎フレーム更新
+	/// </summary>
 	virtual void Update();
-	// 描画
+
+	/// <summary>
+	/// 描画処理、純粋仮想関数
+	/// </summary>
 	virtual void Draw() = 0;
 	// 終了フラグのチェック
 	virtual bool IsEndRequst();
 
 public:/// ===メンバ関数=== ///
-	// 実行
+	/// <summary>
+	/// 実行処理
+	/// </summary>
+	/// <param name="title">タイトルの名前</param>
 	void Run(const wchar_t* title);
-	// 描画前処理
+	
+	/// <summary>
+	/// 描画前処理
+	/// </summary>
 	void PreDraw();
-	// 描画後処理
+	
+	/// <summary>
+	/// 描画後処理
+	/// </summary>
 	void PostDraw();
 
 private:

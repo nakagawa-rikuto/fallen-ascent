@@ -134,7 +134,7 @@ void DXCommon::PreDrawImGui(RTVManager* rtv) {
 	commandList_->OMSetRenderTargets(1, &rtvHandel, false, nullptr);
 	// RTVのクリア
 	const float cleaerColor[] = { 0.1f, 0.25f, 0.5f, 1.0f }; // 青色っっぽい色、RGBAの順
-	rtv->ClearRenderTarget(commandList_.Get(), backBufferIndex, cleaerColor);
+	rtv->ClearRenderTargetView(commandList_.Get(), backBufferIndex, cleaerColor);
 }
 
 ///-------------------------------------------/// 

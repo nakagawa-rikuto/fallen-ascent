@@ -19,23 +19,44 @@ public:/// ===基本的な関数=== ///
 	SceneManager() = default;
 	~SceneManager();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
 	void Initialize();
-	// 現在のシーンの更新
+
+	/// <summary>
+	/// 現在のシーンの更新処理
+	/// </summary>
 	void Update();
-	// 現在のシーンの描画
+
+	/// <summary>
+	/// 現在のシーンの描画処理
+	/// </summary>
 	void Draw();
 
 public:/// ===シーン処理=== ///
 
-	// シーンの変更
+	/// <summary>
+	/// シーンの切り替え処理
+	/// </summary>
+	/// <param name="type">切り替えるシーンの種類を指定します（通常は SceneType 列挙型の値）。</param>
 	void ChangeScene(SceneType type);
-	// シーン監視
+
+	/// <summary>
+	/// シーンの観測を行う関数
+	/// </summary>
 	void SceneObservation();
-	// レベル番号の設定
-	void SetSelectedLevel(int level);
+
+public: /// ===Getter=== ///
+
 	// 選択されたレベル番号の取得
 	int GetSelectedLevel() const;
+
+public: /// ===Setter=== ///
+
+	// レベルの設定
+	void SetSelectedLevel(int level);
+
 	// シーンファクトリーのSetter
 	void SetSceneFactory(AbstractSceneFactory* sceneFactory);
 

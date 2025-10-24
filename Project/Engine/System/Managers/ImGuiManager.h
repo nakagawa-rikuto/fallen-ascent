@@ -8,8 +8,6 @@
 #include <imgui_impl_win32.h>
 #endif // USE_IMGUI
 
-
-
 /// ===前方宣言=== ///
 class WinApp;
 class DXCommon;
@@ -25,18 +23,36 @@ public:
 	ImGuiManager();
 	~ImGuiManager();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="winApp">ウィンドウやアプリケーション固有の設定・状態を管理する WinApp オブジェクトへのポインタ。</param>
+	/// <param name="dxCommon">DirectX に関連する共通リソースや初期化処理を管理する DXCommon オブジェクトへのポインタ。</param>
+	/// <param name="srvManager">シェーダーリソースビュー（SRV）などのリソース管理を行う SRVManager オブジェクトへのポインタ。</param>
 	void Initialize(WinApp* winApp, DXCommon* dxCommon, SRVManager* srvManager);
-	// 終了
+	
+	/// <summary>
+	/// 終了処理
+	/// </summary>
 	void Finalize();
-	// 受付開始処理
+
+	/// <summary>
+	/// 受付開始処理
+	/// </summary>
 	void Begin();
-	// 受付終了処理
+
+	/// <summary>
+	/// 受付終了処理
+	/// </summary>
 	void End();
-	// 画面への描画処理
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
 	void Draw();
 	
-	// Setter
+public: /// ===Setter=== ///
+	// SceneViewの設定
 	void SetSceneView(SceneView* sceneView);
 
 private:
@@ -47,7 +63,14 @@ private:
 	SceneView* sceneView_ = nullptr;
 
 private:
-	void DrawMainDockWindow(); // Dock付きUI描画
-	void MenuBar();            // メニューバーのみ
+	/// <summary>
+	/// Dock付きUI描画処理
+	/// </summary>
+	void DrawMainDockWindow(); 
+
+	/// <summary>
+	/// メニューバーの処理
+	/// </summary>
+	void MenuBar();
 };
 

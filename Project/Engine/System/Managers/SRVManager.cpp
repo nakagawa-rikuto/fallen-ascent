@@ -68,7 +68,7 @@ void SRVManager::PreDraw() {
 ///-------------------------------------------/// 
 /// SRVの作成
 ///-------------------------------------------///
-void SRVManager::CreateSRV(uint32_t srvIndex, ID3D12Resource* pResource, D3D12_SHADER_RESOURCE_VIEW_DESC desc) {
+void SRVManager::CreateShaderResourceView(uint32_t srvIndex, ID3D12Resource* pResource, D3D12_SHADER_RESOURCE_VIEW_DESC desc) {
 	dXCommon_->GetDevice()->CreateShaderResourceView(pResource, &desc, GetCPUDescriptorHandle(srvIndex));
 }
 
@@ -103,7 +103,7 @@ void SRVManager::CreateSRVForTexture2D(uint32_t srvIndex, ID3D12Resource* pResou
 	srvDesc.Texture2D.MipLevels = MipLevels;
 
 	// SRVを作成
-	CreateSRV(srvIndex, pResource, srvDesc);
+	CreateShaderResourceView(srvIndex, pResource, srvDesc);
 }
 // CubMap用
 void SRVManager::CreateSRVForCubeMap(uint32_t srvIndex, ID3D12Resource* pResource, DXGI_FORMAT Format, UINT MipLevels) {
@@ -117,7 +117,7 @@ void SRVManager::CreateSRVForCubeMap(uint32_t srvIndex, ID3D12Resource* pResourc
 	srvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
 
 	// SRVを作成
-	CreateSRV(srvIndex, pResource, srvDesc);
+	CreateShaderResourceView(srvIndex, pResource, srvDesc);
 }
 // Struct Buffer用
 void SRVManager::CreateSRVForStructuredBuffer(uint32_t srvIndex, ID3D12Resource* pResource, UINT numElements, UINT structureByteStride) {
@@ -131,5 +131,5 @@ void SRVManager::CreateSRVForStructuredBuffer(uint32_t srvIndex, ID3D12Resource*
 	srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
 	// SRVを作成
-	CreateSRV(srvIndex, pResource, srvDesc);
+	CreateShaderResourceView(srvIndex, pResource, srvDesc);
 }

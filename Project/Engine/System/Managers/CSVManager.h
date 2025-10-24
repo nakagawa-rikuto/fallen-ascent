@@ -16,8 +16,10 @@ public:
 	CSVManager() = default;
 	~CSVManager() = default;
 
-public: /// ===Load関数=== ///
-	// CSV
+	/// <summary>
+	/// CSVファイルの読み込み処理
+	/// </summary>
+	/// <param name="file_path">CSVファイルの登録名</param>
 	void Load(const std::string& file_path);
 
 private:

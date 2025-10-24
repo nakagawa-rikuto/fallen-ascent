@@ -14,15 +14,33 @@ class Light;
 class ColliderService {
 public:
 
-	// リセット
+	/// <summary>
+	/// 内部状態をリセットします。
+	/// </summary>
 	static void Reset();
-	// 削除
+
+	/// <summary>
+	/// 指定されたコライダーを削除します。
+	/// </summary>
+	/// <param name="collider">削除対象のコライダーへのポインタ。呼び出す前にポインタが有効であることを確認してください。</param>
 	static void RemoveCollider(Collider* collider);
-	// 追加
+
+	/// <summary>
+	/// 指定されたコライダーを追加します。
+	/// </summary>
+	/// <param name="collider">追加するコライダーへのポインタ。</param>
 	static void AddCollider(Collider* collider);
 
-	// Lightの設定
+	/// <summary>
+	/// ライトの種類を設定します。
+	/// </summary>
+	/// <param name="type">設定するライトの種類を指定します。</param>
 	static void SetLight(LightType type);
+
+	/// <summary>
+	/// ライトのデータを設定します。
+	/// </summary>
+	/// <param name="light">設定するライト情報を格納した LightInfo オブジェクト。</param>
 	static void SetLightData(LightInfo light);
 };
 

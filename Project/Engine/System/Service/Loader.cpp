@@ -45,15 +45,6 @@ void Loader::LoadLevelJson(const std::string& filename) {
 }
 
 ///-------------------------------------------/// 
-/// LevelModel
-///-------------------------------------------///
-void Loader::LoadLevelModel(const std::string& filname) {
-	// ベースのディレクトリパス
-	const std::string& baseDirectorPath = "./Resource/Models/Level";
-	ServiceLocator::GetModelManager()->Load(filname, baseDirectorPath, filname);
-}
-
-///-------------------------------------------/// 
 /// Animation
 ///-------------------------------------------///
 void Loader::LoadAnimation(const std::string& key, const std::string& filename) {

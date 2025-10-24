@@ -44,7 +44,7 @@ void DSVManager::Initialize(DXCommon* dxcommon) {
 ///-------------------------------------------/// 
 /// クリア
 ///-------------------------------------------///
-void DSVManager::ClearDepthBuffer(ID3D12GraphicsCommandList* commandList) {
+void DSVManager::ClearDepthBufferView(ID3D12GraphicsCommandList* commandList) {
     for (uint32_t i = 0; i < useIndex_; ++i) {
         commandList->ClearDepthStencilView(GetCPUDescriptorHandle(i), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
     }
@@ -68,7 +68,7 @@ bool DSVManager::AssertAllocate() { return useIndex_ < kMaxDSVCount_; }
 ///-------------------------------------------/// 
 /// 生成
 ///-------------------------------------------///
-void DSVManager::CreateDepthBuffer(uint32_t index) {
+void DSVManager::CreateDepthBufferView(uint32_t index) {
     D3D12_RESOURCE_DESC desc{};
     desc.Width = GraphicsResourceGetter::GetWindowWidth();
     desc.Height = GraphicsResourceGetter::GetWindowHeight();

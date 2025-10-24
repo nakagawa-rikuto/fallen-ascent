@@ -16,22 +16,54 @@ public:
 	Mouse() = default;
 	~Mouse();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="winApp">class WinApp</param>
+	/// <param name="input">DirectInput</param>
 	void Initialize(WinApp* winApp, IDirectInput8* input);
-	// 更新
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	void Update();
 
-	// マウスボタンの押下をチェック
+	/// <summary>
+	/// マウスボタンの押下をチェック
+	/// </summary>
+	/// <param name="button">マウスボタンの場所</param>
+	/// <returns>フラグを返す</returns>
 	bool PushMaouseButton(MouseButtonType button);
-	// マウスボタンのトリガーをチェック
+	
+	/// <summary>
+	/// マウスボタンのトリガーをチェック
+	/// </summary>
+	/// <param name="button">マウスボタンの種類</param>
+	/// <returns>フラグを返す</returns>
 	bool TriggerMouseButton(MouseButtonType button);
-	// マウスカーソルの位置を取得（スクリーン座標系）
+
+	/// <summary>
+	/// マウスカーソルの位置を取得（スクリーン座標系）
+	/// </summary>
+	/// <returns>座標を返す。</returns>
 	POINT GetMouseCursorPosition() const;
-	// マウスのx軸を移動量を取得
+
+	/// <summary>
+	/// マウスのx軸を移動量を取得
+	/// </summary>
+	/// <returns>移動量を返す</returns>
 	LONG GetMouseDeltaX() const;
-	// マウスのY軸を移動量を取得
+
+	/// <summary>
+	/// マウスのY軸を移動量を取得
+	/// </summary>
+	/// <returns>移動量を返す</returns>
 	LONG GetMouseDeltaY() const;
-	// マウスのスクロール量を取得
+
+	/// <summary>
+	/// マウスのスクロール量を取得
+	/// </summary>
+	/// <returns>移動量を返す</returns>
 	LONG GetMouseDeltaScroll() const;
 
 private:

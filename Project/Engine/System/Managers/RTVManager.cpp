@@ -41,7 +41,7 @@ void RTVManager::Initialize(DXCommon* dxcommon) {
 ///-------------------------------------------/// 
 /// 作成
 ///-------------------------------------------///
-void RTVManager::CreateRenderTarget(uint32_t index, ID3D12Resource* resource, const D3D12_RENDER_TARGET_VIEW_DESC& desc) {
+void RTVManager::CreateRenderTargetView(uint32_t index, ID3D12Resource* resource, const D3D12_RENDER_TARGET_VIEW_DESC& desc) {
 	assert(index < kMaxRTVCount_);
 	// ハンドルを取得
 	D3D12_CPU_DESCRIPTOR_HANDLE handle = GetCPUDescriptorHandle(index);
@@ -56,7 +56,7 @@ void RTVManager::CreateRenderTarget(uint32_t index, ID3D12Resource* resource, co
 ///-------------------------------------------/// 
 /// クリア
 ///-------------------------------------------///
-void RTVManager::ClearRenderTarget(ID3D12GraphicsCommandList* commandList, uint32_t index, const float color[4]) {
+void RTVManager::ClearRenderTargetView(ID3D12GraphicsCommandList* commandList, uint32_t index, const float color[4]) {
 	// RTVをクリア
 	commandList->ClearRenderTargetView(descriptorHandles_[index], color, 0, nullptr);
 }
@@ -79,19 +79,19 @@ bool RTVManager::AssertAllocate() { return useIndex_ < kMaxRTVCount_; }
 ///-------------------------------------------/// 
 /// 作成
 ///-------------------------------------------///
-void RTVManager::CreateSwapChainRenderTargets() {
+void RTVManager::CreateSwapChainRenderTargetView() {
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
 	// まず1つ目を作る。1つ目は最初のところに作る。作る場所をコリらで指定してあげる必要がある
 	descriptorHandles_[0] = dxcommon_->GetCPUDescriptorHandle(descriptorHeap_.Get(), descriptorSize_, 0);
-	CreateRenderTarget(0, dxcommon_->GetSwapChainResource(0), rtvDesc);
+	CreateRenderTargetView(0, dxcommon_->GetSwapChainResource(0), rtvDesc);
 
 	//2つ目のディスクリプタハンドルを得る
 	descriptorHandles_[1].ptr = descriptorHandles_[0].ptr + dxcommon_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	//2つ目を作る
-	CreateRenderTarget(1, dxcommon_->GetSwapChainResource(1), rtvDesc);
+	CreateRenderTargetView(1, dxcommon_->GetSwapChainResource(1), rtvDesc);
 
 	useIndex_ = 2;
 }

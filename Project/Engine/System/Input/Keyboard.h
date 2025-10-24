@@ -16,14 +16,30 @@ public:
 	Keyboard() = default;
 	~Keyboard();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="winApp">Class WinApp</param>
+	/// <param name="input">DirectInput</param>
 	void Initialize(WinApp* winApp, IDirectInput8* input);
-	// 更新
+	
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	void Update();
 
-	// キーの押下をチェック
+	/// <summary>
+	/// キーの押下をチェック
+	/// </summary>
+	/// <param name="keyNum">キーのタイプ</param>
+	/// <returns>フラグを返す</returns>
 	bool PushKey(BYTE keyNum);
-	// キーのトリガーをチェック
+
+	/// <summary>
+	/// キーのトリガーをチェック
+	/// </summary>
+	/// <param name="keyNum">キーのタイプ</param>
+	/// <returns>フラグを返す</returns>
 	bool TriggerKey(BYTE keyNum);
 
 private:
