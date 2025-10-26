@@ -13,22 +13,25 @@ namespace {
 	/// ===テーブルに登録=== ///
 	const std::unordered_map<PipelineType, D3D12_DEPTH_STENCIL_DESC> kDepthStencilTable_ = {
 		// 2D: 前景（深度有効, 書き込みあり, 比較常にOK）
-		{ PipelineType::ForGround2D,  CreateDepthDesc(true,  D3D12_DEPTH_WRITE_MASK_ALL,    D3D12_COMPARISON_FUNC_ALWAYS) },
+		{ PipelineType::ForGround2D,  CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_ALWAYS) },
 
 		// 2D: 背景（深度無効, 書き込みなし, 比較LessEqual, ステンシル無効）
-		{ PipelineType::BackGround2D, CreateDepthDesc(false, D3D12_DEPTH_WRITE_MASK_ZERO,   D3D12_COMPARISON_FUNC_LESS_EQUAL, false) },
+		{ PipelineType::BackGround2D, CreateDepthDesc(false, D3D12_DEPTH_WRITE_MASK_ZERO, D3D12_COMPARISON_FUNC_LESS_EQUAL, false) },
 
 		// 3D Object（深度有効, 書き込みあり, 比較LessEqual）
-		{ PipelineType::Obj3D,        CreateDepthDesc(true,  D3D12_DEPTH_WRITE_MASK_ALL,    D3D12_COMPARISON_FUNC_LESS_EQUAL) },
+		{ PipelineType::Obj3D, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
 
 		// SkyBox（深度有効, 書き込みなし, 比較LessEqual）
-		{ PipelineType::PrimitiveSkyBox,       CreateDepthDesc(true,  D3D12_DEPTH_WRITE_MASK_ZERO,   D3D12_COMPARISON_FUNC_LESS_EQUAL) },
+		{ PipelineType::PrimitiveSkyBox, CreateDepthDesc(true,  D3D12_DEPTH_WRITE_MASK_ZERO, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
+
+		// Oshan (深度有効、書き込み無し、比較LessEqual)
+		{ PipelineType::PrimitiveOshan, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL)},
 
 		// Particle（深度有効, 書き込みなし, 比較LessEqual）
-		{ PipelineType::Particle,     CreateDepthDesc(true,  D3D12_DEPTH_WRITE_MASK_ZERO,   D3D12_COMPARISON_FUNC_LESS_EQUAL) },
+		{ PipelineType::Particle, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ZERO, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
 
 		// Skinning 3D（深度有効, 書き込みあり, 比較LessEqual）
-		{ PipelineType::Skinning3D,   CreateDepthDesc(true,  D3D12_DEPTH_WRITE_MASK_ALL,    D3D12_COMPARISON_FUNC_LESS_EQUAL) },
+		{ PipelineType::Skinning3D, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
 
 		// Line3D （深度有効, 書き込みなし, 比較LessEqual）
 		{ PipelineType::Line3D, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ZERO, D3D12_COMPARISON_FUNC_LESS_EQUAL) },

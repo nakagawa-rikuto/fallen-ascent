@@ -6,6 +6,7 @@
 #include "application/Game/Entity/Enemy/Manager/EnemyManager.h"
 // Object
 #include "application/Game/Object/Ground/Ground.h"
+#include "application/Game/Object/GroundOshan/GroundOshan.h"
 // Animation
 #include "application/Game/Animation/StartAnimation.h"
 // Transition
@@ -61,6 +62,8 @@ private:/// ===メンバ変数=== ///
 	std::unique_ptr<EnemyManager> enemyManager_;
 	// Ground
 	std::unique_ptr<Ground> ground_;
+	// GroundOshan
+	std::unique_ptr<GroundOshan> groundOshan_;
 	// StartAnimation
 	std::unique_ptr<StartAnimation> startAnimation_;
 
@@ -102,11 +105,6 @@ private: /// ===メンバ関数=== ///
 	/// フェードアウト時の更新処理
 	/// </summary>
 	void UpdateFadeOut();
-
-	/// <summary>
-	/// フェーズ遷移処理
-	/// </summary>
-	void ChangePhase(GamePhase newPhase);
 
 	/// <summary>
 	/// 配置処理
