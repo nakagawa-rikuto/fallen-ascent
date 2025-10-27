@@ -73,6 +73,12 @@
     <FxCompile Include="Resource\Shaders\OffScreen\ShatterGlass.PS.hlsl">
       <Filter>Resource\Shaders\OffScreen</Filter>
     </FxCompile>
+    <FxCompile Include="Resource\Shaders\3D\Oshan.VS.hlsl">
+      <Filter>Resource\Shaders\Oshan</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\3D\Oshan.PS.hlsl">
+      <Filter>Resource\Shaders\Oshan</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -469,8 +475,15 @@
     <ClCompile Include="Engine\Graphics\2d\Base\Object2DCommon.cpp">
       <Filter>Engine\Graphics\2D\Base</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Animation\StartAnimation.cpp" />
-    <ClCompile Include="application\Game\Transition\SceneTransition.cpp" />
+    <ClCompile Include="application\Game\Transition\SceneTransition.cpp">
+      <Filter>application\Game\Transition</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Animation\StartAnimation.cpp">
+      <Filter>application\Game\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\3d\Oshan\Oshan.cpp" />
+    <ClCompile Include="Engine\Graphics\3d\Oshan\OshanCommon.cpp" />
+    <ClCompile Include="application\Game\Object\GroundOshan\GroundOshan.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -905,8 +918,16 @@
     <ClInclude Include="Engine\Graphics\2d\Base\Object2DCommon.h">
       <Filter>Engine\Graphics\2D\Base</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Animation\StartAnimation.h" />
-    <ClInclude Include="application\Game\Transition\SceneTransition.h" />
+    <ClInclude Include="application\Game\Transition\SceneTransition.h">
+      <Filter>application\Game\Transition</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Animation\StartAnimation.h">
+      <Filter>application\Game\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\3d\Oshan\Oshan.h" />
+    <ClInclude Include="Engine\Graphics\3d\Oshan\OshanCommon.h" />
+    <ClInclude Include="Engine\DataInfo\OshanData.h" />
+    <ClInclude Include="application\Game\Object\GroundOshan\GroundOshan.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -929,6 +950,9 @@
     </None>
     <None Include="Resource\Shaders\OffScreen\Fullscreen.hlsli">
       <Filter>Resource\Shaders\OffScreen</Filter>
+    </None>
+    <None Include="Resource\Shaders\3D\Oshan.hlsli">
+      <Filter>Resource\Shaders\Oshan</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -1114,6 +1138,18 @@
     </Filter>
     <Filter Include="Engine\Graphics\2D\Sprite">
       <UniqueIdentifier>{2562fb89-85bb-4bad-9689-08236e5b4917}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Shaders\Oshan">
+      <UniqueIdentifier>{2dce79e3-2a1e-4233-b40a-999ce9144972}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Animation">
+      <UniqueIdentifier>{085e0d29-b6e3-4284-83a5-a67f8d2ef173}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Transition">
+      <UniqueIdentifier>{ac3e439e-48cc-4acf-b0fc-9847e8a02d95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Graphics\Oshan">
+      <UniqueIdentifier>{393687b5-6d3a-4c5f-bea1-cc4c155d66f4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

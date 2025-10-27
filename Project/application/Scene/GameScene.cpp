@@ -93,12 +93,17 @@ void GameScene::Initialize() {
 	ground_->Initialize();
 	ground_->Update();
 
+	/// ===GroundOshan=== ///
+	groundOshan_ = std::make_unique<GroundOshan>();
+	groundOshan_->Initialize();
+	groundOshan_->Update();
+
 	/// ===StartAnimation=== ///
 	startAnimation_ = std::make_unique<StartAnimation>();
 	startAnimation_->Initialize(player_.get(), camera_.get());
 
 	// 初期フェーズをFadeInに設定
-	currentPhase_ = GamePhase::FadeIn;
+	currentPhase_ = GamePhase::Game;
 	transiton_->StartFadeOut(fadeInDuration_); // フェードイン開始
 }
 
@@ -117,6 +122,9 @@ void GameScene::Update() {
 
 	// Player
 	player_->Information();
+
+	// Oshan
+	groundOshan_->ShowImGui();
 
 	// Enemy
 	//enemyManager_->UpdateImGui();
@@ -156,16 +164,17 @@ void GameScene::Draw() {
 
 #pragma region モデル描画
 
-	line_->DrawGrid({ 0.0f,-2.0f, 0.0f }, { 1000.0f, 1.0f, 1000.0f }, 100, { 1.0f, 1.0f, 1.0f, 1.0f });
-
-	// Ground
+	/// ===Ground=== ///
 	//ground_->Draw();
-	// Enemy
+	//groundOshan_->Draw();
+
+	/// ===Enemy=== ///
 	//enemyManager_->Draw();
-	// Player
+
+	/// ===Player=== ///
 	player_->Draw();
 
-	// StartAnimation
+	/// ===StartAnimation=== ///
 	if (startAnimation_ && !startAnimation_->IsCompleted()) {
 		startAnimation_->Draw();
 	}
@@ -185,6 +194,11 @@ void GameScene::UpdateFadeIn() {
 
 	// FadeIn更新
 	transiton_->FadeOutUpdate();
+
+	/// ===Groundの更新=== ///
+	ground_->Update();
+	groundOshan_->Update();
+
 	// プレイヤーのStartAnimation専用更新
 	player_->UpdateStartAnimation();
 
@@ -201,6 +215,10 @@ void GameScene::UpdateFadeIn() {
 void GameScene::UpdateStartAnimation() {
 	// アニメーション更新
 	startAnimation_->Update();
+
+	/// ===Groundの更新=== ///
+	ground_->Update();
+	groundOshan_->Update();
 
 	// プレイヤーのStartAnimation専用更新
 	player_->UpdateStartAnimation();
@@ -225,6 +243,7 @@ void GameScene::UpdateGame() {
 
 	/// ===Groundの更新=== ///
 	ground_->Update();
+	groundOshan_->Update();
 
 	// ゲームが終わったらFadeOutへ
 }
