@@ -76,7 +76,7 @@ protected:
 
 	/// ===Transform情報=== ///
 	QuaternionTransform worldTransform_;
-	Vector4 color_ = { 1.0f, 1.0f, 1.0f, 0.8f };
+	Vector4 color_ = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	/// ===Light=== ///
 	LightInfo light_ = {

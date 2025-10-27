@@ -15,6 +15,7 @@
 #include <memory>
 #include <vector>
 #include <array>
+#include <algorithm>
 
 /// ===前方宣言=== ///
 class GameCamera;
@@ -50,26 +51,13 @@ public:
 	void ShowImGui();
 
 	/// <summary>
-	/// 波紋を追加
+	/// 円状に広がる波紋を追加
 	/// </summary>
-	/// <param name="worldPosition">ワールド座標</param>
-	/// <param name="intensity">強度</param>
-	void AddRipple(const Vector3& worldPosition, float intensity = 1.0f);
-
-	/// <summary>
-	/// 指定座標に物体が当たったことを検知して波紋を生成
-	/// </summary>
-	/// <param name="worldPosition">衝突位置</param>
-	/// <param name="objectID">物体の識別ID（同じ物体からの連続衝突を防ぐため）</param>
-	void OnObjectHit(const Vector3& worldPosition, int objectID);
-
-	/// <summary>
-	/// 衝突時に呼び出す関数（ゲーム側から使用）
-	/// </summary>
-	/// <param name="collisionPosition">衝突位置（ワールド座標）</param>
-	/// <param name="collisionTime">衝突時刻</param>
-	/// <param name="intensity">波紋の強度（デフォルト: 1.0f）</param>
-	void OnCollision(const Vector3& collisionPosition, float collisionTime, float intensity = 1.0f);
+	/// <param name="center">波紋の中心位置</param>
+	/// <param name="duration">波紋が広がり続ける時間（秒）</param>
+	/// <param name="intensity">波紋の強度</param>
+	/// <param name="maxRadius">波紋の最大半径</param>
+	void AddCircularRipple(const Vector3& center, float duration = 3.0f, float intensity = 1.0f, float maxRadius = 20.0f);
 
 	/// <summary>
 	/// すべての波紋をクリア
@@ -116,6 +104,7 @@ private:
 	float currentTime_ = 0.0f;
 	float rippleSpeed_ = 4.0f;
 	float rippleDecay_ = 1.0f;
+	int nextPriority_ = 0;  // 優先度カウンター
 
 	// 衝突検知用（同じ物体からの連続衝突を防ぐ）
 	struct HitRecord {
@@ -162,9 +151,4 @@ private: /// ===Functions=== ///
 	/// 波紋の更新処理
 	/// </summary>
 	void UpdateRipples();
-
-	/// <summary>
-	/// 衝突記録を探す
-	/// </summary>
-	HitRecord* FindHitRecord(int objectID);
 };

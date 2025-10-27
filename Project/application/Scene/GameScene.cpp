@@ -103,7 +103,7 @@ void GameScene::Initialize() {
 	startAnimation_->Initialize(player_.get(), camera_.get());
 
 	// 初期フェーズをFadeInに設定
-	currentPhase_ = GamePhase::StartAnimation;
+	currentPhase_ = GamePhase::Game;
 	transiton_->StartFadeOut(fadeInDuration_); // フェードイン開始
 }
 
@@ -163,8 +163,6 @@ void GameScene::Draw() {
 #pragma endregion
 
 #pragma region モデル描画
-
-	//line_->DrawGrid({ 0.0f,-2.0f, 0.0f }, { 1000.0f, 1.0f, 1000.0f }, 100, { 1.0f, 1.0f, 1.0f, 1.0f });
 
 	// Ground
 	ground_->Draw();

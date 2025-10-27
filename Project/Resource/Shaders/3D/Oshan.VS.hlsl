@@ -1,9 +1,9 @@
 #include "Oshan.hlsli"
 
-/// ******************************
+/// ===================================================
 /// VertexShader
-/// ******************************
-
+/// ===================================================
+// 変換行列の構造体
 struct TransformationMatrix
 {
     float4x4 WVP;
@@ -20,12 +20,16 @@ struct OceanShaderInfo
     float time; // 時間
 };
 
-// 波紋情報の構造体（最大8つの波紋）
+// 波紋情報の構造体（最大8つの波紋）- 拡張版
 struct RippleInfo
 {
     float2 position; // 波紋の中心位置
     float startTime; // 波紋の開始時間
     float intensity; // 波紋の強度
+    float duration; // 波紋の持続時間
+    float maxRadius; // 波紋の最大半径
+    float speed; // 波紋の拡散速度
+    float padding; // アライメント用（16バイト境界）
 };
 
 struct RippleBuffer
@@ -33,8 +37,8 @@ struct RippleBuffer
     RippleInfo ripples[8]; // 最大8つの波紋
     int activeCount; // アクティブな波紋の数
     float currentTime; // 現在の時間
-    float rippleSpeed; // 波紋の拡散速度
-    float rippleDecay; // 波紋の減衰率
+    float rippleSpeed; // デフォルトの拡散速度
+    float rippleDecay; // デフォルトの減衰率
 };
 
 // ObjectCommonが使用するレジスタ（変更不可）
@@ -80,7 +84,7 @@ float3 GerstnerWave(float2 position, OceanShaderInfo info)
 }
 
 // 波紋の計算関数
-float CalculateRipple(float2 position, RippleInfo ripple, float currentTime, float speed, float decay)
+float CalculateRipple(float2 position, RippleInfo ripple, float currentTime)
 {
     float elapsed = currentTime - ripple.startTime;
     
@@ -88,27 +92,44 @@ float CalculateRipple(float2 position, RippleInfo ripple, float currentTime, flo
     if (elapsed < 0.0 || ripple.intensity <= 0.0)
         return 0.0;
     
+    // 持続時間を超えた場合
+    if (elapsed > ripple.duration)
+        return 0.0;
+    
+    // 波紋の中心からの距離
     float2 toRipple = position - ripple.position;
     float distance = length(toRipple);
     
-    // 波紋の半径
-    float rippleRadius = elapsed * speed;
+    // 現在の波紋の半径（個別のspeedを使用）
+    float rippleRadius = elapsed * ripple.speed;
     
-    // 波紋の幅
-    float rippleWidth = 2.0;
+    // 最大半径を超えたら表示しない
+    if (rippleRadius > ripple.maxRadius)
+        return 0.0;
+    
+    // 波紋の幅（半径に応じて動的に調整）
+    float rippleWidth = 2.0 + rippleRadius * 0.05;
     
     // 距離と半径の差
     float distanceFromEdge = abs(distance - rippleRadius);
     
-    // 波紋のエッジに近いほど強い
-    float edgeFactor = 1.0 - saturate(distanceFromEdge / rippleWidth);
+    // 波紋のエッジに近いほど強い（ガウス分布風）
+    float edgeFactor = exp(-distanceFromEdge * distanceFromEdge / (rippleWidth * rippleWidth));
     
-    // 時間による減衰
-    float timeFactor = exp(-elapsed * decay);
+    // 時間による減衰（durationに基づく滑らかな減衰）
+    float lifetimeRatio = elapsed / ripple.duration;
+    float timeFactor = 1.0 - smoothstep(0.7, 1.0, lifetimeRatio); // 後半30%で減衰
     
-    // 波の形状（サイン波）
-    float wave = sin((distance - rippleRadius) * 3.14159 * 2.0) * 0.5 + 0.5;
+    // 波の形状（サイン波）- 複数の波を重ねる
+    float waveFrequency1 = 3.14159 * 3.0;
+    float waveFrequency2 = 3.14159 * 5.0;
     
+    float wave1 = sin((distance - rippleRadius) * waveFrequency1 / rippleWidth) * 0.5 + 0.5;
+    float wave2 = sin((distance - rippleRadius) * waveFrequency2 / rippleWidth) * 0.3;
+    
+    float wave = wave1 + wave2 * 0.5;
+    
+    // 最終的な波紋の高さ
     return wave * edgeFactor * timeFactor * ripple.intensity;
 }
 
@@ -122,9 +143,7 @@ float CalculateAllRipples(float2 position)
         totalRipple += CalculateRipple(
             position,
             gRippleBuffer.ripples[i],
-            gRippleBuffer.currentTime,
-            gRippleBuffer.rippleSpeed,
-            gRippleBuffer.rippleDecay
+            gRippleBuffer.currentTime
         );
     }
     
@@ -147,7 +166,7 @@ float3 P(float2 worldXZ, OceanShaderInfo info0, OceanShaderInfo info1, OceanShad
 
     // 合成（波紋は主にY方向に影響）
     offset = wave0 + wave1 + wave2;
-    offset.y += rippleHeight * 0.3; // 波紋の高さを調整
+    offset.y += rippleHeight * 0.5; // 波紋の高さを調整（0.3 → 0.5に変更してより目立つように）
 
     return offset;
 }

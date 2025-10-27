@@ -64,24 +64,20 @@ void Oshan::Initialize(int gridSize) {
     material_ = std::make_unique<Material3D>();
     wvp_ = std::make_unique<Transform3D>();
     camera3D_ = std::make_unique<BufferBase>();
-	// Light関連バッファ
     directionallight_ = std::make_unique<BufferBase>();
-	// Ocean専用バッファ
     for (int i = 0; i < 3; ++i) {
         oceanShaderInfo_[i] = std::make_unique<BufferBase>();
     }
     rippleBuffer_ = std::make_unique<BufferBase>();
     oceanColorBuffer_ = std::make_unique<BufferBase>();
 
-
     /// ===グリッドサイズの設定=== ///
     gridSize_ = gridSize;
-    vertexCount_ = (gridSize_ + 1) * (gridSize_ + 1);  // 修正：+1が必要
+    vertexCount_ = (gridSize_ + 1) * (gridSize_ + 1);
     indexCount_ = gridSize_ * gridSize_ * 6;
 
-
     /// ===worldTransform=== ///
-    worldTransform_ = { { 10.0f, 1.0f, 10.0f }, { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
+    worldTransform_ = { { 0.5f, 1.0f, 0.5f }, { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
     uvTransform_ = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 
     /// ===vertex=== ///
@@ -96,22 +92,17 @@ void Oshan::Initialize(int gridSize) {
     index_->Create(device, sizeof(uint32_t) * indexCount_);
     index_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&indexData_));
 
-    // インデックスデータの書き込み
     int idx = 0;
     for (int z = 0; z < gridSize_; ++z) {
         for (int x = 0; x < gridSize_; ++x) {
-            // 頂点インデックスの計算（gridSize_+1が1行の頂点数）
             int topLeft = z * (gridSize_ + 1) + x;
             int topRight = topLeft + 1;
             int bottomLeft = (z + 1) * (gridSize_ + 1) + x;
             int bottomRight = bottomLeft + 1;
 
-            // 三角形1
             indexData_[idx++] = topLeft;
             indexData_[idx++] = bottomLeft;
             indexData_[idx++] = topRight;
-
-            // 三角形2
             indexData_[idx++] = topRight;
             indexData_[idx++] = bottomLeft;
             indexData_[idx++] = bottomRight;
@@ -123,48 +114,52 @@ void Oshan::Initialize(int gridSize) {
     indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
 
     /// ===OshanCommon=== ///
-	OshanCommon::Initialize(device);
+    OshanCommon::Initialize(device);
 
-    // ===OceanShaderInfo=== ///
+    /// ===OceanShaderInfo=== ///
     for (int i = 0; i < 3; ++i) {
         oceanShaderInfo_[i]->Create(device, sizeof(OceanShaderInfo));
         oceanShaderInfo_[i]->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&oceanShaderData_[i]));
     }
 
-    // より細かく穏やかな波のパラメータ
-    oceanShaderData_[0]->distance = { 0.56f, 0.0f, 0.41f };
-    oceanShaderData_[0]->amplitude = 2.0f;
-    oceanShaderData_[0]->length = 20.0f;
-    oceanShaderData_[0]->speed = 0.5f;
+    oceanShaderData_[0]->distance = { 0.53f, 0.0f, 0.77f };
+    oceanShaderData_[0]->amplitude = 1.308f;
+    oceanShaderData_[0]->length = 10.033f;
+    oceanShaderData_[0]->speed = 2.187f;
     oceanShaderData_[0]->time = 0.0f;
 
-    oceanShaderData_[1]->distance = { 0.66f, 0.0f, 0.14f };
-    oceanShaderData_[1]->amplitude = 1.5f;
-    oceanShaderData_[1]->length = 15.0f;
-    oceanShaderData_[1]->speed = 0.3f;
+    oceanShaderData_[1]->distance = { 0.0f, 0.2f, 0.6f };
+    oceanShaderData_[1]->amplitude = 0.056f;
+    oceanShaderData_[1]->length = 7.369f;
+    oceanShaderData_[1]->speed = 2.320f;
     oceanShaderData_[1]->time = 0.0f;
 
-    oceanShaderData_[2]->distance = { -0.22f, 0.0f, 0.66f };
-    oceanShaderData_[2]->amplitude = 1.0f;
-    oceanShaderData_[2]->length = 10.0f;
-    oceanShaderData_[2]->speed = 0.4f;
+    oceanShaderData_[2]->distance = { 0.28f, 0.03f, 0.0f };
+    oceanShaderData_[2]->amplitude = 0.879f;
+    oceanShaderData_[2]->length = 4.355f;
+    oceanShaderData_[2]->speed = 2.098f;
     oceanShaderData_[2]->time = 0.0f;
 
     /// ===RippleBuffer=== ///
     rippleBuffer_->Create(device, sizeof(RippleBufferForGPU));
     rippleBuffer_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&rippleBufferData_));
 
-    // 波紋の初期化
     for (int i = 0; i < 8; ++i) {
         ripples_[i].isActive = false;
         ripples_[i].position = { 0.0f, 0.0f };
         ripples_[i].startTime = 0.0f;
         ripples_[i].intensity = 0.0f;
+        ripples_[i].duration = 3.0f;
+        ripples_[i].maxRadius = 20.0f;
+        ripples_[i].speed = 4.0f;
+        ripples_[i].priority = 0;
     }
     rippleBufferData_->activeCount = 0;
     rippleBufferData_->currentTime = 0.0f;
     rippleBufferData_->rippleSpeed = rippleSpeed_;
     rippleBufferData_->rippleDecay = rippleDecay_;
+
+    nextPriority_ = 0;
 
     /// ===OceanColorBuffer=== ///
     oceanColorBuffer_->Create(device, sizeof(OceanColorInfo));
@@ -416,7 +411,7 @@ void Oshan::ShowImGui() {
         ImGui::SliderFloat("Test Pos Z", &testPosZ, -50.0f, 50.0f);
 
         if (ImGui::Button("Add Test Ripple")) {
-            AddRipple({ testPosX, 0.0f, testPosZ }, testIntensity);
+            AddCircularRipple({ testPosX, 0.0f, testPosZ }, testIntensity);
         }
 
         ImGui::SameLine();
@@ -425,7 +420,7 @@ void Oshan::ShowImGui() {
             float randX = static_cast<float>(rand() % 100 - 50);
             float randZ = static_cast<float>(rand() % 100 - 50);
             float randIntensity = 0.5f + (rand() % 100) / 100.0f * 1.5f;
-            AddRipple({ randX, 0.0f, randZ }, randIntensity);
+            AddCircularRipple({ randX, 0.0f, randZ }, randIntensity);
         }
     }
 
@@ -497,13 +492,15 @@ void Oshan::UpdateRipples() {
         if (ripples_[i].isActive) {
             float elapsed = currentTime_ - ripples_[i].startTime;
 
-            // 波紋の寿命チェック（3秒程度で消える）
-            if (elapsed > 3.0f) {
+            if (elapsed > ripples_[i].duration) {
                 ripples_[i].isActive = false;
             } else {
                 rippleBufferData_->ripples[activeCount].position = ripples_[i].position;
                 rippleBufferData_->ripples[activeCount].startTime = ripples_[i].startTime;
                 rippleBufferData_->ripples[activeCount].intensity = ripples_[i].intensity;
+                rippleBufferData_->ripples[activeCount].duration = ripples_[i].duration;
+                rippleBufferData_->ripples[activeCount].maxRadius = ripples_[i].maxRadius;
+                rippleBufferData_->ripples[activeCount].speed = ripples_[i].speed;
                 activeCount++;
             }
         }
@@ -513,87 +510,43 @@ void Oshan::UpdateRipples() {
 }
 
 ///-------------------------------------------/// 
-/// 波紋を追加
+/// 円状に広がる波紋の追加（優先順位付き）
 ///-------------------------------------------///
-void Oshan::AddRipple(const Vector3& worldPosition, float intensity) {
-    // 空いているスロットを探す
+void Oshan::AddCircularRipple(const Vector3& center, float duration, float intensity, float maxRadius) {
+    int targetSlot = -1;
+
+    // 1. まず空いているスロットを探す
     for (int i = 0; i < 8; ++i) {
         if (!ripples_[i].isActive) {
-            ripples_[i].position = { worldPosition.x, worldPosition.z };
-            ripples_[i].startTime = currentTime_;
-            ripples_[i].intensity = intensity;
-            ripples_[i].isActive = true;
+            targetSlot = i;
             break;
         }
     }
-}
 
-///-------------------------------------------/// 
-/// 衝突時に呼び出す関数
-///-------------------------------------------///
-void Oshan::OnCollision(const Vector3& collisionPosition, float collisionTime, float intensity) {
-    // 波紋を生成（衝突時刻を指定して開始）
-    for (int i = 0; i < 8; ++i) {
-        if (!ripples_[i].isActive) {
-            ripples_[i].position = { collisionPosition.x, collisionPosition.z };
-            ripples_[i].startTime = collisionTime;
-            ripples_[i].intensity = intensity;
-            ripples_[i].isActive = true;
-            break;
-        }
-    }
-}
+    // 2. 空きがない場合、最も優先度の低い（古い）波紋を探す
+    if (targetSlot == -1) {
+        int lowestPriority = ripples_[0].priority;
+        targetSlot = 0;
 
-///-------------------------------------------/// 
-/// オブジェクト衝突時の波紋生成
-///-------------------------------------------///
-void Oshan::OnObjectHit(const Vector3& worldPosition, int objectID) {
-    HitRecord* record = FindHitRecord(objectID);
-
-    if (record == nullptr) {
-        // 新しい物体の衝突
-        HitRecord newRecord;
-        newRecord.objectID = objectID;
-        newRecord.lastPosition = worldPosition;
-        newRecord.wasHitting = true;
-        hitRecords_.push_back(newRecord);
-
-        // 波紋を生成
-        AddRipple(worldPosition, 1.0f);
-    } else {
-        // 既存の物体
-        if (!record->wasHitting) {
-            // 前回は当たっていなかった = 新しい衝突
-            record->wasHitting = true;
-            record->lastPosition = worldPosition;
-            AddRipple(worldPosition, 1.0f);
-        } else {
-            // 連続して当たっている場合、位置が大きく変わった場合のみ新しい波紋
-            Vector3 diff = {
-                worldPosition.x - record->lastPosition.x,
-                worldPosition.y - record->lastPosition.y,
-                worldPosition.z - record->lastPosition.z
-            };
-            float distanceSq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
-
-            if (distanceSq > 4.0f) { // 2.0f以上離れた場合
-                record->lastPosition = worldPosition;
-                AddRipple(worldPosition, 1.0f);
+        for (int i = 1; i < 8; ++i) {
+            if (ripples_[i].priority < lowestPriority) {
+                lowestPriority = ripples_[i].priority;
+                targetSlot = i;
             }
         }
     }
-}
 
-///-------------------------------------------/// 
-/// 衝突記録を探す
-///-------------------------------------------///
-Oshan::HitRecord* Oshan::FindHitRecord(int objectID) {
-    for (auto& record : hitRecords_) {
-        if (record.objectID == objectID) {
-            return &record;
-        }
+    // 3. 選択されたスロットに新しい波紋を設定
+    if (targetSlot >= 0 && targetSlot < 8) {
+        ripples_[targetSlot].position = { center.x, center.z };
+        ripples_[targetSlot].startTime = currentTime_;
+        ripples_[targetSlot].intensity = intensity;
+        ripples_[targetSlot].duration = duration;
+        ripples_[targetSlot].maxRadius = maxRadius;
+        ripples_[targetSlot].speed = maxRadius / duration;
+        ripples_[targetSlot].priority = nextPriority_++;
+        ripples_[targetSlot].isActive = true;
     }
-    return nullptr;
 }
 
 ///-------------------------------------------/// 

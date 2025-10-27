@@ -8,22 +8,32 @@ struct RippleData {
     float startTime;       // 波紋の開始時間
     float intensity;       // 波紋の強度
     bool isActive;         // アクティブかどうか
+    float duration;        // 波紋の持続時間
+    float maxRadius;       // 波紋の最大半径
+    float speed;           // 波紋の拡散速度
+    int priority;          // 優先度
 };
 
-/// ===波紋バッファ（GPU用）=== ///
+// GPU用の波紋情報
+struct RippleInfoForGPU {
+    Vector2 position;
+    float startTime;
+    float intensity;
+    float duration;
+    float maxRadius;
+    float speed;
+    float padding;       // アライメント用
+};
+
 struct RippleBufferForGPU {
-    struct RippleInfo {
-        Vector2 position;
-        float startTime;
-        float intensity;
-    } ripples[8];
+    RippleInfoForGPU ripples[8];
     int activeCount;
     float currentTime;
-    float rippleSpeed;
+    float rippleSpeed;   // デフォルトの速度として残す
     float rippleDecay;
 };
 
-/// ===Ocean Shader Info=== ///
+/// ===オーシャンシェーダーの情報=== ///
 struct OceanShaderInfo {
     Vector3 distance;    // 波の方向ベクトル
     float amplitude;     // 波の振幅
@@ -33,7 +43,7 @@ struct OceanShaderInfo {
     float padding[3];    // パディング
 };
 
-/// ===Color Info=== ///
+/// ===オーシャンシェーダーの色の構造体=== ///
 struct OceanColorInfo {
     Vector3 seaBase;      // 基本の海の色
     float padding1;

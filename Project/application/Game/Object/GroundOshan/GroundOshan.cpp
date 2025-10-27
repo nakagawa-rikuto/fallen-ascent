@@ -19,11 +19,11 @@ void GroundOshan::Initialize() {
 	aabb_.min = { -500.0f, -2.0f, -500.0f };
 	aabb_.max = { 500.0f, 0.0f, 500.0f };
 
-
 	// オーシャンの初期化
 	oshan_ = std::make_unique<Oshan>();
-	oshan_->Initialize(150);
-	oshan_->SetTranslate({ 0.0f, 0.0f, 0.0f });
+	oshan_->Initialize(500);
+	oshan_->SetTranslate({ 0.0f, -1.0f, 0.0f });
+	oshan_->SetScale({ 0.5f, 0.5f, 0.5f });
 
 	oshan_->Update();
 }
@@ -38,7 +38,7 @@ void GroundOshan::Update() {
 	if (InputService::TriggerKey(DIK_SPACE)) {
 		// 波紋を追加
 		Vector3 ripplePos = { 0.0f, 0.0f, 0.0f };
-		oshan_->AddRipple(ripplePos, 1.0f);
+		oshan_->AddCircularRipple(ripplePos, 1.0f, 1.0f, 4.0f);
 	}
 
 #endif // _DEBUG
@@ -74,5 +74,5 @@ void GroundOshan::ShowImGui() {
 void GroundOshan::OnCollision(Collider* collider) {
 	// オーシャンに波紋を追加
 	Vector3 collisionPos = collider->GetTransform().translate;
-	oshan_->OnCollision(collisionPos, 0.0f, 1.0f);
+	oshan_->AddCircularRipple(collisionPos, 2.0f, 1.0f, 4.0f);
 }
