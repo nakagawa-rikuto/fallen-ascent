@@ -164,16 +164,17 @@ void GameScene::Draw() {
 
 #pragma region モデル描画
 
-	// Ground
-	ground_->Draw();
-	groundOshan_->Draw();
-	
-	// Enemy
+	/// ===Ground=== ///
+	//ground_->Draw();
+	//groundOshan_->Draw();
+
+	/// ===Enemy=== ///
 	//enemyManager_->Draw();
-	// Player
+
+	/// ===Player=== ///
 	player_->Draw();
 
-	// StartAnimation
+	/// ===StartAnimation=== ///
 	if (startAnimation_ && !startAnimation_->IsCompleted()) {
 		startAnimation_->Draw();
 	}
