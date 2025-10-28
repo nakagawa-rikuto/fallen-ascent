@@ -103,7 +103,7 @@ void GameScene::Initialize() {
 	startAnimation_->Initialize(player_.get(), camera_.get());
 
 	// 初期フェーズをFadeInに設定
-	currentPhase_ = GamePhase::Game;
+	currentPhase_ = GamePhase::StartAnimation;
 	transiton_->StartFadeOut(fadeInDuration_); // フェードイン開始
 }
 
