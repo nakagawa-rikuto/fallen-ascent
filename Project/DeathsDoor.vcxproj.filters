@@ -484,6 +484,7 @@
     <ClCompile Include="Engine\Graphics\3d\Oshan\Oshan.cpp" />
     <ClCompile Include="Engine\Graphics\3d\Oshan\OshanCommon.cpp" />
     <ClCompile Include="application\Game\Object\GroundOshan\GroundOshan.cpp" />
+    <ClCompile Include="application\Game\Animation\GameOverAnimation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -928,6 +929,7 @@
     <ClInclude Include="Engine\Graphics\3d\Oshan\OshanCommon.h" />
     <ClInclude Include="Engine\DataInfo\OshanData.h" />
     <ClInclude Include="application\Game\Object\GroundOshan\GroundOshan.h" />
+    <ClInclude Include="application\Game\Animation\GameOverAnimation.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

@@ -39,23 +39,6 @@ public: /// ===Getter=== ///
 	bool IsCompleted() const { return isCompleted_; }
 
 private:
-
-	/// <summary>
-	/// プレイヤーの降下アニメーション更新処理
-	/// </summary>
-	void UpdatePlayerDescent();
-
-	/// <summary>
-	/// カメラの回転アニメーション更新処理
-	/// </summary>
-	void UpdateCameraRotation();
-
-	/// <summary>
-	/// アニメーション完了処理
-	/// </summary>
-	void CompleteAnimation();
-
-private:
 	/// ===ポインタ=== ///
 	Player* player_ = nullptr;
 	GameCamera* camera_ = nullptr;
@@ -88,4 +71,21 @@ private:
 
 	/// ===デルタタイム=== ///
 	const float kDeltaTime_ = 1.0f / 60.0f;
+
+private:
+
+	/// <summary>
+	/// プレイヤーの降下アニメーション更新処理
+	/// </summary>
+	void UpdatePlayerDescent();
+
+	/// <summary>
+	/// カメラの回転アニメーション更新処理
+	/// </summary>
+	void UpdateCameraRotation();
+
+	/// <summary>
+	/// アニメーション完了処理
+	/// </summary>
+	void CompleteAnimation();
 };

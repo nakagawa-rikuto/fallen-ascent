@@ -20,6 +20,14 @@ void FollowCamera::SetFollowCamera(FollowCameraType type) {
 }
 
 ///-------------------------------------------/// 
+/// Getter
+///-------------------------------------------///
+// 追従のオフセットを取得
+const Vector3& FollowCamera::GetOffset() const { return offset_; }
+// 回転型追従カメラのオフセットを取得
+const Vector3& FollowCamera::GetOrbitingOffset() const { return OrbitingOffset_; }
+
+///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
 // 追従対象の座標を設定

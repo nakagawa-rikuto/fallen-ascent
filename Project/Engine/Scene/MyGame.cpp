@@ -123,6 +123,9 @@ void MyGame::LoadTexture() {
 	Loader::LoadTexture("Option", "TitleUI/Option.png");
 	Loader::LoadTexture("Exit", "TitleUI/Exit.png");
 	Loader::LoadTexture("OverLay", "TitleUI/OverLay.png");
+
+	// GameAnimaiton
+	Loader::LoadTexture("GameOvverAnimation", "Animation/GameOverAnimation.png");
 }
 // モデル
 void MyGame::LoadModel() {

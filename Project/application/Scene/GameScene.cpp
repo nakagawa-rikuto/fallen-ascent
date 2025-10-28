@@ -102,6 +102,10 @@ void GameScene::Initialize() {
 	startAnimation_ = std::make_unique<StartAnimation>();
 	startAnimation_->Initialize(player_.get(), camera_.get());
 
+	/// ===GameOverAnimation=== ///
+	gameOverAnimation_ = std::make_unique<GameOverAnimation>();
+	gameOverAnimation_->Initialize(camera_.get());
+
 	// 初期フェーズをFadeInに設定
 	currentPhase_ = GamePhase::StartAnimation;
 	transiton_->StartFadeOut(fadeInDuration_); // フェードイン開始
@@ -122,14 +126,18 @@ void GameScene::Update() {
 
 	// Player
 	player_->Information();
-
-	// Oshan
-	groundOshan_->ShowImGui();
-
 	// Enemy
 	//enemyManager_->UpdateImGui();
+	// Oshan
+	//groundOshan_->ShowImGui();
+
+	
 
 #endif // USE_IMGUI
+
+	/// ===Groundの更新=== ///
+	ground_->Update();
+	groundOshan_->Update();
 
 	/// ===フェーズ別更新=== ///
 	switch (currentPhase_) {
@@ -144,6 +152,9 @@ void GameScene::Update() {
 	// ゲームプレイ
 	case GamePhase::Game:
 		UpdateGame();
+		break;
+	case GamePhase::GameOverAnimation:
+		UpdateGameOverAnimation();
 		break;
 	// フェードアウト
 	case GamePhase::FadeOut:
@@ -165,7 +176,7 @@ void GameScene::Draw() {
 #pragma region モデル描画
 
 	/// ===Ground=== ///
-	//ground_->Draw();
+	ground_->Draw();
 	//groundOshan_->Draw();
 
 	/// ===Enemy=== ///
@@ -175,8 +186,11 @@ void GameScene::Draw() {
 	player_->Draw();
 
 	/// ===StartAnimation=== ///
-	if (startAnimation_ && !startAnimation_->IsCompleted()) {
+	if (currentPhase_ == GamePhase::StartAnimation) {
 		startAnimation_->Draw();
+	/// ===GameOverAnimation=== ///
+	} else if (currentPhase_ == GamePhase::GameOverAnimation) {
+		gameOverAnimation_->Draw();
 	}
 
 	/// ===ISceneの描画=== ///
@@ -195,12 +209,8 @@ void GameScene::UpdateFadeIn() {
 	// FadeIn更新
 	transiton_->FadeOutUpdate();
 
-	/// ===Groundの更新=== ///
-	ground_->Update();
-	groundOshan_->Update();
-
 	// プレイヤーのStartAnimation専用更新
-	player_->UpdateStartAnimation();
+	player_->UpdateAnimation();
 
 	// FadeIn完了でStartAnimationフェーズへ
 	if (transiton_->GetState() == FadeState::Finished) {
@@ -216,12 +226,8 @@ void GameScene::UpdateStartAnimation() {
 	// アニメーション更新
 	startAnimation_->Update();
 
-	/// ===Groundの更新=== ///
-	ground_->Update();
-	groundOshan_->Update();
-
-	// プレイヤーのStartAnimation専用更新
-	player_->UpdateStartAnimation();
+	// アニメーション時のPlayer更新
+	player_->UpdateAnimation();
 
 	// アニメーション完了でGameフェーズへ
 	if (startAnimation_->IsCompleted()) {
@@ -241,11 +247,27 @@ void GameScene::UpdateGame() {
 	/// ===Enemy=== ///
 	//enemyManager_->Update();
 
-	/// ===Groundの更新=== ///
-	ground_->Update();
-	groundOshan_->Update();
-
 	// ゲームが終わったらFadeOutへ
+
+	if (InputService::TriggerKey(DIK_SPACE)) {
+		currentPhase_ = GamePhase::GameOverAnimation;
+	}
+}
+
+///-------------------------------------------/// 
+/// GameOverアニメーション時の更新処理
+///-------------------------------------------///
+void GameScene::UpdateGameOverAnimation() {
+	// アニメーション更新
+	gameOverAnimation_->Update();
+
+	// アニメーション時のPlayer更新
+	player_->UpdateAnimation();
+
+	// アニメーション完了でシーン移動
+	if (gameOverAnimation_->IsCompleted()) {
+		sceneManager_->ChangeScene(SceneType::Title);
+	}
 }
 
 ///-------------------------------------------/// 
