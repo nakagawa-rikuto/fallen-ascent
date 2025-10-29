@@ -1,4 +1,5 @@
 #include "GameCamera.h"
+#include <cassert>
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -74,6 +75,17 @@ const Quaternion& GameCamera::GetRotate() const {
 		return follow_->GetRotate();
 	}
 }
+// Offset
+const Vector3& GameCamera::GetOffset() const {
+	assert(type_ == CameraType::Follow);
+	return follow_->GetOffset();
+}
+// OrbitingOffset
+const Vector3& GameCamera::GetOrbitingOffset() const {
+	assert(type_ == CameraType::Follow);
+	return follow_->GetOrbitingOffset();
+}
+
 
 ///-------------------------------------------/// 
 /// Setter
@@ -140,36 +152,36 @@ void GameCamera::SetFarClip(const float& farClip) {
 }
 // FollowCameraの設定
 void GameCamera::SetFollowCamera(FollowCameraType type) {
-	if (type_ == CameraType::Normal) { return; }
+	if (type_ == CameraType::Normal) return;
 	follow_->SetFollowCamera(type);
 }
 // 追従対象の座標を設定
 void GameCamera::SetTarget(Vector3* position, Quaternion* rotation) {
-	if (type_ == CameraType::Normal) { return; }
+	if (type_ == CameraType::Normal) return;
 	follow_->SetTarget(position, rotation);
 }
 // 追従のオフセット
 void GameCamera::SetOffset(const Vector3& offset) {
-	if (type_ == CameraType::Normal) { return; }
+	if (type_ == CameraType::Normal) return;
 	follow_->SetOffset(offset);
 }
 void GameCamera::SetOrbitingOffset(const Vector3& offset) {
-	if (type_ == CameraType::Normal) { return; }
+	if (type_ == CameraType::Normal) return;
 	follow_->SetOrbitingOffset(offset);
 }
 // 追従速度を設定
 void GameCamera::SetFollowSpeed(float speed) {
-	if (type_ == CameraType::Normal) { return; }
+	if (type_ == CameraType::Normal) return;
 	follow_->SetFollowSpeed(speed);
 }
 // 回転補間速度
 void GameCamera::SetLerpSpeed(float speed) {
-	if (type_ == CameraType::Normal) { return; }
+	if (type_ == CameraType::Normal) return;
 	follow_->SetLerpSpeed(speed);
 }
 // 回転の重み
 void GameCamera::SetStick(const Vector2& stickValue) {
-	if (type_ == CameraType::Normal) { return; }
+	if (type_ == CameraType::Normal) return;
 	follow_->SetStick(stickValue);
 }
 

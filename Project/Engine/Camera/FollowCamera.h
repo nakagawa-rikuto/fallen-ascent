@@ -35,6 +35,11 @@ public:
 	/// <param name="type">設定するフォローカメラの種類（FollowCameraType 型）。</param>
 	void SetFollowCamera(FollowCameraType type);
 
+public: /// ===Getter=== ///
+
+	const Vector3& GetOffset() const;
+	const Vector3& GetOrbitingOffset() const;
+
 public:/// ===Setter=== ///
 	// 追従対象の座標を設定
 	void SetTarget(Vector3* position, Quaternion* rotation);

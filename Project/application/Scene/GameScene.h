@@ -9,15 +9,17 @@
 #include "application/Game/Object/GroundOshan/GroundOshan.h"
 // Animation
 #include "application/Game/Animation/StartAnimation.h"
+#include "application/Game/Animation/GameOverAnimation.h"
 // Transition
 #include "application/Game/Transition/SceneTransition.h"
 
 /// ===GameSceneのフェーズ=== ///
 enum class GamePhase {
-	FadeIn,          // フェードイン
-	StartAnimation,  // 開始アニメーション
-	Game,            // ゲームプレイ中
-	FadeOut          // フェードアウト
+	FadeIn,				// フェードイン
+	StartAnimation,		// 開始アニメーション
+	Game,				// ゲームプレイ中
+	GameOverAnimation,  // ゲームオーバー
+	FadeOut				// フェードアウト
 };
 
 ///=====================================================/// 
@@ -66,6 +68,8 @@ private:/// ===メンバ変数=== ///
 	std::unique_ptr<GroundOshan> groundOshan_;
 	// StartAnimation
 	std::unique_ptr<StartAnimation> startAnimation_;
+	// GameOverAnimation
+	std::unique_ptr<GameOverAnimation> gameOverAnimation_;
 
 	/// ===変数の宣言=== ///
 	// カメラ情報
@@ -100,6 +104,11 @@ private: /// ===メンバ関数=== ///
 	/// ゲーム時の更新処理
 	/// </summary>
 	void UpdateGame();
+
+	/// <summary>
+	/// ゲームオーバー時のアニメーションを更新処理
+	/// </summary>
+	void UpdateGameOverAnimation();
 
 	/// <summary>
 	/// フェードアウト時の更新処理

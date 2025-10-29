@@ -35,9 +35,9 @@ public:
 	void Update()override;
 
 	/// <summary>
-	/// 開始アニメーション時の更新処理
+	/// アニメーション時の更新処理
 	/// </summary>
-	void UpdateStartAnimation();
+	void UpdateAnimation();
 
 	/// <summary>
 	/// 描画処理

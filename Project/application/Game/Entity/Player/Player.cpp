@@ -158,7 +158,7 @@ void Player::Update() {
 ///-------------------------------------------/// 
 /// 開始アニメーション時の更新
 ///-------------------------------------------///
-void Player::UpdateStartAnimation() {
+void Player::UpdateAnimation() {
 
 	/// ===SphereColliderの更新=== ///
 	GameCharacter::Update();

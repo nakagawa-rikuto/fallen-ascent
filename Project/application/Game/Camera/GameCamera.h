@@ -65,6 +65,11 @@ public: /// ===Getter=== ///
 	const Vector3& GetTranslate()const;
 	// Rotate
 	const Quaternion& GetRotate()const;
+	// Offset
+	const Vector3& GetOffset() const;
+	// OrbitingOffset
+	const Vector3& GetOrbitingOffset() const;
+
 
 public: /// ===Setter=== ///
 	// Translate
