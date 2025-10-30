@@ -28,6 +28,7 @@ Player::~Player() {
 ///-------------------------------------------///
 // フラグ
 bool Player::GetStateFlag(actionType type) const {
+	// タイプで分岐
 	if (type == actionType::kAvoidance) {
 		return avoidanceInfo_.isFlag;
 	} else if (type == actionType::kCharge) {
@@ -37,6 +38,7 @@ bool Player::GetStateFlag(actionType type) const {
 	}
 }
 bool Player::GetpreparationFlag(actionType type) const {
+	// タイプで分岐
 	if (type == actionType::kAvoidance) {
 		return avoidanceInfo_.isPreparation;
 	} else if (type == actionType::kCharge) {
@@ -47,6 +49,7 @@ bool Player::GetpreparationFlag(actionType type) const {
 }
 // タイマー
 float Player::GetTimer(actionType type) {
+	// タイプで分岐
 	if (type == actionType::kAvoidance) {
 		return avoidanceInfo_.timer;
 	} else if (type == actionType::kCharge) {
@@ -56,16 +59,14 @@ float Player::GetTimer(actionType type) {
 	}
 }
 
-
-
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
 // Cameraの追従対象としてPlaeyrを設定
 void Player::SetCameraTargetPlayer() { camera_->SetTarget(&transform_.translate, &transform_.rotate); }
-
-// フラグ
+// 開始フラグ
 void Player::SetStateFlag(actionType type, bool falg) {
+	// タイプで分岐
 	switch (type) {
 	case actionType::kAvoidance:
 		avoidanceInfo_.isFlag = falg;
@@ -78,7 +79,9 @@ void Player::SetStateFlag(actionType type, bool falg) {
 		break;
 	}
 }
+// 準備フラグ
 void Player::SetpreparationFlag(actionType type, bool falg) {
+	// タイプで分岐
 	switch (type) {
 	case actionType::kAvoidance:
 		avoidanceInfo_.isPreparation = falg;
@@ -93,6 +96,7 @@ void Player::SetpreparationFlag(actionType type, bool falg) {
 }
 // タイマーの設定
 void Player::SetTimer(actionType type, const float& timer) {
+	// タイプで分岐
 	switch (type) {
 	case actionType::kAvoidance:
 		avoidanceInfo_.timer = timer;
@@ -105,6 +109,7 @@ void Player::SetTimer(actionType type, const float& timer) {
 		break;
 	}
 }
+// 無敵時間の設定
 void Player::SetInvicibleTime(const float& time) { 
 	invicibleInfo_.timer = invicibleInfo_.time + time; 
 }
@@ -116,6 +121,7 @@ void Player::SetInvicibleTime(const float& time) {
 void Player::Initialize() {
 	// Cameraの設定
 	camera_ = CameraService::GetActiveCamera().get();
+
 
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();

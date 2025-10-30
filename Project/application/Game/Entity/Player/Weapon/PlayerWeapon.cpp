@@ -71,6 +71,9 @@ void PlayerWeapon::Information() {
 
 }
 
+///-------------------------------------------/// 
+/// 攻撃処理
+///-------------------------------------------///
 void PlayerWeapon::Attack(const Vector3& startPoint, const Vector3& endPoint, float time) {
 	startPoint;
 	endPoint;
@@ -84,12 +87,17 @@ void PlayerWeapon::OnCollision(Collider * collider) {
 	collider;
 }
 
+///-------------------------------------------/// 
+/// Getter
+///-------------------------------------------///
 bool PlayerWeapon::GetIsAttack() const
 {
 	return false;
 }
 
-
+///-------------------------------------------/// 
+/// 攻撃の回転を計算する処理
+///-------------------------------------------///
 void PlayerWeapon::CalculateAttackRotation(const Vector3& startPoint, const Vector3& endPoint, float time) {
 	startPoint;
 	endPoint;

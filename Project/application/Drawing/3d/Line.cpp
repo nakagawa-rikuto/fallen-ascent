@@ -112,10 +112,13 @@ void Line::DrawAABB(const AABB & aabb, const Vector4& color) {
 /// Sphere
 ///-------------------------------------------///
 void Line::DrawSphere(const Sphere& sphere, const Vector4 & color) {
+	// 分割数
 	const uint32_t div = 8;
+	// 緯度・経度のステップ角度
 	const float lonStep = 2.0f * Math::Pi() / float(div);
 	const float latStep = Math::Pi() / float(div);
 
+	// 緯度・経度に沿って線を描画
 	for (uint32_t lat = 0; lat < div; ++lat) {
 		for (uint32_t lon = 0; lon < div; ++lon) {
 			Vector3 a, b, c;
@@ -240,6 +243,7 @@ void Line::DrawGirdBox(const AABB& aabb, uint32_t division, const Vector3& cente
 /// GridLine
 ///-------------------------------------------///
 void Line::DrawGridLines(const Vector3 & start, const Vector3 & end, const Vector3 & offset, uint32_t division, const Vector4 & color) {
+	// 線を描画
 	for (uint32_t i = 0; i <= division; i++) {
 		float t = float(i) / float(division);
 		Vector3 startPos = Math::Lerp(start, end, t);

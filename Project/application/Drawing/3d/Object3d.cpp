@@ -33,6 +33,7 @@ void Object3d::Init(ObjectType type, const std::string& modelName, LightType lig
 /// 更新
 ///-------------------------------------------///
 void Object3d::Update() {
+	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		model_->Update();
 	} else {
@@ -44,6 +45,7 @@ void Object3d::Update() {
 /// 描画
 ///-------------------------------------------///
 void Object3d::Draw(BlendMode mode) {
+	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		model_->Draw(mode);
 	} else {
@@ -55,6 +57,7 @@ void Object3d::Draw(BlendMode mode) {
 /// 親子関係
 ///-------------------------------------------///
 void Object3d::SetParent(ModelCommon* parent) {
+	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		model_->SetParent(parent);
 	} else {
@@ -62,6 +65,7 @@ void Object3d::SetParent(ModelCommon* parent) {
 	}
 }
 void Object3d::ClearParent() {
+	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		model_->ClearParent();
 	} else {
@@ -74,6 +78,7 @@ void Object3d::ClearParent() {
 ///-------------------------------------------///
 // Transform
 const QuaternionTransform& Object3d::GetTransform() const {
+	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		return model_->GetTransform();
 	} else {
@@ -82,6 +87,7 @@ const QuaternionTransform& Object3d::GetTransform() const {
 }
 // Color
 const Vector4& Object3d::GetColor() const {
+	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		return model_->GetColor();
 	} else {
@@ -90,6 +96,7 @@ const Vector4& Object3d::GetColor() const {
 }
 // ModelCommon
 ModelCommon* Object3d::GetModelCommon() {
+	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		return model_.get();
 	} else {
@@ -103,6 +110,7 @@ ModelCommon* Object3d::GetModelCommon() {
 ///-------------------------------------------///
 // Translate
 void Object3d::SetTranslate(const Vector3& translate) {
+	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		model_->SetTranslate(translate);
 	} else {
@@ -111,6 +119,7 @@ void Object3d::SetTranslate(const Vector3& translate) {
 }
 // Rotate
 void Object3d::SetRotate(const Quaternion& rotate) {
+	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		model_->SetRotate(rotate);
 	} else {
@@ -119,6 +128,7 @@ void Object3d::SetRotate(const Quaternion& rotate) {
 }
 // Scale
 void Object3d::SetScale(const Vector3& scale) {
+	//	タイプで分岐
 	if (type_ == ObjectType::Model) {
 		model_->SetScale(scale);
 	} else {
@@ -127,6 +137,7 @@ void Object3d::SetScale(const Vector3& scale) {
 }
 // Color
 void Object3d::SetColor(const Vector4& color) {
+	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		model_->SetColor(color);
 	} else {
@@ -135,6 +146,7 @@ void Object3d::SetColor(const Vector4& color) {
 }
 // LightInfo
 void Object3d::SetLightData(LightInfo light) { 
+	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		model_->SetLightData(light);
 	} else {
@@ -143,6 +155,7 @@ void Object3d::SetLightData(LightInfo light) {
 }
 // Light
 void Object3d::SetLight(LightType type) {
+	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		model_->SetLight(type);
 	} else {
@@ -151,6 +164,7 @@ void Object3d::SetLight(LightType type) {
 }
 // 環境マップ
 void Object3d::SetEnviromentMapData(bool flag, float string) {
+	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		model_->SetEnviromentMapData(flag, string);
 	} else {
@@ -159,6 +173,7 @@ void Object3d::SetEnviromentMapData(bool flag, float string) {
 }
 // Animation
 void Object3d::SetAnimation(const std::string& animationName, bool isLoop) {
+	// タイプで分岐
 	if (type_ == ObjectType::AnimationModel) {
 		animationModel_->SetAnimation(animationName, isLoop);
 	} else {
