@@ -8,7 +8,7 @@
 ///-------------------------------------------///
 void SphereCollider::Initialize() {
 	type_ = ColliderType::Sphere;
-	sphere_.center = object3d_->GetTransform().translate;
+	sphere_.center = object3d_->GetWorldTranslate();
 
 	// Colliderの初期化
 	Collider::Initialize();
@@ -26,7 +26,7 @@ void SphereCollider::Update() {
 	object3d_->SetColor(color_);
 
 	// Sphereのセンター座標を更新
-	sphere_.center = object3d_->GetTransform().translate;
+	sphere_.center = object3d_->GetWorldTranslate();
 
 	// Colliderの更新処理
 	Collider::Update();

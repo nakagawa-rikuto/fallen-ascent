@@ -56,6 +56,7 @@ void Object3d::Draw(BlendMode mode) {
 ///-------------------------------------------/// 
 /// 親子関係
 ///-------------------------------------------///
+// SetParent
 void Object3d::SetParent(ModelCommon* parent) {
 	// タイプで分岐
 	if (type_ == ObjectType::Model) {
@@ -64,6 +65,7 @@ void Object3d::SetParent(ModelCommon* parent) {
 		animationModel_->SetParent(parent);
 	}
 }
+// ClearParent
 void Object3d::ClearParent() {
 	// タイプで分岐
 	if (type_ == ObjectType::Model) {
@@ -72,17 +74,62 @@ void Object3d::ClearParent() {
 		animationModel_->ClearParent();
 	}
 }
+// Offset
+void Object3d::SetParentOffset(const Vector3& offset) {
+	// タイプで分岐
+	if (type_ == ObjectType::Model) {
+		model_->SetParentOffset(offset);
+	} else {
+		animationModel_->SetParentOffset(offset);
+	}
+} 
+const Vector3& Object3d::GetParentOffset() const {
+	// タイプで分岐
+	if (type_ == ObjectType::Model) {
+		return model_->GetParentOffset();
+	} else {
+		return animationModel_->GetParentOffset();
+	}
+}
+
 
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
-// Transform
-const QuaternionTransform& Object3d::GetTransform() const {
+// Translate
+const Vector3& Object3d::GetWorldTranslate() const {
 	// タイプで分岐
 	if (type_ == ObjectType::Model) {
-		return model_->GetTransform();
+		return model_->GetWorldTranslate();
 	} else {
-		return animationModel_->GetTransform();
+		return animationModel_->GetWorldTranslate();
+	}
+}
+// Rotate
+const Quaternion& Object3d::GetWorldRotate() const {
+	// タイプで分岐
+	if (type_ == ObjectType::Model) {
+		return model_->GetWorldRotate();
+	} else {
+		return animationModel_->GetWorldRotate();
+	}
+}
+// Scale
+const Vector3& Object3d::GetWorldScale() const {
+	// タイプで分岐
+	if (type_ == ObjectType::Model) {
+		return model_->GetWorldScale();
+	} else {
+		return animationModel_->GetWorldScale();
+	}
+}
+// Transform
+const QuaternionTransform& Object3d::GetWorldTransform() const {
+	// タイプで分岐
+	if (type_ == ObjectType::Model) {
+		return model_->GetWorldTransform();
+	} else {
+		return animationModel_->GetWorldTransform();
 	}
 }
 // Color
@@ -157,9 +204,9 @@ void Object3d::SetLightData(LightInfo light) {
 void Object3d::SetLight(LightType type) {
 	// タイプで分岐
 	if (type_ == ObjectType::Model) {
-		model_->SetLight(type);
+		model_->SetLightType(type);
 	} else {
-		animationModel_->SetLight(type);
+		animationModel_->SetLightType(type);
 	}
 }
 // 環境マップ

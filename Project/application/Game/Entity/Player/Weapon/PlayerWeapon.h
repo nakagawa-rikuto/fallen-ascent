@@ -1,6 +1,9 @@
 #pragma once
 /// ===Include=== ///
 #include "Engine/Collider/OBBCollider.h"
+// Math
+#include "Math/Vector3.h"
+#include "Math/Quaternion.h"
 
 /// ===前方宣言=== ///
 class Player;
@@ -12,12 +15,6 @@ class PlayerWeapon : public OBBCollider {
 public:
 	PlayerWeapon() = default;
 	~PlayerWeapon() override;
-
-	/// <summary>
-	/// 初期化処理（GameScene）
-	/// </summary>
-	/// <param name="player">初期化する Player オブジェクトへのポインタ。</param>
-	void InitPlayer(Player* player);
 
 	/// <summary>
 	/// 初期化処理
@@ -41,12 +38,26 @@ public:
 	void Information() override;
 
 	/// <summary>
-	/// 攻撃処理
+	/// 親子関係を設定し、指定したオフセットで子オブジェクトの位置を調整
 	/// </summary>
-	/// <param name="startPoint">攻撃の開始位置を表す3次元ベクトル（例: ワールド空間の座標）。</param>
-	/// <param name="endPoint">攻撃の終了位置を表す3次元ベクトル（例: ワールド空間の座標）。</param>
-	/// <param name="time">攻撃にかける時間（秒）。float 型で指定します。</param>
-	void Attack(const Vector3& startPoint, const Vector3& endPoint, float time);
+	/// <param name="parent">親となる Player オブジェクトへのポインタ。子をこの親に関連付けます。</param>
+	void SetUpParent(Player* parent);
+
+	/// <summary>
+	/// 攻撃を開始する
+	/// </summary>
+	/// <param name="startPoint">攻撃開始位置（ワールド座標）</param>
+	/// <param name="endPoint">攻撃終了位置（ワールド座標）</param>
+	/// <param name="duration">攻撃にかける時間（秒）</param>
+	/// <param name="startRotation">開始時の回転（デフォルト：単位クォータニオン）</param>
+	/// <param name="endRotation">終了時の回転（デフォルト：単位クォータニオン）</param>
+	void StartAttack(
+		const Vector3& startPoint,
+		const Vector3& endPoint,
+		float duration,
+		const Quaternion& startRotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f },
+		const Quaternion& endRotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f }
+	);
 
 public: /// ===衝突=== ///
 	/// <summary>
@@ -56,8 +67,19 @@ public: /// ===衝突=== ///
 	void OnCollision(Collider* collider) override;
 
 public: /// ===Getter=== ///
-	// 攻撃フラグ
+	// 攻撃中かどうか
 	bool GetIsAttack() const;
+
+	// 攻撃の進行度を取得
+	float GetAttackProgress() const;
+
+public: /// ===Setter=== ///
+
+	// デルタタイムの設定
+	void SetDeltaTime(float deltaTime);
+
+	// アクティブ設定
+	void SetActive(bool flag);
 
 private:
 	// Player
@@ -65,24 +87,42 @@ private:
 
 	/// ===基本情報=== ///
 	struct BaseInfo {
-		Vector3 offset_ = { 0.0f, 0.0f, 0.0f }; // プレイヤーからのオフセット
-		Vector3 velocity_ = { 0.0f, 0.0f, 0.0f }; // 速度
+		Vector3 offset = { 0.0f, 0.0f, 0.0f };   // プレイヤーからのオフセット
+		Vector3 velocity = { 0.0f, 0.0f, 0.0f }; // 速度
+		float deltaTime = 1.0f / 60.0f;          // デルタタイム
 	};
 	BaseInfo baseInfo_;
 
 	/// ===攻撃情報=== ///
 	struct AttackInfo {
-		bool isAttack = false;
-	};
+		bool isAttacking = false;  // 攻撃中フラグ
+		bool hasHit = false;       // ヒット済みフラグ（多段ヒット防止）
 
-private: 
+		float timer = 0.0f;        // 攻撃タイマー
+		float duration = 0.0f;     // 攻撃の持続時間
+		float progress = 0.0f;     // 攻撃の進行度（0.0～1.0）
+
+		Vector3 startPoint;        // 攻撃開始位置
+		Vector3 endPoint;          // 攻撃終了位置
+		Quaternion startRotation;  // 開始時の回転
+		Quaternion endRotation;    // 終了時の回転
+
+		// 扇形軌道のパラメータ
+		Vector3 arcCenter;         // 円弧の中心位置
+		float arcRadius = 0.0f;    // 円弧の半径
+		float startAngle = 0.0f;   // 開始角度（ラジアン）
+		float endAngle = 0.0f;     // 終了角度（ラジアン）
+	};
+	AttackInfo attackInfo_;
+
+private:
+	/// <summary>
+	/// 扇形の軌道パラメータを計算
+	/// </summary>
+	void CalculateArcParameters();
 
 	/// <summary>
-	/// 攻撃の回転を計算する処理
+	/// 攻撃軌道の更新処理
 	/// </summary>
-	/// <param name="startPoint">攻撃の開始位置を表す3Dベクトル（const参照）。</param>
-	/// <param name="endPoint">攻撃の目標または終了位置を表す3Dベクトル（const参照）。</param>
-	/// <param name="time">回転を計算するための時間。経過時間（秒）や正規化された係数など、文脈に依存する。</param>
-	void CalculateAttackRotation(const Vector3& startPoint, const Vector3& endPoint, float time);
+	void UpdateAttackTrajectory();
 };
-

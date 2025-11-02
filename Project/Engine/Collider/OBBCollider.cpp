@@ -11,8 +11,8 @@
 void OBBCollider::Initialize() {
 	type_ = ColliderType::OBB;
 
-	obb_.center = object3d_->GetTransform().translate;
-	SetOBBAxisFromQuaternion(obb_, object3d_->GetTransform().rotate);
+	obb_.center = object3d_->GetWorldTranslate();
+	SetOBBAxisFromQuaternion(obb_, object3d_->GetWorldRotate());
 
 	// Colliderの初期化
 	Collider::Initialize();
@@ -30,9 +30,9 @@ void OBBCollider::Update() {
 	object3d_->SetColor(color_);
 
 	//センターの位置を更新
-	obb_.center = object3d_->GetTransform().translate;
+	obb_.center = object3d_->GetWorldTranslate();
 	// 回転によってOBBの軸を更新
-	SetOBBAxisFromQuaternion(obb_, object3d_->GetTransform().rotate);
+	SetOBBAxisFromQuaternion(obb_, object3d_->GetWorldRotate());
 
 	// Colliderの更新処理
 	Collider::Update();
@@ -75,16 +75,33 @@ OBB OBBCollider::GetOBB() const {
 ///-------------------------------------------/// 
 /// QuaternionからOBBの軸を設定
 ///-------------------------------------------///
-void OBBCollider::SetOBBAxisFromQuaternion(OBB& obb, Quaternion rotate) {
+void OBBCollider::SetOBBAxisFromQuaternion(OBB& obb, const Quaternion& rotate) {
 	// 回転行列に変換
 	Matrix4x4 rotMatrix = Math::MakeRotateQuaternionMatrix(rotate);
 
-	// 各軸を行列の列ベクトルから取得
-	obb.axis[0] = Vector3(rotMatrix.m[0][0], rotMatrix.m[0][1], rotMatrix.m[0][2]); // X軸
-	obb.axis[1] = Vector3(rotMatrix.m[1][0], rotMatrix.m[1][1], rotMatrix.m[1][2]); // Y軸
-	obb.axis[2] = Vector3(rotMatrix.m[2][0], rotMatrix.m[2][1], rotMatrix.m[2][2]); // Z軸
+	// ✅ 各軸を行列の「列ベクトル」から取得
+	// X軸 = 第0列
+	obb.axis[0] = Vector3(
+		rotMatrix.m[0][0],  // 1行目の0列目
+		rotMatrix.m[1][0],  // 2行目の0列目
+		rotMatrix.m[2][0]   // 3行目の0列目
+	);
 
-	// 念のため正規化（回転行列が正しければ不要）
+	// Y軸 = 第1列
+	obb.axis[1] = Vector3(
+		rotMatrix.m[0][1],  // 1行目の1列目
+		rotMatrix.m[1][1],  // 2行目の1列目
+		rotMatrix.m[2][1]   // 3行目の1列目
+	);
+
+	// Z軸 = 第2列
+	obb.axis[2] = Vector3(
+		rotMatrix.m[0][2],  // 1行目の2列目
+		rotMatrix.m[1][2],  // 2行目の2列目
+		rotMatrix.m[2][2]   // 3行目の2列目
+	);
+
+	// 念のため正規化（回転行列が正しければ不要だが、安全のため）
 	obb.axis[0] = Normalize(obb.axis[0]);
 	obb.axis[1] = Normalize(obb.axis[1]);
 	obb.axis[2] = Normalize(obb.axis[2]);

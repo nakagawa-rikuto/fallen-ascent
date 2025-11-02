@@ -48,9 +48,17 @@ public: /// ===親子関係=== ///
 	/// </summary>
 	void ClearParent();
 
+	// 親からのオフセットを設定
+	void SetParentOffset(const Vector3& offset);
+	// 親からのオフセットを取得
+	const Vector3& GetParentOffset() const;
+
 public: /// ===Getter=== ///
 	// Transform（位置、回転、拡縮）を取得
-	const QuaternionTransform& GetTransform() const;
+	const Vector3& GetWorldTranslate() const;
+	const Quaternion& GetWorldRotate() const;
+	const Vector3& GetWorldScale() const;
+	const QuaternionTransform& GetWorldTransform() const;
 	// Color（色）を取得
 	const Vector4& GetColor() const;
 	// ModelCommonオブジェクトへのポインターを取得

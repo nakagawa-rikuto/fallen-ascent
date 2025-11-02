@@ -131,8 +131,6 @@ void GameScene::Update() {
 	// Oshan
 	//groundOshan_->ShowImGui();
 
-	
-
 #endif // USE_IMGUI
 
 	/// ===Groundの更新=== ///

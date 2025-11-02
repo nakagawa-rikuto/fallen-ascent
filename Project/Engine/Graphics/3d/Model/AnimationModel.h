@@ -32,25 +32,7 @@ public:
 	/// <param name="mode">描画に使用する合成（ブレンド）モードを指定します。</param>
 	void Draw(BlendMode mode) override;
 
-public: /// ===Getter=== ///
-	// モデルTransform
-	const QuaternionTransform& GetTransform() const;
-	// モデルカラー
-	const Vector4& GetColor() const;
-
 public: /// ===Setter=== ///
-	// モデルTransform
-	void SetTranslate(const Vector3& position);
-	void SetRotate(const Quaternion& rotate);
-	void SetScale(const Vector3& scale);
-	// モデルカラー
-	void SetColor(const Vector4& color);
-	// Light
-	void SetLight(LightType type);
-	// LightData
-	void SetLightData(LightInfo light);
-	// 環境マップ
-	void SetEnviromentMapData(bool flag, float string);
 	// Animation
 	void SetAnimation(const std::string& animationName, bool isLoop);
 

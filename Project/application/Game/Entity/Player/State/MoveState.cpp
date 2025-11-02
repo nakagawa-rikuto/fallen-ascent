@@ -59,8 +59,14 @@ void MoveState::Update(Player * player, GameCamera* camera) {
 	}
 
 	/// ===Stateの変更=== ///
+	// 攻撃ボタンが押されたら攻撃状態へ
+	if (InputService::TriggerButton(0, ControllerButtonType::X)) {
+		// 攻撃の準備ができていれば
+		if (player_->GetpreparationFlag(actionType::kAttack)) {
+			player_->ChangState(std::make_unique<AttackState>());
+		}
 	// RBボタンが押されたら進んでいる突進状態へ
-	if (InputService::TriggerButton(0, ControllerButtonType::RB)) {
+	} else if (InputService::TriggerButton(0, ControllerButtonType::RB)) {
 		// タイマーがクールタイムより高ければ、
 		if (player_->GetpreparationFlag(actionType::kCharge)) {
 			player_->ChangState(std::make_unique<ChargeState>(Normalize(info_.direction)));
@@ -71,9 +77,8 @@ void MoveState::Update(Player * player, GameCamera* camera) {
 		if (player_->GetpreparationFlag(actionType::kAvoidance)) {
 			player_->ChangState(std::make_unique<AvoidanceState>(Normalize(info_.direction)));
 		}
-	}
-	// 移動があれば通常状態へ
-	if (std::abs(leftStick.x) < 0.1f && std::abs(leftStick.y) < 0.1f) {
+	// 移動が無ければ通常状態へ
+	} else if (std::abs(leftStick.x) < 0.1f && std::abs(leftStick.y) < 0.1f) {
 		player_->ChangState(std::make_unique<RootState>());
 	}
 }

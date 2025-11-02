@@ -53,14 +53,43 @@ public:
 	void Bind(ID3D12GraphicsCommandList* commandList);
 
 public: /// ===親子関係=== ///
-	// 親の設定
+	/// <summary>
+	/// 親オブジェクトを設定
+	/// </summary>
+	/// <param name="parent">親となる ModelCommon 型のポインタ。設定する親オブジェクトを指します。nullptr の取り扱い（親の解除を意味するかどうかなど）は実装に依存します。</param>
 	void SetParent(ModelCommon* parent);
-	// 親の解除
+	/// <summary>
+	///  親の解除
+	/// </summary>
 	void ClearParent();
+	// Offset
+	void SetParentOffset(const Vector3& offset);
+	const Vector3& GetParentOffset() const;
 
 public:/// ===Setter=== ///
+	// Translate
+	void SetTranslate(const Vector3& position);
+	// Rotate
+	void SetRotate(const Quaternion& rotate);
+	// Scale
+	void SetScale(const Vector3& scale);
+	// Color
+	void SetColor(const Vector4& color);
 	// Light
 	void SetLightType(LightType type);
+	// LightData
+	void SetLightData(LightInfo light);
+	// 環境マップ
+	void SetEnviromentMapData(bool flag, float string);
+
+public: /// ===Getter=== ///
+	// Transform（位置、回転、拡縮）を取得
+	const Vector3& GetWorldTranslate() const;
+	const Quaternion& GetWorldRotate() const;
+	const Vector3& GetWorldScale() const;
+	const QuaternionTransform& GetWorldTransform() const;
+	// Color（色）を取得
+	const Vector4& GetColor() const;
 
 protected: /// ===継承先で使用する変数=== ///
 
@@ -80,6 +109,7 @@ protected: /// ===継承先で使用する変数=== ///
 
 	/// ===親子関係=== ///
 	ModelCommon* parent_ = nullptr;
+	Vector3 parentOffset_ = { 0.0f,0.0f,0.0f };
 
 	/// ===Light=== ///
 	LightInfo light_;
@@ -96,6 +126,18 @@ private:/// ===Variables(変数)=== ///
 	std::unique_ptr<VertexBuffer3D> vertex_;
 	std::unique_ptr<IndexBuffer3D> index_;
 	std::unique_ptr<ObjectCommon> common_;
+
+	// ワールド行列
+	Matrix4x4 worldMatrix_;
+
+	// Getter用
+	mutable QuaternionTransform cachedWorldTransform_;
+	struct WorldTransformCacheDirtyTag {
+		mutable bool translate = false;
+		mutable bool rotate = false;
+		mutable bool scale = false;
+	};
+	WorldTransformCacheDirtyTag worldTransformCacheDirtyTag_;
 
 private:
 	/// <summary>
