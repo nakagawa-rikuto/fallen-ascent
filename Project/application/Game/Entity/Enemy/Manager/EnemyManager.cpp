@@ -63,6 +63,15 @@ void EnemyManager::Update() {
 }
 
 ///-------------------------------------------/// 
+/// アニメーション時の更新処理
+///-------------------------------------------///
+void EnemyManager::UpdateAnimation() {
+	for (auto& e : enemies_) {
+		if (e) e->UpdateAnimation();
+	}
+}
+
+///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
 void EnemyManager::Draw(BlendMode mode) {

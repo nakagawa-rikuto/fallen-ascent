@@ -24,8 +24,11 @@ CloseRangeEnemy::~CloseRangeEnemy() {
 /// GameScene用初期化
 ///-------------------------------------------///
 void CloseRangeEnemy::InitGameScene(const Vector3& translate) {
-	transform_.translate = translate;
 	Initialize();
+
+	transform_.translate = translate;
+	// BaseEnemyの初期化
+	BaseEnemy::Initialize();
 }
 
 ///-------------------------------------------/// 
@@ -72,9 +75,6 @@ void CloseRangeEnemy::Initialize() {
 	obb_.halfSize = { 2.0f, 2.0f, 2.0f };
 	// コライダーに追加
 	ColliderService::AddCollider(this);
-
-	// BaseEnemyの初期化
-	BaseEnemy::Initialize();
 }
 
 ///-------------------------------------------/// 

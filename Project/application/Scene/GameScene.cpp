@@ -79,14 +79,14 @@ void GameScene::Initialize() {
 	player_->Initialize();
 
 	/// ===Enemy=== ///
-	//enemyManager_ = std::make_unique<EnemyManager>();
-	//enemyManager_->Spawn(EnemyType::CloseRange, { -10.0f, 1.0f, 10.0f });
-	//enemyManager_->Spawn(EnemyType::CloseRange, { 10.0f, 1.0f, 10.0f });
-	//enemyManager_->Spawn(EnemyType::CloseRange, { 15.0f, 1.0f, 15.0f });
-	//enemyManager_->Spawn(EnemyType::CloseRange, {- 10.0f, 1.0f, -10.0f });
-	//enemyManager_->Spawn(EnemyType::LongRange, { -15.0f, 1.0f, 15.0f });
+	enemyManager_ = std::make_unique<EnemyManager>();
+	enemyManager_->Spawn(EnemyType::CloseRange, { -30.0f, 1.0f, 30.0f });
+	enemyManager_->Spawn(EnemyType::CloseRange, { 30.0f, 1.0f, 30.0f });
+	enemyManager_->Spawn(EnemyType::CloseRange, { 35.0f, 1.0f, 35.0f });
+	enemyManager_->Spawn(EnemyType::CloseRange, {- 30.0f, 1.0f, -30.0f });
+	enemyManager_->Spawn(EnemyType::LongRange, { -35.0f, 1.0f, 35.0f });
 	// EnemyのSpaw後に呼ぶ
-	//enemyManager_->SetPlayer(player_.get()); // Playerを設定
+	enemyManager_->SetPlayer(player_.get()); // Playerを設定
 
 	/// ===Ground=== ///
 	ground_ = std::make_unique<Ground>();
@@ -127,7 +127,7 @@ void GameScene::Update() {
 	// Player
 	player_->Information();
 	// Enemy
-	//enemyManager_->UpdateImGui();
+	enemyManager_->UpdateImGui();
 	// Oshan
 	//groundOshan_->ShowImGui();
 
@@ -180,12 +180,14 @@ void GameScene::Draw() {
 
 #pragma region モデル描画
 
+	line_->DrawGrid({ 0.0f, 1.0f,0.0f }, { 100.0f, 1.0f, 100.0f }, 50, { 1.0f, 1.0f, 1.0f, 1.0f });
+
 	/// ===Ground=== ///
-	ground_->Draw();
+	//ground_->Draw();
 	//groundOshan_->Draw();
 
 	/// ===Enemy=== ///
-	//enemyManager_->Draw();
+	enemyManager_->Draw();
 
 	/// ===Player=== ///
 	player_->Draw();
@@ -214,7 +216,10 @@ void GameScene::UpdateFadeIn() {
 	// FadeIn更新
 	transiton_->FadeOutUpdate();
 
-	// プレイヤーのStartAnimation専用更新
+	// アニメーション時のEnemy更新
+	enemyManager_->UpdateAnimation();
+
+	// アニメーション時のPlayer更新
 	player_->UpdateAnimation();
 
 	// FadeIn完了でStartAnimationフェーズへ
@@ -230,6 +235,9 @@ void GameScene::UpdateFadeIn() {
 void GameScene::UpdateStartAnimation() {
 	// アニメーション更新
 	startAnimation_->Update();
+
+	// アニメーション時のEnemy更新
+	enemyManager_->UpdateAnimation();
 
 	// アニメーション時のPlayer更新
 	player_->UpdateAnimation();
@@ -250,7 +258,7 @@ void GameScene::UpdateGame() {
 	player_->Update();
 
 	/// ===Enemy=== ///
-	//enemyManager_->Update();
+	enemyManager_->Update();
 
 	// ゲームが終わったらFadeOutへ
 

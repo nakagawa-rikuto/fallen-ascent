@@ -41,6 +41,11 @@ public:
 	virtual void Update()override;
 
 	/// <summary>
+	/// アニメーション時の更新処理
+	/// </summary>
+	void UpdateAnimation();
+
+	/// <summary>
 	/// 描画処理
 	/// </summary>
 	/// <param name="mode">描画に使用するブレンドモード。既定値は BlendMode::KBlendModeNormal。</param>
