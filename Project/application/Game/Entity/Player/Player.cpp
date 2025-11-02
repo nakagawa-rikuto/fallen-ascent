@@ -20,12 +20,17 @@
 /// デストラクタ
 ///-------------------------------------------///
 Player::~Player() {
+	weapon_.reset();
 	object3d_.reset();
 }
+
+
 
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
+// Weapon
+PlayerWeapon* Player::GetWeapon() const { return weapon_.get(); }
 // フラグ
 bool Player::GetStateFlag(actionType type) const {
 	// タイプで分岐
@@ -110,9 +115,7 @@ void Player::SetTimer(actionType type, const float& timer) {
 	}
 }
 // 無敵時間の設定
-void Player::SetInvicibleTime(const float& time) { 
-	invicibleInfo_.timer = invicibleInfo_.time + time; 
-}
+void Player::SetInvicibleTime(const float& time) { invicibleInfo_.timer = invicibleInfo_.time + time; }
 
 
 ///-------------------------------------------/// 
@@ -122,11 +125,15 @@ void Player::Initialize() {
 	// Cameraの設定
 	camera_ = CameraService::GetActiveCamera().get();
 
-
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
 	object3d_->Init(ObjectType::Model, "player");
 
+	// Weaponの初期化
+	weapon_ = std::make_unique<PlayerWeapon>();
+	weapon_->Initialize();
+	weapon_->SetUpParent(this);
+	
 	// 初期設定
 	ChangState(std::make_unique<RootState>());
 
@@ -157,14 +164,17 @@ void Player::Update() {
 		currentState_->Update(this, camera_);
 	}
 
-	/// ===SphereColliderの更新=== ///
-	GameCharacter::Update();
+	/// ===更新処理=== ///
+	UpdateAnimation();
 }
 
 ///-------------------------------------------/// 
 /// 開始アニメーション時の更新
 ///-------------------------------------------///
 void Player::UpdateAnimation() {
+
+	/// ===Weapon=== ///
+	weapon_->Update();
 
 	/// ===SphereColliderの更新=== ///
 	GameCharacter::Update();
@@ -174,6 +184,10 @@ void Player::UpdateAnimation() {
 /// 描画
 ///-------------------------------------------///
 void Player::Draw(BlendMode mode) {
+
+	/// ===Weapon=== ///
+	weapon_->Draw(mode);
+
 	/// ===SphereColliderの描画=== ///
 	GameCharacter::Draw(mode);
 }
@@ -190,6 +204,8 @@ void Player::Information() {
 	ImGui::ColorEdit4("Color", &color_.x);
 	ImGui::DragFloat3("Velocity", &baseInfo_.velocity.x, 0.1f);
 	ImGui::End();
+
+	weapon_->Information();
 #endif // USE_IMGUI
 }
 
@@ -237,6 +253,13 @@ void Player::advanceTimer() {
 		avoidanceInfo_.timer -= baseInfo_.deltaTIme;
 	} else {
 		avoidanceInfo_.isPreparation = true;
+	}
+
+	// 攻撃用タイマーを進める
+	if (attackInfo_.timer > 0.0f) {
+		attackInfo_.timer -= baseInfo_.deltaTIme;
+	} else {
+		attackInfo_.isPreparation = true;
 	}
 }
 

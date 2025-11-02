@@ -52,6 +52,6 @@ private:
     /// </summary>
     /// <param name="obb">軸を設定する OBB への参照。関数内でこの OBB の軸が更新されます。</param>
     /// <param name="rotate">適用する回転を表すクォータニオン。OBB の軸計算に使用されます。</param>
-    void SetOBBAxisFromQuaternion(OBB& obb, Quaternion rotate);
+    void SetOBBAxisFromQuaternion(OBB& obb, const Quaternion& rotate);
 };
 

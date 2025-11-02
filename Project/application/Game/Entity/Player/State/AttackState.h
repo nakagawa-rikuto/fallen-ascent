@@ -50,9 +50,12 @@ private:
 		bool canCombo = false;			// コンボ可能フラグ
 		bool nextComboRequest = false;	// 次のコンボ入力フラグ
 
+		// 攻撃の設定パラメータ
+		const float weaponLength = 8.0f;// 武器までの距離
+
 		// 各攻撃の接続時間
 		float combo1Duration = 0.4f;	// コンボ1段目の持続時間
-		float combo2Duration = 00.6f;	// コンボ2段目の持続時間
+		float combo2Duration = 0.4f;	// コンボ2段目の持続時間
 
 		// クールタイム
 		float coolTime = 0.3f;			// 攻撃後のクールタイム

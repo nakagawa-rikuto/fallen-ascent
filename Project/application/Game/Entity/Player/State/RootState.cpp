@@ -33,8 +33,14 @@ void RootState::Update(Player * player, GameCamera* camera) {
 	player_->ApplyDeceleration(deceleration_);
 
 	/// ===Stateの変更=== ///
+	// 攻撃ボタンが押されたら攻撃状態へ
+	if (InputService::TriggerButton(0, ControllerButtonType::X)) {
+		// 攻撃の準備ができていれば
+		if (player_->GetpreparationFlag(actionType::kAttack)) {
+			player_->ChangState(std::make_unique<AttackState>());
+		}
 	// RBボタンが押されたら進んでいる突進状態へ
-	if (InputService::TriggerButton(0, ControllerButtonType::RB)) {
+	} else if (InputService::TriggerButton(0, ControllerButtonType::RB)) {
 		// タイマーがクールタイムより高ければ、
 		if (player_->GetpreparationFlag(actionType::kCharge)) {
 			player_->ChangState(std::make_unique<ChargeState>(Normalize(player_->GetVelocity())));
@@ -45,9 +51,8 @@ void RootState::Update(Player * player, GameCamera* camera) {
 		if (player_->GetpreparationFlag(actionType::kAvoidance)) {
 			player_->ChangState(std::make_unique<AvoidanceState>(Normalize(player_->GetVelocity())));
 		}
-	}
 	// 移動が有れば
-	if (std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f) {
+	} else if (std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f) {
 		// Stateを移動状態へ
 		player_->ChangState(std::make_unique<MoveState>());
 	}

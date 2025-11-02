@@ -1,6 +1,7 @@
 #include "ModelCommon.h"
 // Math
 #include "Math/MatrixMath.h"
+#include "Math/sMath.h"
 // Service
 #include "Engine/System/Service/Render.h"
 #include "Engine/System/Service/CameraService.h"
@@ -27,12 +28,142 @@ ModelCommon::~ModelCommon() {
 // 親の設定
 void ModelCommon::SetParent(ModelCommon* parent) { parent_ = parent; }
 // 親の解除
-void ModelCommon::ClearParent() { SetParent(nullptr); }
+void ModelCommon::ClearParent() { 
+	SetParent(nullptr);
+	parentOffset_ = { 0.0f,0.0f,0.0f };
+}
+// Offset
+void ModelCommon::SetParentOffset(const Vector3& offset) { parentOffset_ = offset; }
+const Vector3& ModelCommon::GetParentOffset() const { return parentOffset_; }
 
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
+// Transform
+void ModelCommon::SetTranslate(const Vector3& position) { 
+	worldTransform_.translate = position; 
+	worldTransformCacheDirtyTag_.translate = true;
+}
+void ModelCommon::SetRotate(const Quaternion& rotate) { 
+	worldTransform_.rotate = rotate; 
+	worldTransformCacheDirtyTag_.rotate = true;
+}
+void ModelCommon::SetScale(const Vector3& scale) { 
+	worldTransform_.scale = scale; 
+	worldTransformCacheDirtyTag_.scale = true;
+}
+// Color
+void ModelCommon::SetColor(const Vector4& color) { color_ = color; }
+// Light
 void ModelCommon::SetLightType(LightType type) {common_->SetLightType(type);}
+void ModelCommon::SetLightData(LightInfo light) { light_ = light; }
+// 環境マップ
+void ModelCommon::SetEnviromentMapData(bool flag, float string) {
+	enviromentMapInfo_.isEnviromentMap = flag;
+	enviromentMapInfo_.strength = string;
+}
+
+///-------------------------------------------/// 
+/// Getter
+///-------------------------------------------///
+// Translate 
+const Vector3& ModelCommon::GetWorldTranslate() const {
+	// キャッシュが有効ならそのまま返す
+	if (!worldTransformCacheDirtyTag_.translate) {
+		return cachedWorldTransform_.translate;
+	}
+
+	/// ===ワールド行列から位置を取得=== ///
+	cachedWorldTransform_.translate = {
+		worldMatrix_.m[3][0],
+		worldMatrix_.m[3][1],
+		worldMatrix_.m[3][2]
+	};
+
+	worldTransformCacheDirtyTag_.translate = false; // キャッシュを有効にする
+	return cachedWorldTransform_.translate;
+}
+// Rotate
+const Quaternion& ModelCommon::GetWorldRotate() const {
+	// キャッシュが有効ならそのまま返す
+	if (!worldTransformCacheDirtyTag_.rotate) {
+		return cachedWorldTransform_.rotate;
+	}
+	/// ===ワールド行列から回転を取得=== ///
+	Matrix4x4 rotateMatrix; // 回転行列
+	for (int i = 0; i < 3; ++i) {
+		for (int j = 0; j < 3; ++j) {
+			rotateMatrix.m[i][j] = worldMatrix_.m[i][j];
+		}
+	}
+	// スケールで割って正規化
+	if (cachedWorldTransform_.scale.x != 0.0f) {
+		rotateMatrix.m[0][0] /= cachedWorldTransform_.scale.x;
+		rotateMatrix.m[0][1] /= cachedWorldTransform_.scale.x;
+		rotateMatrix.m[0][2] /= cachedWorldTransform_.scale.x;
+	}
+	if (cachedWorldTransform_.scale.y != 0.0f) {
+		rotateMatrix.m[1][0] /= cachedWorldTransform_.scale.y;
+		rotateMatrix.m[1][1] /= cachedWorldTransform_.scale.y;
+		rotateMatrix.m[1][2] /= cachedWorldTransform_.scale.y;
+	}
+	if (cachedWorldTransform_.scale.z != 0.0f) {
+		rotateMatrix.m[2][0] /= cachedWorldTransform_.scale.z;
+		rotateMatrix.m[2][1] /= cachedWorldTransform_.scale.z;
+		rotateMatrix.m[2][2] /= cachedWorldTransform_.scale.z;
+	}
+	// 回転行列からクォータニオンに変換
+	cachedWorldTransform_.rotate = Math::MatrixToQuaternion(rotateMatrix);
+
+	/// ===ワールド行列から位置を取得=== ///
+	cachedWorldTransform_.translate = {
+		worldMatrix_.m[3][0],
+		worldMatrix_.m[3][1],
+		worldMatrix_.m[3][2]
+	};
+
+	worldTransformCacheDirtyTag_.rotate = false; // キャッシュを有効にする
+	return cachedWorldTransform_.rotate;
+}
+// Scale
+const Vector3& ModelCommon::GetWorldScale() const {
+	// キャッシュが有効ならそのまま返す
+	if (!worldTransformCacheDirtyTag_.scale) {
+		return cachedWorldTransform_.scale;
+	}
+
+	// ===ワールド行列からスケールを取得=== ///
+	cachedWorldTransform_.scale.x = std::sqrt(
+		worldMatrix_.m[0][0] * worldMatrix_.m[0][0] +
+		worldMatrix_.m[0][1] * worldMatrix_.m[0][1] +
+		worldMatrix_.m[0][2] * worldMatrix_.m[0][2]
+	);
+	cachedWorldTransform_.scale.y = std::sqrt(
+		worldMatrix_.m[1][0] * worldMatrix_.m[1][0] +
+		worldMatrix_.m[1][1] * worldMatrix_.m[1][1] +
+		worldMatrix_.m[1][2] * worldMatrix_.m[1][2]
+	);
+	cachedWorldTransform_.scale.z = std::sqrt(
+		worldMatrix_.m[2][0] * worldMatrix_.m[2][0] +
+		worldMatrix_.m[2][1] * worldMatrix_.m[2][1] +
+		worldMatrix_.m[2][2] * worldMatrix_.m[2][2]
+	);
+
+	worldTransformCacheDirtyTag_.scale = false; // キャッシュを有効にする
+	return cachedWorldTransform_.scale;
+}
+// Transform（位置、回転、拡縮）を取得
+const QuaternionTransform& ModelCommon::GetWorldTransform() const { 
+
+	cachedWorldTransform_.scale = GetWorldScale();
+	cachedWorldTransform_.rotate = GetWorldRotate();
+	cachedWorldTransform_.translate = GetWorldTranslate();
+
+	return cachedWorldTransform_;
+}
+// Color
+const Vector4& ModelCommon::GetColor() const { return color_; }
+
 
 ///-------------------------------------------/// 
 /// 初期化
@@ -111,6 +242,10 @@ void ModelCommon::Bind(ID3D12GraphicsCommandList* commandList) {
 	/// ===コマンドリストに設定=== ///
 	// Commonの設定
 	common_->Bind(commandList);
+
+	// テクスチャの設定
+	Render::SetGraphicsRootDescriptorTable(commandList, 2, modelData_.material.textureFilePath);
+	Render::SetGraphicsRootDescriptorTable(commandList, 3, enviromentMapInfo_.textureName);
 }
 
 ///-------------------------------------------/// 
@@ -135,25 +270,35 @@ void ModelCommon::MateialDataWrite() {
 ///-------------------------------------------///
 void ModelCommon::TransformDataWrite() {
 
-	Matrix4x4 worldMatrix = Math::MakeAffineQuaternionMatrix(worldTransform_.scale, worldTransform_.rotate, worldTransform_.translate);
+	worldMatrix_ = Math::MakeAffineQuaternionMatrix(worldTransform_.scale, worldTransform_.rotate, worldTransform_.translate);
 	Matrix4x4 worldViewProjectionMatrix;
 
 	/// ===親の確認=== ///
 	if (parent_) {
+
 		// 親のワールド行列
 		Matrix4x4 parentWorldMatrix = Math::MakeAffineQuaternionMatrix(parent_->worldTransform_.scale, parent_->worldTransform_.rotate, parent_->worldTransform_.translate);
-		worldMatrix = Multiply(worldMatrix, parentWorldMatrix);
+		// オフセット行列を作成（親の回転と拡大縮小を適用するため）
+		Matrix4x4 offsetMatrix = Math::MakeTranslateMatrix(parentOffset_);
+		// 合成
+		worldMatrix_ = Multiply(worldMatrix_, offsetMatrix);
+		worldMatrix_ = Multiply(worldMatrix_, parentWorldMatrix);
 	}
+
+	// キャッシュを無効化
+	worldTransformCacheDirtyTag_.translate = true; 
+	worldTransformCacheDirtyTag_.rotate = true;
+	worldTransformCacheDirtyTag_.scale = true;
 
 	/// ===Matrixの作成=== ///
 	const Matrix4x4& viewProjectionMatrix = camera_->GetViewProjectionMatrix();
-	worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
+	worldViewProjectionMatrix = Multiply(worldMatrix_, viewProjectionMatrix);
 
 	/// ===値の代入=== ///
 	common_->SetTransformData(
 		worldViewProjectionMatrix,
-		Multiply(modelData_.rootNode.localMatrix, worldMatrix),
-		Math::Inverse4x4(worldMatrix)
+		Multiply(modelData_.rootNode.localMatrix, worldMatrix_),
+		Math::Inverse4x4(worldMatrix_)
 	);
 
 }

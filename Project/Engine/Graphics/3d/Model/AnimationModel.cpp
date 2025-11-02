@@ -21,34 +21,11 @@
 /// コンストラクタ、デストラクタ
 ///-------------------------------------------///
 AnimationModel::AnimationModel() = default;
-AnimationModel::~AnimationModel() {
-
-}
-
-///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-/// ===モデル=== ///
-const QuaternionTransform& AnimationModel::GetTransform() const { return worldTransform_; }
-const Vector4& AnimationModel::GetColor() const { return color_; }
+AnimationModel::~AnimationModel() {}
 
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
-/// ===モデル=== ///
-void AnimationModel::SetTranslate(const Vector3& position) { worldTransform_.translate = position; }
-void AnimationModel::SetRotate(const Quaternion& rotate) { worldTransform_.rotate = rotate; }
-void AnimationModel::SetScale(const Vector3& scale) { worldTransform_.scale = scale; }
-void AnimationModel::SetColor(const Vector4& color) { color_ = color; }
-/// ===Light=== ///
-void AnimationModel::SetLight(LightType type) { ModelCommon::SetLightType(type); }
-// LightInfo
-void AnimationModel::SetLightData(LightInfo light) { light_ = light; }
-// 環境マップ
-void AnimationModel::SetEnviromentMapData(bool flag, float string) {
-	enviromentMapInfo_.isEnviromentMap = flag;
-	enviromentMapInfo_.strength = string;
-}
 /// ===AnimatinoName=== ///
 void AnimationModel::SetAnimation(const std::string& animationName, bool isLoop) { 
 	animationName_ = animationName; 
@@ -151,10 +128,6 @@ void AnimationModel::Draw(BlendMode mode) {
 
 	// GPUを登録
 	commandList->SetGraphicsRootDescriptorTable(9, skinCluster_.paletteSrvHandle.second);
-
-	// テクスチャの設定
-	Render::SetGraphicsRootDescriptorTable(commandList, 2, modelData_.material.textureFilePath);
-	Render::SetGraphicsRootDescriptorTable(commandList, 3, enviromentMapInfo_.textureName);
 
 	// 描画（Drawコール）
 	commandList->DrawIndexedInstanced(UINT(modelData_.indices.size()), 1, 0, 0, 0);

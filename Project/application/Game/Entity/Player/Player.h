@@ -4,6 +4,8 @@
 #include "application/Game/Entity/GameCharacter/GameCharacter.h"
 // State
 #include "State/Base/PlayerState.h"
+// Weapon
+#include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
 
 /// ===前方宣言=== ///
 class Enemy;
@@ -59,6 +61,9 @@ public: /// ===衝突判定=== ///
 
 public: /// ===Getter=== ///
 
+	// Weapon
+	PlayerWeapon* GetWeapon() const;
+
 	// フラグ
 	bool GetStateFlag(actionType type) const;
 	bool GetpreparationFlag(actionType type) const;
@@ -96,6 +101,9 @@ public: /// ===State用関数=== ///
 private: /// ===変数の宣言=== ///
 
 	GameCamera* camera_ = nullptr; // カメラ
+
+	/// ===Weapon=== ///
+	std::unique_ptr<PlayerWeapon> weapon_;
 
 	/// ===State=== ///
 	std::unique_ptr<PlayerState> currentState_;
