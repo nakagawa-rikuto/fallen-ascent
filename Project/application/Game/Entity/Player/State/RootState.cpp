@@ -43,7 +43,7 @@ void RootState::Update(Player * player, GameCamera* camera) {
 	} else if (InputService::TriggerButton(0, ControllerButtonType::RB)) {
 		// タイマーがクールタイムより高ければ、
 		if (player_->GetpreparationFlag(actionType::kCharge)) {
-			player_->ChangState(std::make_unique<ChargeState>(Normalize(player_->GetVelocity())));
+			player_->ChangState(std::make_unique<ChargeState>());
 		}
 	// Aボタンが押されたら回避状態へ
 	} else if (InputService::TriggerButton(0, ControllerButtonType::A)) {

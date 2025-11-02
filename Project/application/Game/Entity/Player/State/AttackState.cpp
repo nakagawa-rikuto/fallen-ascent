@@ -93,11 +93,12 @@ void AttackState::InitializeAttack(AttackType type) {
 	attackInfo_.nextComboRequest = false;
 
 	// 基準の位置と回転の設定
-	Vector3 BasePos = { 0.0f, 1.0f, 0.0f };
+	Vector3 BasePos = { 0.0f, player_->GetTransform().translate.y, 0.0f};
 	Quaternion BaseRot = { 0.0f, 0.0f, 0.0f,1.0f };
 
 	// ベースの向きに基づいて方向ベクトルを計算
 	Vector3 forward = Math::RotateVector({ 0.0f, 0.0f, 1.0f }, BaseRot);
+	Vector3 up = { 0.0f, 1.0f, 0.0f };
 
 	/// ===攻撃タイプに応じた設定=== ///
 	switch (type) {
@@ -109,22 +110,22 @@ void AttackState::InitializeAttack(AttackType type) {
 
 		// -90度の位置（プレイヤーの向きから見て左側）
 		float startAngleRad = -90.0f * Math::Pi() / 180.0f;
-		Quaternion startRotQuat = Math::MakeRotateAxisAngle(BasePos, startAngleRad);
+		Quaternion startRotQuat = Math::MakeRotateAxisAngle(up, startAngleRad);
 		Vector3 startDirection = Math::RotateVector(forward, startRotQuat);
 		Vector3 startPoint = BasePos + startDirection * attackInfo_.weaponLength;
 
 		// +90度の位置（プレイヤーの向きから見て右側）
 		float endAngleRad = 90.0f * Math::Pi() / 180.0f;
-		Quaternion endRotQuat = Math::MakeRotateAxisAngle(BasePos, endAngleRad);
+		Quaternion endRotQuat = Math::MakeRotateAxisAngle(up, endAngleRad);
 		Vector3 endDirection = Math::RotateVector(forward, endRotQuat);
 		Vector3 endPoint = BasePos + endDirection * attackInfo_.weaponLength;
 
 		// 開始時は左を向く
-		Quaternion startRot = Math::MakeRotateAxisAngle(BasePos, startAngleRad);
+		Quaternion startRot = Math::MakeRotateAxisAngle(up, startAngleRad);
 		startRot = Multiply(BaseRot, startRot);
 
 		// 終了時は右を向く
-		Quaternion endRot = Math::MakeRotateAxisAngle(BasePos, endAngleRad);
+		Quaternion endRot = Math::MakeRotateAxisAngle(up, endAngleRad);
 		endRot = Multiply(BaseRot, endRot);
 
 		// 武器の攻撃を開始（左→右）
@@ -138,22 +139,22 @@ void AttackState::InitializeAttack(AttackType type) {
 
 		// +90度の位置（プレイヤーの向きから見て右側）
 		float startAngleRad = 90.0f * Math::Pi() / 180.0f;
-		Quaternion startRotQuat = Math::MakeRotateAxisAngle(BasePos, startAngleRad);
+		Quaternion startRotQuat = Math::MakeRotateAxisAngle(up, startAngleRad);
 		Vector3 startDirection = Math::RotateVector(forward, startRotQuat);
 		Vector3 startPoint = BasePos + startDirection * attackInfo_.weaponLength;
 
 		// -90度の位置（プレイヤーの向きから見て左側）
 		float endAngleRad = -90.0f * Math::Pi() / 180.0f;
-		Quaternion endRotQuat = Math::MakeRotateAxisAngle(BasePos, endAngleRad);
+		Quaternion endRotQuat = Math::MakeRotateAxisAngle(up, endAngleRad);
 		Vector3 endDirection = Math::RotateVector(forward, endRotQuat);
 		Vector3 endPoint = BasePos + endDirection * attackInfo_.weaponLength;
 
 		// 開始時は右を向く
-		Quaternion startRot = Math::MakeRotateAxisAngle(BasePos, startAngleRad);
+		Quaternion startRot = Math::MakeRotateAxisAngle(up, startAngleRad);
 		startRot = Multiply(BaseRot, startRot);
 
 		// 終了時は左を向く
-		Quaternion endRot = Math::MakeRotateAxisAngle(BasePos, endAngleRad);
+		Quaternion endRot = Math::MakeRotateAxisAngle(up, endAngleRad);
 		endRot = Multiply(BaseRot, endRot);
 
 		// 武器の攻撃を開始（右→左）

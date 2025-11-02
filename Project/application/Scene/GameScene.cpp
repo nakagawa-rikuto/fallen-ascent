@@ -131,6 +131,13 @@ void GameScene::Update() {
 	// Oshan
 	//groundOshan_->ShowImGui();
 
+	// カメラ切り替え（デバッグ）
+	if (InputService::TriggerKey(DIK_O)) {
+		CameraService::SetActiveCamera("Game");
+	} else if (InputService::TriggerKey(DIK_P)) {
+		CameraService::SetActiveCamera("Default");
+	}
+
 #endif // USE_IMGUI
 
 	/// ===Groundの更新=== ///
