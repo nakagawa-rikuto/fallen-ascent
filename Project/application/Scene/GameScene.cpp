@@ -180,7 +180,7 @@ void GameScene::Draw() {
 
 #pragma region モデル描画
 
-	line_->DrawGrid({ 0.0f, 1.0f,0.0f }, { 100.0f, 1.0f, 100.0f }, 50, { 1.0f, 1.0f, 1.0f, 1.0f });
+	line_->DrawGrid({ 0.0f, 0.0f,0.0f }, { 100.0f, 0.0f, 100.0f }, 50, { 1.0f, 1.0f, 1.0f, 1.0f });
 
 	/// ===Ground=== ///
 	//ground_->Draw();
