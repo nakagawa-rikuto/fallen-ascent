@@ -20,6 +20,25 @@ PlayerWeapon::~PlayerWeapon() {
 }
 
 ///-------------------------------------------/// 
+/// Getter
+///-------------------------------------------///
+bool PlayerWeapon::GetIsAttack() const {
+	return attackInfo_.isAttacking;
+}
+
+float PlayerWeapon::GetAttackProgress() const {
+	return attackInfo_.progress;
+}
+
+///-------------------------------------------/// 
+/// Setter
+///-------------------------------------------///
+// デルタタイムの設定
+void PlayerWeapon::SetDeltaTime(float deltaTime) { baseInfo_.deltaTime = deltaTime; }
+// アクティブ設定
+void PlayerWeapon::SetActive(bool flag) { baseInfo_.isActive = flag; }
+
+///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
 void PlayerWeapon::Initialize() {
@@ -36,6 +55,7 @@ void PlayerWeapon::Initialize() {
 	// 初期状態では非アクティブ
 	SetActive(false);
 	attackInfo_.isAttacking = false;
+	attackInfo_.isChargeAttack = false;
 
 	// コライダーに追加
 	ColliderService::AddCollider(this);
@@ -49,7 +69,7 @@ void PlayerWeapon::Initialize() {
 ///-------------------------------------------///
 void PlayerWeapon::Update() {
 	// 攻撃中でない場合は早期リターン
-	if (!attackInfo_.isAttacking) {
+	if (!attackInfo_.isAttacking && !attackInfo_.isChargeAttack) {
 		SetActive(false);
 		OBBCollider::Update();
 		return;
@@ -62,14 +82,20 @@ void PlayerWeapon::Update() {
 	// 攻撃終了チェック
 	if (attackInfo_.progress >= 1.0f) {
 		attackInfo_.isAttacking = false;
+		attackInfo_.isChargeAttack = false;
 		attackInfo_.progress = 1.0f;
 		SetActive(false);
 		OBBCollider::Update();
 		return;
 	}
 
-	// 攻撃軌道の更新（扇形の軌道に沿って移動）
-	UpdateAttackTrajectory();
+	// 攻撃軌道の更新
+	if (attackInfo_.isAttacking) {
+		UpdateAttackTrajectory();
+	} else if (attackInfo_.isChargeAttack) {
+		UpdateChargeAttackTrajectory();
+	}
+	
 
 	/// ===OBBCollider=== ///
 	OBBCollider::Update();
@@ -80,7 +106,7 @@ void PlayerWeapon::Update() {
 ///-------------------------------------------///
 void PlayerWeapon::Draw(BlendMode mode) {
 	// 攻撃中のみ描画
-	if (attackInfo_.isAttacking) {
+	if (attackInfo_.isAttacking || attackInfo_.isChargeAttack) {
 		OBBCollider::Draw(mode);
 	}
 }
@@ -92,6 +118,7 @@ void PlayerWeapon::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("PlayerWeapon");
 	ImGui::Checkbox("IsAttacking", &attackInfo_.isAttacking);
+	ImGui::Checkbox("IsChargeAttacking", &attackInfo_.isChargeAttack);
 	ImGui::DragFloat("Progress", &attackInfo_.progress, 0.01f, 0.0f, 1.0f);
 	ImGui::DragFloat("Timer", &attackInfo_.timer, 0.01f);
 	ImGui::DragFloat("Duration", &attackInfo_.duration, 0.01f);
@@ -106,6 +133,24 @@ void PlayerWeapon::Information() {
 }
 
 ///-------------------------------------------/// 
+/// 衝突判定
+///-------------------------------------------///
+void PlayerWeapon::OnCollision(Collider* collider) {
+	// 攻撃中でない、または既にヒット済みの場合は処理しない
+	if (!baseInfo_.isActive) {
+		return;
+	}
+
+	// 敵に当たった場合
+	if (collider->GetColliderName() == ColliderName::Enemy) {
+		// ヒットフラグを立てる（1回の攻撃で複数ヒットを防ぐ）
+		attackInfo_.hasHit = true;
+
+		// ここでヒットエフェクトやサウンドの再生などを行う
+	}
+}
+
+///-------------------------------------------/// 
 /// 親子関係の設定
 ///-------------------------------------------///
 void PlayerWeapon::SetUpParent(Player* parent) {
@@ -116,15 +161,14 @@ void PlayerWeapon::SetUpParent(Player* parent) {
 }
 
 ///-------------------------------------------/// 
-/// 攻撃処理
+/// 攻撃開始処理
 ///-------------------------------------------///
 void PlayerWeapon::StartAttack(
 	const Vector3& startPoint,
 	const Vector3& endPoint,
 	float duration,
 	const Quaternion& startRotation,
-	const Quaternion& endRotation
-) {
+	const Quaternion& endRotation) {
 	// 攻撃情報の設定
 	attackInfo_.isAttacking = true;
 	attackInfo_.timer = 0.0f;
@@ -138,6 +182,37 @@ void PlayerWeapon::StartAttack(
 
 	// 扇形の軌道計算のため、円弧の中心と半径を算出
 	CalculateArcParameters();
+
+	// 当たり判定フラグをリセット
+	attackInfo_.hasHit = false;
+
+	// コライダーを有効化
+	SetActive(true);
+
+	// 初期位置を設定
+	transform_.translate = startPoint;
+	transform_.rotate = startRotation;
+}
+
+///-------------------------------------------/// 
+/// チャージ攻撃開始処理
+///-------------------------------------------///
+void PlayerWeapon::StartChargeAttack(
+	const Vector3& startPoint,
+	const Vector3& endPoint,
+	float duration,
+	const Quaternion& startRotation,
+	const Quaternion& endRotation) {
+	// 攻撃情報の設定
+	attackInfo_.isChargeAttack = true;
+	attackInfo_.timer = 0.0f;
+	attackInfo_.duration = duration;
+	attackInfo_.progress = 0.0f;
+
+	attackInfo_.startPoint = startPoint;
+	attackInfo_.endPoint = endPoint;
+	attackInfo_.startRotation = startRotation;
+	attackInfo_.endRotation = endRotation;
 
 	// 当たり判定フラグをリセット
 	attackInfo_.hasHit = false;
@@ -253,38 +328,26 @@ void PlayerWeapon::UpdateAttackTrajectory() {
 }
 
 ///-------------------------------------------/// 
-/// 衝突判定
+/// チャージ攻撃軌道の更新
 ///-------------------------------------------///
-void PlayerWeapon::OnCollision(Collider* collider) {
-	// 攻撃中でない、または既にヒット済みの場合は処理しない
-	if (!attackInfo_.isAttacking || attackInfo_.hasHit) {
-		return;
-	}
+void PlayerWeapon::UpdateChargeAttackTrajectory() {
+	// 勢いのあるイージング関数を適用（EaseInCubicで加速感を出す）
+	float t = attackInfo_.progress;
+	// 前半はゆっくり、後半は勢いよく振り下ろす
+	float easedT = t * t * t; // EaseInCubic
 
-	// 敵に当たった場合
-	if (collider->GetColliderName() == ColliderName::Enemy) {
-		// ヒットフラグを立てる（1回の攻撃で複数ヒットを防ぐ）
-		attackInfo_.hasHit = true;
+	// まっすぐ線形補間で移動（扇形ではなく直線）
+	transform_.translate = Math::Lerp(
+		attackInfo_.startPoint,
+		attackInfo_.endPoint,
+		easedT
+	);
 
-		// ここでヒットエフェクトやサウンドの再生などを行う
-	}
+	// 回転も線形補間（滑らかに回転）
+	transform_.rotate = Math::SLerp(
+		attackInfo_.startRotation,
+		attackInfo_.endRotation,
+		easedT
+	);
 }
 
-///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-bool PlayerWeapon::GetIsAttack() const {
-	return attackInfo_.isAttacking;
-}
-
-float PlayerWeapon::GetAttackProgress() const {
-	return attackInfo_.progress;
-}
-
-///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-// デルタタイムの設定
-void PlayerWeapon::SetDeltaTime(float deltaTime) { baseInfo_.deltaTime = deltaTime; }
-// アクティブ設定
-void PlayerWeapon::SetActive(bool flag) { attackInfo_.isAttacking = flag; }

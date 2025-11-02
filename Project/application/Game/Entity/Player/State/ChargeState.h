@@ -8,7 +8,7 @@
 ///=====================================================///
 class ChargeState : public PlayerState {
 public:
-	ChargeState(const Vector3& direction);
+
 	~ChargeState() override = default;
 
 	/// <summary>
@@ -30,16 +30,45 @@ public:
 	/// </summary>
 	void Finalize() override;
 
-private: 
+private:
 
-	/// ===突進情報=== ///
-	struct ChargeInfo {
-		float speed = 0.0f;			  // 突進時の移動速度
-		float activeTime = 0.15f;      // 突進の有効時間
-		float cooltime = 0.8f;		  // 突進のクールタイム
-		float invincibleTime = 0.1f;  // 突進時の無敵時間
-		float acceleration = 0.0f;    // 突進の加速度
-		Vector3 direction = { 0.0f, 0.0f, 0.0f };
+	/// ===チャージフェーズ=== ///
+	enum class ChargePhase {
+		kCharging,  // チャージ中
+		kAttacking  // 攻撃中
 	};
-	ChargeInfo info_;
+
+	/// ===チャージ情報=== ///
+	struct ChargeInfo {
+		ChargePhase currentPhase = ChargePhase::kCharging; // 現在のフェーズ
+
+		float chargeTimer = 0.0f;      // チャージタイマー
+		float chargeMaxTime = 2.0f;    // 最大チャージ時間
+		float chargePower = 0.0f;      // チャージ力（0.0～1.0）
+
+		float attackDuration = 0.6f;   // 攻撃の持続時間
+		float coolTime = 0.5f;         // 攻撃後のクールタイム
+
+		// 攻撃の設定パラメータ
+		const float weaponLength = 8.0f; // 武器までの距離
+		const float minDamage = 1.0f;    // 最小ダメージ
+		const float maxDamage = 5.0f;    // 最大ダメージ（フルチャージ時）
+	};
+	ChargeInfo chargeInfo_;
+
+private:
+	/// <summary>
+	/// チャージフェーズの処理
+	/// </summary>
+	void UpdateCharging();
+
+	/// <summary>
+	/// 攻撃フェーズの処理
+	/// </summary>
+	void UpdateAttacking();
+
+	/// <summary>
+	/// チャージ攻撃を開始する
+	/// </summary>
+	void StartChargeAttack();
 };
