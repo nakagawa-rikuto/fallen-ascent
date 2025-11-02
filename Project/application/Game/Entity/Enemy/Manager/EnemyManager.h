@@ -35,12 +35,15 @@ public:
     /// <returns>生成された BaseEnemy オブジェクトへのポインター。出現に失敗した場合は nullptr を返すことがある。</returns>
     BaseEnemy* Spawn(EnemyType type, const Vector3& pos);
 
-    // ライフサイクル
-
     /// <summary>
     /// 更新処理
     /// </summary>
     void Update();
+
+	/// <summary>
+	/// アニメーション時の更新処理
+	/// </summary>
+	void UpdateAnimation();
 
     /// <summary>
     /// 描画処理

@@ -24,8 +24,10 @@ void LongRangeEnemy::SetlastYaw() { lastYaw_ = transform_.rotate.y; }
 /// GameScene用初期化
 ///-------------------------------------------///
 void LongRangeEnemy::InitGameScene(const Vector3& translate) {
-	transform_.translate = translate;
 	Initialize();
+	transform_.translate = translate;
+	// BaseEnemyの初期化
+	BaseEnemy::Initialize();
 }
 
 ///-------------------------------------------/// 
@@ -65,9 +67,6 @@ void LongRangeEnemy::Initialize() {
 
 	// 攻撃用の前フレームを初期化
 	lastYaw_ = transform_.rotate.y;
-
-	// BaseEnemyの初期化
-	BaseEnemy::Initialize();
 }
 
 ///-------------------------------------------/// 
