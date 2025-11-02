@@ -3,8 +3,11 @@
 #include "Engine/System/Service/InputService.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
+#include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
 // State
 #include "RootState.h"
+// Math
+#include "Math/sMath.h"
 
 ///-------------------------------------------/// 
 /// 状態に入ったときに呼ばれる
@@ -25,13 +28,16 @@ void AttackState::Enter(Player* player, GameCamera* camera) {
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
-void AttackState::Update(Player * player, GameCamera * camera) {
+void AttackState::Update(Player* player, GameCamera* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
 
 	// アクティブタイマーを進める
 	attackInfo_.activTime -= player_->GetDeltaTime();
+
+	// 減速処理
+	player_->ApplyDeceleration(0.4f);
 
 	// コンボ受付タイマーを進める
 	if (attackInfo_.canCombo) {
@@ -76,25 +82,84 @@ void AttackState::Finalize() {
 /// 攻撃の初期化
 ///-------------------------------------------///
 void AttackState::InitializeAttack(AttackType type) {
+	// 早期リターン
+	PlayerWeapon* weapon = player_->GetWeapon();
+	if (!weapon)return;
+
+	// AttackInfoの初期化	
 	attackInfo_.currentAttack = type;
 	attackInfo_.isAttacking = true;
 	attackInfo_.canCombo = false;
 	attackInfo_.nextComboRequest = false;
 
-	// 攻撃タイプに応じて時間を設定
+	// 基準の位置と回転の設定
+	Vector3 BasePos = { 0.0f, 1.0f, 0.0f };
+	Quaternion BaseRot = { 0.0f, 0.0f, 0.0f,1.0f };
+
+	// ベースの向きに基づいて方向ベクトルを計算
+	Vector3 forward = Math::RotateVector({ 0.0f, 0.0f, 1.0f }, BaseRot);
+
+	/// ===攻撃タイプに応じた設定=== ///
 	switch (type) {
-	case AttackState::AttackType::kCombo1:
-		// コンボ1段目（右から左へ）
+	// コンボ1段目
+	case AttackState::AttackType::kCombo1: {
 		attackInfo_.activTime = attackInfo_.combo1Duration;
 		attackInfo_.canCombo = true;
 		attackInfo_.comboTimer = attackInfo_.comboWindowTime;
-		break;
 
-	case AttackState::AttackType::kCombo2:
-		// コンボ2段目（左から右へ）
-		attackInfo_.activTime = attackInfo_.combo2Duration;
-		attackInfo_.canCombo = false; // 2段目はコンボ終了
+		// -90度の位置（プレイヤーの向きから見て左側）
+		float startAngleRad = -90.0f * Math::Pi() / 180.0f;
+		Quaternion startRotQuat = Math::MakeRotateAxisAngle(BasePos, startAngleRad);
+		Vector3 startDirection = Math::RotateVector(forward, startRotQuat);
+		Vector3 startPoint = BasePos + startDirection * attackInfo_.weaponLength;
+
+		// +90度の位置（プレイヤーの向きから見て右側）
+		float endAngleRad = 90.0f * Math::Pi() / 180.0f;
+		Quaternion endRotQuat = Math::MakeRotateAxisAngle(BasePos, endAngleRad);
+		Vector3 endDirection = Math::RotateVector(forward, endRotQuat);
+		Vector3 endPoint = BasePos + endDirection * attackInfo_.weaponLength;
+
+		// 開始時は左を向く
+		Quaternion startRot = Math::MakeRotateAxisAngle(BasePos, startAngleRad);
+		startRot = Multiply(BaseRot, startRot);
+
+		// 終了時は右を向く
+		Quaternion endRot = Math::MakeRotateAxisAngle(BasePos, endAngleRad);
+		endRot = Multiply(BaseRot, endRot);
+
+		// 武器の攻撃を開始（左→右）
+		weapon->StartAttack(startPoint, endPoint, attackInfo_.combo1Duration, startRot, endRot);
 		break;
+	}
+	// コンボ2段目
+	case AttackState::AttackType::kCombo2: {
+		attackInfo_.activTime = attackInfo_.combo2Duration;
+		attackInfo_.canCombo = false;
+
+		// +90度の位置（プレイヤーの向きから見て右側）
+		float startAngleRad = 90.0f * Math::Pi() / 180.0f;
+		Quaternion startRotQuat = Math::MakeRotateAxisAngle(BasePos, startAngleRad);
+		Vector3 startDirection = Math::RotateVector(forward, startRotQuat);
+		Vector3 startPoint = BasePos + startDirection * attackInfo_.weaponLength;
+
+		// -90度の位置（プレイヤーの向きから見て左側）
+		float endAngleRad = -90.0f * Math::Pi() / 180.0f;
+		Quaternion endRotQuat = Math::MakeRotateAxisAngle(BasePos, endAngleRad);
+		Vector3 endDirection = Math::RotateVector(forward, endRotQuat);
+		Vector3 endPoint = BasePos + endDirection * attackInfo_.weaponLength;
+
+		// 開始時は右を向く
+		Quaternion startRot = Math::MakeRotateAxisAngle(BasePos, startAngleRad);
+		startRot = Multiply(BaseRot, startRot);
+
+		// 終了時は左を向く
+		Quaternion endRot = Math::MakeRotateAxisAngle(BasePos, endAngleRad);
+		endRot = Multiply(BaseRot, endRot);
+
+		// 武器の攻撃を開始（右→左）
+		weapon->StartAttack(startPoint, endPoint, attackInfo_.combo2Duration, startRot, endRot);
+		break;
+	}
 	}
 }
 
@@ -118,7 +183,7 @@ void AttackState::TransitionToNextCombo() {
 	attackInfo_.nextComboRequest = false;
 
 	// 現在の攻撃タイプに応じて次の攻撃へ
-	switch (attackInfo_.currentAttack){
+	switch (attackInfo_.currentAttack) {
 	case AttackType::kCombo1:
 		InitializeAttack(AttackType::kCombo2);
 		break;

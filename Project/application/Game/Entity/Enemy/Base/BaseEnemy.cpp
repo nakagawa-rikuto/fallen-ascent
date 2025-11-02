@@ -31,6 +31,7 @@ BaseEnemy::~BaseEnemy() {
 ///-------------------------------------------///
 // タイマー
 void BaseEnemy::SetTimer(StateType type, float time) {
+	// typeに応じてタイマーを設定
 	switch (type) {
 	case StateType::Move:
 		moveInfo_.timer = time;
@@ -88,6 +89,7 @@ void BaseEnemy::Update() {
 /// 描画
 ///-------------------------------------------///
 void BaseEnemy::Draw(BlendMode mode) {
+	/// ===GameCahracterの描画=== ///
 	GameCharacter::Draw(mode);
 }
 
@@ -118,6 +120,7 @@ void BaseEnemy::Information() {
 void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 	if (!enemy) return;
 
+	// ===== Object系 ===== //
 	enemy->color_ = color_;
 
 	// ===== Move 系（設計値） ===== //

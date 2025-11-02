@@ -172,7 +172,7 @@ void TitleScene::Update() {
 		UpdateModelTransition();
 	} else {
 		// 通常時：現在のモデルをゆっくり回転させる
-		Quaternion currentRotation = models_[currentModelIndex_]->GetTransform().rotate;
+		Quaternion currentRotation = models_[currentModelIndex_]->GetWorldRotate();
 		Quaternion rotationDelta = Math::RotateY(0.03f);
 		models_[currentModelIndex_]->SetRotate(Multiply(rotationDelta, currentRotation));
 	}
@@ -438,9 +438,9 @@ void TitleScene::UpdateModelTransition() {
 	// 両方のモデルを回転
 	Quaternion rotationDelta = Math::RotateY(0.03f);
 
-	Quaternion currentRotation = models_[currentModelIndex_]->GetTransform().rotate;
+	Quaternion currentRotation = models_[currentModelIndex_]->GetWorldRotate();
 	models_[currentModelIndex_]->SetRotate(Multiply(rotationDelta, currentRotation));
 
-	Quaternion nextRotation = models_[nextModelIndex_]->GetTransform().rotate;
+	Quaternion nextRotation = models_[nextModelIndex_]->GetWorldRotate();
 	models_[nextModelIndex_]->SetRotate(Multiply(rotationDelta, nextRotation));
 }

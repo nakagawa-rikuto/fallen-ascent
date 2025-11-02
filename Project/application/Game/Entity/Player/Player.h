@@ -4,6 +4,8 @@
 #include "application/Game/Entity/GameCharacter/GameCharacter.h"
 // State
 #include "State/Base/PlayerState.h"
+// Weapon
+#include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
 
 /// ===前方宣言=== ///
 class Enemy;
@@ -59,6 +61,9 @@ public: /// ===衝突判定=== ///
 
 public: /// ===Getter=== ///
 
+	// Weapon
+	PlayerWeapon* GetWeapon() const;
+
 	// フラグ
 	bool GetStateFlag(actionType type) const;
 	bool GetpreparationFlag(actionType type) const;
@@ -81,16 +86,24 @@ public: /// ===Setter=== ///
 
 public: /// ===State用関数=== ///
 
-	// 減速処理
-	//NOTE: develeration = 減速率
+	/// <summary>
+	/// 減速処理
+	/// </summary>
+	/// <param name="develeration">適用する減速量を表す浮動小数点数への const 参照。</param>
 	void ApplyDeceleration(const float& develeration);
 
-	// Stateの変更
+	/// <summary>
+	/// Stateの変更処理
+	/// </summary>
+	/// <param name="newState">新しい状態を表す std::unique_ptr<PlayerState>。この引数は呼び出し側からムーブされ、所有権は関数に移ります。</param>
 	void ChangState(std::unique_ptr<PlayerState> newState);
 
 private: /// ===変数の宣言=== ///
 
 	GameCamera* camera_ = nullptr; // カメラ
+
+	/// ===Weapon=== ///
+	std::unique_ptr<PlayerWeapon> weapon_;
 
 	/// ===State=== ///
 	std::unique_ptr<PlayerState> currentState_;
@@ -136,6 +149,8 @@ private: /// ===変数の宣言=== ///
 
 private:
 
-	// 時間を進める
+	/// <summary>
+	/// タイマーを進める関数
+	/// </summary>
 	void advanceTimer();
 };

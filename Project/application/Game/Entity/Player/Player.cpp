@@ -20,14 +20,20 @@
 /// デストラクタ
 ///-------------------------------------------///
 Player::~Player() {
+	weapon_.reset();
 	object3d_.reset();
 }
+
+
 
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
+// Weapon
+PlayerWeapon* Player::GetWeapon() const { return weapon_.get(); }
 // フラグ
 bool Player::GetStateFlag(actionType type) const {
+	// タイプで分岐
 	if (type == actionType::kAvoidance) {
 		return avoidanceInfo_.isFlag;
 	} else if (type == actionType::kCharge) {
@@ -37,6 +43,7 @@ bool Player::GetStateFlag(actionType type) const {
 	}
 }
 bool Player::GetpreparationFlag(actionType type) const {
+	// タイプで分岐
 	if (type == actionType::kAvoidance) {
 		return avoidanceInfo_.isPreparation;
 	} else if (type == actionType::kCharge) {
@@ -47,6 +54,7 @@ bool Player::GetpreparationFlag(actionType type) const {
 }
 // タイマー
 float Player::GetTimer(actionType type) {
+	// タイプで分岐
 	if (type == actionType::kAvoidance) {
 		return avoidanceInfo_.timer;
 	} else if (type == actionType::kCharge) {
@@ -56,16 +64,14 @@ float Player::GetTimer(actionType type) {
 	}
 }
 
-
-
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
 // Cameraの追従対象としてPlaeyrを設定
 void Player::SetCameraTargetPlayer() { camera_->SetTarget(&transform_.translate, &transform_.rotate); }
-
-// フラグ
+// 開始フラグ
 void Player::SetStateFlag(actionType type, bool falg) {
+	// タイプで分岐
 	switch (type) {
 	case actionType::kAvoidance:
 		avoidanceInfo_.isFlag = falg;
@@ -78,7 +84,9 @@ void Player::SetStateFlag(actionType type, bool falg) {
 		break;
 	}
 }
+// 準備フラグ
 void Player::SetpreparationFlag(actionType type, bool falg) {
+	// タイプで分岐
 	switch (type) {
 	case actionType::kAvoidance:
 		avoidanceInfo_.isPreparation = falg;
@@ -93,6 +101,7 @@ void Player::SetpreparationFlag(actionType type, bool falg) {
 }
 // タイマーの設定
 void Player::SetTimer(actionType type, const float& timer) {
+	// タイプで分岐
 	switch (type) {
 	case actionType::kAvoidance:
 		avoidanceInfo_.timer = timer;
@@ -105,9 +114,8 @@ void Player::SetTimer(actionType type, const float& timer) {
 		break;
 	}
 }
-void Player::SetInvicibleTime(const float& time) { 
-	invicibleInfo_.timer = invicibleInfo_.time + time; 
-}
+// 無敵時間の設定
+void Player::SetInvicibleTime(const float& time) { invicibleInfo_.timer = invicibleInfo_.time + time; }
 
 
 ///-------------------------------------------/// 
@@ -121,6 +129,11 @@ void Player::Initialize() {
 	object3d_ = std::make_unique<Object3d>();
 	object3d_->Init(ObjectType::Model, "player");
 
+	// Weaponの初期化
+	weapon_ = std::make_unique<PlayerWeapon>();
+	weapon_->Initialize();
+	weapon_->SetUpParent(this);
+	
 	// 初期設定
 	ChangState(std::make_unique<RootState>());
 
@@ -151,14 +164,17 @@ void Player::Update() {
 		currentState_->Update(this, camera_);
 	}
 
-	/// ===SphereColliderの更新=== ///
-	GameCharacter::Update();
+	/// ===更新処理=== ///
+	UpdateAnimation();
 }
 
 ///-------------------------------------------/// 
 /// 開始アニメーション時の更新
 ///-------------------------------------------///
 void Player::UpdateAnimation() {
+
+	/// ===Weapon=== ///
+	weapon_->Update();
 
 	/// ===SphereColliderの更新=== ///
 	GameCharacter::Update();
@@ -168,6 +184,10 @@ void Player::UpdateAnimation() {
 /// 描画
 ///-------------------------------------------///
 void Player::Draw(BlendMode mode) {
+
+	/// ===Weapon=== ///
+	weapon_->Draw(mode);
+
 	/// ===SphereColliderの描画=== ///
 	GameCharacter::Draw(mode);
 }
@@ -184,6 +204,8 @@ void Player::Information() {
 	ImGui::ColorEdit4("Color", &color_.x);
 	ImGui::DragFloat3("Velocity", &baseInfo_.velocity.x, 0.1f);
 	ImGui::End();
+
+	weapon_->Information();
 #endif // USE_IMGUI
 }
 
@@ -231,6 +253,13 @@ void Player::advanceTimer() {
 		avoidanceInfo_.timer -= baseInfo_.deltaTIme;
 	} else {
 		avoidanceInfo_.isPreparation = true;
+	}
+
+	// 攻撃用タイマーを進める
+	if (attackInfo_.timer > 0.0f) {
+		attackInfo_.timer -= baseInfo_.deltaTIme;
+	} else {
+		attackInfo_.isPreparation = true;
 	}
 }
 

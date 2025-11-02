@@ -17,31 +17,6 @@ Model::Model() = default;
 Model::~Model() = default;
 
 ///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-/// ===モデル=== ///
-const QuaternionTransform& Model::GetTransform() const { return worldTransform_; }
-const Vector4& Model::GetColor() const { return color_; }
-
-///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-/// ===モデル=== ///
-void Model::SetTranslate(const Vector3& position) { worldTransform_.translate = position; }
-void Model::SetRotate(const Quaternion& rotate) { worldTransform_.rotate = rotate; }
-void Model::SetScale(const Vector3& scale) { worldTransform_.scale = scale; }
-void Model::SetColor(const Vector4& color) { color_ = color; }
-/// ===Light=== ///
-void Model::SetLight(LightType type) { ModelCommon::SetLightType(type); }
-// LightInfo
-void Model::SetLightData(LightInfo light) {light_ = light; }
-// 環境マップ
-void Model::SetEnviromentMapData(bool flag, float string) { 
-	enviromentMapInfo_.isEnviromentMap = flag;
-	enviromentMapInfo_.strength = string;
-}
-
-///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
 // オブジェクトを読み込む場合
@@ -82,10 +57,6 @@ void Model::Draw(BlendMode mode) {
 	commandList->IASetIndexBuffer(&indexBufferView_);
 	// ModelCommonの設定
 	ModelCommon::Bind(commandList);
-
-	// テクスチャの設定
-	Render::SetGraphicsRootDescriptorTable(commandList, 2, modelData_.material.textureFilePath);
-	Render::SetGraphicsRootDescriptorTable(commandList, 3, enviromentMapInfo_.textureName);
 
 	// 描画（Drawコール）
 	commandList->DrawIndexedInstanced(UINT(modelData_.indices.size()), 1, 0, 0, 0);
