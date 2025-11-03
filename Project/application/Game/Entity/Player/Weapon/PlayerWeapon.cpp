@@ -6,6 +6,7 @@
 #include "Math/EasingMath.h"
 // Service
 #include "Engine/System/Service/ColliderService.h"
+#include "Engine/System/Service/DeltaTimeSevice.h"
 
 // ImGui
 #ifdef USE_IMGUI
@@ -22,19 +23,12 @@ PlayerWeapon::~PlayerWeapon() {
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
-bool PlayerWeapon::GetIsAttack() const {
-	return attackInfo_.isAttacking;
-}
-
-float PlayerWeapon::GetAttackProgress() const {
-	return attackInfo_.progress;
-}
+bool PlayerWeapon::GetIsAttack() const {return attackInfo_.isAttacking;}
+float PlayerWeapon::GetAttackProgress() const {return attackInfo_.progress;}
 
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
-// デルタタイムの設定
-void PlayerWeapon::SetDeltaTime(float deltaTime) { baseInfo_.deltaTime = deltaTime; }
 // アクティブ設定
 void PlayerWeapon::SetActive(bool flag) { baseInfo_.isActive = flag; }
 
@@ -52,6 +46,9 @@ void PlayerWeapon::Initialize() {
 	name_ = ColliderName::PlayerWeapon;
 	obb_.halfSize = { 0.5f, 0.5f, 3.0f };
 
+	// DeltaTime初期化
+	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+
 	// 初期状態では非アクティブ
 	SetActive(false);
 	attackInfo_.isAttacking = false;
@@ -68,6 +65,10 @@ void PlayerWeapon::Initialize() {
 /// 更新
 ///-------------------------------------------///
 void PlayerWeapon::Update() {
+
+	// DeltaTime更新
+	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+
 	// 攻撃中でない場合は早期リターン
 	if (!attackInfo_.isAttacking && !attackInfo_.isChargeAttack) {
 		SetActive(false);

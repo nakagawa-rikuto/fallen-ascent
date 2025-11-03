@@ -17,6 +17,8 @@ void Framework::Initialize(const wchar_t* title) {
 	// ColliderManager
 	colliderManager_ = std::make_unique<ColliderManager>();
 	colliderManager_->Initialize();
+	// DeltaTime
+	deltaTime_ = std::make_unique<DeltaTime>();
 
 	// ServiceLocator
 	ServiceLocator::ProvideAll({
@@ -29,17 +31,18 @@ void Framework::Initialize(const wchar_t* title) {
 		MiiEngine_->GetTextureManager(),
 		MiiEngine_->GetModelManager(),
 		MiiEngine_->GetAnimationManager(),
+		MiiEngine_->GetOffScreenRenderer(),
 		MiiEngine_->GetAudioManager(),
 		MiiEngine_->GetCSVManager(),
 		MiiEngine_->GetLevelManager(),
-		MiiEngine_->GetOffScreenRenderer(),
 		MiiEngine_->GetLineObject3D(),
 		MiiEngine_->GetKeyboard(),
 		MiiEngine_->GetMouse(),
 		MiiEngine_->GetController(),
 		cameraManager_.get(),
 		particleManager_.get(),
-		colliderManager_.get()
+		colliderManager_.get(),
+		deltaTime_.get()
 		}
 	);
 }
@@ -80,7 +83,7 @@ void Framework::Update() {
 ///-------------------------------------------/// 
 /// 終了チェック
 ///-------------------------------------------///
-bool Framework::IsEndRequst() {return endRequst_;}
+bool Framework::IsEndRequst() { return endRequst_; }
 
 ///-------------------------------------------/// 
 /// 実行

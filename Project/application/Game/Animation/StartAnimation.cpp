@@ -2,6 +2,8 @@
 // Player & Camera
 #include "application/Game/Entity/Player/Player.h"
 #include "application/Game/Camera/GameCamera.h"
+// Service
+#include "Engine/System/Service/DeltaTimeSevice.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
@@ -33,6 +35,7 @@ void StartAnimation::Initialize(Player* player, GameCamera* camera) {
 	timer_ = 0.0f;
 	isCompleted_ = false;
 	currentPhase_ = AnimationPhase::PlayerDescent;
+	kDeltaTime_ = DeltaTimeSevice::GetDeltaTime();
 
 	// プレイヤーの初期位置設定
 	if (player_) {
@@ -53,6 +56,9 @@ void StartAnimation::Update() {
 	if (isCompleted_) {
 		return;
 	}
+
+	// デルタタイム取得
+	kDeltaTime_ = DeltaTimeSevice::GetDeltaTime();
 
 	// タイマーを進める
 	timer_ += kDeltaTime_;

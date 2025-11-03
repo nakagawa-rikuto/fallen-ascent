@@ -112,7 +112,7 @@ void ChargeState::StartChargeAttack() {
 	if (!weapon) return;
 
 	// 基準の位置と回転の設定（ローカル座標）
-	Vector3 basePos = { 0.0f, player_->GetTransform().translate.y + 0.0f, 0.0f}; // 高い位置から開始
+	Vector3 basePos = { 0.0f, 0.0f, 0.0f}; // 高い位置から開始
 	Quaternion baseRot = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 	// ベースの向きに基づいて方向ベクトルを計算
@@ -151,7 +151,4 @@ void ChargeState::StartChargeAttack() {
 	weapon->StartChargeAttack(startPoint, endPoint, adjustedDuration, startRot, endRot);
 
 	// ここでチャージ力に応じたダメージを設定可能
-	// float damage = chargeInfo_.minDamage + 
-	//                (chargeInfo_.maxDamage - chargeInfo_.minDamage) * chargeInfo_.chargePower;
-	// weapon->SetDamage(damage);
 }

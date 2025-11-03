@@ -93,7 +93,7 @@ void AttackState::InitializeAttack(AttackType type) {
 	attackInfo_.nextComboRequest = false;
 
 	// 基準の位置と回転の設定
-	Vector3 BasePos = { 0.0f, player_->GetTransform().translate.y, 0.0f};
+	Vector3 BasePos = { 0.0f, 0.0f, 0.0f};
 	Quaternion BaseRot = { 0.0f, 0.0f, 0.0f,1.0f };
 
 	// ベースの向きに基づいて方向ベクトルを計算

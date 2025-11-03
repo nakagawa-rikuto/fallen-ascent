@@ -43,6 +43,8 @@ void ServiceLocator::ProvideAll(const ServiceRegister& registry) {
 	assert(registry.particleManager);
 	// ColliderManager
 	assert(registry.colliderManager);
+	// DeltaTime
+	assert(registry.deltaTime);
 
 	/// ===代入=== ///
 	// WinApp
@@ -81,6 +83,8 @@ void ServiceLocator::ProvideAll(const ServiceRegister& registry) {
 	particleManager_ = registry.particleManager;
 	// ColliderManager
 	colliderManager_ = registry.colliderManager;
+	// DeltaTime
+	deltaTime_ = registry.deltaTime;
 }
 
 ///-------------------------------------------/// 
@@ -105,6 +109,7 @@ void ServiceLocator::Finalize() {
 	dsvManager_ = nullptr;
 	rtvManager_ = nullptr;
 	srvManager_ = nullptr;
+	deltaTime_ = nullptr;
 	winApp_ = nullptr;
 	dxCommon_ = nullptr;
 }
@@ -200,3 +205,8 @@ ParticleManager* ServiceLocator::GetParticleManager() { return particleManager_;
 /// ColliderManager
 ///-------------------------------------------///
 ColliderManager* ServiceLocator::GetColliderManager() { return colliderManager_; }
+
+///-------------------------------------------/// 
+/// DeltaTime
+///-------------------------------------------///
+DeltaTime* ServiceLocator::GetDeltaTime() { return deltaTime_; }

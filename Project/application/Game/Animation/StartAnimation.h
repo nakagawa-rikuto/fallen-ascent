@@ -70,7 +70,7 @@ private:
 	float rotationStartTime_ = 1.5f;                   // 回転開始時刻
 
 	/// ===デルタタイム=== ///
-	const float kDeltaTime_ = 1.0f / 60.0f;
+	float kDeltaTime_;
 
 private:
 

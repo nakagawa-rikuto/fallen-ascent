@@ -485,6 +485,8 @@
     <ClCompile Include="Engine\Graphics\3d\Oshan\OshanCommon.cpp" />
     <ClCompile Include="application\Game\Object\GroundOshan\GroundOshan.cpp" />
     <ClCompile Include="application\Game\Animation\GameOverAnimation.cpp" />
+    <ClCompile Include="Engine\System\DeltraTime\DeltaTime.cpp" />
+    <ClCompile Include="Engine\System\Service\DeltaTimeSevice.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -930,6 +932,8 @@
     <ClInclude Include="Engine\DataInfo\OshanData.h" />
     <ClInclude Include="application\Game\Object\GroundOshan\GroundOshan.h" />
     <ClInclude Include="application\Game\Animation\GameOverAnimation.h" />
+    <ClInclude Include="Engine\System\DeltraTime\DeltaTime.h" />
+    <ClInclude Include="Engine\System\Service\DeltaTimeSevice.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

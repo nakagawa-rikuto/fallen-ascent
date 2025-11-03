@@ -5,6 +5,7 @@
 #include "Math/MatrixMath.h"
 // Service
 #include "Engine/System/Service/GraphicsResourceGetter.h"
+#include "Engine/System/Service/DeltaTimeSevice.h"
 // C++
 #include <random>
 #include <ctime>
@@ -187,9 +188,7 @@ void NormalCaemra::UpdateShake() {
 		return;
 	}
 
-	// タイマーを進める（デルタタイムは適宜調整）
-	const float deltaTime = 1.0f / 60.0f; // 仮に60FPSとして計算
-	shakeTimer_ += deltaTime;
+	shakeTimer_ += DeltaTimeSevice::GetDeltaTime();
 
 	// シェイク終了判定
 	if (shakeTimer_ >= shakeDuration_) {

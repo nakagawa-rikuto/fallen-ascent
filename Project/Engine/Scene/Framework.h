@@ -8,6 +8,8 @@
 #include "Engine/System/Managers/ParticleManager.h"
 // ColliderManager
 #include "Engine/System/Managers/ColliderManager.h"
+// DeltaTime
+#include "Engine/System/DeltraTime/DeltaTime.h"
 // SceneFactory
 #include "Engine/Scene/AbstractSceneFactory.h"
 // ｃ++
@@ -71,6 +73,8 @@ private:
 	std::unique_ptr<ParticleManager> particleManager_;
 	// ColliderManager
 	std::unique_ptr<ColliderManager> colliderManager_;
+	// DeltaTime
+	std::unique_ptr<DeltaTime> deltaTime_;
 protected:
 	// ゲーム終了フラグ
 	bool endRequst_ = false;

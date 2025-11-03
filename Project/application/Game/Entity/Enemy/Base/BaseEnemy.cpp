@@ -314,10 +314,10 @@ void BaseEnemy::UpdateRotationTowards(const Vector3& direction, float slerpT) {
 ///-------------------------------------------///
 void BaseEnemy::advanceTimer() {
 	// 無敵タイマーを進める
-	moveInfo_.timer -= baseInfo_.deltaTIme;
+	moveInfo_.timer -= baseInfo_.deltaTime;
 
 	// 攻撃用のタイマーを進める
 	if (attackInfo_.timer > 0.0f) {
-		attackInfo_.timer -= baseInfo_.deltaTIme;
+		attackInfo_.timer -= baseInfo_.deltaTime;
 	}
 }

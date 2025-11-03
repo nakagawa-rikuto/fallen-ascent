@@ -239,25 +239,25 @@ void Player::OnCollision(Collider* collider) {
 ///-------------------------------------------///
 void Player::advanceTimer() {
 	// 無敵タイマーを進める
-	invicibleInfo_.timer += baseInfo_.deltaTIme;
+	invicibleInfo_.timer += baseInfo_.deltaTime;
 
 	// 突進用のタイマーを進める
 	if (chargeInfo_.timer > 0.0f) {
-		chargeInfo_.timer -= baseInfo_.deltaTIme;
+		chargeInfo_.timer -= baseInfo_.deltaTime;
 	} else {
 		chargeInfo_.isPreparation = true;
 	}
 
 	// 回避用タイマーを進める
 	if (avoidanceInfo_.timer > 0.0f) {
-		avoidanceInfo_.timer -= baseInfo_.deltaTIme;
+		avoidanceInfo_.timer -= baseInfo_.deltaTime;
 	} else {
 		avoidanceInfo_.isPreparation = true;
 	}
 
 	// 攻撃用タイマーを進める
 	if (attackInfo_.timer > 0.0f) {
-		attackInfo_.timer -= baseInfo_.deltaTIme;
+		attackInfo_.timer -= baseInfo_.deltaTime;
 	} else {
 		attackInfo_.isPreparation = true;
 	}

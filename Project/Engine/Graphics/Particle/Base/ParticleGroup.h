@@ -76,7 +76,7 @@ protected:
 	// エミッタ
 	Group group_{};
 	// 時間の進む速度
-	const float kDeltaTime_ = 1.0f / 60.0f;
+	float kDeltaTime_ = 1.0f / 60.0f;
 
 	/// ===プライベートフィールド=== ///
 	std::mt19937 randomEngine_; // 乱数生成器

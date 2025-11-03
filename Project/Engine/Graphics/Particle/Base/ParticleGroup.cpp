@@ -4,6 +4,7 @@
 // Service
 #include "Engine/System/Service/GraphicsResourceGetter.h"
 #include "Engine/System/Service/CameraService.h"
+#include "Engine/System/Service/DeltaTimeSevice.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/MatrixMath.h"
@@ -44,16 +45,23 @@ void ParticleGroup::InstancingInit(const std::string& modelName, const Vector3& 
 
     /// ===Cameraの設定=== ///
     group_.camera = CameraService::GetActiveCamera().get();
+
+	// デルタタイムの取得
+	kDeltaTime_ = DeltaTimeSevice::GetDeltaTime();
 }
 
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
 void ParticleGroup::InstancingUpdate(std::list<ParticleData>::iterator it) {
+	// デルタタイムの取得
+	kDeltaTime_ = DeltaTimeSevice::GetDeltaTime();
 
+	// ワールド行列とWVP行列の計算
     Matrix4x4 worldMatrix = Math::MakeAffineEulerMatrix(it->transform.scale, it->transform.rotate, it->transform.translate);
     Matrix4x4 wvpMatrix;
 
+	// カメラが存在する場合はWVP行列を計算
     if (group_.camera) {
         const Matrix4x4& viewProjectionMatrix = group_.camera->GetViewProjectionMatrix();
         wvpMatrix = Multiply(worldMatrix, viewProjectionMatrix);

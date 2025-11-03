@@ -1,4 +1,6 @@
 #include "GameCharacter.h"
+// DeltaTime
+#include "Engine/System/Service/DeltaTimeSevice.h"
 // ImGui
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -26,7 +28,7 @@ void GameCharacter<TCollider>::Initialize() {
 
 	/// ===BaseInfoの初期化設定=== ///
 	baseInfo_.velocity = { 0.0f, 0.0f, 0.0f };
-	baseInfo_.deltaTIme = 1.0f / 60.0f;
+	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
 	baseInfo_.isDead = false;
 
 	/// ===OBBCollider=== ///
@@ -38,6 +40,8 @@ void GameCharacter<TCollider>::Initialize() {
 ///-------------------------------------------///
 template<typename TCollider>
 void GameCharacter<TCollider>::Update() {
+	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+
 	/// ===位置の更新=== ///
 	this->transform_.translate += baseInfo_.velocity;
 
@@ -63,7 +67,7 @@ void GameCharacter<TCollider>::Information() {
 	TCollider::Information();
 	ImGui::Text("GameCharacterInfo");
 	ImGui::DragFloat3("Velocity", &baseInfo_.velocity.x, 0.1f);
-	ImGui::DragFloat("DeltaTime", &baseInfo_.deltaTIme, 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat("DeltaTime", &baseInfo_.deltaTime, 0.01f, 0.0f, 1.0f);
 	ImGui::Checkbox("IsDead", &baseInfo_.isDead);
 #endif // USE_IMGUI
 }
