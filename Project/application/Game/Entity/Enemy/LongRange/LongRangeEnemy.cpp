@@ -24,8 +24,11 @@ void LongRangeEnemy::SetlastYaw() { lastYaw_ = transform_.rotate.y; }
 /// GameScene用初期化
 ///-------------------------------------------///
 void LongRangeEnemy::InitGameScene(const Vector3& translate) {
+	// CloseRangeEnemyの初期化
 	Initialize();
+	// 位置の設定
 	transform_.translate = translate;
+	moveInfo_.rangeCenter = transform_.translate;
 	// BaseEnemyの初期化
 	BaseEnemy::Initialize();
 }
@@ -35,14 +38,25 @@ void LongRangeEnemy::InitGameScene(const Vector3& translate) {
 ///-------------------------------------------///
 void LongRangeEnemy::Initialize() {
 
+	/// ===Object3d=== ///
+	// Object3dの初期化
+	object3d_ = std::make_unique<Object3d>();
+	object3d_->Init(ObjectType::Model, "player");
+
+	/// ===GameCharacter=== ///
+	// GameCharacterの初期化
+	GameCharacter::Initialize();
+	name_ = ColliderName::Enemy;
+	obb_.halfSize = { 2.0f, 2.0f, 2.0f };
+
 	/// ===MoveInfoの設定=== ///
 	moveInfo_.interval = 5.0f;
 	moveInfo_.timer = 1.0f;
 	moveInfo_.waitTime = 1.0f;
-	moveInfo_.range = 10.0f;
+	moveInfo_.range = 20.0f;
 	moveInfo_.speed = 0.05f;
 	moveInfo_.direction = { 0.0f, 0.0f, 0.0f };
-	moveInfo_.rangeCenter = transform_.translate;
+	moveInfo_.rangeCenter = { 0.0f, 0.0f, 0.0f };
 	moveInfo_.isWating = false;
 
 	/// ===AttackInfoの設定=== ///
@@ -53,17 +67,6 @@ void LongRangeEnemy::Initialize() {
 	attackInfo_.power = 1;
 	attackInfo_.direction = { 0.0f, 0.0f, 0.0f };
 	attackInfo_.isAttack = false;
-
-	/// ===Object3d=== ///
-	// Object3dの初期化
-	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "player");
-
-	/// ===SphereCollider=== ///
-	// Sphereの設定
-	OBBCollider::Initialize();
-	name_ = ColliderName::Enemy;
-	obb_.halfSize = { 2.0f, 2.0f, 2.0f };
 
 	// 攻撃用の前フレームを初期化
 	lastYaw_ = transform_.rotate.y;

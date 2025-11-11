@@ -74,20 +74,21 @@ public:
     /// <param name="sourceEnemy">設定を取得する元となる敵を指す const ポインタ</param>
     void ApplySettingsToAll(const BaseEnemy* sourceEnemy);
 
-    // 指定タイプの代表敵を取得（調整用）
-
     /// <summary>
-    /// 
+    /// 指定した EnemyType に代表的な設定を適用
     /// </summary>
-    /// <param name="type"></param>
-    /// <returns></returns>
-    BaseEnemy* GetRepresentative(EnemyType type);
-
-    // 指定タイプの代表敵の設定を、同タイプ全体に適用
+    /// <param name="type">適用対象の敵の種類。EnemyType（列挙型など）で指定します。</param>
     void ApplyRepresentativeSettingsToType(EnemyType type);
 
-    // 指定タイプの代表敵の設定を、全敵に適用
+    /// <summary>
+    /// 指定した敵タイプの代表的な設定を、すべての対象に適用
+    /// </summary>
+    /// <param name="sourceType">代表設定のソースとなる敵の種類。ここで指定した敵タイプの設定が他のすべての対象に適用されます。</param>
     void ApplyRepresentativeSettingsToAll(EnemyType sourceType);
+
+public: /// ===Getter=== ///
+    //指定タイプの代表敵を取得
+    BaseEnemy* GetRepresentative(EnemyType type);
 
     // 指定タイプの敵数を取得
     int GetEnemyCount(EnemyType type) const;
@@ -96,7 +97,10 @@ public:
     int GetTotalEnemyCount() const;
 
 private:
+    // Player
     Player* player_ = nullptr;
+
+	// BaseEnemyの配列
     std::vector<std::unique_ptr<BaseEnemy>> enemies_;
 
     // タイプ判定

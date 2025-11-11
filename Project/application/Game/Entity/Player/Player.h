@@ -116,11 +116,11 @@ private: /// ===変数の宣言=== ///
 	};
 	InvicibleInfo invicibleInfo_;
 
-	/// ===ChargeInfo=== ///
+	/// ===溜め攻撃=== ///
 	struct ChargeInfo {
 		float timer = 0.0f;
-		bool isPreparation = false; // 突進の準備フラグ
-		bool isFlag = false;        // 突進のフラグ
+		bool isPreparation = false; // 溜め攻撃の準備フラグ
+		bool isFlag = false;        // 溜め攻撃のフラグ
 	};
 	ChargeInfo chargeInfo_;
 

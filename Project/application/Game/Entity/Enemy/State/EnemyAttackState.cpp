@@ -16,7 +16,7 @@ void EnemyAttackState::Enter(BaseEnemy* enemy) {
 	// 攻撃タイマーを設定
 	enemy_->SetTimer(StateType::Attack, 1.0f);
 	// 色の設定
-	enemy_->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f });
+	enemy_->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f });
 	// 回転差分を揃える
 	if (auto* lr = dynamic_cast<LongRangeEnemy*>(enemy_)) {
 		lr->SetlastYaw();

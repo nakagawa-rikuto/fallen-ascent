@@ -27,7 +27,7 @@ void LongRangeEnemeyBullet::Initialize() {
 
 	// Sphereの設定
 	SphereCollider::Initialize();
-	name_ = ColliderName::Enemy;
+	name_ = ColliderName::EnemyBullet;
 	sphere_.radius = 0.5f;
 
 	// コライダーに追加
@@ -67,6 +67,9 @@ void LongRangeEnemeyBullet::Draw(BlendMode mode) {
 /// 生成
 ///-------------------------------------------///
 void LongRangeEnemeyBullet::Create(const Vector3& pos, const Vector3& vel) {
+	// 初期化処理
+	Initialize();
+	// 位置と方向の設定
 	transform_.translate = pos;
 	info_.direction = vel;
 
@@ -75,7 +78,7 @@ void LongRangeEnemeyBullet::Create(const Vector3& pos, const Vector3& vel) {
 	// 生存時間の設定
 	lifeTimer_ = lifeTime_;
 
-	Initialize();
+	
 }
 
 ///-------------------------------------------///  

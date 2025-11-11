@@ -29,6 +29,7 @@ void GameCharacter<TCollider>::Initialize() {
 	/// ===BaseInfoの初期化設定=== ///
 	baseInfo_.velocity = { 0.0f, 0.0f, 0.0f };
 	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+	baseInfo_.gravity = -9.8f;
 	baseInfo_.isDead = false;
 
 	/// ===OBBCollider=== ///
@@ -44,6 +45,11 @@ void GameCharacter<TCollider>::Update() {
 
 	/// ===位置の更新=== ///
 	this->transform_.translate += baseInfo_.velocity;
+
+	/// ===死亡処理=== ///
+	if (baseInfo_.HP <= 0) {
+		baseInfo_.isDead = true;
+	}
 
 	/// ===OBBCollider=== ///
 	TCollider::Update();
