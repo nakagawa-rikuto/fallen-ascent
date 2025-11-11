@@ -63,7 +63,7 @@ struct LevelData {
 		Vector3 translation;		// 座標
 		Vector3 rotation;			// 回転
 		Vector3 scaling;			// スケーリング
-		Vector3 OBBHalfSize;		// OBBのハーフサイズ
+		Vector3 OBBSize;		// OBBのハーフサイズ
 	};
 
 	// vector配列

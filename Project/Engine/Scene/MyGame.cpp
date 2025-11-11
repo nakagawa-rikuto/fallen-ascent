@@ -138,7 +138,9 @@ void MyGame::LoadModel() {
 	Loader::LoadModel("ParticlePlane", "ParticlePlane.gltf");
 	// Game
 	Loader::LoadModel("player", "player.gltf");
-	Loader::LoadModel("GameGround", "Ground.obj");
+	Loader::LoadModel("BattleStage", "BattleStage.obj");
+	Loader::LoadModel("Load", "Load.obj");
+	Loader::LoadModel("PlayerSponStage", "PlayerSponStage.obj");
 }
 // アニメーション
 void MyGame::LoadAnimation() {

@@ -8,6 +8,7 @@
 #include "Engine/System/Service/InputService.h"
 #include "Engine/System/Service/GraphicsResourceGetter.h"
 #include "Engine/System/Service/OffScreenService.h"
+#include "Engine/System/Service/Loader.h"
 // Particle
 #include "Engine/Graphics/Particle/Derivative/ConfettiParticle.h"
 #include "Engine/Graphics/Particle/Derivative/ExplosionParticle.h"
@@ -32,10 +33,10 @@ GameScene::~GameScene() {
 	camera_.reset();
 	// Player
 	player_.reset();
-	// Ground
-	ground_.reset();
 	// Enemy
 	enemyManager_.reset();
+	// Ground
+	stage_.reset();
 	// Transitionのリセット
 	transiton_.reset();
 }
@@ -46,6 +47,10 @@ GameScene::~GameScene() {
 void GameScene::Initialize() {
 	// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 	IScene::Initialize();
+
+	// Jsonの読み込み
+	Loader::LoadLevelJson("StageData.json");
+	Loader::LoadLevelJson("EntityData.json");
 
 	// Particleの追加
 	ParticleService::AddParticle("Confetti", std::make_unique<ConfettiParticle>());
@@ -96,15 +101,9 @@ void GameScene::Initialize() {
 	closeRangeEnemy_->SetPlayer(player_.get());
 	longRangeEnemy_->SetPlayer(player_.get());*/
 
-	/// ===Ground=== ///
-	ground_ = std::make_unique<Ground>();
-	ground_->Initialize();
-	ground_->Update();
-
-	/// ===GroundOshan=== ///
-	groundOshan_ = std::make_unique<GroundOshan>();
-	groundOshan_->Initialize();
-	groundOshan_->Update();
+	/// ===GameStage=== ///
+	stage_ = std::make_unique<GameStage>();
+	stage_->Initialize("StageData.json");
 
 	/// ===StartAnimation=== ///
 	startAnimation_ = std::make_unique<StartAnimation>();
@@ -149,8 +148,7 @@ void GameScene::Update() {
 #endif // USE_IMGUI
 
 	/// ===Groundの更新=== ///
-	ground_->Update();
-	groundOshan_->Update();
+	stage_->Update();
 
 	/// ===フェーズ別更新=== ///
 	switch (currentPhase_) {
@@ -187,12 +185,11 @@ void GameScene::Draw() {
 #pragma endregion
 
 #pragma region モデル描画
-
+	// グリッド描画
 	line_->DrawGrid({ 0.0f, 0.0f,0.0f }, { 100.0f, 0.0f, 100.0f }, 50, { 1.0f, 1.0f, 1.0f, 1.0f });
 
-	/// ===Ground=== ///
-	//ground_->Draw();
-	//groundOshan_->Draw();
+	/// ===GameStage=== ///
+	stage_->Draw();
 
 	/// ===Enemy=== ///
 	enemyManager_->Draw();
@@ -333,15 +330,6 @@ void GameScene::SpawnObjects(const std::string& json_name) {
 		case LevelData::ClassType::Enemy2:
 			// Enemyの座標設定
 			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation);
-			break;
-		case LevelData::ClassType::Object1:
-			//NOTE:Objectクラス（名所はGPTに聞く）を作成。当たり判定を付けれるようにする。
-			break;
-		case LevelData::ClassType::Ground1:
-			//NOTE:今後地面を複数個作成する可能性あり。当たり判定を付けれるようにする。
-			ground_->Initialize();
-			break;
-		default:
 			break;
 		}
 	}

@@ -15,7 +15,7 @@ void StageObject::GameInit(const std::string& modelName, const Vector3& halfSize
 	object3d_ = std::make_unique<Object3d>();
 	// 初期化
 	object3d_->Init(ObjectType::Model, modelName);
-
+	// 初期化処理
 	Initialize();
 	// OBBの半分のサイズを設定
 	obb_.halfSize = halfSize;
@@ -49,7 +49,6 @@ void StageObject::Draw(BlendMode mode) {
 /// 衝突処理
 ///-------------------------------------------///
 void StageObject::OnCollision(Collider* collider) {
-	// 衝突処理（必要に応じて実装）
 	collider;
 }
 

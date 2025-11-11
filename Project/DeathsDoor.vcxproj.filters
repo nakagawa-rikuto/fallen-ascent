@@ -139,9 +139,6 @@
     <ClCompile Include="application\Game\Entity\Player\State\RootState.cpp">
       <Filter>application\Game\Entity\Player\State</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Object\Ground\Ground.cpp">
-      <Filter>application\Game\Object\Ground</Filter>
-    </ClCompile>
     <ClCompile Include="application\Drawing\2d\Sprite.cpp">
       <Filter>application\Drawing\2D</Filter>
     </ClCompile>
@@ -481,14 +478,33 @@
     <ClCompile Include="application\Game\Animation\StartAnimation.cpp">
       <Filter>application\Game\Animation</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\3d\Oshan\Oshan.cpp" />
-    <ClCompile Include="Engine\Graphics\3d\Oshan\OshanCommon.cpp" />
-    <ClCompile Include="application\Game\Object\GroundOshan\GroundOshan.cpp" />
-    <ClCompile Include="application\Game\Animation\GameOverAnimation.cpp" />
-    <ClCompile Include="Engine\System\DeltraTime\DeltaTime.cpp" />
-    <ClCompile Include="Engine\System\Service\DeltaTimeSevice.cpp" />
-    <ClCompile Include="application\Game\Object\GameStage.cpp" />
-    <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp" />
+    <ClCompile Include="application\Game\Animation\GameOverAnimation.cpp">
+      <Filter>application\Game\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\DeltraTime\DeltaTime.cpp">
+      <Filter>Engine\System\DeltaTime</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\Service\DeltaTimeSevice.cpp">
+      <Filter>Engine\System\Service</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Object\GameGround\Ground.cpp">
+      <Filter>application\Game\Object\GameGround</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Object\GameGround\GroundOshan.cpp">
+      <Filter>application\Game\Object\GameGround</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp">
+      <Filter>application\Game\Object\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Object\GameStage.cpp">
+      <Filter>application\Game\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\3d\Oshan\Oshan.cpp">
+      <Filter>Engine\Graphics\3D\Oshan</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\3d\Oshan\OshanCommon.cpp">
+      <Filter>Engine\Graphics\3D\Oshan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -547,9 +563,6 @@
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Player\State\RootState.h">
       <Filter>application\Game\Entity\Player\State</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Object\Ground\Ground.h">
-      <Filter>application\Game\Object\Ground</Filter>
     </ClInclude>
     <ClInclude Include="application\Drawing\2d\Sprite.h">
       <Filter>application\Drawing\2D</Filter>
@@ -929,15 +942,36 @@
     <ClInclude Include="application\Game\Animation\StartAnimation.h">
       <Filter>application\Game\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\3d\Oshan\Oshan.h" />
-    <ClInclude Include="Engine\Graphics\3d\Oshan\OshanCommon.h" />
-    <ClInclude Include="Engine\DataInfo\OshanData.h" />
-    <ClInclude Include="application\Game\Object\GroundOshan\GroundOshan.h" />
-    <ClInclude Include="application\Game\Animation\GameOverAnimation.h" />
-    <ClInclude Include="Engine\System\DeltraTime\DeltaTime.h" />
-    <ClInclude Include="Engine\System\Service\DeltaTimeSevice.h" />
-    <ClInclude Include="application\Game\Object\GameStage.h" />
-    <ClInclude Include="application\Game\Object\StageObject\StageObject.h" />
+    <ClInclude Include="application\Game\Animation\GameOverAnimation.h">
+      <Filter>application\Game\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\DeltraTime\DeltaTime.h">
+      <Filter>Engine\System\DeltaTime</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\Service\DeltaTimeSevice.h">
+      <Filter>Engine\System\Service</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Object\GameGround\Ground.h">
+      <Filter>application\Game\Object\GameGround</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Object\GameGround\GroundOshan.h">
+      <Filter>application\Game\Object\GameGround</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Object\StageObject\StageObject.h">
+      <Filter>application\Game\Object\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Object\GameStage.h">
+      <Filter>application\Game\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\3d\Oshan\Oshan.h">
+      <Filter>Engine\Graphics\3D\Oshan</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\3d\Oshan\OshanCommon.h">
+      <Filter>Engine\Graphics\3D\Oshan</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\DataInfo\OshanData.h">
+      <Filter>Engine\DataInfo</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -1040,9 +1074,6 @@
     </Filter>
     <Filter Include="application\Game\Entity\Player\State\Base">
       <UniqueIdentifier>{9b5525b2-1a4a-4526-8b22-c3f317798217}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Object\Ground">
-      <UniqueIdentifier>{e7ddf14b-ac50-4392-bc8a-3cf10b7cb518}</UniqueIdentifier>
     </Filter>
     <Filter Include="Engine\Camera">
       <UniqueIdentifier>{406750d7-3536-417c-bc57-4798477aab2a}</UniqueIdentifier>
@@ -1160,6 +1191,18 @@
     </Filter>
     <Filter Include="Engine\Graphics\Oshan">
       <UniqueIdentifier>{393687b5-6d3a-4c5f-bea1-cc4c155d66f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System\DeltaTime">
+      <UniqueIdentifier>{a33a4348-398a-4784-ae8d-6b689a04db3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Object\GameGround">
+      <UniqueIdentifier>{6aa7c32d-ec09-4e50-8d8d-59d2fa4d56b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Object\GameObject">
+      <UniqueIdentifier>{4a5f8f95-907f-4a10-baee-87153ed89ae1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Graphics\3D\Oshan">
+      <UniqueIdentifier>{162736ff-601d-43a0-a358-c07c7e42961a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

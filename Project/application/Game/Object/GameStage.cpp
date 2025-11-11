@@ -48,7 +48,7 @@ void GameStage::LoadStageData(const std::string& stageData) {
 		// Object3dの生成
 		std::shared_ptr<StageObject> object = std::make_shared<StageObject>();
 		// 初期化
-		//object->GameInit(stage.fileName, "OBBのハーフサイズ");
+		object->GameInit(stage.fileName, stage.OBBSize / 2.0f);
 
 		// 座標設定
 		object->SetTranslate(stage.translation);

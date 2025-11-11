@@ -98,28 +98,30 @@ void LevelManager::LoadobjectRecursive(nlohmann::json obj, LevelData* levelData)
             /// ===トランスフォームのパラメータ=== ///
             // トランスフォームのパラメータ読み込み
             nlohmann::json& transform = object["transform"];
-
             // 平行移動
             objectData.translation.x = (float)transform["translation"][0];
             objectData.translation.y = (float)transform["translation"][2];
             objectData.translation.z = (float)transform["translation"][1];
-
             // 回転角
             objectData.rotation.x = -(float)transform["rotation"][0];
             objectData.rotation.y = -(float)transform["rotation"][2];
             objectData.rotation.z = -(float)transform["rotation"][1];
-
             // スケーリング
             objectData.scaling.x = (float)transform["scaling"][0];
             objectData.scaling.y = (float)transform["scaling"][2];
             objectData.scaling.z = (float)transform["scaling"][1];
 
-            /// ===OBBHalfSize=== ///
-            /*if (object.contains("obb_half_size")) {
-                objectData.OBBHalfSize.x = (float)object["obb_half_size"][0];
-                objectData.OBBHalfSize.y = (float)object["obb_half_size"][2];
-                objectData.OBBHalfSize.z = (float)object["obb_half_size"][1];
-			}*/
+            /// ===OBBSize=== /// 
+            //NOTE:今はColliderだけ、今後拡張する
+            if (object.contains("collider")) {
+                // コライダー情報の読み込み
+                nlohmann::json& collider = object["collider"];
+                // サイズ
+                objectData.OBBSize.x = (float)collider["size"][0];
+                objectData.OBBSize.y = (float)collider["size"][2];
+                objectData.OBBSize.z = (float)collider["size"][1];
+            }
+            
         }
         
         // 再帰処理（子供がいる場合）

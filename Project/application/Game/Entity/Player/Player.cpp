@@ -133,7 +133,7 @@ void Player::Initialize() {
 	// GameCharacterの設定
 	GameCharacter::Initialize();
 	name_ = ColliderName::Player;
-	obb_.halfSize = { 1.5f, 1.5f, 1.5f };
+	obb_.halfSize = { 1.5f, 1.5f, 2.0f };
 
 	// Weaponの初期化
 	weapon_ = std::make_unique<PlayerWeapon>();
@@ -209,6 +209,7 @@ void Player::Information() {
 	ImGui::Begin("Player");
 	ImGui::DragFloat3("Translate", &transform_.translate.x, 0.1f);
 	ImGui::DragFloat4("Rotate", &transform_.rotate.x, 0.1f);
+	ImGui::DragFloat3("Scale", &transform_.scale.x, 0.1f);
 	ImGui::ColorEdit4("Color", &color_.x);
 	ImGui::DragFloat3("Velocity", &baseInfo_.velocity.x, 0.1f);
 	ImGui::DragFloat("invincibleTime", &invicibleInfo_.timer, 0.01f);
