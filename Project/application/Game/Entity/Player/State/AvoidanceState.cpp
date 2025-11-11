@@ -18,7 +18,7 @@ void AvoidanceState::Enter(Player * player, GameCamera* camera) {
 	camera_ = camera;
 
 	// 回避情報の初期化
-	info_.acceleration = 0.2f;
+	info_.acceleration = 0.1f;
 	player_->SetTimer(actionType::kAvoidance, info_.activeTime);
 	player_->SetStateFlag(actionType::kAvoidance, true);
 	player_->SetpreparationFlag(actionType::kAvoidance, false);

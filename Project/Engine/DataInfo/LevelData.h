@@ -55,13 +55,15 @@ struct LevelData {
 		SkyBox10,
 	};
 
+
 	/// ===JSONObjectData=== ///
 	struct JsonObjectData {
-		std::string fileName;
-		ClassType classType;
-		Vector3 translation;
-		Vector3 rotation;
-		Vector3 scaling;
+		std::string fileName;		// モデルファイル名
+		ClassType classType;		// クラス種類
+		Vector3 translation;		// 座標
+		Vector3 rotation;			// 回転
+		Vector3 scaling;			// スケーリング
+		Vector3 OBBHalfSize;		// OBBのハーフサイズ
 	};
 
 	// vector配列

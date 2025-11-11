@@ -22,6 +22,7 @@ void EnemyMoveState::Enter(BaseEnemy* enemy) {
 void EnemyMoveState::Update(BaseEnemy * enemy) {
 	enemy_ = enemy;
 
+	// Moveの処理
 	enemy_->CommonMove();
 
 	/// ===Stateの変更=== ///

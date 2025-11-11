@@ -24,9 +24,11 @@ CloseRangeEnemy::~CloseRangeEnemy() {
 /// GameScene用初期化
 ///-------------------------------------------///
 void CloseRangeEnemy::InitGameScene(const Vector3& translate) {
+	// CloseRangeEnemyの初期化
 	Initialize();
-
+	// 位置の設定
 	transform_.translate = translate;
+	moveInfo_.rangeCenter = transform_.translate;
 	// BaseEnemyの初期化
 	BaseEnemy::Initialize();
 }
@@ -39,14 +41,28 @@ void CloseRangeEnemy::Initialize() {
 	// シードの設定
 	//srand(static_cast<unsigned int>(time(nullptr)));
 
+	/// ===Object=== ///
+	// Object3dの初期化
+	object3d_ = std::make_unique<Object3d>();
+	object3d_->Init(ObjectType::Model, "player");
+	// Object3dの初期設定
+
+	/// ===GameCharacter=== ///
+	// GameCharacterの初期化
+	GameCharacter::Initialize();
+	name_ = ColliderName::Enemy;
+	obb_.halfSize = { 2.0f, 2.0f, 2.0f };
+	// コライダーに追加
+	ColliderService::AddCollider(this);
+
 	/// ===MoveInfoの設定=== ///
 	moveInfo_.interval = 5.0f;
 	moveInfo_.timer = 1.0f;
 	moveInfo_.waitTime = 1.5f;
-	moveInfo_.range = 10.0f;
+	moveInfo_.range = 15.0f;
 	moveInfo_.speed = 0.05f;
 	moveInfo_.direction = { 0.0f, 0.0f, 0.0f };
-	moveInfo_.rangeCenter = transform_.translate;
+	moveInfo_.rangeCenter = { 0.0f, 0.0f, 0.0f };
 	moveInfo_.isWating = false;
 
 	/// ===AttackInfoの設定=== ///
@@ -61,20 +77,6 @@ void CloseRangeEnemy::Initialize() {
 	/// ===ChargeInfo=== ///
 	chargeInfo_.moveSpeed = 0.9f;
 	chargeInfo_.stopTime = 1.0f;
-
-	/// ===Object=== ///
-	// Object3dの初期化
-	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "player");
-	// Object3dの初期設定
-
-	/// ===SphereCollidr=== ///
-	// Sphereの設定
-	GameCharacter::Initialize();
-	name_ = ColliderName::Enemy;
-	obb_.halfSize = { 2.0f, 2.0f, 2.0f };
-	// コライダーに追加
-	ColliderService::AddCollider(this);
 }
 
 ///-------------------------------------------/// 

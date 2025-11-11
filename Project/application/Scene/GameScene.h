@@ -4,6 +4,8 @@
 // Entity
 #include "application/Game/Entity/Player/Player.h"
 #include "application/Game/Entity/Enemy/Manager/EnemyManager.h"
+#include "application/Game/Entity/Enemy/CloseRange/CloseRangeEnemy.h"
+#include "application/Game/Entity/Enemy/LongRange/LongRangeEnemy.h"
 // Object
 #include "application/Game/Object/Ground/Ground.h"
 #include "application/Game/Object/GroundOshan/GroundOshan.h"
@@ -19,7 +21,7 @@ enum class GamePhase {
 	StartAnimation,		// 開始アニメーション
 	Game,				// ゲームプレイ中
 	GameOverAnimation,  // ゲームオーバー
-	FadeOut				// フェードアウト
+	GameClearAnimation  // フェードアウト
 };
 
 ///=====================================================/// 
@@ -62,6 +64,9 @@ private:/// ===メンバ変数=== ///
 	std::unique_ptr<Player> player_;
 	// Enemy
 	std::unique_ptr<EnemyManager> enemyManager_;
+	// Enemy
+	std::unique_ptr<CloseRangeEnemy> closeRangeEnemy_;
+	std::unique_ptr<LongRangeEnemy> longRangeEnemy_;
 	// Ground
 	std::unique_ptr<Ground> ground_;
 	// GroundOshan
@@ -113,7 +118,7 @@ private: /// ===メンバ関数=== ///
 	/// <summary>
 	/// フェードアウト時の更新処理
 	/// </summary>
-	void UpdateFadeOut();
+	void UpdateGameClearAnimtaion();
 
 	/// <summary>
 	/// 配置処理

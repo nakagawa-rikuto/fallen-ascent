@@ -88,6 +88,14 @@ void GameScene::Initialize() {
 	// EnemyのSpaw後に呼ぶ
 	enemyManager_->SetPlayer(player_.get()); // Playerを設定
 
+	/*closeRangeEnemy_ = std::make_unique<CloseRangeEnemy>();
+	longRangeEnemy_ = std::make_unique<LongRangeEnemy>();
+	/// ===Enemyの初期化=== ///
+	closeRangeEnemy_->InitGameScene({ -30.0f, 1.0f, 30.0f });
+	longRangeEnemy_->InitGameScene({ 30.0f, 1.0f, 30.0f });
+	closeRangeEnemy_->SetPlayer(player_.get());
+	longRangeEnemy_->SetPlayer(player_.get());*/
+
 	/// ===Ground=== ///
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize();
@@ -162,8 +170,8 @@ void GameScene::Update() {
 		UpdateGameOverAnimation();
 		break;
 	// フェードアウト
-	case GamePhase::FadeOut:
-		UpdateFadeOut();
+	case GamePhase::GameClearAnimation:
+		UpdateGameClearAnimtaion();
 		break;
 	}
 
@@ -259,11 +267,15 @@ void GameScene::UpdateGame() {
 
 	/// ===Enemy=== ///
 	enemyManager_->Update();
+	enemyManager_->SetPlayer(player_.get()); // Playerを設定
+
+	// Playerが死んだら
+	if (player_->GetHP() <= 0) {
+		currentPhase_ = GamePhase::GameOverAnimation; // GameOverAnimationへ
 
 	// ゲームが終わったらFadeOutへ
-
-	if (InputService::TriggerKey(DIK_SPACE)) {
-		currentPhase_ = GamePhase::GameOverAnimation;
+	} else if (enemyManager_->GetTotalEnemyCount() <= 0 || InputService::TriggerKey(DIK_SPACE)) {
+		currentPhase_ = GamePhase::GameClearAnimation; // GameClearへ
 	}
 }
 
@@ -279,19 +291,22 @@ void GameScene::UpdateGameOverAnimation() {
 
 	// アニメーション完了でシーン移動
 	if (gameOverAnimation_->IsCompleted()) {
-		sceneManager_->ChangeScene(SceneType::Title);
+		sceneManager_->ChangeScene(SceneType::GameOver);
 	}
 }
 
 ///-------------------------------------------/// 
 /// フェードアウト時の更新処理
 ///-------------------------------------------///
-void GameScene::UpdateFadeOut() {
+void GameScene::UpdateGameClearAnimtaion() {
+
+	sceneManager_->ChangeScene(SceneType::Clear);
+
 	// FadeOut完了で次のシーンへ
-	if (fadeOutTimer_ >= fadeOutDuration_) {
-		// TODO: シーン遷移処理
-		// SceneManager::ChangeScene("Result");
-	}
+	//if (fadeOutTimer_ >= fadeOutDuration_) {
+	//	// シーン遷移処理
+	//	sceneManager_->ChangeScene(SceneType::Clear);
+	//}
 }
 
 ///-------------------------------------------/// 

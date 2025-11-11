@@ -49,6 +49,8 @@ public: /// ===Getter=== ///
     bool GetIsDead() const { return baseInfo_.isDead; };
     // deltaTime
     float GetDeltaTime() const { return baseInfo_.deltaTime; };
+    // HP
+    uint32_t GetHP() const { return baseInfo_.HP; }
    
 public: /// ===Setter=== ///
     // Velocity
@@ -65,6 +67,8 @@ protected:
     struct BaseInfo {
         Vector3 velocity; // 速度
         float deltaTime;  // 時間
+		float gravity;    // 重力
+		uint32_t HP;      // 体力
         bool isDead;      // 死亡フラグ
     };
     BaseInfo baseInfo_;

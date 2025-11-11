@@ -113,8 +113,15 @@ void LevelManager::LoadobjectRecursive(nlohmann::json obj, LevelData* levelData)
             objectData.scaling.x = (float)transform["scaling"][0];
             objectData.scaling.y = (float)transform["scaling"][2];
             objectData.scaling.z = (float)transform["scaling"][1];
-        }
 
+            /// ===OBBHalfSize=== ///
+            /*if (object.contains("obb_half_size")) {
+                objectData.OBBHalfSize.x = (float)object["obb_half_size"][0];
+                objectData.OBBHalfSize.y = (float)object["obb_half_size"][2];
+                objectData.OBBHalfSize.z = (float)object["obb_half_size"][1];
+			}*/
+        }
+        
         // 再帰処理（子供がいる場合）
         if (object.contains("children")) {
             LoadobjectRecursive(object, levelData);

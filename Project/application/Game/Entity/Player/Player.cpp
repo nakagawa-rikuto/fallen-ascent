@@ -24,8 +24,6 @@ Player::~Player() {
 	object3d_.reset();
 }
 
-
-
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
@@ -115,7 +113,10 @@ void Player::SetTimer(actionType type, const float& timer) {
 	}
 }
 // 無敵時間の設定
-void Player::SetInvicibleTime(const float& time) { invicibleInfo_.timer = invicibleInfo_.time + time; }
+void Player::SetInvicibleTime(const float& time) { 
+	invicibleInfo_.time = time;
+	invicibleInfo_.timer = invicibleInfo_.time;
+}
 
 
 ///-------------------------------------------/// 
@@ -129,18 +130,25 @@ void Player::Initialize() {
 	object3d_ = std::make_unique<Object3d>();
 	object3d_->Init(ObjectType::Model, "player");
 
+	// GameCharacterの設定
+	GameCharacter::Initialize();
+	name_ = ColliderName::Player;
+	obb_.halfSize = { 1.5f, 1.5f, 1.5f };
+
 	// Weaponの初期化
 	weapon_ = std::make_unique<PlayerWeapon>();
 	weapon_->Initialize();
 	weapon_->SetUpParent(this);
 	
+	// 無敵情報の設定
+	SetInvicibleTime(1.0f);
+	invicibleInfo_.isFlag = true;
+
+	// HPの設定
+	baseInfo_.HP = 5;
+
 	// 初期設定
 	ChangState(std::make_unique<RootState>());
-
-	// Sphereの設定
-	GameCharacter::Initialize();
-	name_ = ColliderName::Player;
-	obb_.halfSize = { 1.5f, 1.5f, 1.5f }; 
 
 	// コライダーに追加
 	ColliderService::AddCollider(this);
@@ -203,6 +211,7 @@ void Player::Information() {
 	ImGui::DragFloat4("Rotate", &transform_.rotate.x, 0.1f);
 	ImGui::ColorEdit4("Color", &color_.x);
 	ImGui::DragFloat3("Velocity", &baseInfo_.velocity.x, 0.1f);
+	ImGui::DragFloat("invincibleTime", &invicibleInfo_.timer, 0.01f);
 	ImGui::End();
 
 	weapon_->Information();
@@ -219,17 +228,33 @@ void Player::OnCollision(Collider* collider) {
 	GameCharacter::OnCollision(collider);
 
 	// Colliderによって処理を変更
-	if (collider->GetColliderName() == ColliderName::Enemy) {
+	if (collider->GetColliderName() == ColliderName::Enemy || collider->GetColliderName() == ColliderName::EnemyBullet) {
 
-		if (chargeInfo_.isFlag) {
+		// 無敵状態でなければダメージを受ける
+		if (!invicibleInfo_.isFlag) {
 
+			// ===ノックバック処理=== ///
+			// 敵の位置を取得
+			Vector3 enemyPos = collider->GetTransform().translate;
+			// プレイヤーから敵への方向ベクトルを計算
+			Vector3 knockbackDirection = transform_.translate - enemyPos;
+			// Y軸は無視(水平方向のみノックバック)
+			knockbackDirection.y = 0.0f;
+			// 正規化
+			if (knockbackDirection.x != 0.0f || knockbackDirection.z != 0.0f) {
+				knockbackDirection = Normalize(knockbackDirection);
+			}
+			// ノックバックの速度を設定(適切な値に調整してください)
+			const float knockbackSpeed = 1.5f;
+			baseInfo_.velocity = knockbackDirection * knockbackSpeed;
 
-		} else if (attackInfo_.isFlag) {
+			// Stateを Root に変更
+			ChangState(std::make_unique<RootState>());
 
-
-		} else {
-
-
+			// ダメージ処理
+			baseInfo_.HP--;
+			// 無敵状態にする
+			SetInvicibleTime(0.5f);
 		}
 	}
 }
@@ -239,7 +264,14 @@ void Player::OnCollision(Collider* collider) {
 ///-------------------------------------------///
 void Player::advanceTimer() {
 	// 無敵タイマーを進める
-	invicibleInfo_.timer += baseInfo_.deltaTime;
+	if (invicibleInfo_.timer > 0.0f) {
+		invicibleInfo_.timer -= baseInfo_.deltaTime;
+		color_ = { 1.0f, 0.0f, 0.0f, 0.5f }; // 半透明にする
+		invicibleInfo_.isFlag = true;
+	} else {
+		invicibleInfo_.isFlag = false;
+		color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; // 元の色に戻す
+	}
 
 	// 突進用のタイマーを進める
 	if (chargeInfo_.timer > 0.0f) {

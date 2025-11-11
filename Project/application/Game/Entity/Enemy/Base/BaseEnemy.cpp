@@ -24,6 +24,7 @@
 ///-------------------------------------------///
 BaseEnemy::~BaseEnemy() {
 	object3d_.reset();
+	ColliderService::RemoveCollider(this);
 }
 
 ///-------------------------------------------/// 
@@ -54,6 +55,9 @@ void BaseEnemy::Initialize() {
 	};
 	randomEngine_.seed(seed);
 
+	// オブジェクトの色設定
+	color_ = { 1.0f, 0.0f, 1.0f, 1.0f };
+
 	// カメラの取得
 	camera_ = CameraService::GetActiveCamera().get();
 
@@ -63,6 +67,18 @@ void BaseEnemy::Initialize() {
 	// コライダーに追加
 	ColliderService::AddCollider(this);
 
+	// ノックバック情報の初期化
+	knockbackInfo_.cooldownTimer = 0.0f;
+	knockbackInfo_.cooldownDuration = 0.5f;  // 0.5秒のクールタイム
+	knockbackInfo_.knockbackForce = 1.5f;    // ノックバックの強さ
+	knockbackInfo_.hitColorDuration = 0.1f;  // 0.2秒間赤く表示
+	knockbackInfo_.hitColorTimer = 1.0f;
+	knockbackInfo_.originalColor = color_;   // 元の色を保存
+	knockbackInfo_.isInCooldown = true;
+
+	// HP 
+	baseInfo_.HP = 2;
+
 	// object3dの更新を一回行う
 	GameCharacter::Update();
 }
@@ -71,6 +87,8 @@ void BaseEnemy::Initialize() {
 /// 更新
 ///-------------------------------------------///
 void BaseEnemy::Update() {
+	// 死亡している場合は更新しない
+	if (baseInfo_.isDead) return;
 
 	/// ===Timerの更新=== ///
 	advanceTimer();
@@ -119,6 +137,13 @@ void BaseEnemy::Information() {
 	ImGui::DragFloat("AttackRange", &attackInfo_.range, 0.1f);
 	ImGui::DragFloat("AttackInterval", &attackInfo_.interval, 0.1f);
 	ImGui::DragInt("Power", &attackInfo_.power, 1);
+
+	// KnockbackInfo
+	ImGui::Text("KnockbackInfo");
+	ImGui::DragFloat("CooldownDuration", &knockbackInfo_.cooldownDuration, 0.01f);
+	ImGui::DragFloat("KnockbackForce", &knockbackInfo_.knockbackForce, 0.1f);
+	ImGui::DragFloat("HitColorDuration", &knockbackInfo_.hitColorDuration, 0.01f);
+	ImGui::Checkbox("IsInCooldown", &knockbackInfo_.isInCooldown);
 #endif // USE_IMGUI
 }
 
@@ -131,17 +156,22 @@ void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 	// ===== Object系 ===== //
 	enemy->color_ = color_;
 
-	// ===== Move 系（設計値） ===== //
+	// ===== Move 系(設計値) ===== //
 	enemy->moveInfo_.speed = moveInfo_.speed;
 	enemy->moveInfo_.range = moveInfo_.range;
 	enemy->moveInfo_.interval = moveInfo_.interval;
 	enemy->moveInfo_.waitTime = moveInfo_.waitTime;
 
-	// ===== Attack 系（設計値） ===== //
+	// ===== Attack 系(設計値) ===== //
 	enemy->attackInfo_.distance = attackInfo_.distance;
 	enemy->attackInfo_.range = attackInfo_.range;
 	enemy->attackInfo_.interval = attackInfo_.interval;
 	enemy->attackInfo_.power = attackInfo_.power;
+
+	// ===== Knockback 系(設計値) ===== //
+	enemy->knockbackInfo_.cooldownDuration = knockbackInfo_.cooldownDuration;
+	enemy->knockbackInfo_.knockbackForce = knockbackInfo_.knockbackForce;
+	enemy->knockbackInfo_.hitColorDuration = knockbackInfo_.hitColorDuration;
 
 	// 型固有の値を派生側でコピー
 	this->CopyTypeTuningFromThisTo(enemy);
@@ -155,13 +185,46 @@ void BaseEnemy::OnCollision(Collider* collider) {
 	/// ===GameCharacterの衝突=== ///
 	GameCharacter::OnCollision(collider);
 
-	// Playerとの当たり判定
-	if (collider->GetColliderName() == ColliderName::Player) {
-		// Plaeyrの突進に対しての衝突判定
-		if (player_->GetStateFlag(actionType::kCharge)) {
-			// パーティクルを発生
-			ParticleService::Emit("Explosion", transform_.translate);
-			//ServiceParticle::SetTexture("Cylinder", "gradationLine");
+	// Weaponとの当たり判定
+	if (collider->GetColliderName() == ColliderName::PlayerWeapon) {
+		// クールタイム中でなければノックバック処理を実行
+		if (!knockbackInfo_.isInCooldown) {
+			// 攻撃状態の時
+			if (player_->GetStateFlag(actionType::kAttack)) {
+				// Stateを移動状態に変更
+				ChangeState(std::make_unique<EnemyMoveState>());
+
+				// プレイヤーの位置を取得
+				Vector3 playerPos = player_->GetTransform().translate;
+
+				// 敵からプレイヤーへの方向ベクトルを計算
+				Vector3 toEnemy = transform_.translate - playerPos;
+				toEnemy.y = 0.0f; // Y軸は無視
+
+				// 正規化してノックバック方向を決定
+				if (Length(toEnemy) > 0.001f) {
+					toEnemy = Normalize(toEnemy);
+
+					// ノックバック速度を設定
+					baseInfo_.velocity = toEnemy * knockbackInfo_.knockbackForce;
+				}
+
+				// 色を赤に変更
+				color_ = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 赤色
+
+				// パーティクルを発生
+				ParticleService::Emit("Explosion", transform_.translate);
+				baseInfo_.HP--; // HPを減少
+
+				// タイマーをセット
+				knockbackInfo_.hitColorTimer = knockbackInfo_.hitColorDuration;
+				knockbackInfo_.cooldownTimer = knockbackInfo_.cooldownDuration;
+				knockbackInfo_.isInCooldown = true;
+
+			// チャージ状態の時
+			} else if (player_->GetStateFlag(actionType::kCharge)) {
+
+			}
 		}
 	}
 }
@@ -178,7 +241,7 @@ void BaseEnemy::CommonMoveInit() {
 /// 移動処理の共通部分
 ///-------------------------------------------///
 void BaseEnemy::CommonMove() {
-	// 移動範囲の中心との方向ベクトルを計算（XZ平面）
+	// 移動範囲の中心との方向ベクトルを計算(XZ平面)
 	Vector3 toCenter = moveInfo_.rangeCenter - transform_.translate;
 	// 中心からの距離を取得
 	float distanceFromCenter = Length(toCenter);
@@ -188,7 +251,7 @@ void BaseEnemy::CommonMove() {
 
 		baseInfo_.velocity = { 0.0f, 0.0f, 0.0f }; // 待機中は移動しない
 
-		// 向く方向に回転
+		// 向き方向に回転
 		UpdateRotationTowards(moveInfo_.direction, 0.1f);
 
 		if (moveInfo_.timer <= 0.0f) {
@@ -250,7 +313,7 @@ void BaseEnemy::PreparNextMove(const Vector3& vector) {
 ///-------------------------------------------///
 bool BaseEnemy::CheckAttackable() {
 
-	// 敵の前方向ベクトル（Y軸回転を使用）
+	// 敵の前方向ベクトル(Y軸回転を使用)
 	float yaw = transform_.rotate.y;
 	Vector3 forward = {
 		std::sinf(yaw),
@@ -313,11 +376,33 @@ void BaseEnemy::UpdateRotationTowards(const Vector3& direction, float slerpT) {
 /// 時間を進める
 ///-------------------------------------------///
 void BaseEnemy::advanceTimer() {
-	// 無敵タイマーを進める
+	// 移動タイマーを進める
 	moveInfo_.timer -= baseInfo_.deltaTime;
 
 	// 攻撃用のタイマーを進める
 	if (attackInfo_.timer > 0.0f) {
 		attackInfo_.timer -= baseInfo_.deltaTime;
+	}
+
+	// ノックバッククールタイムの更新
+	if (knockbackInfo_.isInCooldown) {
+		knockbackInfo_.cooldownTimer -= baseInfo_.deltaTime;
+
+		// クールタイムが終了したら解除
+		if (knockbackInfo_.cooldownTimer <= 0.0f) {
+			knockbackInfo_.isInCooldown = false;
+			knockbackInfo_.cooldownTimer = 0.0f;
+		}
+	}
+
+	// ヒット時の赤色表示タイマーの更新
+	if (knockbackInfo_.hitColorTimer > 0.0f) {
+		knockbackInfo_.hitColorTimer -= baseInfo_.deltaTime;
+
+		// 赤色表示時間が終了したら元の色に戻す
+		if (knockbackInfo_.hitColorTimer <= 0.0f) {
+			color_ = knockbackInfo_.originalColor;
+			knockbackInfo_.hitColorTimer = 0.0f;
+		}
 	}
 }

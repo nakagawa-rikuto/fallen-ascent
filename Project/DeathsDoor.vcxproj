@@ -147,6 +147,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp" />
     <ClCompile Include="application\Game\Object\GroundOshan\GroundOshan.cpp" />
     <ClCompile Include="application\Game\Animation\GameOverAnimation.cpp" />
+    <ClCompile Include="application\Game\Object\GameStage.cpp" />
     <ClCompile Include="Math\EasingMath.cpp" />
     <ClCompile Include="Engine\System\Managers\AnimationManager.cpp" />
     <ClCompile Include="Engine\System\Service\AudioService.cpp" />
@@ -250,6 +251,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Animation\StartAnimation.cpp" />
     <ClCompile Include="Engine\Graphics\3d\Oshan\Oshan.cpp" />
     <ClCompile Include="Engine\Graphics\3d\Oshan\OshanCommon.cpp" />
+    <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
@@ -295,6 +297,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h" />
     <ClInclude Include="application\Game\Object\GroundOshan\GroundOshan.h" />
     <ClInclude Include="application\Game\Animation\GameOverAnimation.h" />
+    <ClInclude Include="application\Game\Object\GameStage.h" />
     <ClInclude Include="Math\EasingMath.h" />
     <ClInclude Include="Engine\System\Managers\AnimationManager.h" />
     <ClInclude Include="Engine\DataInfo\AnimationData.h" />
@@ -405,6 +408,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Animation\StartAnimation.h" />
     <ClInclude Include="Engine\Graphics\3d\Oshan\Oshan.h" />
     <ClInclude Include="Engine\Graphics\3d\Oshan\OshanCommon.h" />
+    <ClInclude Include="application\Game\Object\StageObject\StageObject.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

@@ -60,6 +60,13 @@ void EnemyManager::Update() {
 	for (auto& e : enemies_) {
 		if (e) e->Update();
 	}
+
+	// 死亡した敵を削除
+	auto it = std::remove_if(enemies_.begin(), enemies_.end(),
+		[](const std::unique_ptr<BaseEnemy>& e) {
+			return !e || e->GetIsDead();
+		});
+	enemies_.erase(it, enemies_.end());
 }
 
 ///-------------------------------------------/// 

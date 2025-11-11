@@ -90,7 +90,7 @@ public: /// ===Getter=== ///
 	// Timer
 	float GetAttackTimer()const { return attackInfo_.timer; };
 	// Flag
-	bool GetAttackFlag()const { return attackInfo_.isAttack;};
+	bool GetAttackFlag()const { return attackInfo_.isAttack; };
 
 public: /// ===Setter=== ///
 	// Player
@@ -124,7 +124,7 @@ protected: /// ===変数の宣言=== ///
 	/// ===攻撃情報=== ///
 	struct AttackInfo {
 		float timer;	// タイマー
-		float range;	// 攻撃範囲（回転の情報から±）
+		float range;	// 攻撃範囲(回転の情報から±)
 		float distance;	// 攻撃可能距離
 		float interval;	// 攻撃間隔
 		int32_t power;	// 待機時間
@@ -138,6 +138,20 @@ protected: /// ===変数の宣言=== ///
 
 	// ランダムシード
 	std::mt19937 randomEngine_;
+
+private:
+
+	/// ===ノックバック情報=== ///
+	struct KnockbackInfo {
+		float cooldownTimer;		// クールタイム用タイマー
+		float cooldownDuration;		// クールタイムの持続時間
+		float knockbackForce;		// ノックバックの強さ
+		float hitColorDuration;		// 赤色表示の持続時間
+		float hitColorTimer;		// 赤色表示用タイマー
+		Vector4 originalColor;		// 元の色
+		bool isInCooldown;			// クールタイム中かどうか
+	};
+	KnockbackInfo knockbackInfo_;
 
 protected: /// ===関数の宣言=== ///
 
@@ -166,6 +180,5 @@ private:
 	/// タイマーを進める処理
 	/// </summary>
 	void advanceTimer();
-	
-};
 
+};
