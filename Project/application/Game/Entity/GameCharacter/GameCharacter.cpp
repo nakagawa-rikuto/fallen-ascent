@@ -84,11 +84,16 @@ void GameCharacter<TCollider>::Information() {
 template<typename TCollider>
 void GameCharacter<TCollider>::OnCollision(Collider* collider) {
 
-	// === 防御的ガード ===
+	// === 早期リターン === //
 	if (!collider) return;
 
 	// 衝突相手が GameCharacter のときだけ処理が通る
 	if (auto otherCharacter = dynamic_cast<GameCharacter<TCollider>*>(collider)) {
 		collision_->ProcessCollision(this, otherCharacter, 1.0f);
+	}
+
+	// Wall と衝突した場合の処理
+	if (collider->GetColliderName() == ColliderName::Wall) {
+		collision_->HandleCharacterWallCollision(this, collider, &baseInfo_.velocity);
 	}
 }

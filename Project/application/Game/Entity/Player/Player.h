@@ -108,6 +108,8 @@ private: /// ===変数の宣言=== ///
 	/// ===State=== ///
 	std::unique_ptr<PlayerState> currentState_;
 
+	float collisionTimer_ = 0.0f; // 衝突タイマー
+
 	/// ===無敵時間の情報=== ///
 	struct InvicibleInfo {
 		float time = 1.0f;   // 無敵時間

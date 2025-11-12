@@ -43,7 +43,7 @@ private:
 	/// </summary>
 	/// <param name="object">読み込む JSON データ（nlohmann::json）。関数はこの JSON を再帰的に走査して内容を処理する。</param>
 	/// <param name="levelData">読み込み先の LevelData 構造体へのポインタ。関数はこのポインタが指すデータを更新する。</param>
-	void LoadobjectRecursive(nlohmann::json object, LevelData* levelData);
+	void LoadobjectRecursive(nlohmann::json& obj, LevelData* levelData);
 	
 	/// <summary>
 	/// 文字列を LevelData::ClassType に変換する静的メンバー関数。

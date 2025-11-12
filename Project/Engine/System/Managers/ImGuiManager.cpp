@@ -101,11 +101,12 @@ void ImGuiManager::End() {
 /// 描画
 ///-------------------------------------------///
 void ImGuiManager::Draw() {
-
+#ifdef USE_IMGUI
 	// 各ウィンドウを描画
 	if (sceneView_) {
 		sceneView_->Draw();
 	}
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
@@ -141,10 +142,10 @@ void ImGuiManager::DrawMainDockWindow() {
 
 	ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID, ImGui::GetMainViewport(), ImGuiDockNodeFlags_None);
 	ImGui::End();
-#endif // USE_IMGUI
 
 	// 各ウィンドウを描画
 	if (sceneView_) sceneView_->Draw();
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 

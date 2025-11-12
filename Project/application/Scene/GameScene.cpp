@@ -8,6 +8,7 @@
 #include "Engine/System/Service/InputService.h"
 #include "Engine/System/Service/GraphicsResourceGetter.h"
 #include "Engine/System/Service/OffScreenService.h"
+#include "Engine/System/Service/Loader.h"
 // Particle
 #include "Engine/Graphics/Particle/Derivative/ConfettiParticle.h"
 #include "Engine/Graphics/Particle/Derivative/ExplosionParticle.h"
@@ -32,10 +33,10 @@ GameScene::~GameScene() {
 	camera_.reset();
 	// Player
 	player_.reset();
-	// Ground
-	ground_.reset();
 	// Enemy
 	enemyManager_.reset();
+	// Ground
+	stage_.reset();
 	// Transitionのリセット
 	transiton_.reset();
 }
@@ -46,6 +47,10 @@ GameScene::~GameScene() {
 void GameScene::Initialize() {
 	// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 	IScene::Initialize();
+
+	// Jsonの読み込み
+	Loader::LoadLevelJson("StageData.json");
+	Loader::LoadLevelJson("EntityData.json");
 
 	// Particleの追加
 	ParticleService::AddParticle("Confetti", std::make_unique<ConfettiParticle>());
@@ -74,37 +79,20 @@ void GameScene::Initialize() {
 	CameraService::AddCamera("Game", camera_);
 	CameraService::SetActiveCamera("Game");
 
-	/// ===Player=== ///
+	/// ===Playerの生成=== ///
 	player_ = std::make_unique<Player>();
-	player_->Initialize();
 
-	/// ===Enemy=== ///
+	/// ===EnemyManagerの生成=== ///
 	enemyManager_ = std::make_unique<EnemyManager>();
-	enemyManager_->Spawn(EnemyType::CloseRange, { -30.0f, 1.0f, 30.0f });
-	enemyManager_->Spawn(EnemyType::CloseRange, { 30.0f, 1.0f, 30.0f });
-	enemyManager_->Spawn(EnemyType::CloseRange, { 35.0f, 1.0f, 35.0f });
-	enemyManager_->Spawn(EnemyType::CloseRange, {- 30.0f, 1.0f, -30.0f });
-	enemyManager_->Spawn(EnemyType::LongRange, { -35.0f, 1.0f, 35.0f });
-	// EnemyのSpaw後に呼ぶ
-	enemyManager_->SetPlayer(player_.get()); // Playerを設定
 
-	/*closeRangeEnemy_ = std::make_unique<CloseRangeEnemy>();
-	longRangeEnemy_ = std::make_unique<LongRangeEnemy>();
-	/// ===Enemyの初期化=== ///
-	closeRangeEnemy_->InitGameScene({ -30.0f, 1.0f, 30.0f });
-	longRangeEnemy_->InitGameScene({ 30.0f, 1.0f, 30.0f });
-	closeRangeEnemy_->SetPlayer(player_.get());
-	longRangeEnemy_->SetPlayer(player_.get());*/
+	/// ===SponEntity=== ///
+	SpawnEntity("EntityData.json");
+	// EnemyにPlayerを設定
+	enemyManager_->SetPlayer(player_.get());
 
-	/// ===Ground=== ///
-	ground_ = std::make_unique<Ground>();
-	ground_->Initialize();
-	ground_->Update();
-
-	/// ===GroundOshan=== ///
-	groundOshan_ = std::make_unique<GroundOshan>();
-	groundOshan_->Initialize();
-	groundOshan_->Update();
+	/// ===GameStage=== ///
+	stage_ = std::make_unique<GameStage>();
+	stage_->Initialize("StageData.json");
 
 	/// ===StartAnimation=== ///
 	startAnimation_ = std::make_unique<StartAnimation>();
@@ -149,8 +137,7 @@ void GameScene::Update() {
 #endif // USE_IMGUI
 
 	/// ===Groundの更新=== ///
-	ground_->Update();
-	groundOshan_->Update();
+	stage_->Update();
 
 	/// ===フェーズ別更新=== ///
 	switch (currentPhase_) {
@@ -188,11 +175,8 @@ void GameScene::Draw() {
 
 #pragma region モデル描画
 
-	line_->DrawGrid({ 0.0f, 0.0f,0.0f }, { 100.0f, 0.0f, 100.0f }, 50, { 1.0f, 1.0f, 1.0f, 1.0f });
-
-	/// ===Ground=== ///
-	//ground_->Draw();
-	//groundOshan_->Draw();
+	/// ===GameStage=== ///
+	stage_->Draw();
 
 	/// ===Enemy=== ///
 	enemyManager_->Draw();
@@ -291,7 +275,7 @@ void GameScene::UpdateGameOverAnimation() {
 
 	// アニメーション完了でシーン移動
 	if (gameOverAnimation_->IsCompleted()) {
-		sceneManager_->ChangeScene(SceneType::GameOver);
+		sceneManager_->ChangeScene(SceneType::Title);
 	}
 }
 
@@ -300,7 +284,7 @@ void GameScene::UpdateGameOverAnimation() {
 ///-------------------------------------------///
 void GameScene::UpdateGameClearAnimtaion() {
 
-	sceneManager_->ChangeScene(SceneType::Clear);
+	sceneManager_->ChangeScene(SceneType::Title);
 
 	// FadeOut完了で次のシーンへ
 	//if (fadeOutTimer_ >= fadeOutDuration_) {
@@ -312,7 +296,7 @@ void GameScene::UpdateGameClearAnimtaion() {
 ///-------------------------------------------/// 
 /// 配置関数
 ///-------------------------------------------///
-void GameScene::SpawnObjects(const std::string& json_name) {
+void GameScene::SpawnEntity(const std::string& json_name) {
 	LevelData* levelData = GraphicsResourceGetter::GetLevelData(json_name);
 
 	// オブジェクト分回す
@@ -333,15 +317,6 @@ void GameScene::SpawnObjects(const std::string& json_name) {
 		case LevelData::ClassType::Enemy2:
 			// Enemyの座標設定
 			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation);
-			break;
-		case LevelData::ClassType::Object1:
-			//NOTE:Objectクラス（名所はGPTに聞く）を作成。当たり判定を付けれるようにする。
-			break;
-		case LevelData::ClassType::Ground1:
-			//NOTE:今後地面を複数個作成する可能性あり。当たり判定を付けれるようにする。
-			ground_->Initialize();
-			break;
-		default:
 			break;
 		}
 	}

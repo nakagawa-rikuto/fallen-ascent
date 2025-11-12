@@ -7,8 +7,7 @@
 #include "application/Game/Entity/Enemy/CloseRange/CloseRangeEnemy.h"
 #include "application/Game/Entity/Enemy/LongRange/LongRangeEnemy.h"
 // Object
-#include "application/Game/Object/Ground/Ground.h"
-#include "application/Game/Object/GroundOshan/GroundOshan.h"
+#include "application/Game/Object/GameStage.h"
 // Animation
 #include "application/Game/Animation/StartAnimation.h"
 #include "application/Game/Animation/GameOverAnimation.h"
@@ -67,10 +66,8 @@ private:/// ===メンバ変数=== ///
 	// Enemy
 	std::unique_ptr<CloseRangeEnemy> closeRangeEnemy_;
 	std::unique_ptr<LongRangeEnemy> longRangeEnemy_;
-	// Ground
-	std::unique_ptr<Ground> ground_;
-	// GroundOshan
-	std::unique_ptr<GroundOshan> groundOshan_;
+	// Stage
+	std::unique_ptr<GameStage> stage_;
 	// StartAnimation
 	std::unique_ptr<StartAnimation> startAnimation_;
 	// GameOverAnimation
@@ -124,5 +121,5 @@ private: /// ===メンバ関数=== ///
 	/// 配置処理
 	/// </summary>
 	/// <param name="json_name">使用するJsonファイル名</param>
-	void SpawnObjects(const std::string& json_name);
+	void SpawnEntity(const std::string& json_name);
 };

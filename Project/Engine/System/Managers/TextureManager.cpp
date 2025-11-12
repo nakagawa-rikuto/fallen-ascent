@@ -118,12 +118,12 @@ DirectX::ScratchImage TextureManager::Load(const std::string& key, const std::st
 	} else {
 		hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
 	}
-	 
+
 	// リリースでもエラーが出るようにする
 	if (FAILED(hr)) {
 		throw std::runtime_error("Failed to load texture with key: " + key + ", from file: " + filePath);
 	}
-
+	 
 	/// ===ミップマップの対応処理=== ///
 	// ミップマップの作成
 	DirectX::ScratchImage mipImages{};
