@@ -79,27 +79,16 @@ void GameScene::Initialize() {
 	CameraService::AddCamera("Game", camera_);
 	CameraService::SetActiveCamera("Game");
 
-	/// ===Player=== ///
+	/// ===Playerの生成=== ///
 	player_ = std::make_unique<Player>();
-	player_->Initialize();
 
-	/// ===Enemy=== ///
+	/// ===EnemyManagerの生成=== ///
 	enemyManager_ = std::make_unique<EnemyManager>();
-	enemyManager_->Spawn(EnemyType::CloseRange, { -30.0f, 1.0f, 30.0f });
-	enemyManager_->Spawn(EnemyType::CloseRange, { 30.0f, 1.0f, 30.0f });
-	enemyManager_->Spawn(EnemyType::CloseRange, { 35.0f, 1.0f, 35.0f });
-	enemyManager_->Spawn(EnemyType::CloseRange, {- 30.0f, 1.0f, -30.0f });
-	enemyManager_->Spawn(EnemyType::LongRange, { -35.0f, 1.0f, 35.0f });
-	// EnemyのSpaw後に呼ぶ
-	enemyManager_->SetPlayer(player_.get()); // Playerを設定
 
-	/*closeRangeEnemy_ = std::make_unique<CloseRangeEnemy>();
-	longRangeEnemy_ = std::make_unique<LongRangeEnemy>();
-	/// ===Enemyの初期化=== ///
-	closeRangeEnemy_->InitGameScene({ -30.0f, 1.0f, 30.0f });
-	longRangeEnemy_->InitGameScene({ 30.0f, 1.0f, 30.0f });
-	closeRangeEnemy_->SetPlayer(player_.get());
-	longRangeEnemy_->SetPlayer(player_.get());*/
+	/// ===SponEntity=== ///
+	SpawnEntity("EntityData.json");
+	// EnemyにPlayerを設定
+	enemyManager_->SetPlayer(player_.get());
 
 	/// ===GameStage=== ///
 	stage_ = std::make_unique<GameStage>();
@@ -185,8 +174,6 @@ void GameScene::Draw() {
 #pragma endregion
 
 #pragma region モデル描画
-	// グリッド描画
-	line_->DrawGrid({ 0.0f, 0.0f,0.0f }, { 100.0f, 0.0f, 100.0f }, 50, { 1.0f, 1.0f, 1.0f, 1.0f });
 
 	/// ===GameStage=== ///
 	stage_->Draw();
@@ -288,7 +275,7 @@ void GameScene::UpdateGameOverAnimation() {
 
 	// アニメーション完了でシーン移動
 	if (gameOverAnimation_->IsCompleted()) {
-		sceneManager_->ChangeScene(SceneType::GameOver);
+		sceneManager_->ChangeScene(SceneType::Title);
 	}
 }
 
@@ -297,7 +284,7 @@ void GameScene::UpdateGameOverAnimation() {
 ///-------------------------------------------///
 void GameScene::UpdateGameClearAnimtaion() {
 
-	sceneManager_->ChangeScene(SceneType::Clear);
+	sceneManager_->ChangeScene(SceneType::Title);
 
 	// FadeOut完了で次のシーンへ
 	//if (fadeOutTimer_ >= fadeOutDuration_) {
@@ -309,7 +296,7 @@ void GameScene::UpdateGameClearAnimtaion() {
 ///-------------------------------------------/// 
 /// 配置関数
 ///-------------------------------------------///
-void GameScene::SpawnObjects(const std::string& json_name) {
+void GameScene::SpawnEntity(const std::string& json_name) {
 	LevelData* levelData = GraphicsResourceGetter::GetLevelData(json_name);
 
 	// オブジェクト分回す

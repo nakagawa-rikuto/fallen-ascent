@@ -1,8 +1,12 @@
 #include "WinApp.h"
 #include <string>
 
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 #include <imGui.h>
+#endif // USE_IMGUI
+
+
+#ifdef _DEBUG
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #endif // _DEBUG
 
@@ -23,11 +27,11 @@ const int WinApp::GetWindowHeight() { return kWindowHeight; }
 /// ウィンドウプロージャ
 ///-------------------------------------------///
 LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
 		return true;
 	}
-#endif // _DEBUG
+#endif // USE_IMGUI
 
 	// メッセージに応じたゲーム固有の処理
 	switch (msg) {

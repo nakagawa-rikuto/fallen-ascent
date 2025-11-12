@@ -6,7 +6,7 @@
 // ImGui
 #ifdef USE_IMGUI
 #include "imgui.h"
-#endif
+#endif // USE_IMGUI
 
 ///-------------------------------------------/// 
 /// Setter

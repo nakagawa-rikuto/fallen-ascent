@@ -19,7 +19,7 @@ public:
     GameCharacterCollision() = default;
     ~GameCharacterCollision() = default;
 
-	//NOTE:pushBackRatioは押し戻しの比率を調整するパラメータで、0.0fから1.0fの範囲で設定します。0.0はCharacterBのみ押し戻し、1.0はCharacterAのみ押し戻し、0.5は両方均等に押し戻します。
+    //NOTE:pushBackRatioは押し戻しの比率を調整するパラメータで、0.0fから1.0fの範囲で設定します。0.0はCharacterBのみ押し戻し、1.0はCharacterAのみ押し戻し、0.5は両方均等に押し戻します。
 
     /// <summary>
     /// 球形コライダーを持つ2つのゲームキャラクター間の衝突処理
@@ -59,6 +59,16 @@ public:
     template<typename TColliderA, typename TColliderB>
     void ProcessCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, float pushBackRatio = 1.0f);
 
+    /// <summary>
+    /// GameCharacterとWall（静的コライダー）間の衝突処理
+    /// </summary>
+    /// <typeparam name="TCollider">キャラクターが使用するコライダの型。</typeparam>
+    /// <param name="character">衝突するGameCharacterへのポインタ。</param>
+    /// <param name="wall">衝突対象のWall（Collider）へのポインタ。</param>
+    /// <param name="velocity">キャラクターの速度ベクトルへのポインタ。衝突後に速度が調整されます。</param>
+    template<typename TCollider>
+    void HandleCharacterWallCollision(GameCharacter<TCollider>* character, Collider* wall, Vector3* velocity);
+
 private:
 
     /// <summary>
@@ -77,4 +87,41 @@ private:
     /// <param name="obbCharacter">OBBCollider を持つ GameCharacter へのポインター。計算対象となる OBB の位置・向き・半径などの情報を提供します。</param>
     /// <returns>OBB 上の最も近い点を表す Vector3。</returns>
     Vector3 CalculateClosestPointOnOBBFromCharacter(const Vector3& point, GameCharacter<OBBCollider>* obbCharacter);
+
+    /// <summary>
+    /// 与えられた点からOBB上の最も近い点を計算
+    /// </summary>
+    /// <param name="point">基準となる点。</param>
+    /// <param name="obb">計算対象のOBB。</param>
+    /// <returns>OBB上の最も近い点を表すVector3。</returns>
+    Vector3 CalculateClosestPointOnOBB(const Vector3& point, const OBB& obb);
+
+    /// <summary>
+    /// OBBコライダーとWallの衝突処理
+    /// </summary>
+    /// <typeparam name="TCollider">キャラクターが使用するコライダの型。</typeparam>
+    /// <param name="character">衝突するGameCharacterへのポインタ。</param>
+    /// <param name="wall">衝突対象のWall（OBBCollider）へのポインタ。</param>
+    /// <param name="velocity">キャラクターの速度ベクトルへのポインタ。</param>
+    template<typename TCollider>
+    void HandleOBBWallCollision(GameCharacter<TCollider>* character, OBBCollider* wall, Vector3* velocity);
+
+    /// <summary>
+    /// 球体コライダーとWallの衝突処理
+    /// </summary>
+    /// <typeparam name="TCollider">キャラクターが使用するコライダの型。</typeparam>
+    /// <param name="character">衝突するGameCharacterへのポインタ。</param>
+    /// <param name="wall">衝突対象のWall（OBBCollider）へのポインタ。</param>
+    /// <param name="velocity">キャラクターの速度ベクトルへのポインタ。</param>
+    template<typename TCollider>
+    void HandleSphereWallCollision(GameCharacter<TCollider>* character, OBBCollider* wall, Vector3* velocity);
+
+    /// <summary>
+    /// OBBの指定軸上での重なり量を計算
+    /// </summary>
+    /// <param name="obb1">1つ目のOBB。</param>
+    /// <param name="obb2">2つ目のOBB。</param>
+    /// <param name="axis">分離軸。</param>
+    /// <returns>重なり量（正の値なら重なっている）。</returns>
+    float CalculateOverlapOnAxis(const OBB& obb1, const OBB& obb2, const Vector3& axis);
 };

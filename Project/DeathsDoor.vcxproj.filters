@@ -154,9 +154,6 @@
     <ClCompile Include="application\Scene\GameOverScene.cpp">
       <Filter>application\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\GameScene.cpp">
-      <Filter>application\Scene</Filter>
-    </ClCompile>
     <ClCompile Include="application\Scene\SelectScene.cpp">
       <Filter>application\Scene</Filter>
     </ClCompile>
@@ -505,6 +502,7 @@
     <ClCompile Include="Engine\Graphics\3d\Oshan\OshanCommon.cpp">
       <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClCompile>
+    <ClCompile Include="application\Scene\GameScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">

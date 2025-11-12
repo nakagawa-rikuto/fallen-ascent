@@ -38,9 +38,9 @@ void StartAnimation::Initialize(Player* player, GameCamera* camera) {
 	kDeltaTime_ = DeltaTimeSevice::GetDeltaTime();
 
 	// プレイヤーの初期位置設定
-	if (player_) {
+	/*if (player_) {
 		player_->SetTranslate(playerStartPos_);
-	}
+	}*/
 
 	// カメラの初期位置設定
 	if (camera_) {
@@ -66,7 +66,7 @@ void StartAnimation::Update() {
 	// フェーズ管理
 	if (timer_ < rotationStartTime_) {
 		currentPhase_ = AnimationPhase::PlayerDescent;
-		UpdatePlayerDescent();
+		//UpdatePlayerDescent();
 	} else if (timer_ < rotationStartTime_ + rotationDuration_) {
 		currentPhase_ = AnimationPhase::CameraRotation;
 		UpdateCameraRotation();

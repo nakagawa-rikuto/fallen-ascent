@@ -15,6 +15,9 @@ template void GameCharacterCollision::ProcessCollision<SphereCollider, SphereCol
 template void GameCharacterCollision::ProcessCollision<SphereCollider, OBBCollider>(GameCharacter<SphereCollider>*, GameCharacter<OBBCollider>*, float);
 template void GameCharacterCollision::ProcessCollision<OBBCollider, OBBCollider>(GameCharacter<OBBCollider>*, GameCharacter<OBBCollider>*, float);
 template void GameCharacterCollision::ProcessCollision<OBBCollider, SphereCollider>(GameCharacter<OBBCollider>*, GameCharacter<SphereCollider>*, float);
+// Wall衝突処理
+template void GameCharacterCollision::HandleCharacterWallCollision<OBBCollider>(GameCharacter<OBBCollider>*, Collider*, Vector3*);
+template void GameCharacterCollision::HandleCharacterWallCollision<SphereCollider>(GameCharacter<SphereCollider>*, Collider*, Vector3*);
 
 ///-------------------------------------------/// 
 /// 球体GameCharacter同士の衝突処理
@@ -177,11 +180,141 @@ void GameCharacterCollision::ProcessCollision(GameCharacter<TColliderA>* charact
 			GameCharacter<OBBCollider>* obbB = dynamic_cast<GameCharacter<OBBCollider>*>(characterB);
 			HandleOBBOBBCollision(obbA, obbB, pushBackRatio);
 		}
-	// 同じでない場合
+		// 同じでない場合
 	} else if (typeA != typeB) {
 		HandleSphereOBBCollision(characterA, characterB, pushBackRatio);
 	}
 
+}
+
+///-------------------------------------------/// 
+/// GameCharacterとWallの衝突処理
+///-------------------------------------------///
+template<typename TCollider>
+void GameCharacterCollision::HandleCharacterWallCollision(GameCharacter<TCollider>* character, Collider* wall, Vector3* velocity) {
+
+	// WallをOBBColliderとしてキャスト
+	OBBCollider* wallOBB = dynamic_cast<OBBCollider*>(wall);
+	if (!wallOBB) return;
+
+	ColliderType characterType = character->GetColliderType();
+
+	// キャラクターのタイプに応じて処理を分岐
+	if (characterType == ColliderType::OBB) {
+		// OBB同士の衝突処理
+		HandleOBBWallCollision(character, wallOBB, velocity);
+	} else if (characterType == ColliderType::Sphere) {
+		// 球体とOBBの衝突処理
+		HandleSphereWallCollision(character, wallOBB, velocity);
+	}
+
+
+}
+
+///-------------------------------------------/// 
+/// OBBキャラクターとWallの衝突処理
+///-------------------------------------------///
+template<typename TCollider>
+void GameCharacterCollision::HandleOBBWallCollision(GameCharacter<TCollider>* character, OBBCollider* wall, Vector3* velocity) {
+
+	// OBBColliderにキャスト
+	GameCharacter<OBBCollider>* obbCharacter = dynamic_cast<GameCharacter<OBBCollider>*>(character);
+	if (!obbCharacter) return;
+
+	OBB characterOBB = obbCharacter->GetOBB();
+	OBB wallOBB = wall->GetOBB();
+
+	// キャラクターとWallの中心間のベクトル
+	Vector3 centerDiff = characterOBB.center - wallOBB.center;
+
+	// 各軸での重なりを計算して、最小の押し戻しベクトルを求める
+	float minOverlap = FLT_MAX;
+	Vector3 pushBackDirection = {};
+
+	// 6つの分離軸（各OBBの3軸ずつ）でチェック
+	for (int i = 0; i < 3; ++i) {
+		// キャラクターOBBの軸
+		Vector3 axis = characterOBB.axis[i];
+		float overlap = CalculateOverlapOnAxis(characterOBB, wallOBB, axis);
+		if (overlap < minOverlap && overlap > 0.0f) {
+			minOverlap = overlap;
+			pushBackDirection = axis;
+			// 押し戻し方向を調整（centerDiffの方向に合わせる）
+			if (Dot(centerDiff, axis) < 0.0f) {
+				pushBackDirection = axis * -1.0f;
+			}
+		}
+
+		// WallOBBの軸
+		axis = wallOBB.axis[i];
+		overlap = CalculateOverlapOnAxis(characterOBB, wallOBB, axis);
+		if (overlap < minOverlap && overlap > 0.0f) {
+			minOverlap = overlap;
+			pushBackDirection = axis;
+			// 押し戻し方向を調整
+			if (Dot(centerDiff, axis) < 0.0f) {
+				pushBackDirection = axis * -1.0f;
+			}
+		}
+	}
+
+	// 押し戻し処理
+	if (minOverlap < FLT_MAX) {
+		// めり込み防止のためにマージンを追加（1.01倍～1.1倍程度）
+		float pushBackMargin = 1.05f; // この値を調整してください
+		Vector3 newPos = obbCharacter->GetTransform().translate + pushBackDirection * (minOverlap * pushBackMargin);
+		obbCharacter->SetTranslate(newPos);
+
+		// 壁方向への速度成分をゼロにする
+		float velocityAlongNormal = Dot(*velocity, pushBackDirection);
+		if (velocityAlongNormal < 0.0f) {
+			*velocity -= pushBackDirection * velocityAlongNormal;
+		}
+	}
+}
+
+///-------------------------------------------/// 
+/// 球体キャラクターとWallの衝突処理
+///-------------------------------------------///
+template<typename TCollider>
+void GameCharacterCollision::HandleSphereWallCollision(GameCharacter<TCollider>* character, OBBCollider* wall, Vector3* velocity) {
+
+	// SphereColliderにキャスト
+	GameCharacter<SphereCollider>* sphereCharacter = dynamic_cast<GameCharacter<SphereCollider>*>(character);
+	if (!sphereCharacter) return;
+
+	Vector3 spherePos = sphereCharacter->GetTransform().translate;
+	float sphereRadius = sphereCharacter->GetSphere().radius;
+	OBB wallOBB = wall->GetOBB();
+
+	// 球体の中心からWall上の最も近い点を計算
+	Vector3 closestPoint = CalculateClosestPointOnOBB(spherePos, wallOBB);
+
+	// 球体の中心から最も近い点への方向
+	Vector3 direction = spherePos - closestPoint;
+	float distance = Length(direction);
+
+	// 距離が0に近い場合は適当な方向に設定
+	if (distance < 1e-6f) {
+		direction = Vector3(0.0f, 1.0f, 0.0f);
+		distance = 1e-6f;
+	} else {
+		direction = Normalize(direction);
+	}
+
+	// 重なり分
+	float overlap = sphereRadius - distance;
+	if (overlap > 0.0f) {
+		// 押し戻し処理
+		Vector3 newPos = spherePos + direction * overlap;
+		sphereCharacter->SetTranslate(newPos);
+
+		// 壁方向への速度成分をゼロにする
+		float velocityAlongNormal = Dot(*velocity, direction);
+		if (velocityAlongNormal < 0.0f) {
+			*velocity -= direction * velocityAlongNormal;
+		}
+	}
 }
 
 ///-------------------------------------------/// 
@@ -193,7 +326,7 @@ ColliderType GameCharacterCollision::GetColliderTypeFromCharacter(GameCharacter<
 }
 
 ///-------------------------------------------/// 
-/// OBB上の最近点計算
+/// OBB上の最近点計算（GameCharacter用）
 ///-------------------------------------------///
 Vector3 GameCharacterCollision::CalculateClosestPointOnOBBFromCharacter(const Vector3& point, GameCharacter<OBBCollider>* obbCharacter) {
 	if (obbCharacter->GetColliderType() != ColliderType::OBB) {
@@ -203,22 +336,52 @@ Vector3 GameCharacterCollision::CalculateClosestPointOnOBBFromCharacter(const Ve
 	OBBCollider* obb = static_cast<OBBCollider*>(obbCharacter);
 	OBB obbData = obb->GetOBB();
 
-	Vector3 dir = point - obbData.center;
-	Vector3 closest = obbData.center;
+	return CalculateClosestPointOnOBB(point, obbData);
+}
+
+///-------------------------------------------/// 
+/// OBB上の最近点計算
+///-------------------------------------------///
+Vector3 GameCharacterCollision::CalculateClosestPointOnOBB(const Vector3& point, const OBB& obb) {
+	Vector3 dir = point - obb.center;
+	Vector3 closest = obb.center;
 
 	// OBB空間における最近点を計算
 	for (int i = 0; i < 3; ++i) {
 		float axisExtent = 0.0f;
 
-		if (i == 0) axisExtent = obbData.halfSize.x;
-		else if (i == 1) axisExtent = obbData.halfSize.y;
-		else if (i == 2) axisExtent = obbData.halfSize.z;
+		if (i == 0) axisExtent = obb.halfSize.x;
+		else if (i == 1) axisExtent = obb.halfSize.y;
+		else if (i == 2) axisExtent = obb.halfSize.z;
 
-		float dist = Dot(dir, obbData.axis[i]);
+		float dist = Dot(dir, obb.axis[i]);
 		dist = std::clamp(dist, -axisExtent, axisExtent);
 
-		closest += obbData.axis[i] * dist;
+		closest += obb.axis[i] * dist;
 	}
 
 	return closest;
+}
+
+///-------------------------------------------/// 
+/// OBBの軸上での重なりを計算
+///-------------------------------------------///
+float GameCharacterCollision::CalculateOverlapOnAxis(const OBB& obb1, const OBB& obb2, const Vector3& axis) {
+	// 各OBBの軸への射影の半径を計算
+	float r1 = 0.0f;
+	for (int i = 0; i < 3; ++i) {
+		r1 += fabs(Dot(obb1.axis[i] * obb1.halfSize, axis));
+	}
+
+	float r2 = 0.0f;
+	for (int i = 0; i < 3; ++i) {
+		r2 += fabs(Dot(obb2.axis[i] * obb2.halfSize, axis));
+	}
+
+	// 中心間距離の射影
+	Vector3 centerDiff = obb1.center - obb2.center;
+	float distance = fabs(Dot(centerDiff, axis));
+
+	// 重なり量を返す（正の値なら重なっている）
+	return (r1 + r2) - distance;
 }

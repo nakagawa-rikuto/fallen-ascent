@@ -3,7 +3,7 @@
     "objects": [
         {
             "type": "MESH",
-            "name": "Payer_Spon_Stage",
+            "name": "Ground",
             "transform": {
                 "translation": [
                     0.0,
@@ -22,7 +22,7 @@
                 ]
             },
             "class_name": "Ground1",
-            "file_name": "PlayerSponStage",
+            "file_name": "Ground",
             "collider": {
                 "type": "BOX",
                 "center": [
@@ -31,20 +31,20 @@
                     0.0
                 ],
                 "size": [
-                    30.0,
-                    30.0,
+                    400.0,
+                    400.0,
                     0.10000000149011612
                 ]
             }
         },
         {
             "type": "MESH",
-            "name": "Load1",
+            "name": "Object1",
             "transform": {
                 "translation": [
-                    18.805782318115234,
-                    -7.06700325012207,
-                    -0.00267791748046875
+                    59.68130874633789,
+                    -30.985441207885742,
+                    5.0
                 ],
                 "rotation": [
                     0.0,
@@ -57,8 +57,8 @@
                     1.0
                 ]
             },
-            "class_name": "Ground2",
-            "file_name": "Load",
+            "class_name": "Object1",
+            "file_name": "Object1",
             "collider": {
                 "type": "BOX",
                 "center": [
@@ -67,441 +67,25 @@
                     0.0
                 ],
                 "size": [
-                    6.0,
-                    6.0,
-                    0.10000000149011612
-                ]
-            },
-            "children": [
-                {
-                    "type": "MESH",
-                    "name": "Load1.001",
-                    "transform": {
-                        "translation": [
-                            7.0,
-                            0.0,
-                            0.0
-                        ],
-                        "rotation": [
-                            0.0,
-                            0.0,
-                            -8.00000286102295
-                        ],
-                        "scaling": [
-                            0.9999999403953552,
-                            0.9999999403953552,
-                            1.0
-                        ]
-                    },
-                    "class_name": "Ground2",
-                    "file_name": "Load",
-                    "collider": {
-                        "type": "BOX",
-                        "center": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ],
-                        "size": [
-                            6.0,
-                            6.0,
-                            0.10000000149011612
-                        ]
-                    },
-                    "children": [
-                        {
-                            "type": "MESH",
-                            "name": "Load1.002",
-                            "transform": {
-                                "translation": [
-                                    7.000001907348633,
-                                    1.1920928955078125e-06,
-                                    0.0
-                                ],
-                                "rotation": [
-                                    0.0,
-                                    0.0,
-                                    -8.00000286102295
-                                ],
-                                "scaling": [
-                                    1.0000001192092896,
-                                    1.0000001192092896,
-                                    1.0
-                                ]
-                            },
-                            "class_name": "Ground2",
-                            "file_name": "Load",
-                            "collider": {
-                                "type": "BOX",
-                                "center": [
-                                    0.0,
-                                    0.0,
-                                    0.0
-                                ],
-                                "size": [
-                                    6.0,
-                                    6.0,
-                                    0.10000000149011612
-                                ]
-                            },
-                            "children": [
-                                {
-                                    "type": "MESH",
-                                    "name": "Load1.003",
-                                    "transform": {
-                                        "translation": [
-                                            7.0,
-                                            -4.76837158203125e-07,
-                                            0.0
-                                        ],
-                                        "rotation": [
-                                            0.0,
-                                            0.0,
-                                            -8.000003814697266
-                                        ],
-                                        "scaling": [
-                                            1.0,
-                                            1.0,
-                                            1.0
-                                        ]
-                                    },
-                                    "class_name": "Ground2",
-                                    "file_name": "Load",
-                                    "collider": {
-                                        "type": "BOX",
-                                        "center": [
-                                            0.0,
-                                            0.0,
-                                            0.0
-                                        ],
-                                        "size": [
-                                            6.0,
-                                            6.0,
-                                            0.10000000149011612
-                                        ]
-                                    },
-                                    "children": [
-                                        {
-                                            "type": "MESH",
-                                            "name": "Load1.004",
-                                            "transform": {
-                                                "translation": [
-                                                    7.0,
-                                                    0.0,
-                                                    0.0
-                                                ],
-                                                "rotation": [
-                                                    0.0,
-                                                    0.0,
-                                                    -8.000001907348633
-                                                ],
-                                                "scaling": [
-                                                    0.9999998807907104,
-                                                    0.9999998807907104,
-                                                    1.0
-                                                ]
-                                            },
-                                            "class_name": "Ground2",
-                                            "file_name": "Load",
-                                            "collider": {
-                                                "type": "BOX",
-                                                "center": [
-                                                    0.0,
-                                                    0.0,
-                                                    0.0
-                                                ],
-                                                "size": [
-                                                    6.0,
-                                                    6.0,
-                                                    0.10000000149011612
-                                                ]
-                                            },
-                                            "children": [
-                                                {
-                                                    "type": "MESH",
-                                                    "name": "Load1.005",
-                                                    "transform": {
-                                                        "translation": [
-                                                            7.000003814697266,
-                                                            0.0,
-                                                            0.0
-                                                        ],
-                                                        "rotation": [
-                                                            0.0,
-                                                            0.0,
-                                                            -8.000000953674316
-                                                        ],
-                                                        "scaling": [
-                                                            1.0,
-                                                            1.0,
-                                                            1.0
-                                                        ]
-                                                    },
-                                                    "class_name": "Ground2",
-                                                    "file_name": "Load",
-                                                    "collider": {
-                                                        "type": "BOX",
-                                                        "center": [
-                                                            0.0,
-                                                            0.0,
-                                                            0.0
-                                                        ],
-                                                        "size": [
-                                                            6.0,
-                                                            6.0,
-                                                            0.10000000149011612
-                                                        ]
-                                                    },
-                                                    "children": [
-                                                        {
-                                                            "type": "MESH",
-                                                            "name": "Load1.006",
-                                                            "transform": {
-                                                                "translation": [
-                                                                    7.0,
-                                                                    1.9073486328125e-06,
-                                                                    0.0
-                                                                ],
-                                                                "rotation": [
-                                                                    0.0,
-                                                                    0.0,
-                                                                    -8.00000286102295
-                                                                ],
-                                                                "scaling": [
-                                                                    0.9999999403953552,
-                                                                    0.9999999403953552,
-                                                                    1.0
-                                                                ]
-                                                            },
-                                                            "class_name": "Ground2",
-                                                            "file_name": "Load",
-                                                            "collider": {
-                                                                "type": "BOX",
-                                                                "center": [
-                                                                    0.0,
-                                                                    0.0,
-                                                                    0.0
-                                                                ],
-                                                                "size": [
-                                                                    6.0,
-                                                                    6.0,
-                                                                    0.10000000149011612
-                                                                ]
-                                                            },
-                                                            "children": [
-                                                                {
-                                                                    "type": "MESH",
-                                                                    "name": "Load1.007",
-                                                                    "transform": {
-                                                                        "translation": [
-                                                                            7.000007629394531,
-                                                                            -1.9073486328125e-06,
-                                                                            0.0
-                                                                        ],
-                                                                        "rotation": [
-                                                                            0.0,
-                                                                            0.0,
-                                                                            -8.000000953674316
-                                                                        ],
-                                                                        "scaling": [
-                                                                            1.0,
-                                                                            1.0,
-                                                                            1.0
-                                                                        ]
-                                                                    },
-                                                                    "class_name": "Ground2",
-                                                                    "file_name": "Load",
-                                                                    "collider": {
-                                                                        "type": "BOX",
-                                                                        "center": [
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0
-                                                                        ],
-                                                                        "size": [
-                                                                            6.0,
-                                                                            6.0,
-                                                                            0.10000000149011612
-                                                                        ]
-                                                                    },
-                                                                    "children": [
-                                                                        {
-                                                                            "type": "MESH",
-                                                                            "name": "Load1.008",
-                                                                            "transform": {
-                                                                                "translation": [
-                                                                                    7.0,
-                                                                                    0.0,
-                                                                                    2.3283064365386963e-10
-                                                                                ],
-                                                                                "rotation": [
-                                                                                    0.0,
-                                                                                    0.0,
-                                                                                    -8.000000953674316
-                                                                                ],
-                                                                                "scaling": [
-                                                                                    1.0,
-                                                                                    1.0,
-                                                                                    1.0
-                                                                                ]
-                                                                            },
-                                                                            "class_name": "Ground2",
-                                                                            "file_name": "Load",
-                                                                            "collider": {
-                                                                                "type": "BOX",
-                                                                                "center": [
-                                                                                    0.0,
-                                                                                    0.0,
-                                                                                    0.0
-                                                                                ],
-                                                                                "size": [
-                                                                                    6.0,
-                                                                                    6.0,
-                                                                                    0.10000000149011612
-                                                                                ]
-                                                                            },
-                                                                            "children": [
-                                                                                {
-                                                                                    "type": "MESH",
-                                                                                    "name": "Load1.009",
-                                                                                    "transform": {
-                                                                                        "translation": [
-                                                                                            7.0,
-                                                                                            0.0,
-                                                                                            0.0
-                                                                                        ],
-                                                                                        "rotation": [
-                                                                                            0.0,
-                                                                                            0.0,
-                                                                                            -8.000001907348633
-                                                                                        ],
-                                                                                        "scaling": [
-                                                                                            0.9999999403953552,
-                                                                                            0.9999999403953552,
-                                                                                            1.0
-                                                                                        ]
-                                                                                    },
-                                                                                    "class_name": "Ground2",
-                                                                                    "file_name": "Load",
-                                                                                    "collider": {
-                                                                                        "type": "BOX",
-                                                                                        "center": [
-                                                                                            0.0,
-                                                                                            0.0,
-                                                                                            0.0
-                                                                                        ],
-                                                                                        "size": [
-                                                                                            6.0,
-                                                                                            6.0,
-                                                                                            0.10000000149011612
-                                                                                        ]
-                                                                                    },
-                                                                                    "children": [
-                                                                                        {
-                                                                                            "type": "MESH",
-                                                                                            "name": "Load1.010",
-                                                                                            "transform": {
-                                                                                                "translation": [
-                                                                                                    7.000003814697266,
-                                                                                                    7.62939453125e-06,
-                                                                                                    0.0
-                                                                                                ],
-                                                                                                "rotation": [
-                                                                                                    0.0,
-                                                                                                    0.0,
-                                                                                                    -8.000001907348633
-                                                                                                ],
-                                                                                                "scaling": [
-                                                                                                    0.9999999403953552,
-                                                                                                    0.9999999403953552,
-                                                                                                    1.0
-                                                                                                ]
-                                                                                            },
-                                                                                            "class_name": "Ground2",
-                                                                                            "file_name": "Load",
-                                                                                            "collider": {
-                                                                                                "type": "BOX",
-                                                                                                "center": [
-                                                                                                    0.0,
-                                                                                                    0.0,
-                                                                                                    0.0
-                                                                                                ],
-                                                                                                "size": [
-                                                                                                    6.0,
-                                                                                                    6.0,
-                                                                                                    0.10000000149011612
-                                                                                                ]
-                                                                                            }
-                                                                                        }
-                                                                                    ]
-                                                                                }
-                                                                            ]
-                                                                        }
-                                                                    ]
-                                                                }
-                                                            ]
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "type": "MESH",
-            "name": "Battle_Stage1",
-            "transform": {
-                "translation": [
-                    53.32579803466797,
-                    -93.00792694091797,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    9.329584121704102
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "class_name": "Ground3",
-            "file_name": "BattleStage",
-            "collider": {
-                "type": "BOX",
-                "center": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "size": [
-                    80.0,
-                    80.0,
-                    0.10000000149011612
+                    2.0,
+                    2.0,
+                    10.0
                 ]
             }
         },
         {
             "type": "MESH",
-            "name": "Load2",
+            "name": "Object2",
             "transform": {
                 "translation": [
-                    28.611684799194336,
-                    -141.80641174316406,
-                    -0.00267791748046875
+                    49.51342010498047,
+                    8.935958862304688,
+                    2.0
                 ],
                 "rotation": [
                     0.0,
-                    -0.0,
-                    11.091878890991211
+                    0.0,
+                    -17.697736740112305
                 ],
                 "scaling": [
                     1.0,
@@ -509,8 +93,8 @@
                     1.0
                 ]
             },
-            "class_name": "Ground2",
-            "file_name": "Load",
+            "class_name": "Object2",
+            "file_name": "Object2",
             "collider": {
                 "type": "BOX",
                 "center": [
@@ -519,778 +103,56 @@
                     0.0
                 ],
                 "size": [
-                    6.0,
-                    6.0,
-                    0.10000000149011612
-                ]
-            },
-            "children": [
-                {
-                    "type": "MESH",
-                    "name": "Load2.001",
-                    "transform": {
-                        "translation": [
-                            1.9073486328125e-06,
-                            -7.0000152587890625,
-                            0.0
-                        ],
-                        "rotation": [
-                            0.0,
-                            0.0,
-                            -8.00000286102295
-                        ],
-                        "scaling": [
-                            1.0,
-                            1.0,
-                            1.0
-                        ]
-                    },
-                    "class_name": "Ground2",
-                    "file_name": "Load",
-                    "collider": {
-                        "type": "BOX",
-                        "center": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ],
-                        "size": [
-                            6.0,
-                            6.0,
-                            0.10000000149011612
-                        ]
-                    },
-                    "children": [
-                        {
-                            "type": "MESH",
-                            "name": "Load2.002",
-                            "transform": {
-                                "translation": [
-                                    1.9073486328125e-06,
-                                    -6.9999847412109375,
-                                    0.0
-                                ],
-                                "rotation": [
-                                    0.0,
-                                    0.0,
-                                    -8.000001907348633
-                                ],
-                                "scaling": [
-                                    1.0,
-                                    1.0,
-                                    1.0
-                                ]
-                            },
-                            "class_name": "Ground2",
-                            "file_name": "Load",
-                            "collider": {
-                                "type": "BOX",
-                                "center": [
-                                    0.0,
-                                    0.0,
-                                    0.0
-                                ],
-                                "size": [
-                                    6.0,
-                                    6.0,
-                                    0.10000000149011612
-                                ]
-                            },
-                            "children": [
-                                {
-                                    "type": "MESH",
-                                    "name": "Load2.003",
-                                    "transform": {
-                                        "translation": [
-                                            3.814697265625e-06,
-                                            -6.9999847412109375,
-                                            0.0
-                                        ],
-                                        "rotation": [
-                                            0.0,
-                                            0.0,
-                                            -8.00000286102295
-                                        ],
-                                        "scaling": [
-                                            1.0,
-                                            1.0,
-                                            1.0
-                                        ]
-                                    },
-                                    "class_name": "Ground2",
-                                    "file_name": "Load",
-                                    "collider": {
-                                        "type": "BOX",
-                                        "center": [
-                                            0.0,
-                                            0.0,
-                                            0.0
-                                        ],
-                                        "size": [
-                                            6.0,
-                                            6.0,
-                                            0.10000000149011612
-                                        ]
-                                    },
-                                    "children": [
-                                        {
-                                            "type": "MESH",
-                                            "name": "Load2.004",
-                                            "transform": {
-                                                "translation": [
-                                                    0.0,
-                                                    -7.0,
-                                                    0.0
-                                                ],
-                                                "rotation": [
-                                                    0.0,
-                                                    0.0,
-                                                    -8.00000286102295
-                                                ],
-                                                "scaling": [
-                                                    1.0,
-                                                    1.0,
-                                                    1.0
-                                                ]
-                                            },
-                                            "class_name": "Ground2",
-                                            "file_name": "Load",
-                                            "collider": {
-                                                "type": "BOX",
-                                                "center": [
-                                                    0.0,
-                                                    0.0,
-                                                    0.0
-                                                ],
-                                                "size": [
-                                                    6.0,
-                                                    6.0,
-                                                    0.10000000149011612
-                                                ]
-                                            },
-                                            "children": [
-                                                {
-                                                    "type": "MESH",
-                                                    "name": "Load2.005",
-                                                    "transform": {
-                                                        "translation": [
-                                                            0.0,
-                                                            -7.0,
-                                                            0.0
-                                                        ],
-                                                        "rotation": [
-                                                            0.0,
-                                                            0.0,
-                                                            -8.000003814697266
-                                                        ],
-                                                        "scaling": [
-                                                            1.0,
-                                                            1.0,
-                                                            1.0
-                                                        ]
-                                                    },
-                                                    "class_name": "Ground2",
-                                                    "file_name": "Load",
-                                                    "collider": {
-                                                        "type": "BOX",
-                                                        "center": [
-                                                            0.0,
-                                                            0.0,
-                                                            0.0
-                                                        ],
-                                                        "size": [
-                                                            6.0,
-                                                            6.0,
-                                                            0.10000000149011612
-                                                        ]
-                                                    },
-                                                    "children": [
-                                                        {
-                                                            "type": "MESH",
-                                                            "name": "Load2.006",
-                                                            "transform": {
-                                                                "translation": [
-                                                                    -7.62939453125e-06,
-                                                                    -7.0,
-                                                                    0.0
-                                                                ],
-                                                                "rotation": [
-                                                                    0.0,
-                                                                    0.0,
-                                                                    -8.00000286102295
-                                                                ],
-                                                                "scaling": [
-                                                                    1.0,
-                                                                    1.0,
-                                                                    1.0
-                                                                ]
-                                                            },
-                                                            "class_name": "Ground2",
-                                                            "file_name": "Load",
-                                                            "collider": {
-                                                                "type": "BOX",
-                                                                "center": [
-                                                                    0.0,
-                                                                    0.0,
-                                                                    0.0
-                                                                ],
-                                                                "size": [
-                                                                    6.0,
-                                                                    6.0,
-                                                                    0.10000000149011612
-                                                                ]
-                                                            },
-                                                            "children": [
-                                                                {
-                                                                    "type": "MESH",
-                                                                    "name": "Load2.007",
-                                                                    "transform": {
-                                                                        "translation": [
-                                                                            7.62939453125e-06,
-                                                                            -7.0,
-                                                                            0.0
-                                                                        ],
-                                                                        "rotation": [
-                                                                            0.0,
-                                                                            0.0,
-                                                                            -8.000003814697266
-                                                                        ],
-                                                                        "scaling": [
-                                                                            1.0,
-                                                                            1.0,
-                                                                            1.0
-                                                                        ]
-                                                                    },
-                                                                    "class_name": "Ground2",
-                                                                    "file_name": "Load",
-                                                                    "collider": {
-                                                                        "type": "BOX",
-                                                                        "center": [
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0
-                                                                        ],
-                                                                        "size": [
-                                                                            6.0,
-                                                                            6.0,
-                                                                            0.10000000149011612
-                                                                        ]
-                                                                    },
-                                                                    "children": [
-                                                                        {
-                                                                            "type": "MESH",
-                                                                            "name": "Load2.008",
-                                                                            "transform": {
-                                                                                "translation": [
-                                                                                    0.0,
-                                                                                    -6.999992370605469,
-                                                                                    0.0
-                                                                                ],
-                                                                                "rotation": [
-                                                                                    0.0,
-                                                                                    0.0,
-                                                                                    -8.0
-                                                                                ],
-                                                                                "scaling": [
-                                                                                    0.9999999403953552,
-                                                                                    0.9999999403953552,
-                                                                                    1.0
-                                                                                ]
-                                                                            },
-                                                                            "class_name": "Ground2",
-                                                                            "file_name": "Load",
-                                                                            "collider": {
-                                                                                "type": "BOX",
-                                                                                "center": [
-                                                                                    0.0,
-                                                                                    0.0,
-                                                                                    0.0
-                                                                                ],
-                                                                                "size": [
-                                                                                    6.0,
-                                                                                    6.0,
-                                                                                    0.10000000149011612
-                                                                                ]
-                                                                            },
-                                                                            "children": [
-                                                                                {
-                                                                                    "type": "MESH",
-                                                                                    "name": "Load2.009",
-                                                                                    "transform": {
-                                                                                        "translation": [
-                                                                                            3.0517578125e-05,
-                                                                                            -6.999977111816406,
-                                                                                            0.0
-                                                                                        ],
-                                                                                        "rotation": [
-                                                                                            0.0,
-                                                                                            0.0,
-                                                                                            -8.000001907348633
-                                                                                        ],
-                                                                                        "scaling": [
-                                                                                            0.9999999403953552,
-                                                                                            0.9999999403953552,
-                                                                                            1.0
-                                                                                        ]
-                                                                                    },
-                                                                                    "class_name": "Ground2",
-                                                                                    "file_name": "Load",
-                                                                                    "collider": {
-                                                                                        "type": "BOX",
-                                                                                        "center": [
-                                                                                            0.0,
-                                                                                            0.0,
-                                                                                            0.0
-                                                                                        ],
-                                                                                        "size": [
-                                                                                            6.0,
-                                                                                            6.0,
-                                                                                            0.10000000149011612
-                                                                                        ]
-                                                                                    },
-                                                                                    "children": [
-                                                                                        {
-                                                                                            "type": "MESH",
-                                                                                            "name": "Load2.010",
-                                                                                            "transform": {
-                                                                                                "translation": [
-                                                                                                    0.0,
-                                                                                                    -7.000007629394531,
-                                                                                                    0.0
-                                                                                                ],
-                                                                                                "rotation": [
-                                                                                                    0.0,
-                                                                                                    0.0,
-                                                                                                    -8.00000286102295
-                                                                                                ],
-                                                                                                "scaling": [
-                                                                                                    1.0,
-                                                                                                    1.0,
-                                                                                                    1.0
-                                                                                                ]
-                                                                                            },
-                                                                                            "class_name": "Ground2",
-                                                                                            "file_name": "Load",
-                                                                                            "collider": {
-                                                                                                "type": "BOX",
-                                                                                                "center": [
-                                                                                                    0.0,
-                                                                                                    0.0,
-                                                                                                    0.0
-                                                                                                ],
-                                                                                                "size": [
-                                                                                                    6.0,
-                                                                                                    6.0,
-                                                                                                    0.10000000149011612
-                                                                                                ]
-                                                                                            },
-                                                                                            "children": [
-                                                                                                {
-                                                                                                    "type": "MESH",
-                                                                                                    "name": "Load2.012",
-                                                                                                    "transform": {
-                                                                                                        "translation": [
-                                                                                                            -1.52587890625e-05,
-                                                                                                            -7.0,
-                                                                                                            0.0
-                                                                                                        ],
-                                                                                                        "rotation": [
-                                                                                                            0.0,
-                                                                                                            0.0,
-                                                                                                            -8.000001907348633
-                                                                                                        ],
-                                                                                                        "scaling": [
-                                                                                                            0.9999999403953552,
-                                                                                                            0.9999999403953552,
-                                                                                                            1.0
-                                                                                                        ]
-                                                                                                    },
-                                                                                                    "class_name": "Ground2",
-                                                                                                    "file_name": "Load",
-                                                                                                    "collider": {
-                                                                                                        "type": "BOX",
-                                                                                                        "center": [
-                                                                                                            0.0,
-                                                                                                            0.0,
-                                                                                                            0.0
-                                                                                                        ],
-                                                                                                        "size": [
-                                                                                                            6.0,
-                                                                                                            6.0,
-                                                                                                            0.10000000149011612
-                                                                                                        ]
-                                                                                                    },
-                                                                                                    "children": [
-                                                                                                        {
-                                                                                                            "type": "MESH",
-                                                                                                            "name": "Load2.013",
-                                                                                                            "transform": {
-                                                                                                                "translation": [
-                                                                                                                    0.0,
-                                                                                                                    -7.0,
-                                                                                                                    0.0
-                                                                                                                ],
-                                                                                                                "rotation": [
-                                                                                                                    0.0,
-                                                                                                                    0.0,
-                                                                                                                    -8.00000286102295
-                                                                                                                ],
-                                                                                                                "scaling": [
-                                                                                                                    1.0000001192092896,
-                                                                                                                    1.0000001192092896,
-                                                                                                                    1.0
-                                                                                                                ]
-                                                                                                            },
-                                                                                                            "class_name": "Ground2",
-                                                                                                            "file_name": "Load",
-                                                                                                            "collider": {
-                                                                                                                "type": "BOX",
-                                                                                                                "center": [
-                                                                                                                    0.0,
-                                                                                                                    0.0,
-                                                                                                                    0.0
-                                                                                                                ],
-                                                                                                                "size": [
-                                                                                                                    6.0,
-                                                                                                                    6.0,
-                                                                                                                    0.10000000149011612
-                                                                                                                ]
-                                                                                                            },
-                                                                                                            "children": [
-                                                                                                                {
-                                                                                                                    "type": "MESH",
-                                                                                                                    "name": "Load2.014",
-                                                                                                                    "transform": {
-                                                                                                                        "translation": [
-                                                                                                                            -1.52587890625e-05,
-                                                                                                                            -7.000007629394531,
-                                                                                                                            0.0
-                                                                                                                        ],
-                                                                                                                        "rotation": [
-                                                                                                                            0.0,
-                                                                                                                            0.0,
-                                                                                                                            -8.00000286102295
-                                                                                                                        ],
-                                                                                                                        "scaling": [
-                                                                                                                            1.0,
-                                                                                                                            1.0,
-                                                                                                                            1.0
-                                                                                                                        ]
-                                                                                                                    },
-                                                                                                                    "class_name": "Ground2",
-                                                                                                                    "file_name": "Load",
-                                                                                                                    "collider": {
-                                                                                                                        "type": "BOX",
-                                                                                                                        "center": [
-                                                                                                                            0.0,
-                                                                                                                            0.0,
-                                                                                                                            0.0
-                                                                                                                        ],
-                                                                                                                        "size": [
-                                                                                                                            6.0,
-                                                                                                                            6.0,
-                                                                                                                            0.10000000149011612
-                                                                                                                        ]
-                                                                                                                    },
-                                                                                                                    "children": [
-                                                                                                                        {
-                                                                                                                            "type": "MESH",
-                                                                                                                            "name": "Load2.015",
-                                                                                                                            "transform": {
-                                                                                                                                "translation": [
-                                                                                                                                    -1.52587890625e-05,
-                                                                                                                                    -6.999999046325684,
-                                                                                                                                    0.0
-                                                                                                                                ],
-                                                                                                                                "rotation": [
-                                                                                                                                    0.0,
-                                                                                                                                    0.0,
-                                                                                                                                    -8.00000286102295
-                                                                                                                                ],
-                                                                                                                                "scaling": [
-                                                                                                                                    1.0,
-                                                                                                                                    1.0,
-                                                                                                                                    1.0
-                                                                                                                                ]
-                                                                                                                            },
-                                                                                                                            "class_name": "Ground2",
-                                                                                                                            "file_name": "Load",
-                                                                                                                            "collider": {
-                                                                                                                                "type": "BOX",
-                                                                                                                                "center": [
-                                                                                                                                    0.0,
-                                                                                                                                    0.0,
-                                                                                                                                    0.0
-                                                                                                                                ],
-                                                                                                                                "size": [
-                                                                                                                                    6.0,
-                                                                                                                                    6.0,
-                                                                                                                                    0.10000000149011612
-                                                                                                                                ]
-                                                                                                                            },
-                                                                                                                            "children": [
-                                                                                                                                {
-                                                                                                                                    "type": "MESH",
-                                                                                                                                    "name": "Load2.016",
-                                                                                                                                    "transform": {
-                                                                                                                                        "translation": [
-                                                                                                                                            -1.52587890625e-05,
-                                                                                                                                            -6.999998092651367,
-                                                                                                                                            0.0
-                                                                                                                                        ],
-                                                                                                                                        "rotation": [
-                                                                                                                                            0.0,
-                                                                                                                                            0.0,
-                                                                                                                                            -8.000001907348633
-                                                                                                                                        ],
-                                                                                                                                        "scaling": [
-                                                                                                                                            0.9999999403953552,
-                                                                                                                                            0.9999999403953552,
-                                                                                                                                            1.0
-                                                                                                                                        ]
-                                                                                                                                    },
-                                                                                                                                    "class_name": "Ground2",
-                                                                                                                                    "file_name": "Load",
-                                                                                                                                    "collider": {
-                                                                                                                                        "type": "BOX",
-                                                                                                                                        "center": [
-                                                                                                                                            0.0,
-                                                                                                                                            0.0,
-                                                                                                                                            0.0
-                                                                                                                                        ],
-                                                                                                                                        "size": [
-                                                                                                                                            6.0,
-                                                                                                                                            6.0,
-                                                                                                                                            0.10000000149011612
-                                                                                                                                        ]
-                                                                                                                                    },
-                                                                                                                                    "children": [
-                                                                                                                                        {
-                                                                                                                                            "type": "MESH",
-                                                                                                                                            "name": "Load2.017",
-                                                                                                                                            "transform": {
-                                                                                                                                                "translation": [
-                                                                                                                                                    1.52587890625e-05,
-                                                                                                                                                    -7.000003814697266,
-                                                                                                                                                    2.3283064365386963e-10
-                                                                                                                                                ],
-                                                                                                                                                "rotation": [
-                                                                                                                                                    0.0,
-                                                                                                                                                    0.0,
-                                                                                                                                                    -8.00000286102295
-                                                                                                                                                ],
-                                                                                                                                                "scaling": [
-                                                                                                                                                    1.0000001192092896,
-                                                                                                                                                    1.0000001192092896,
-                                                                                                                                                    1.0
-                                                                                                                                                ]
-                                                                                                                                            },
-                                                                                                                                            "class_name": "Ground2",
-                                                                                                                                            "file_name": "Load",
-                                                                                                                                            "collider": {
-                                                                                                                                                "type": "BOX",
-                                                                                                                                                "center": [
-                                                                                                                                                    0.0,
-                                                                                                                                                    0.0,
-                                                                                                                                                    0.0
-                                                                                                                                                ],
-                                                                                                                                                "size": [
-                                                                                                                                                    6.0,
-                                                                                                                                                    6.0,
-                                                                                                                                                    0.10000000149011612
-                                                                                                                                                ]
-                                                                                                                                            },
-                                                                                                                                            "children": [
-                                                                                                                                                {
-                                                                                                                                                    "type": "MESH",
-                                                                                                                                                    "name": "Load2.018",
-                                                                                                                                                    "transform": {
-                                                                                                                                                        "translation": [
-                                                                                                                                                            0.0,
-                                                                                                                                                            -6.999996185302734,
-                                                                                                                                                            0.0
-                                                                                                                                                        ],
-                                                                                                                                                        "rotation": [
-                                                                                                                                                            0.0,
-                                                                                                                                                            0.0,
-                                                                                                                                                            -8.00000286102295
-                                                                                                                                                        ],
-                                                                                                                                                        "scaling": [
-                                                                                                                                                            1.0,
-                                                                                                                                                            1.0,
-                                                                                                                                                            1.0
-                                                                                                                                                        ]
-                                                                                                                                                    },
-                                                                                                                                                    "class_name": "Ground2",
-                                                                                                                                                    "file_name": "Load",
-                                                                                                                                                    "collider": {
-                                                                                                                                                        "type": "BOX",
-                                                                                                                                                        "center": [
-                                                                                                                                                            0.0,
-                                                                                                                                                            0.0,
-                                                                                                                                                            0.0
-                                                                                                                                                        ],
-                                                                                                                                                        "size": [
-                                                                                                                                                            6.0,
-                                                                                                                                                            6.0,
-                                                                                                                                                            0.10000000149011612
-                                                                                                                                                        ]
-                                                                                                                                                    },
-                                                                                                                                                    "children": [
-                                                                                                                                                        {
-                                                                                                                                                            "type": "MESH",
-                                                                                                                                                            "name": "Load2.019",
-                                                                                                                                                            "transform": {
-                                                                                                                                                                "translation": [
-                                                                                                                                                                    -0.2064666748046875,
-                                                                                                                                                                    -7.140357971191406,
-                                                                                                                                                                    0.0
-                                                                                                                                                                ],
-                                                                                                                                                                "rotation": [
-                                                                                                                                                                    0.0,
-                                                                                                                                                                    0.0,
-                                                                                                                                                                    -8.0
-                                                                                                                                                                ],
-                                                                                                                                                                "scaling": [
-                                                                                                                                                                    0.9999998807907104,
-                                                                                                                                                                    0.9999998807907104,
-                                                                                                                                                                    1.0
-                                                                                                                                                                ]
-                                                                                                                                                            },
-                                                                                                                                                            "class_name": "Ground2",
-                                                                                                                                                            "file_name": "Load",
-                                                                                                                                                            "collider": {
-                                                                                                                                                                "type": "BOX",
-                                                                                                                                                                "center": [
-                                                                                                                                                                    0.0,
-                                                                                                                                                                    0.0,
-                                                                                                                                                                    0.0
-                                                                                                                                                                ],
-                                                                                                                                                                "size": [
-                                                                                                                                                                    6.0,
-                                                                                                                                                                    6.0,
-                                                                                                                                                                    0.10000000149011612
-                                                                                                                                                                ]
-                                                                                                                                                            },
-                                                                                                                                                            "children": [
-                                                                                                                                                                {
-                                                                                                                                                                    "type": "MESH",
-                                                                                                                                                                    "name": "Load2.020",
-                                                                                                                                                                    "transform": {
-                                                                                                                                                                        "translation": [
-                                                                                                                                                                            -0.246063232421875,
-                                                                                                                                                                            -7.223152160644531,
-                                                                                                                                                                            2.3283064365386963e-10
-                                                                                                                                                                        ],
-                                                                                                                                                                        "rotation": [
-                                                                                                                                                                            0.0,
-                                                                                                                                                                            0.0,
-                                                                                                                                                                            -8.000000953674316
-                                                                                                                                                                        ],
-                                                                                                                                                                        "scaling": [
-                                                                                                                                                                            1.0,
-                                                                                                                                                                            1.0,
-                                                                                                                                                                            1.0
-                                                                                                                                                                        ]
-                                                                                                                                                                    },
-                                                                                                                                                                    "class_name": "Ground2",
-                                                                                                                                                                    "file_name": "Load",
-                                                                                                                                                                    "collider": {
-                                                                                                                                                                        "type": "BOX",
-                                                                                                                                                                        "center": [
-                                                                                                                                                                            0.0,
-                                                                                                                                                                            0.0,
-                                                                                                                                                                            0.0
-                                                                                                                                                                        ],
-                                                                                                                                                                        "size": [
-                                                                                                                                                                            6.0,
-                                                                                                                                                                            6.0,
-                                                                                                                                                                            0.10000000149011612
-                                                                                                                                                                        ]
-                                                                                                                                                                    }
-                                                                                                                                                                }
-                                                                                                                                                            ]
-                                                                                                                                                        }
-                                                                                                                                                    ]
-                                                                                                                                                }
-                                                                                                                                            ]
-                                                                                                                                        }
-                                                                                                                                    ]
-                                                                                                                                }
-                                                                                                                            ]
-                                                                                                                        }
-                                                                                                                    ]
-                                                                                                                }
-                                                                                                            ]
-                                                                                                        }
-                                                                                                    ]
-                                                                                                }
-                                                                                            ]
-                                                                                        }
-                                                                                    ]
-                                                                                }
-                                                                            ]
-                                                                        }
-                                                                    ]
-                                                                }
-                                                            ]
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "type": "MESH",
-            "name": "Battle_Stage2",
-            "transform": {
-                "translation": [
-                    -85.35912322998047,
-                    -155.1449737548828,
-                    -0.00267791748046875
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    38.087379455566406
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "class_name": "Ground3",
-            "file_name": "BattleStage",
-            "collider": {
-                "type": "BOX",
-                "center": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "size": [
-                    80.0,
-                    80.0,
-                    0.10000000149011612
+                    4.0,
+                    4.0,
+                    4.0
                 ]
             }
         },
         {
             "type": "MESH",
-            "name": "Battle_Stage3",
+            "name": "Object1.001",
             "transform": {
                 "translation": [
-                    -113.51742553710938,
-                    -7.610414505004883,
+                    -79.02397155761719,
+                    -68.53689575195312,
+                    5.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    13.700075149536133
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object1",
+            "file_name": "Object1",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
                     0.0
+                ],
+                "size": [
+                    2.0,
+                    2.0,
+                    10.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object1.002",
+            "transform": {
+                "translation": [
+                    -101.41165161132812,
+                    -120.505859375,
+                    5.0
                 ],
                 "rotation": [
                     0.0,
@@ -1303,8 +165,8 @@
                     1.0
                 ]
             },
-            "class_name": "Ground3",
-            "file_name": "BattleStage",
+            "class_name": "Object1",
+            "file_name": "Object1",
             "collider": {
                 "type": "BOX",
                 "center": [
@@ -1313,9 +175,873 @@
                     0.0
                 ],
                 "size": [
-                    80.0,
-                    80.0,
-                    0.10000000149011612
+                    2.0,
+                    2.0,
+                    10.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object1.003",
+            "transform": {
+                "translation": [
+                    -14.485755920410156,
+                    -118.91880798339844,
+                    5.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object1",
+            "file_name": "Object1",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    2.0,
+                    2.0,
+                    10.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object1.004",
+            "transform": {
+                "translation": [
+                    32.54844665527344,
+                    -87.90769958496094,
+                    5.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object1",
+            "file_name": "Object1",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    2.0,
+                    2.0,
+                    10.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object1.005",
+            "transform": {
+                "translation": [
+                    93.03223419189453,
+                    -105.62503051757812,
+                    5.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object1",
+            "file_name": "Object1",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    2.0,
+                    2.0,
+                    10.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object1.006",
+            "transform": {
+                "translation": [
+                    -61.089759826660156,
+                    25.17365264892578,
+                    5.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    10.978528022766113
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object1",
+            "file_name": "Object1",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    2.0,
+                    2.0,
+                    10.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object1.007",
+            "transform": {
+                "translation": [
+                    0.21408462524414062,
+                    41.64223098754883,
+                    5.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object1",
+            "file_name": "Object1",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    2.0,
+                    2.0,
+                    10.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object1.008",
+            "transform": {
+                "translation": [
+                    73.27384948730469,
+                    33.47484588623047,
+                    5.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -42.42367935180664
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object1",
+            "file_name": "Object1",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    2.0,
+                    2.0,
+                    10.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object1.009",
+            "transform": {
+                "translation": [
+                    108.61396789550781,
+                    -14.803421020507812,
+                    5.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object1",
+            "file_name": "Object1",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    2.0,
+                    2.0,
+                    10.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object1.010",
+            "transform": {
+                "translation": [
+                    20.429996490478516,
+                    91.45492553710938,
+                    5.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object1",
+            "file_name": "Object1",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    2.0,
+                    2.0,
+                    10.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object1.011",
+            "transform": {
+                "translation": [
+                    -17.919231414794922,
+                    56.53900909423828,
+                    5.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object1",
+            "file_name": "Object1",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    2.0,
+                    2.0,
+                    10.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object1.012",
+            "transform": {
+                "translation": [
+                    -68.69560241699219,
+                    108.6448974609375,
+                    5.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object1",
+            "file_name": "Object1",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    2.0,
+                    2.0,
+                    10.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object1.013",
+            "transform": {
+                "translation": [
+                    -104.80392456054688,
+                    73.10432434082031,
+                    5.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -25.791072845458984
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object1",
+            "file_name": "Object1",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    2.0,
+                    2.0,
+                    10.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object1.014",
+            "transform": {
+                "translation": [
+                    -27.96697235107422,
+                    -34.002471923828125,
+                    5.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object1",
+            "file_name": "Object1",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    2.0,
+                    2.0,
+                    10.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object2.001",
+            "transform": {
+                "translation": [
+                    -35.083580017089844,
+                    12.601487159729004,
+                    2.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    6.854262828826904
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object2",
+            "file_name": "Object2",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    4.0,
+                    4.0,
+                    4.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object2.002",
+            "transform": {
+                "translation": [
+                    9.787253379821777,
+                    -35.96588897705078,
+                    2.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -11.394392967224121
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object2",
+            "file_name": "Object2",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    4.0,
+                    4.0,
+                    4.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object2.003",
+            "transform": {
+                "translation": [
+                    -70.37554931640625,
+                    79.40673065185547,
+                    2.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -24.978240966796875
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object2",
+            "file_name": "Object2",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    4.0,
+                    4.0,
+                    4.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object2.004",
+            "transform": {
+                "translation": [
+                    -106.10130310058594,
+                    47.385196685791016,
+                    2.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object2",
+            "file_name": "Object2",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    4.0,
+                    4.0,
+                    4.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object2.005",
+            "transform": {
+                "translation": [
+                    -13.685932159423828,
+                    79.40673065185547,
+                    2.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object2",
+            "file_name": "Object2",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    4.0,
+                    4.0,
+                    4.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object2.006",
+            "transform": {
+                "translation": [
+                    53.69883346557617,
+                    112.93780517578125,
+                    2.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object2",
+            "file_name": "Object2",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    4.0,
+                    4.0,
+                    4.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object2.007",
+            "transform": {
+                "translation": [
+                    89.91529846191406,
+                    70.20902252197266,
+                    2.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    20.017356872558594
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object2",
+            "file_name": "Object2",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    4.0,
+                    4.0,
+                    4.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object2.008",
+            "transform": {
+                "translation": [
+                    98.67171478271484,
+                    -60.027183532714844,
+                    2.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -25.328529357910156
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object2",
+            "file_name": "Object2",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    4.0,
+                    4.0,
+                    4.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object2.009",
+            "transform": {
+                "translation": [
+                    -99.47118377685547,
+                    -37.1714973449707,
+                    2.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -23.984962463378906
+                ],
+                "scaling": [
+                    0.9999999403953552,
+                    0.9999999403953552,
+                    1.0
+                ]
+            },
+            "class_name": "Object2",
+            "file_name": "Object2",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    4.0,
+                    4.0,
+                    4.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object2.010",
+            "transform": {
+                "translation": [
+                    -53.16829299926758,
+                    -94.90544891357422,
+                    2.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    10.347416877746582
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object2",
+            "file_name": "Object2",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    4.0,
+                    4.0,
+                    4.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object2.011",
+            "transform": {
+                "translation": [
+                    59.155982971191406,
+                    -124.48359680175781,
+                    2.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    18.973173141479492
+                ],
+                "scaling": [
+                    0.9999999403953552,
+                    0.9999999403953552,
+                    1.0
+                ]
+            },
+            "class_name": "Object2",
+            "file_name": "Object2",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    4.0,
+                    4.0,
+                    4.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Object2.012",
+            "transform": {
+                "translation": [
+                    103.81320190429688,
+                    112.93780517578125,
+                    2.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    -16.819091796875
+                ],
+                "scaling": [
+                    0.9999999403953552,
+                    0.9999999403953552,
+                    1.0
+                ]
+            },
+            "class_name": "Object2",
+            "file_name": "Object2",
+            "collider": {
+                "type": "BOX",
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    4.0,
+                    4.0,
+                    4.0
                 ]
             }
         }

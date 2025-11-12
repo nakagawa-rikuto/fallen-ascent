@@ -16,7 +16,8 @@ void StageObject::GameInit(const std::string& modelName, const Vector3& halfSize
 	// 初期化
 	object3d_->Init(ObjectType::Model, modelName);
 	// 初期化処理
-	Initialize();
+	OBBCollider::Initialize();
+	name_ = ColliderName::Wall; // コライダー名を設定
 	// OBBの半分のサイズを設定
 	obb_.halfSize = halfSize;
 }

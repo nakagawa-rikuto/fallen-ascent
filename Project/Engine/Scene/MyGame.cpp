@@ -52,7 +52,7 @@ void MyGame::Initialize(const wchar_t* title) {
 	// シーンマネージャの初期化
 	sceneManager_ = std::make_unique<SceneManager>();
 	sceneManager_->SetSceneFactory(sceneFactory_.get());
-	sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
+	sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
 }
  
 ///-------------------------------------------/// 
@@ -138,9 +138,9 @@ void MyGame::LoadModel() {
 	Loader::LoadModel("ParticlePlane", "ParticlePlane.gltf");
 	// Game
 	Loader::LoadModel("player", "player.gltf");
-	Loader::LoadModel("BattleStage", "BattleStage.obj");
-	Loader::LoadModel("Load", "Load.obj");
-	Loader::LoadModel("PlayerSponStage", "PlayerSponStage.obj");
+	Loader::LoadModel("Ground", "Ground.obj");
+	Loader::LoadModel("Object1", "Object1.obj");
+	Loader::LoadModel("Object2", "Object2.obj");
 }
 // アニメーション
 void MyGame::LoadAnimation() {

@@ -121,5 +121,5 @@ private: /// ===メンバ関数=== ///
 	/// 配置処理
 	/// </summary>
 	/// <param name="json_name">使用するJsonファイル名</param>
-	void SpawnObjects(const std::string& json_name);
+	void SpawnEntity(const std::string& json_name);
 };

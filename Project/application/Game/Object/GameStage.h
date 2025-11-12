@@ -32,12 +32,13 @@ public:
 	/// 指定したブレンドモードで描画を行う関数。デフォルトは BlendMode::kBlendModeAdd。
 	/// </summary>
 	/// <param name="mode">描画に使用するブレンドモード。省略した場合は BlendMode::kBlendModeAdd が使用されます。</param>
-	void Draw(BlendMode mode = BlendMode::kBlendModeAdd);
+	void Draw(BlendMode mode = BlendMode::KBlendModeNormal);
 
 private:
 	// ステージオブジェクトのリスト
 	std::vector<std::shared_ptr<StageObject>> objects_; 
 	std::vector<std::shared_ptr<GroundOshan>> oshans_;
+	std::vector<std::shared_ptr<Ground>> grounds_;
 
 private:
 
