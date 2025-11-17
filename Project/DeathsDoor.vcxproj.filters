@@ -88,9 +88,6 @@
     <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacter.cpp">
       <Filter>application\Game\Entity\GameCharacter</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp">
-      <Filter>application\Game\Entity\GameCharacter</Filter>
-    </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\Base\BaseEnemy.cpp">
       <Filter>application\Game\Entity\Enemy\Base</Filter>
     </ClCompile>
@@ -503,15 +500,14 @@
       <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClCompile>
     <ClCompile Include="application\Scene\GameScene.cpp" />
+    <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp" />
+    <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
       <Filter>application\Game\Camera</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
-      <Filter>application\Game\Entity\GameCharacter</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h">
       <Filter>application\Game\Entity\GameCharacter</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\Base\BaseEnemy.h">
@@ -970,6 +966,8 @@
     <ClInclude Include="Engine\DataInfo\OshanData.h">
       <Filter>Engine\DataInfo</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
+    <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

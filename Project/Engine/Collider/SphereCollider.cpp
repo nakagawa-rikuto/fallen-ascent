@@ -60,6 +60,11 @@ void SphereCollider::Information() {
 }
 
 ///-------------------------------------------/// 
+/// Setter
+///-------------------------------------------///
+void SphereCollider::SetRadius(const float& radius) { sphere_.radius = radius; }
+
+///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
 // Radius

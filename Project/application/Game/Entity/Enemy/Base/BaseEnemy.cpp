@@ -185,48 +185,48 @@ void BaseEnemy::OnCollision(Collider* collider) {
 	/// ===GameCharacterの衝突=== ///
 	GameCharacter::OnCollision(collider);
 
-	// Weaponとの当たり判定
-	if (collider->GetColliderName() == ColliderName::PlayerWeapon) {
-		// クールタイム中でなければノックバック処理を実行
-		if (!knockbackInfo_.isInCooldown) {
-			// 攻撃状態の時
-			if (player_->GetStateFlag(actionType::kAttack)) {
-				// Stateを移動状態に変更
-				ChangeState(std::make_unique<EnemyMoveState>());
+	//// Weaponとの当たり判定
+	//if (collider->GetColliderName() == ColliderName::PlayerWeapon) {
+	//	// クールタイム中でなければノックバック処理を実行
+	//	if (!knockbackInfo_.isInCooldown) {
+	//		// 攻撃状態の時
+	//		if (player_->GetStateFlag(actionType::kAttack)) {
+	//			// Stateを移動状態に変更
+	//			ChangeState(std::make_unique<EnemyMoveState>());
 
-				// プレイヤーの位置を取得
-				Vector3 playerPos = player_->GetTransform().translate;
+	//			// プレイヤーの位置を取得
+	//			Vector3 playerPos = player_->GetTransform().translate;
 
-				// 敵からプレイヤーへの方向ベクトルを計算
-				Vector3 toEnemy = transform_.translate - playerPos;
-				toEnemy.y = 0.0f; // Y軸は無視
+	//			// 敵からプレイヤーへの方向ベクトルを計算
+	//			Vector3 toEnemy = transform_.translate - playerPos;
+	//			toEnemy.y = 0.0f; // Y軸は無視
 
-				// 正規化してノックバック方向を決定
-				if (Length(toEnemy) > 0.001f) {
-					toEnemy = Normalize(toEnemy);
+	//			// 正規化してノックバック方向を決定
+	//			if (Length(toEnemy) > 0.001f) {
+	//				toEnemy = Normalize(toEnemy);
 
-					// ノックバック速度を設定
-					baseInfo_.velocity = toEnemy * knockbackInfo_.knockbackForce;
-				}
+	//				// ノックバック速度を設定
+	//				baseInfo_.velocity = toEnemy * knockbackInfo_.knockbackForce;
+	//			}
 
-				// 色を赤に変更
-				color_ = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 赤色
+	//			// 色を赤に変更
+	//			color_ = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 赤色
 
-				// パーティクルを発生
-				ParticleService::Emit("Explosion", transform_.translate);
-				baseInfo_.HP--; // HPを減少
+	//			// パーティクルを発生
+	//			ParticleService::Emit("Explosion", transform_.translate);
+	//			baseInfo_.HP--; // HPを減少
 
-				// タイマーをセット
-				knockbackInfo_.hitColorTimer = knockbackInfo_.hitColorDuration;
-				knockbackInfo_.cooldownTimer = knockbackInfo_.cooldownDuration;
-				knockbackInfo_.isInCooldown = true;
+	//			// タイマーをセット
+	//			knockbackInfo_.hitColorTimer = knockbackInfo_.hitColorDuration;
+	//			knockbackInfo_.cooldownTimer = knockbackInfo_.cooldownDuration;
+	//			knockbackInfo_.isInCooldown = true;
 
-			// チャージ状態の時
-			} else if (player_->GetStateFlag(actionType::kCharge)) {
+	//		// チャージ状態の時
+	//		} else if (player_->GetStateFlag(actionType::kCharge)) {
 
-			}
-		}
-	}
+	//		}
+	//	}
+	//}
 }
 
 ///-------------------------------------------/// 

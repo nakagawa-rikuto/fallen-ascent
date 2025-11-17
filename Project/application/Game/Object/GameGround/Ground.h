@@ -14,6 +14,12 @@ public:
 	/// <summary>
 	/// 初期化処理
 	/// </summary>
+	/// <param name="modelName">初期化に使用するモデルの名前。</param>
+	void GameInit(const std::string& modelName);
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
 	void Initialize()override;
 
 	/// <summary>

@@ -304,17 +304,17 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 
 		/// ===クラス名で分岐=== ///
 		switch (obj.classType) {
-		case LevelData::ClassType::Player1:
+		case LevelData::ClassTypeLevel::Player1:
 			// 初期化と座標設定
 			player_->Initialize();
 			player_->SetTranslate(obj.translation);
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
 			break;
-		case LevelData::ClassType::Enemy1:
+		case LevelData::ClassTypeLevel::Enemy1:
 			// Enemyの座標設定
 			enemyManager_->Spawn(EnemyType::LongRange, obj.translation);
 			break;
-		case LevelData::ClassType::Enemy2:
+		case LevelData::ClassTypeLevel::Enemy2:
 			// Enemyの座標設定
 			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation);
 			break;

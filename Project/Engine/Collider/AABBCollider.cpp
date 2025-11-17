@@ -58,6 +58,11 @@ void AABBCollider::Information() {
 }
 
 ///-------------------------------------------/// 
+/// Setter
+///-------------------------------------------///
+void AABBCollider::SetAABB(const AABB& aabb) { aabb_ = aabb; }
+
+///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
 AABB AABBCollider::GetAABB() const {

@@ -210,11 +210,7 @@ void Player::Draw(BlendMode mode) {
 void Player::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("Player");
-	ImGui::DragFloat3("Translate", &transform_.translate.x, 0.1f);
-	ImGui::DragFloat4("Rotate", &transform_.rotate.x, 0.1f);
-	ImGui::DragFloat3("Scale", &transform_.scale.x, 0.1f);
-	ImGui::ColorEdit4("Color", &color_.x);
-	ImGui::DragFloat3("Velocity", &baseInfo_.velocity.x, 0.1f);
+	GameCharacter::Information();
 	ImGui::DragFloat("invincibleTime", &invicibleInfo_.timer, 0.01f);
 	ImGui::End();
 
@@ -233,36 +229,36 @@ void Player::OnCollision(Collider* collider) {
 	/// ===GameCharacterの衝突=== ///
 	GameCharacter::OnCollision(collider);
 
-	// Colliderによって処理を変更
-	if (collider->GetColliderName() == ColliderName::Enemy || collider->GetColliderName() == ColliderName::EnemyBullet) {
+	//// Colliderによって処理を変更
+	//if (collider->GetColliderName() == ColliderName::Enemy || collider->GetColliderName() == ColliderName::EnemyBullet) {
 
-		// 無敵状態でなければダメージを受ける
-		if (!invicibleInfo_.isFlag) {
+	//	// 無敵状態でなければダメージを受ける
+	//	if (!invicibleInfo_.isFlag) {
 
-			// ===ノックバック処理=== ///
-			// 敵の位置を取得
-			Vector3 enemyPos = collider->GetTransform().translate;
-			// プレイヤーから敵への方向ベクトルを計算
-			Vector3 knockbackDirection = transform_.translate - enemyPos;
-			// Y軸は無視(水平方向のみノックバック)
-			knockbackDirection.y = 0.0f;
-			// 正規化
-			if (knockbackDirection.x != 0.0f || knockbackDirection.z != 0.0f) {
-				knockbackDirection = Normalize(knockbackDirection);
-			}
-			// ノックバックの速度を設定(適切な値に調整してください)
-			const float knockbackSpeed = 1.5f;
-			baseInfo_.velocity = knockbackDirection * knockbackSpeed;
+	//		// ===ノックバック処理=== ///
+	//		// 敵の位置を取得
+	//		Vector3 enemyPos = collider->GetTransform().translate;
+	//		// プレイヤーから敵への方向ベクトルを計算
+	//		Vector3 knockbackDirection = transform_.translate - enemyPos;
+	//		// Y軸は無視(水平方向のみノックバック)
+	//		knockbackDirection.y = 0.0f;
+	//		// 正規化
+	//		if (knockbackDirection.x != 0.0f || knockbackDirection.z != 0.0f) {
+	//			knockbackDirection = Normalize(knockbackDirection);
+	//		}
+	//		// ノックバックの速度を設定(適切な値に調整してください)
+	//		const float knockbackSpeed = 1.5f;
+	//		baseInfo_.velocity = knockbackDirection * knockbackSpeed;
 
-			// Stateを Root に変更
-			ChangState(std::make_unique<RootState>());
+	//		// Stateを Root に変更
+	//		ChangState(std::make_unique<RootState>());
 
-			// ダメージ処理
-			baseInfo_.HP--;
-			// 無敵状態にする
-			SetInvicibleTime(0.5f);
-		}
-	}
+	//		// ダメージ処理
+	//		baseInfo_.HP--;
+	//		// 無敵状態にする
+	//		SetInvicibleTime(0.5f);
+	//	}
+	//}
 }
 
 ///-------------------------------------------/// 

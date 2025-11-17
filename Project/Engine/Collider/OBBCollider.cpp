@@ -66,6 +66,13 @@ void OBBCollider::Information() {
 }
 
 ///-------------------------------------------/// 
+/// Setter
+///-------------------------------------------///
+void OBBCollider::SethalfSize(const Vector3& halfSize) {
+	obb_.halfSize = halfSize;
+}
+
+///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
 OBB OBBCollider::GetOBB() const {

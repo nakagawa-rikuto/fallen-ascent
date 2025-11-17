@@ -114,7 +114,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\State\EnemyAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\State\EnemyMoveState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\Manager\EnemyManager.cpp" />
+    <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp" />
     <ClCompile Include="application\Scene\GameScene.cpp" />
+    <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp" />
     <ClCompile Include="Engine\System\Service\DeltaTimeSevice.cpp" />
     <ClCompile Include="Engine\System\DeltraTime\DeltaTime.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.cpp" />
@@ -145,7 +147,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacter.cpp" />
     <ClCompile Include="Engine\Camera\FollowCamera.cpp" />
     <ClCompile Include="application\Game\Camera\GameCamera.cpp" />
-    <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp" />
     <ClCompile Include="application\Game\Object\GameGround\GroundOshan.cpp" />
     <ClCompile Include="application\Game\Animation\GameOverAnimation.cpp" />
     <ClCompile Include="application\Game\Object\GameStage.cpp" />
@@ -258,6 +259,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyMoveState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Manager\EnemyManager.h" />
+    <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h" />
+    <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
     <ClInclude Include="Engine\System\Service\DeltaTimeSevice.h" />
     <ClInclude Include="Engine\System\DeltraTime\DeltaTime.h" />
     <ClInclude Include="Engine\DataInfo\OshanData.h" />
@@ -294,7 +297,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h" />
     <ClInclude Include="Engine\Camera\FollowCamera.h" />
     <ClInclude Include="application\Game\Camera\GameCamera.h" />
-    <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h" />
     <ClInclude Include="application\Game\Object\GameGround\GroundOshan.h" />
     <ClInclude Include="application\Game\Animation\GameOverAnimation.h" />
     <ClInclude Include="application\Game\Object\GameStage.h" />

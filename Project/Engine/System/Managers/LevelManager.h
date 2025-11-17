@@ -50,6 +50,13 @@ private:
 	/// </summary>
 	/// <param name="str">変換対象の文字列（クラスタイプを表す）。</param>
 	/// <returns>引数の文字列に対応する LevelData::ClassType の値。</returns>
-	static LevelData::ClassType StringToClassType(const std::string& str);
+	static LevelData::ClassTypeLevel StringToClassType(const std::string& str);
+
+	/// <summary>
+	/// 文字列を LevelData::ColliderTypeLevel 型の値に変換します。
+	/// </summary>
+	/// <param name="str">変換する入力文字列。</param>
+	/// <returns>入力文字列に対応する LevelData::ColliderTypeLevel の値。対応する値がない場合の挙動は実装依存です。</returns>
+	static LevelData::ColliderTypeLevel StringToColliderType(const std::string& str);
 };
 
