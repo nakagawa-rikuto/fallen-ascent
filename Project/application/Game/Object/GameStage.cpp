@@ -41,7 +41,7 @@ void GameStage::Draw(BlendMode mode) {
 	// Groundの更新
 	for (const auto& ground : grounds_) {
 		if (ground) {
-			//ground->Draw(mode);
+			ground->Draw(mode);
 		}
 	}
 
