@@ -1,7 +1,9 @@
 #pragma once
 /// ===Include=== ///
+// Collider
 #include "Engine/Collider/OBBCollider.h"
 #include "Engine/Collider/SphereCollider.h"
+
 #include "GameCharacterCollision.h"
 
 ///-------------------------------------------/// 
@@ -59,9 +61,9 @@ public: /// ===Setter=== ///
     void SetIsDead(const bool isDead) { baseInfo_.isDead = isDead; };
 
 protected:
-
-	// GameCharacterCollision
-    std::unique_ptr<GameCharacterCollision> collision_;
+    // Collisionクラス
+    std::unique_ptr<ColliderCollision> collision_;
+    std::unique_ptr<GameCharacterCollision> gCollision_;
 
     /// ===基本情報=== ///
     struct BaseInfo {
@@ -70,7 +72,17 @@ protected:
 		float gravity;    // 重力
 		uint32_t HP;      // 体力
         bool isDead;      // 死亡フラグ
+		bool isGrounded;  // 地面接地フラグ
     };
     BaseInfo baseInfo_;
+
+private:
+
+    float groundHeight_ = 0.0f;
+
+    /// <summary>
+    /// 地面との衝突処理
+    /// </summary>
+    void GroundCollision();
 };
 

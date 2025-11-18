@@ -39,6 +39,10 @@ public: /// ===衝突=== ///
     /// <param name="collider">衝突した相手の Collider へのポインタ。衝突対象に関する情報を表します。</param>
     virtual void OnCollision(Collider* collider) override = 0;
 
+public: /// ===Setter=== ///
+    // OBBの設定
+	void SethalfSize(const Vector3& halfSize);
+
 public: /// ===Getter=== ///
 	// OBBの取得
     OBB GetOBB() const;

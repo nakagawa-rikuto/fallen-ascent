@@ -39,6 +39,10 @@ public: /// ===衝突=== ///
 	/// <param name="collider">衝突対象のコライダへのポインタ。衝突したオブジェクトの情報にアクセスするために使用される。</param>
 	virtual void OnCollision(Collider* collider) override = 0;
 
+public: /// ===Setter=== ///
+	// Sphereの設定
+	void SetRadius(const float& radius);
+
 public: /// ===Getter=== ///
 	// Sphereの取得
 	Sphere GetSphere()const;

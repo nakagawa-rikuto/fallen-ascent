@@ -54,9 +54,6 @@ void PlayerWeapon::Initialize() {
 	attackInfo_.isAttacking = false;
 	attackInfo_.isChargeAttack = false;
 
-	// コライダーに追加
-	ColliderService::AddCollider(this);
-
 	// 更新
 	Update();
 }
@@ -86,6 +83,7 @@ void PlayerWeapon::Update() {
 		attackInfo_.isChargeAttack = false;
 		attackInfo_.progress = 1.0f;
 		SetActive(false);
+		ColliderService::RemoveCollider(this);
 		OBBCollider::Update();
 		return;
 	}
@@ -181,6 +179,9 @@ void PlayerWeapon::StartAttack(
 	attackInfo_.startRotation = startRotation;
 	attackInfo_.endRotation = endRotation;
 
+	// コライダーに追加
+	ColliderService::AddCollider(this);
+
 	// 扇形の軌道計算のため、円弧の中心と半径を算出
 	CalculateArcParameters();
 
@@ -214,6 +215,9 @@ void PlayerWeapon::StartChargeAttack(
 	attackInfo_.endPoint = endPoint;
 	attackInfo_.startRotation = startRotation;
 	attackInfo_.endRotation = endRotation;
+
+	// コライダーに追加
+	ColliderService::AddCollider(this);
 
 	// 当たり判定フラグをリセット
 	attackInfo_.hasHit = false;

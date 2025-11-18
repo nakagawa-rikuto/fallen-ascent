@@ -59,17 +59,10 @@ public:
     template<typename TColliderA, typename TColliderB>
     void ProcessCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, float pushBackRatio = 1.0f);
 
-    /// <summary>
-    /// GameCharacterとWall（静的コライダー）間の衝突処理
-    /// </summary>
-    /// <typeparam name="TCollider">キャラクターが使用するコライダの型。</typeparam>
-    /// <param name="character">衝突するGameCharacterへのポインタ。</param>
-    /// <param name="wall">衝突対象のWall（Collider）へのポインタ。</param>
-    /// <param name="velocity">キャラクターの速度ベクトルへのポインタ。衝突後に速度が調整されます。</param>
-    template<typename TCollider>
-    void HandleCharacterWallCollision(GameCharacter<TCollider>* character, Collider* wall, Vector3* velocity);
-
 private:
+
+    // 定数定義
+	const float EPSILON_ = 1e-6f;
 
     /// <summary>
     /// GameCharacter からコライダーの種類 (ColliderType) を取得
@@ -95,26 +88,6 @@ private:
     /// <param name="obb">計算対象のOBB。</param>
     /// <returns>OBB上の最も近い点を表すVector3。</returns>
     Vector3 CalculateClosestPointOnOBB(const Vector3& point, const OBB& obb);
-
-    /// <summary>
-    /// OBBコライダーとWallの衝突処理
-    /// </summary>
-    /// <typeparam name="TCollider">キャラクターが使用するコライダの型。</typeparam>
-    /// <param name="character">衝突するGameCharacterへのポインタ。</param>
-    /// <param name="wall">衝突対象のWall（OBBCollider）へのポインタ。</param>
-    /// <param name="velocity">キャラクターの速度ベクトルへのポインタ。</param>
-    template<typename TCollider>
-    void HandleOBBWallCollision(GameCharacter<TCollider>* character, OBBCollider* wall, Vector3* velocity);
-
-    /// <summary>
-    /// 球体コライダーとWallの衝突処理
-    /// </summary>
-    /// <typeparam name="TCollider">キャラクターが使用するコライダの型。</typeparam>
-    /// <param name="character">衝突するGameCharacterへのポインタ。</param>
-    /// <param name="wall">衝突対象のWall（OBBCollider）へのポインタ。</param>
-    /// <param name="velocity">キャラクターの速度ベクトルへのポインタ。</param>
-    template<typename TCollider>
-    void HandleSphereWallCollision(GameCharacter<TCollider>* character, OBBCollider* wall, Vector3* velocity);
 
     /// <summary>
     /// OBBの指定軸上での重なり量を計算

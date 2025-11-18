@@ -98,7 +98,7 @@ void LevelManager::LoadobjectRecursive(nlohmann::json& obj, LevelData* levelData
                 std::string classStr = object["class_name"].get<std::string>();
                 objectData.classType = StringToClassType(classStr);
             } else {
-                objectData.classType = LevelData::ClassType::None;
+                objectData.classType = LevelData::ClassTypeLevel::None;
             }
 
             /// ===トランスフォームのパラメータ=== ///
@@ -117,15 +117,35 @@ void LevelManager::LoadobjectRecursive(nlohmann::json& obj, LevelData* levelData
             objectData.scaling.y = (float)transform["scaling"][2];
             objectData.scaling.z = (float)transform["scaling"][1];
 
-            /// ===OBBSize=== /// 
-            //NOTE:今はColliderだけ、今後拡張する
+            /// ===Collider情報=== /// 
             if (object.contains("collider")) {
                 // コライダー情報の読み込み
                 nlohmann::json& collider = object["collider"];
-                // サイズ
-                objectData.OBBSize.x = (float)collider["size"][0];
-                objectData.OBBSize.y = (float)collider["size"][2];
-                objectData.OBBSize.z = (float)collider["size"][1];
+
+                // コライダータイプの取得
+                if (collider.contains("type")) {
+                    std::string colliderTypeStr = collider["type"].get<std::string>();
+                    objectData.colliderType = StringToColliderType(colliderTypeStr);
+                } else {
+                    objectData.colliderType = LevelData::ColliderTypeLevel::None;
+                }
+
+                // collider_info1の読み込み (OBB: Center, AABB: Min, Sphere: Center)
+                if (collider.contains("info1")) {
+                    objectData.colliderInfo1.x = (float)collider["info1"][0];
+                    objectData.colliderInfo1.y = (float)collider["info1"][2];
+                    objectData.colliderInfo1.z = (float)collider["info1"][1];
+                }
+
+                // collider_info2の読み込み (OBB: Size, AABB: Max, Sphere: Radius)
+                if (collider.contains("info2")) {
+                    objectData.colliderInfo2.x = (float)collider["info2"][0];
+                    objectData.colliderInfo2.y = (float)collider["info2"][2];
+                    objectData.colliderInfo2.z = (float)collider["info2"][1];
+                }
+            } else {
+                // コライダー情報がない場合
+                objectData.colliderType = LevelData::ColliderTypeLevel::None;
             }
 
             // 再帰処理（子供がいる場合）
@@ -139,58 +159,70 @@ void LevelManager::LoadobjectRecursive(nlohmann::json& obj, LevelData* levelData
 ///-------------------------------------------/// 
 /// 文字列からClassTypeに変換
 ///-------------------------------------------///
-LevelData::ClassType LevelManager::StringToClassType(const std::string& str) {
-    if (str == "NoClass")   return LevelData::ClassType::None;
+LevelData::ClassTypeLevel LevelManager::StringToClassType(const std::string& str) {
+    if (str == "NoClass")   return LevelData::ClassTypeLevel::None;
 
-    if (str == "Player1")   return LevelData::ClassType::Player1;
-    if (str == "Player2")   return LevelData::ClassType::Player2;
+    if (str == "Player1")   return LevelData::ClassTypeLevel::Player1;
+    if (str == "Player2")   return LevelData::ClassTypeLevel::Player2;
 
-    if (str == "Enemy1")    return LevelData::ClassType::Enemy1;
-    if (str == "Enemy2")    return LevelData::ClassType::Enemy2;
-    if (str == "Enemy3")    return LevelData::ClassType::Enemy3;
-    if (str == "Enemy4")    return LevelData::ClassType::Enemy4;
-    if (str == "Enemy5")    return LevelData::ClassType::Enemy5;
-    if (str == "Enemy6")    return LevelData::ClassType::Enemy6;
-    if (str == "Enemy7")    return LevelData::ClassType::Enemy7;
-    if (str == "Enemy8")    return LevelData::ClassType::Enemy8;
-    if (str == "Enemy9")    return LevelData::ClassType::Enemy9;
-    if (str == "Enemy10")   return LevelData::ClassType::Enemy10;
+    if (str == "Enemy1")    return LevelData::ClassTypeLevel::Enemy1;
+    if (str == "Enemy2")    return LevelData::ClassTypeLevel::Enemy2;
+    if (str == "Enemy3")    return LevelData::ClassTypeLevel::Enemy3;
+    if (str == "Enemy4")    return LevelData::ClassTypeLevel::Enemy4;
+    if (str == "Enemy5")    return LevelData::ClassTypeLevel::Enemy5;
+    if (str == "Enemy6")    return LevelData::ClassTypeLevel::Enemy6;
+    if (str == "Enemy7")    return LevelData::ClassTypeLevel::Enemy7;
+    if (str == "Enemy8")    return LevelData::ClassTypeLevel::Enemy8;
+    if (str == "Enemy9")    return LevelData::ClassTypeLevel::Enemy9;
+    if (str == "Enemy10")   return LevelData::ClassTypeLevel::Enemy10;
 
-    if (str == "Object1")   return LevelData::ClassType::Object1;
-    if (str == "Object2")   return LevelData::ClassType::Object2;
-    if (str == "Object3")   return LevelData::ClassType::Object3;
-    if (str == "Object4")   return LevelData::ClassType::Object4;
-    if (str == "Object5")   return LevelData::ClassType::Object5;
-    if (str == "Object6")   return LevelData::ClassType::Object6;
-    if (str == "Object7")   return LevelData::ClassType::Object7;
-    if (str == "Object8")   return LevelData::ClassType::Object8;
-    if (str == "Object9")   return LevelData::ClassType::Object9;
-    if (str == "Object10")  return LevelData::ClassType::Object10;
+    if (str == "Object1")   return LevelData::ClassTypeLevel::Object1;
+    if (str == "Object2")   return LevelData::ClassTypeLevel::Object2;
+    if (str == "Object3")   return LevelData::ClassTypeLevel::Object3;
+    if (str == "Object4")   return LevelData::ClassTypeLevel::Object4;
+    if (str == "Object5")   return LevelData::ClassTypeLevel::Object5;
+    if (str == "Object6")   return LevelData::ClassTypeLevel::Object6;
+    if (str == "Object7")   return LevelData::ClassTypeLevel::Object7;
+    if (str == "Object8")   return LevelData::ClassTypeLevel::Object8;
+    if (str == "Object9")   return LevelData::ClassTypeLevel::Object9;
+    if (str == "Object10")  return LevelData::ClassTypeLevel::Object10;
 
-    if (str == "Ground1")   return LevelData::ClassType::Ground1;
-    if (str == "Ground2")   return LevelData::ClassType::Ground2;
-    if (str == "Ground3")   return LevelData::ClassType::Ground3;
-    if (str == "Ground4")   return LevelData::ClassType::Ground4;
-    if (str == "Ground5")   return LevelData::ClassType::Ground5;
-    if (str == "Ground6")   return LevelData::ClassType::Ground6;
-    if (str == "Ground7")   return LevelData::ClassType::Ground7;
-    if (str == "Ground8")   return LevelData::ClassType::Ground8;
-    if (str == "Ground9")   return LevelData::ClassType::Ground9;
-    if (str == "Ground10")  return LevelData::ClassType::Ground10;
+    if (str == "Ground1")   return LevelData::ClassTypeLevel::Ground1;
+    if (str == "Ground2")   return LevelData::ClassTypeLevel::Ground2;
+    if (str == "Ground3")   return LevelData::ClassTypeLevel::Ground3;
+    if (str == "Ground4")   return LevelData::ClassTypeLevel::Ground4;
+    if (str == "Ground5")   return LevelData::ClassTypeLevel::Ground5;
+    if (str == "Ground6")   return LevelData::ClassTypeLevel::Ground6;
+    if (str == "Ground7")   return LevelData::ClassTypeLevel::Ground7;
+    if (str == "Ground8")   return LevelData::ClassTypeLevel::Ground8;
+    if (str == "Ground9")   return LevelData::ClassTypeLevel::Ground9;
+    if (str == "Ground10")  return LevelData::ClassTypeLevel::Ground10;
 
-    if (str == "SkyDome1")  return LevelData::ClassType::SkyBox1;
-    if (str == "SkyDome2")  return LevelData::ClassType::SkyBox2;
-    if (str == "SkyDome3")  return LevelData::ClassType::SkyBox3;
-    if (str == "SkyDome4")  return LevelData::ClassType::SkyBox4;
-    if (str == "SkyDome5")  return LevelData::ClassType::SkyBox5;
-    if (str == "SkyDome6")  return LevelData::ClassType::SkyBox6;
-    if (str == "SkyDome7")  return LevelData::ClassType::SkyBox7;
-    if (str == "SkyDome8")  return LevelData::ClassType::SkyBox8;
-    if (str == "SkyDome9")  return LevelData::ClassType::SkyBox9;
-    if (str == "SkyDome10") return LevelData::ClassType::SkyBox10;
+    if (str == "SkyDome1")  return LevelData::ClassTypeLevel::SkyBox1;
+    if (str == "SkyDome2")  return LevelData::ClassTypeLevel::SkyBox2;
+    if (str == "SkyDome3")  return LevelData::ClassTypeLevel::SkyBox3;
+    if (str == "SkyDome4")  return LevelData::ClassTypeLevel::SkyBox4;
+    if (str == "SkyDome5")  return LevelData::ClassTypeLevel::SkyBox5;
+    if (str == "SkyDome6")  return LevelData::ClassTypeLevel::SkyBox6;
+    if (str == "SkyDome7")  return LevelData::ClassTypeLevel::SkyBox7;
+    if (str == "SkyDome8")  return LevelData::ClassTypeLevel::SkyBox8;
+    if (str == "SkyDome9")  return LevelData::ClassTypeLevel::SkyBox9;
+    if (str == "SkyDome10") return LevelData::ClassTypeLevel::SkyBox10;
 
     // デフォルトは None
-    return LevelData::ClassType::None;
+    return LevelData::ClassTypeLevel::None;
+}
+
+///-------------------------------------------/// 
+/// 文字列からColliderTypeに変換
+///-------------------------------------------///
+LevelData::ColliderTypeLevel LevelManager::StringToColliderType(const std::string& str) {
+    if (str == "OBB")    return LevelData::ColliderTypeLevel::OBB;
+    if (str == "AABB")   return LevelData::ColliderTypeLevel::AABB;
+    if (str == "SPHERE") return LevelData::ColliderTypeLevel::Sphere;
+
+    // デフォルトは None
+    return LevelData::ColliderTypeLevel::None;
 }
 
 ///-------------------------------------------/// 

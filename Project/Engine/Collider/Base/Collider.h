@@ -5,8 +5,10 @@
 #include <string>
 // Object3D
 #include "application/Drawing/3d/Object3d.h"
-// Math
+// Data
 #include "Engine/DataInfo/ColliderData.h"
+// ColliderCollision
+#include "Engine/Collider/Collision/ColliderCollision.h"
 // Line
 #include "application/Drawing/3d/Line.h"
 
@@ -24,8 +26,8 @@ enum class ColliderName {
     PlayerBullet, // プレイヤーの弾
 	PlayerWeapon, // プレイヤーの武器
     EnemyBullet,  // 敵の弾
-    Wall,      // 壁
-    Floor,     // 床
+    Object,      // 壁
+    Ground,     // 床
     Ceiling,   // 天井
     None       // 無し
 };

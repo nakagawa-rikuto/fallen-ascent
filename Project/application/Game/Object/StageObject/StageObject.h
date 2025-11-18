@@ -1,6 +1,6 @@
 #pragma once
 /// ===Include=== ///
-#include "Engine/Collider/OBBCollider.h"
+#include "Engine/Collider/AABBCollider.h"
 // C++
 #include <string>
 #include <memory>
@@ -8,7 +8,7 @@
 ///=====================================================/// 
 /// StageObject
 ///=====================================================///
-class StageObject : public OBBCollider {
+class StageObject : public AABBCollider {
 public:
 	StageObject() = default;
 	~StageObject();
@@ -17,7 +17,7 @@ public:
 	/// 初期化処理
 	/// </summary>
 	/// <param name="modelName">初期化に使用するモデルの名前。</param>
-	void GameInit(const std::string& modelName, const Vector3& halfSize);
+	void GameInit(const std::string& modelName);
 
 	/// <summary>
 	/// 初期化処理

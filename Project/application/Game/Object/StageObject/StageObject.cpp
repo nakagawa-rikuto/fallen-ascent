@@ -1,4 +1,6 @@
 #include "StageObject.h"
+// Service
+#include "Engine/System/Service/ColliderService.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -10,40 +12,40 @@ StageObject::~StageObject() {
 ///-------------------------------------------/// 
 /// 初期化処理（呼び出し用）
 ///-------------------------------------------///
-void StageObject::GameInit(const std::string& modelName, const Vector3& halfSize) {
+void StageObject::GameInit(const std::string& modelName) {
 	// Object3dの生成
 	object3d_ = std::make_unique<Object3d>();
 	// 初期化
 	object3d_->Init(ObjectType::Model, modelName);
 	// 初期化処理
-	OBBCollider::Initialize();
-	name_ = ColliderName::Wall; // コライダー名を設定
-	// OBBの半分のサイズを設定
-	obb_.halfSize = halfSize;
+	AABBCollider::Initialize();
+	name_ = ColliderName::Object; // コライダー名を設定
+	// コライダーサービスに登録
+	ColliderService::AddCollider(this);
 }
 
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
 void StageObject::Initialize() {
-	// OBBColliderの初期化
-	OBBCollider::Initialize();
+	// AABBColliderの初期化
+	AABBCollider::Initialize();
 }
 
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
 void StageObject::Update() {
-	// OBBColliderの更新
-	OBBCollider::Update();
+	// AABBColliderの更新
+	AABBCollider::Update();
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
 void StageObject::Draw(BlendMode mode) {
-	// OBBColliderの描画
-	OBBCollider::Draw(mode);
+	// AABBColliderの描画
+	AABBCollider::Draw(mode);
 }
 
 ///-------------------------------------------/// 
