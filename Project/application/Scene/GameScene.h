@@ -11,6 +11,7 @@
 // Animation
 #include "application/Game/Animation/StartAnimation.h"
 #include "application/Game/Animation/GameOverAnimation.h"
+#include "application/Game/Animation/GameClearAnimation.h"
 // Transition
 #include "application/Game/Transition/SceneTransition.h"
 
@@ -72,6 +73,8 @@ private:/// ===メンバ変数=== ///
 	std::unique_ptr<StartAnimation> startAnimation_;
 	// GameOverAnimation
 	std::unique_ptr<GameOverAnimation> gameOverAnimation_;
+	// GameClearAnimation
+	std::unique_ptr<GameClearAnimation> gameClearAnimation_;
 
 	/// ===変数の宣言=== ///
 	// カメラ情報

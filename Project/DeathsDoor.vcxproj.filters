@@ -502,6 +502,7 @@
     <ClCompile Include="application\Scene\GameScene.cpp" />
     <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp" />
     <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp" />
+    <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -968,6 +969,7 @@
     </ClInclude>
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h" />
+    <ClInclude Include="application\Game\Animation\GameClearAnimation.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

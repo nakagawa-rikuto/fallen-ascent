@@ -100,7 +100,9 @@ void GameScene::Initialize() {
 
 	/// ===GameOverAnimation=== ///
 	gameOverAnimation_ = std::make_unique<GameOverAnimation>();
-	gameOverAnimation_->Initialize(camera_.get());
+
+	/// ===GameClearAnimation=== ///
+	gameClearAnimation_ = std::make_unique<GameClearAnimation>();
 
 	// 初期フェーズをFadeInに設定
 	currentPhase_ = GamePhase::FadeIn;
@@ -254,11 +256,13 @@ void GameScene::UpdateGame() {
 	enemyManager_->SetPlayer(player_.get()); // Playerを設定
 
 	// Playerが死んだら
-	if (player_->GetHP() <= 0) {
+	if (player_->GetHP() <= 0 || InputService::TriggerKey(DIK_Q)) {
+		gameOverAnimation_->Initialize(camera_.get());
 		currentPhase_ = GamePhase::GameOverAnimation; // GameOverAnimationへ
 
 	// ゲームが終わったらFadeOutへ
 	} else if (enemyManager_->GetTotalEnemyCount() <= 0 || InputService::TriggerKey(DIK_SPACE)) {
+		gameClearAnimation_->Initialize(player_.get(), camera_.get());
 		currentPhase_ = GamePhase::GameClearAnimation; // GameClearへ
 	}
 }
@@ -272,6 +276,8 @@ void GameScene::UpdateGameOverAnimation() {
 
 	// アニメーション時のPlayer更新
 	player_->UpdateAnimation();
+	// アニメーション時のEnemy更新
+	enemyManager_->UpdateAnimation();
 
 	// アニメーション完了でシーン移動
 	if (gameOverAnimation_->IsCompleted()) {
@@ -284,13 +290,17 @@ void GameScene::UpdateGameOverAnimation() {
 ///-------------------------------------------///
 void GameScene::UpdateGameClearAnimtaion() {
 
-	sceneManager_->ChangeScene(SceneType::Title);
-
-	// FadeOut完了で次のシーンへ
-	//if (fadeOutTimer_ >= fadeOutDuration_) {
-	//	// シーン遷移処理
-	//	sceneManager_->ChangeScene(SceneType::Clear);
-	//}
+	// アニメーション更新
+	gameClearAnimation_->Update();
+	// アニメーション時のPlayer更新
+	player_->UpdateAnimation();
+	// アニメーション時のEnemy更新
+	enemyManager_->UpdateAnimation();
+	
+	// アニメーション完了でシーン移動
+	if (gameClearAnimation_->IsCompleted()) {
+		sceneManager_->ChangeScene(SceneType::Title);
+	}
 }
 
 ///-------------------------------------------/// 
