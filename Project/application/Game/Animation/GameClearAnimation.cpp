@@ -27,6 +27,10 @@ void GameClearAnimation::Initialize(Player* player, GameCamera* camera) {
 
 	// プレイヤーの基準位置を保存
 	basePlayerPosition_ = player_->GetTransform().translate;
+	Quaternion playerRotation = player_->GetTransform().rotate;
+
+	// カメラのターゲットを設定
+	camera_->SetTarget(&basePlayerPosition_, &playerRotation);
 
 	// 開始位置のオフセット（画像の情報）
 	Vector3 startOffset = { 0.0f, 0.120f, -94.0f };
