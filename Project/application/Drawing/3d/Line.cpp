@@ -54,7 +54,7 @@ void Line::DrawAABB(const AABB & aabb, const Vector4& color) {
 	// グリッドを6面描画
 	Vector3 size = aabb.max - aabb.min;
 	Vector3 halfSize = size * 0.5f;
-	uint32_t division = 2;
+	uint32_t division = 1;
 
 	// AABBの中心を算出
 	Vector3 offset = (aabb.min + aabb.max) * 0.5f;

@@ -3,6 +3,11 @@
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
 #include "Math/MatrixMath.h"
+// ImGUi
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
+
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -64,6 +69,21 @@ void FollowCamera::Update() {
 
 	// 基底クラスの更新を呼ぶ（行列計算）
 	NormalCaemra::Update();
+}
+
+///-------------------------------------------/// 
+/// ImGui情報の更新
+///-------------------------------------------///
+void FollowCamera::ImGuiUpdate() {
+#ifdef USE_IMGUI
+	NormalCaemra::ImGuiUpdate();
+	ImGui::Begin("FollowCamera");
+	ImGui::DragFloat3("Offset", &offset_.x, 0.01f);
+	ImGui::DragFloat3("OrbitingOffset_", &OrbitingOffset_.x, 0.01f);
+	ImGui::DragFloat("followSpeed_", &followSpeed_, 0.01f);
+	ImGui::DragFloat("rotationLerpSpeed_", &rotationLerpSpeed_, 0.01f);
+	ImGui::End();
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 

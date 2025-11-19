@@ -150,6 +150,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Object\GameGround\GroundOshan.cpp" />
     <ClCompile Include="application\Game\Animation\GameOverAnimation.cpp" />
     <ClCompile Include="application\Game\Object\GameStage.cpp" />
+    <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp" />
     <ClCompile Include="Math\EasingMath.cpp" />
     <ClCompile Include="Engine\System\Managers\AnimationManager.cpp" />
     <ClCompile Include="Engine\System\Service\AudioService.cpp" />
@@ -300,6 +301,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Object\GameGround\GroundOshan.h" />
     <ClInclude Include="application\Game\Animation\GameOverAnimation.h" />
     <ClInclude Include="application\Game\Object\GameStage.h" />
+    <ClInclude Include="application\Game\Animation\GameClearAnimation.h" />
     <ClInclude Include="Math\EasingMath.h" />
     <ClInclude Include="Engine\System\Managers\AnimationManager.h" />
     <ClInclude Include="Engine\DataInfo\AnimationData.h" />
