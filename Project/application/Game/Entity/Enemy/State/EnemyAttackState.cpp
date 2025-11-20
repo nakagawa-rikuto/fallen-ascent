@@ -29,14 +29,14 @@ void EnemyAttackState::Enter(BaseEnemy* enemy) {
 void EnemyAttackState::Update(BaseEnemy * enemy) {
 	enemy_ = enemy;
 	// preフラグに入れる
-	preIsAttack_ = enemy_->GetAttackFlag();
+	preIsAttack_ = enemy_->GetAttackInfo().isAttack;
 
 	// Attackの処理
 	enemy_->Attack();
 
 	/// ===Stateの変更=== ///
 	// preフラグがtrueでisAttackがfalseの時
-	if (!enemy_->GetAttackFlag() && preIsAttack_) {
+	if (!enemy_->GetAttackInfo().isAttack && preIsAttack_) {
 		enemy_->ChangeState(std::make_unique<EnemyMoveState>());
 	}
 }

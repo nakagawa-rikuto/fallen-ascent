@@ -12,26 +12,6 @@
 // Line
 #include "application/Drawing/3d/Line.h"
 
-// ColliderType
-enum class ColliderType {
-    AABB,      // 軸整合バウンディングボックス（矩形）
-    Sphere,    // 球体
-    OBB,       // 任意方向のバウンディングボックス
-    Count      // 配列サイズ用
-};
-
-enum class ColliderName {
-    Player,    // プレイヤー
-    Enemy,     // 敵
-    PlayerBullet, // プレイヤーの弾
-	PlayerWeapon, // プレイヤーの武器
-    EnemyBullet,  // 敵の弾
-    Object,      // 壁
-    Ground,     // 床
-    Ceiling,   // 天井
-    None       // 無し
-};
-
 /// ===前方宣言=== ///
 class GameCamera;
 

@@ -20,6 +20,48 @@ enum class StateType {
 /// Enemy
 ///=====================================================///
 class BaseEnemy : public GameCharacter<OBBCollider> {
+private: /// ===型定義=== ///
+	/// ===移動情報=== ///
+	struct MoveInfo {
+		float timer;	// タイマー
+		float speed;	// 移動速度
+		float range;	// 移動範囲
+		float interval;	// 移動間隔
+		float waitTime;	// 待機時間
+
+		Vector3 rangeCenter; // 移動範囲の中心
+		Vector3 direction;	 // 移動方向
+
+		bool isWating;	// 待機フラグ
+	};
+
+	/// ===攻撃情報=== ///
+	struct AttackInfo {
+		float timer;	// タイマー
+		float range;	// 攻撃範囲(回転の情報から±)
+		float distance;	// 攻撃可能距離
+		float interval;	// 攻撃間隔
+		int32_t power;	// 待機時間
+
+		Vector3 direction;  // 攻撃方向
+		Vector3 playerPos;  // プレイヤーの位置
+
+		bool isCollision; // 衝突フラグ
+
+		bool isAttack;	// 攻撃フラグ
+	};
+
+	/// ===ノックバック情報=== ///
+	struct KnockbackInfo {
+		float cooldownTimer;		// クールタイム用タイマー
+		float cooldownDuration;		// クールタイムの持続時間
+		float knockbackForce;		// ノックバックの強さ
+		float hitColorDuration;		// 赤色表示の持続時間
+		float hitColorTimer;		// 赤色表示用タイマー
+		Vector4 originalColor;		// 元の色
+		bool isInCooldown;			// クールタイム中かどうか
+	};
+
 public:
 	BaseEnemy() = default;
 	~BaseEnemy();
@@ -87,10 +129,8 @@ public: /// ===State用関数=== ///
 	void ChangeState(std::unique_ptr<EnemyState> nextState);
 
 public: /// ===Getter=== ///
-	// Timer
-	float GetAttackTimer()const { return attackInfo_.timer; };
-	// Flag
-	bool GetAttackFlag()const { return attackInfo_.isAttack; };
+	// AttackInfo
+	AttackInfo GetAttackInfo()const { return attackInfo_; };
 
 public: /// ===Setter=== ///
 	// Player
@@ -106,51 +146,17 @@ protected: /// ===変数の宣言=== ///
 	/// ===State=== ///
 	std::unique_ptr<EnemyState> currentState_;
 
-	/// ===移動情報=== ///
-	struct MoveInfo {
-		float timer;	// タイマー
-		float speed;	// 移動速度
-		float range;	// 移動範囲
-		float interval;	// 移動間隔
-		float waitTime;	// 待機時間
-
-		Vector3 rangeCenter; // 移動範囲の中心
-		Vector3 direction;	 // 移動方向
-
-		bool isWating;	// 待機フラグ
-	};
+	// 移動情報
 	MoveInfo moveInfo_;
 
-	/// ===攻撃情報=== ///
-	struct AttackInfo {
-		float timer;	// タイマー
-		float range;	// 攻撃範囲(回転の情報から±)
-		float distance;	// 攻撃可能距離
-		float interval;	// 攻撃間隔
-		int32_t power;	// 待機時間
-
-		Vector3 direction;  // 攻撃方向
-		Vector3 playerPos;  // プレイヤーの位置
-
-		bool isAttack;	// 攻撃フラグ
-	};
+	// 攻撃情報
 	AttackInfo attackInfo_;
 
 	// ランダムシード
 	std::mt19937 randomEngine_;
 
 private:
-
-	/// ===ノックバック情報=== ///
-	struct KnockbackInfo {
-		float cooldownTimer;		// クールタイム用タイマー
-		float cooldownDuration;		// クールタイムの持続時間
-		float knockbackForce;		// ノックバックの強さ
-		float hitColorDuration;		// 赤色表示の持続時間
-		float hitColorTimer;		// 赤色表示用タイマー
-		Vector4 originalColor;		// 元の色
-		bool isInCooldown;			// クールタイム中かどうか
-	};
+	// ノックバック情報
 	KnockbackInfo knockbackInfo_;
 
 protected: /// ===関数の宣言=== ///

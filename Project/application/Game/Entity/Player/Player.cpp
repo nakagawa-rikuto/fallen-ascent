@@ -133,7 +133,7 @@ void Player::Initialize() {
 	// GameCharacterの設定
 	GameCharacter::Initialize();
 	name_ = ColliderName::Player;
-	obb_.halfSize = { 1.5f, 1.5f, 2.0f };
+	obb_.halfSize = { 2.5f, 2.5f, 2.5f };
 
 	// Weaponの初期化
 	weapon_ = std::make_unique<PlayerWeapon>();

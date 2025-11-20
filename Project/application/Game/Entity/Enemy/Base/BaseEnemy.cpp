@@ -182,6 +182,9 @@ void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 ///-------------------------------------------///
 void BaseEnemy::OnCollision(Collider* collider) {
 
+	// 攻撃用のフラグを立てる
+	attackInfo_.isCollision = true;
+
 	/// ===GameCharacterの衝突=== ///
 	GameCharacter::OnCollision(collider);
 
