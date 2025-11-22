@@ -304,7 +304,7 @@ void ColliderCollision::AABBToOBBCollision(AABBCollider* aabb, OBBCollider* obb,
 	}
 
 	// マージン
-	const float PushMargin = 0.7f;
+	const float PushMargin = 0.5f;
 
 	// めり込んでいる場合のみ押し戻し 
 	if (result.depth > 0.0f) {
@@ -320,45 +320,6 @@ void ColliderCollision::AABBToOBBCollision(AABBCollider* aabb, OBBCollider* obb,
 		aabb->SetTranslate(aabbPos);
 		obb->SetTranslate(obbPos);
 	}
-
-	//// 軸の方向を確認(AからBへのベクトルと同じ向きにする)
-	//Vector3 centerDiff = obbPos - aabbPos;
-	//float centerDiffLength = Length(centerDiff);
-
-	//// 中心が重なっている場合の処理
-	//if (centerDiffLength < EPSILON) {
-	//	// 最も信頼できる軸を使用(通常はY軸)
-	//	result.axis = Vector3(0.0f, 1.0f, 0.0f);
-	//} else {
-	//	// 軸の向きを中心間ベクトルに合わせる
-	//	if (Dot(result.axis, centerDiff) < 0.0f) {
-	//		result.axis = -result.axis;
-	//	}
-	//}
-
-	//// 小さすぎるめり込みは無視(安定性向上)
-	//const float MIN_PENETRATION = 0.001f;
-	//if (result.depth < MIN_PENETRATION) {
-	//	return;
-	//}
-
-	//// めり込み深度に制限を設ける(異常な値を防ぐ)
-	//const float MAX_PENETRATION = 10.0f;
-	//result.depth = (std::min)(result.depth, MAX_PENETRATION);
-
-
-	//const float PUSH_BACK_MARGIN = 1.05f; // 5%の余裕
-	//float adjustedDepth = result.depth * PUSH_BACK_MARGIN;
-
-	//// 押し戻し量を計算
-	//float pushA = adjustedDepth * (1.0f - pushBackRatio);
-	//float pushB = adjustedDepth * pushBackRatio;
-
-	//aabbPos -= result.axis * pushA;
-	//obbPos += result.axis * pushB;
-
-	//aabb->SetTranslate(aabbPos);
-	//obb->SetTranslate(obbPos);
 }
 
 ///-------------------------------------------/// 

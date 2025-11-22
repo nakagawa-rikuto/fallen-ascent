@@ -26,7 +26,7 @@ void EnemyMoveState::Update(BaseEnemy * enemy) {
 	enemy_->CommonMove();
 
 	/// ===Stateの変更=== ///
-	if (enemy_->CheckAttackable() && enemy_->GetAttackTimer() <= 0.0f && !enemy_->GetAttackFlag()) {
+	if (enemy_->CheckAttackable() && enemy_->GetAttackInfo().timer <= 0.0f && !enemy_->GetAttackInfo().isAttack) {
 		// Attackに
 		enemy_->ChangeState(std::make_unique<EnemyAttackState>());
 	}

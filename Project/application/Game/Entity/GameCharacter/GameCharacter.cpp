@@ -1,6 +1,8 @@
 #include "GameCharacter.h"
 // DeltaTime
 #include "Engine/System/Service/DeltaTimeSevice.h"
+// C++
+#include <algorithm>
 // ImGui
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -49,6 +51,11 @@ void GameCharacter<TCollider>::Update() {
 	// 地面に接地していない場合のみ重力を適用
 	if (!baseInfo_.isGrounded) {
 		baseInfo_.velocity.y += baseInfo_.gravity * baseInfo_.deltaTime;
+
+		// Y方向の速度の最大値を制限
+		const float kMaxFollSpeed = -1.0f;
+		// 下方向への速度を制限
+		baseInfo_.velocity.y = std::clamp(baseInfo_.velocity.y, kMaxFollSpeed, 0.0f);
 	}
 
 	/// ===位置の更新=== ///
@@ -63,7 +70,9 @@ void GameCharacter<TCollider>::Update() {
 	TCollider::Update();
 
 	// 先にColliderManagerの処理が入るから終わってからリセット
-	//baseInfo_.isGrounded = false;
+	if (baseInfo_.isGrounded) {
+		baseInfo_.isGrounded = false;
+	}
 }
 
 ///-------------------------------------------/// 
@@ -101,14 +110,17 @@ void GameCharacter<TCollider>::OnCollision(Collider* collider) {
 	if (!collider) return;
 
 	// 地面との衝突処理
-	if (collider->GetColliderName() == ColliderName::Ground) {
+	if (collider->GetColliderName() == ColliderName::Ground || collider->GetColliderName() == ColliderName::Object) {
 		// 地面と衝突しているフラグを立てる
 		baseInfo_.isGrounded = true;
-		// 地面の高さを保存
-		groundHeight_ = collider->GetTransform().translate.y;
 
-		// 地面との衝突処理を即座に実行
-		GroundCollision();
+		// 下向きの速度をリセット（押し戻し前に）
+		if (baseInfo_.velocity.y < 0.0f) {
+			baseInfo_.velocity.y = 0.0f;
+		}
+
+		// StageObjectとの衝突を処理
+		collision_->ProcessCollision(this, collider, 0.0f);
 
 	} else if (auto otherCharacter = dynamic_cast<GameCharacter<TCollider>*>(collider)) { //　これだと当たり判定が通った時に全て通ってしまう。
 
@@ -116,11 +128,6 @@ void GameCharacter<TCollider>::OnCollision(Collider* collider) {
 		//NOTE: OBBだけどSphereの押し戻しと同じ処理
 		gCollision_->ProcessCollision(this, otherCharacter, 0.0f);
 
-	} else if (collider->GetColliderName() == ColliderName::Object) {
-		// 地面と衝突しているフラグを立てる
-		baseInfo_.isGrounded = true;
-		// StageObjectとの衝突を処理
-		collision_->ProcessCollision(this, collider, 0.0f);
 	}
 }
 

@@ -21,7 +21,7 @@ void EnemyManager::SetPlayer(Player* player) {
 ///-------------------------------------------/// 
 /// 生成
 ///-------------------------------------------///
-BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos) {
+BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quaternion& rot, const Vector3& halfSize) {
 	std::unique_ptr<BaseEnemy> enemy; // 最終的に enemies_ へ move する器
 
 	switch (type) {
@@ -30,8 +30,11 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos) {
 		if (player_) { // 初フレームから Update が進むようにプレイヤー注入
 			e->SetPlayer(player_);
 		}
-		e->InitGameScene(pos); // 出現位置を渡してゲームシーン用初期化
-		enemy = std::move(e);
+		// 初期化
+		e->InitGameScene(pos);		// 出現位置を渡してゲームシーン用初期化
+		e->SetRotate(rot);			// 回転を設定
+		e->SethalfSize(halfSize);	// サイズを設定
+		enemy = std::move(e);		// 所有権移動
 		break;
 	}
 	case EnemyType::LongRange: {
@@ -39,7 +42,10 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos) {
 		if (player_) {
 			e->SetPlayer(player_);
 		}
+		// 初期化
 		e->InitGameScene(pos);
+		e->SetRotate(rot); 
+		e->SethalfSize(halfSize);
 		enemy = std::move(e);
 		break;
 	}
