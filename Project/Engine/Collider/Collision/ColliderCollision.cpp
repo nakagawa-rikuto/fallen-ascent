@@ -123,7 +123,7 @@ void ColliderCollision::SphereToSphereCollision(SphereCollider* sphereA, SphereC
 }
 
 ///-------------------------------------------/// 
-/// OBBとOBBとの衝突処理（SAT実装版）
+/// OBBとOBBとの衝突処理
 ///-------------------------------------------///
 void ColliderCollision::OBBToOBBCollision(OBBCollider* obbA, OBBCollider* obbB, float pushBackRatio) {
 	// 位置の取得
@@ -148,29 +148,23 @@ void ColliderCollision::OBBToOBBCollision(OBBCollider* obbA, OBBCollider* obbB, 
 		}
 	}
 
-	// 小さすぎるめり込みは無視(安定性向上)
-	const float MIN_PENETRATION = 0.001f;
-	if (result.depth < MIN_PENETRATION) {
-		return;
+	// マージン
+	const float PushMargin = 0.5f;
+
+	// めり込んでいる場合のみ押し戻し 
+	if (result.depth > 0.0f) {
+		// マージンを考慮した調整深度
+		float adjustDepth = result.depth * PushMargin;
+
+		float moveAABB = adjustDepth * (1.0f - pushBackRatio);
+		float moveOBB = adjustDepth * pushBackRatio;
+
+		posA -= result.axis * moveAABB;
+		posB += result.axis * moveOBB;
+
+		obbA->SetTranslate(posA);
+		obbB->SetTranslate(posB);
 	}
-
-	// めり込み深度に制限を設ける(異常な値を防ぐ)
-	const float MAX_PENETRATION = 10.0f;
-	result.depth = (std::min)(result.depth, MAX_PENETRATION);
-
-
-	const float PUSH_BACK_MARGIN = 1.05f; // 5%の余裕
-	float adjustedDepth = result.depth * PUSH_BACK_MARGIN;
-
-	// 押し戻し量を計算
-	float pushA = adjustedDepth * (1.0f - pushBackRatio);
-	float pushB = adjustedDepth * pushBackRatio;
-
-	posA -= result.axis * pushA;
-	posB += result.axis * pushB;
-
-	obbA->SetTranslate(posA);
-	obbB->SetTranslate(posB);
 }
 
 ///-------------------------------------------/// 

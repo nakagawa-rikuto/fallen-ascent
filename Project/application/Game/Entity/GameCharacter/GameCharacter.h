@@ -72,17 +72,24 @@ protected:
 		float gravity;    // 重力
 		uint32_t HP;      // 体力
         bool isDead;      // 死亡フラグ
-		bool isGrounded;  // 地面接地フラグ
     };
     BaseInfo baseInfo_;
 
-private:
+private: /// ===地面との衝突処理=== ///
 
-    float groundHeight_ = 0.0f;
+    /// ===GroundInfo=== ///
+    struct GroundInfo {
+		Vector3 currentGroundCenter;     // 現在の地面の中心位置
+		Vector3 currentGroundHalfSize;   // 現在の地面の半サイズ
+		bool hasGroundCollision = false; // 地面との衝突フラグ
+		bool isGrounded;				 // 地面接地フラグ
+    };
+	GroundInfo groundInfo_;
 
     /// <summary>
-    /// 地面との衝突処理
+    /// 指定した中心位置と半サイズを持つオブジェクトの地面との衝突を検出して処理します。
     /// </summary>
     void GroundCollision();
+
 };
 

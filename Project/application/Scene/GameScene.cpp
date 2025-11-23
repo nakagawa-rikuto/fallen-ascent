@@ -256,7 +256,7 @@ void GameScene::UpdateGame() {
 	enemyManager_->SetPlayer(player_.get()); // Playerを設定
 
 	// Playerが死んだら
-	if (player_->GetHP() <= 0 || InputService::TriggerKey(DIK_Q)) {
+	if (player_->GetIsDead() || InputService::TriggerKey(DIK_Q)) {
 		gameOverAnimation_->Initialize(camera_.get());
 		currentPhase_ = GamePhase::GameOverAnimation; // GameOverAnimationへ
 
