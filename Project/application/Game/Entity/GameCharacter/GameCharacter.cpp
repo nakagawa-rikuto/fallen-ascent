@@ -1,6 +1,9 @@
 #include "GameCharacter.h"
 // DeltaTime
 #include "Engine/System/Service/DeltaTimeSevice.h"
+#include "Engine/Collider/AABBCollider.h"
+// C++
+#include <algorithm>
 // ImGui
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -32,7 +35,10 @@ void GameCharacter<TCollider>::Initialize() {
 	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
 	baseInfo_.gravity = -9.8f;
 	baseInfo_.isDead = false;
-	baseInfo_.isGrounded = true;
+
+	/// ===GroundInfo=== ///
+	groundInfo_.isGrounded = false;
+	groundInfo_.hasGroundCollision = false;
 
 	/// ===TCollider=== ///
 	TCollider::Initialize();
@@ -43,27 +49,23 @@ void GameCharacter<TCollider>::Initialize() {
 ///-------------------------------------------///
 template<typename TCollider>
 void GameCharacter<TCollider>::Update() {
-	// デルタタイムの取得
+
+	/// ===デルタタイムの取得=== ///
 	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
 
-	// 地面に接地していない場合のみ重力を適用
-	if (!baseInfo_.isGrounded) {
-		baseInfo_.velocity.y += baseInfo_.gravity * baseInfo_.deltaTime;
-	}
+	/// ===地面との衝突処理=== ///
+	GroundCollision();
 
 	/// ===位置の更新=== ///
 	this->transform_.translate += baseInfo_.velocity;
 
 	/// ===死亡処理=== ///
-	if (baseInfo_.HP <= 0) {
+	if (baseInfo_.HP <= 0 || this->transform_.translate.y < -50.0f) {
 		baseInfo_.isDead = true;
 	}
 
-	/// ===OBBCollider=== ///
+	/// ===TCollider=== ///
 	TCollider::Update();
-
-	// 先にColliderManagerの処理が入るから終わってからリセット
-	//baseInfo_.isGrounded = false;
 }
 
 ///-------------------------------------------/// 
@@ -71,7 +73,7 @@ void GameCharacter<TCollider>::Update() {
 ///-------------------------------------------///
 template<typename TCollider>
 void GameCharacter<TCollider>::Draw(BlendMode mode) {
-	/// ===OBBCollider=== ///
+	/// ===TCollider=== ///
 	TCollider::Draw(mode);
 }
 
@@ -87,7 +89,7 @@ void GameCharacter<TCollider>::Information() {
 	ImGui::DragFloat("DeltaTime", &baseInfo_.deltaTime, 0.01f, 0.0f, 1.0f);
 	ImGui::DragFloat("Gravity", &baseInfo_.gravity, 0.1f, -20.0f, 0.0f);
 	ImGui::Checkbox("IsDead", &baseInfo_.isDead);
-	ImGui::Checkbox("IsGrounded", &baseInfo_.isGrounded);
+	ImGui::Checkbox("IsGrounded", &groundInfo_.isGrounded);
 #endif // USE_IMGUI
 }
 
@@ -100,57 +102,111 @@ void GameCharacter<TCollider>::OnCollision(Collider* collider) {
 	// === 早期リターン === //
 	if (!collider) return;
 
-	// 地面との衝突処理
+	/// ===Colliderとの衝突処理=== ///
 	if (collider->GetColliderName() == ColliderName::Ground) {
-		// 地面と衝突しているフラグを立てる
-		baseInfo_.isGrounded = true;
-		// 地面の高さを保存
-		groundHeight_ = collider->GetTransform().translate.y;
 
-		// 地面との衝突処理を即座に実行
-		GroundCollision();
+		// isGroundedがfalseなら
+		if (!groundInfo_.isGrounded) {
+			// 地面に接地したとみなす
+			groundInfo_.isGrounded = true;
+			groundInfo_.hasGroundCollision = true;
+
+			// 地面の情報を保存
+			if (collider->GetColliderType() == ColliderType::AABB) {
+				// 中心点と半径サイズを取得
+				AABBCollider* aabbCollider = dynamic_cast<AABBCollider*>(collider);
+				if (aabbCollider) {
+					AABB groundAABB = aabbCollider->GetAABB();
+					groundInfo_.currentGroundCenter = (groundAABB.min + groundAABB.max) * 0.5f;
+					groundInfo_.currentGroundHalfSize = (groundAABB.max - groundAABB.min) * 0.5f;
+				}
+			} else if (collider->GetColliderType() == ColliderType::OBB) {
+				// 中心点と半径サイズを取得
+				OBBCollider* obbCollider = dynamic_cast<OBBCollider*>(collider);
+				if (obbCollider) {
+					OBB groundOBB = obbCollider->GetOBB();
+					groundInfo_.currentGroundCenter = groundOBB.center;
+					groundInfo_.currentGroundHalfSize = groundOBB.halfSize;
+				}
+			}
+		}
+
+	} else if (collider->GetColliderName() == ColliderName::Object) {
+		// Objectとの衝突処理
+		//NOTE:thisを100%押し戻し
+		collision_->ProcessCollision(this, collider, 0.0f);
 
 	} else if (auto otherCharacter = dynamic_cast<GameCharacter<TCollider>*>(collider)) { //　これだと当たり判定が通った時に全て通ってしまう。
 
 		// GameCharacterの場合の衝突処理
 		//NOTE: OBBだけどSphereの押し戻しと同じ処理
 		gCollision_->ProcessCollision(this, otherCharacter, 0.0f);
-
-	} else if (collider->GetColliderName() == ColliderName::Object) {
-		// 地面と衝突しているフラグを立てる
-		baseInfo_.isGrounded = true;
-		// StageObjectとの衝突を処理
-		collision_->ProcessCollision(this, collider, 0.0f);
 	}
 }
 
 ///-------------------------------------------/// 
-/// 地面衝突処理
+/// 地面との衝突処理
 ///-------------------------------------------///
 template<typename TCollider>
 void GameCharacter<TCollider>::GroundCollision() {
-	// 接地していない場合は処理しない
-	if (!baseInfo_.isGrounded) return;
 
-	float effectiveGroundY;
+	/// ===地面から離れている場合の処理=== ///
+	if (!groundInfo_.isGrounded) {
+		// 重力の適用
+		baseInfo_.velocity.y += baseInfo_.gravity * baseInfo_.deltaTime;
 
-	// コライダーの半径を考慮した地面の高さ
-	if (this->GetColliderType() == ColliderType::OBB) {
-		// OBBの場合は半サイズを使用
-		GameCharacter<OBBCollider>* obb = dynamic_cast<GameCharacter<OBBCollider>*>(this);
-		effectiveGroundY = groundHeight_ + obb->GetOBB().halfSize.y;
-	} else {
-		// Sphereの場合は半径を使用
-		GameCharacter<SphereCollider>* sphere = dynamic_cast<GameCharacter<SphereCollider>*>(this);
-		effectiveGroundY = groundHeight_ + sphere->GetSphere().radius;
+		// Y方向の速度の最大値を制限
+		const float kMaxFollSpeed = -10.0f;
+		// 下方向への速度を制限
+		baseInfo_.velocity.y = std::clamp(baseInfo_.velocity.y, kMaxFollSpeed, 0.0f);
 	}
 
-	// キャラクターが地面より下にいる場合、地面の高さに補正
-	if (this->transform_.translate.y < effectiveGroundY) {
-		this->transform_.translate.y = effectiveGroundY;
-		// Y方向の速度をリセット
+	/// ===早期リターン=== ///
+	if (!groundInfo_.hasGroundCollision) return;
+
+	/// ===Y座標が地面を下回っているかををチェック=== ///
+	float groundY = 0.0f;
+	float characterHalfHeight = 0.0f;
+
+	if (this->GetColliderType() == ColliderType::OBB) {
+		OBB obb = dynamic_cast<OBBCollider*>(this)->GetOBB();
+		characterHalfHeight = obb.halfSize.y;
+		groundY = groundInfo_.currentGroundCenter.y + groundInfo_.currentGroundHalfSize.y + characterHalfHeight;
+	} else if (this->GetColliderType() == ColliderType::Sphere) {
+		Sphere sphere = dynamic_cast<SphereCollider*>(this)->GetSphere();
+		characterHalfHeight = sphere.radius;
+		groundY = groundInfo_.currentGroundCenter.y + groundInfo_.currentGroundHalfSize.y + characterHalfHeight;
+	}
+
+	// はみ出し分を計算
+	float overlap = groundY - this->transform_.translate.y;
+
+	// 地面より下に行かないようにする
+	if (this->transform_.translate.y < groundY) {
+
+		// はみ出し分を押し戻す
+		this->transform_.translate.y += overlap;
+
+		// 下降中なら速度を0にする
 		if (baseInfo_.velocity.y < 0.0f) {
 			baseInfo_.velocity.y = 0.0f;
 		}
+	}
+
+	/// ===地面の範囲を出たら=== ///
+	// X方向の範囲チェック
+	if (this->transform_.translate.x > (groundInfo_.currentGroundCenter.x + groundInfo_.currentGroundHalfSize.x + characterHalfHeight) ||
+		this->transform_.translate.x < (groundInfo_.currentGroundCenter.x - groundInfo_.currentGroundHalfSize.x - characterHalfHeight)) {
+		// 地面の範囲から出たらfalseにする
+		groundInfo_.isGrounded = false;
+		groundInfo_.hasGroundCollision = false;
+	}
+
+	// Z方向の範囲チェック
+	if (this->transform_.translate.z > (groundInfo_.currentGroundCenter.z + groundInfo_.currentGroundHalfSize.z + characterHalfHeight) ||
+		this->transform_.translate.z < (groundInfo_.currentGroundCenter.z - groundInfo_.currentGroundHalfSize.z - characterHalfHeight)) {
+		// 地面の範囲から出たらfalseにする
+		groundInfo_.isGrounded = false;
+		groundInfo_.hasGroundCollision = false;
 	}
 }

@@ -28,12 +28,13 @@ public:
     void SetPlayer(Player* player);
 
     /// <summary>
-    /// 指定した種類の敵を指定した位置に出現
+    /// 指定したタイプ・位置・回転で敵を生成します。
     /// </summary>
-    /// <param name="type">出現させる敵の種類を表す値。</param>
-    /// <param name="pos">出現位置。位置を表す Vector3 への const 参照（読み取り専用）。</param>
-    /// <returns>生成された BaseEnemy オブジェクトへのポインター。出現に失敗した場合は nullptr を返すことがある。</returns>
-    BaseEnemy* Spawn(EnemyType type, const Vector3& pos);
+    /// <param name="type">生成する敵の種類。EnemyType 型。</param>
+    /// <param name="pos">生成位置。Vector3 の const リファレンス。</param>
+    /// <param name="rot">生成時の回転。Quaternion の const リファレンス。</param>
+    /// <returns>生成された敵インスタンスへのポインタ (BaseEnemy*)。</returns>
+    BaseEnemy* Spawn(EnemyType type, const Vector3& pos, const Quaternion& rot, const Vector3& halfSize);
 
     /// <summary>
     /// 更新処理

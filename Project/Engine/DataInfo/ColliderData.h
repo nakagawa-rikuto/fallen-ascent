@@ -3,6 +3,31 @@
 #include "Math/Vector3.h"
 
 ///-------------------------------------------/// 
+/// ColliderType
+///-------------------------------------------///
+enum class ColliderType {
+    AABB,      // 軸整合バウンディングボックス（矩形）
+    Sphere,    // 球体
+    OBB,       // 任意方向のバウンディングボックス
+    Count      // 配列サイズ用
+};
+
+///-------------------------------------------/// 
+/// ColliderName
+///-------------------------------------------///
+enum class ColliderName {
+    Player,    // プレイヤー
+    Enemy,     // 敵
+    PlayerBullet, // プレイヤーの弾
+    PlayerWeapon, // プレイヤーの武器
+    EnemyBullet,  // 敵の弾
+    Object,      // 壁
+    Ground,     // 床
+    Ceiling,   // 天井
+    None       // 無し
+};
+
+///-------------------------------------------/// 
 /// AABBの構造体
 ///-------------------------------------------///
 struct AABB {
@@ -26,3 +51,4 @@ struct Sphere {
     Vector3 center;  // 中心
     float radius;    // 半径
 };
+

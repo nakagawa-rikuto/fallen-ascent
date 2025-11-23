@@ -80,7 +80,7 @@ void BaseEnemy::Initialize() {
 	baseInfo_.HP = 2;
 
 	// object3dの更新を一回行う
-	GameCharacter::Update();
+	UpdateAnimation();
 }
 
 ///-------------------------------------------/// 
@@ -99,8 +99,7 @@ void BaseEnemy::Update() {
 		currentState_->Update(this);
 	}
 
-	// SphereColliderの更新
-	GameCharacter::Update();
+	UpdateAnimation();
 }
 
 ///-------------------------------------------/// 
@@ -181,6 +180,9 @@ void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 /// 当たり判定
 ///-------------------------------------------///
 void BaseEnemy::OnCollision(Collider* collider) {
+
+	// 攻撃用のフラグを立てる
+	attackInfo_.isCollision = true;
 
 	/// ===GameCharacterの衝突=== ///
 	GameCharacter::OnCollision(collider);

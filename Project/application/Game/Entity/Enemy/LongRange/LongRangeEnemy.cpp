@@ -47,7 +47,6 @@ void LongRangeEnemy::Initialize() {
 	// GameCharacterの初期化
 	GameCharacter::Initialize();
 	name_ = ColliderName::Enemy;
-	obb_.halfSize = { 2.0f, 2.0f, 2.0f };
 
 	/// ===MoveInfoの設定=== ///
 	moveInfo_.interval = 5.0f;

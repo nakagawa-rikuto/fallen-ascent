@@ -31,33 +31,57 @@ void ColliderCollision::ProcessCollision(Collider* colliderA, Collider* collider
 		case ColliderType::OBB:
 			OBBToOBBCollision(dynamic_cast<OBBCollider*>(colliderA), dynamic_cast<OBBCollider*>(colliderB), pushBackRatio);
 			break;
-		default:
-			break;
 		}
 	} else {
 		// 異なるタイプ同士の衝突処理
-		if ((typeA == ColliderType::Sphere && typeB == ColliderType::AABB) || (typeA == ColliderType::AABB && typeB == ColliderType::Sphere)) {
-			// Sphere-AABB
-			SphereCollider* sphere = (typeA == ColliderType::Sphere) ? dynamic_cast<SphereCollider*>(colliderA): dynamic_cast<SphereCollider*>(colliderB);
-			AABBCollider* aabb = (typeA == ColliderType::AABB) ? dynamic_cast<AABBCollider*>(colliderA): dynamic_cast<AABBCollider*>(colliderB);
-			float ratio = (typeA == ColliderType::Sphere) ? pushBackRatio : (1.0f - pushBackRatio);
-			SphereToAABBCollision(sphere, aabb, ratio);
-
-		} else if ((typeA == ColliderType::Sphere && typeB == ColliderType::OBB) || (typeA == ColliderType::OBB && typeB == ColliderType::Sphere)) {
-			// Sphere-OBB
-			SphereCollider* sphere = (typeA == ColliderType::Sphere) ? dynamic_cast<SphereCollider*>(colliderA) : dynamic_cast<SphereCollider*>(colliderB);
-			OBBCollider* obb = (typeA == ColliderType::OBB) ? dynamic_cast<OBBCollider*>(colliderA) : dynamic_cast<OBBCollider*>(colliderB);
-			float ratio = (typeA == ColliderType::Sphere) ? pushBackRatio : (1.0f - pushBackRatio);
-			SphereToOBBCollision(sphere, obb, ratio);
-
-		} else if ((typeA == ColliderType::AABB && typeB == ColliderType::OBB) || (typeA == ColliderType::OBB && typeB == ColliderType::AABB)) {
-			// AABB-OBB
-			AABBCollider* aabb = (typeA == ColliderType::AABB) ? dynamic_cast<AABBCollider*>(colliderA) : dynamic_cast<AABBCollider*>(colliderB);
-			OBBCollider* obb = (typeA == ColliderType::OBB)	? dynamic_cast<OBBCollider*>(colliderA) : dynamic_cast<OBBCollider*>(colliderB);
-			float ratio = (typeA == ColliderType::AABB) ? pushBackRatio : (1.0f - pushBackRatio);
-			AABBToOBBCollision(aabb, obb, ratio);
-		}
+		ProcessMixdeTypeCollision(colliderA, colliderB, typeA, typeB, pushBackRatio);
 	}
+}
+
+///-------------------------------------------/// 
+/// 異なるタイプ同士の衝突処理
+///-------------------------------------------///
+void ColliderCollision::ProcessMixdeTypeCollision(Collider* colliderA, Collider* colliderB, ColliderType typeA, ColliderType typeB, float pushBackRationA) {
+	/// ===異なるCollider毎の処理=== ///
+	if ((typeA == ColliderType::Sphere && typeB == ColliderType::AABB) || (typeA == ColliderType::AABB && typeB == ColliderType::Sphere)) {
+
+		// タイプによる判別
+		SphereCollider* sphere = (typeA == ColliderType::Sphere) 
+			? dynamic_cast<SphereCollider*>(colliderA) 
+			: dynamic_cast<SphereCollider*>(colliderB);
+		AABBCollider* aabb = (typeA == ColliderType::AABB) 
+			? dynamic_cast<AABBCollider*>(colliderA) 
+			: dynamic_cast<AABBCollider*>(colliderB);
+		float ration = (typeA == ColliderType::Sphere) ? pushBackRationA : (1.0f - pushBackRationA);
+		// 衝突判定による押し戻し処理
+		SphereToAABBCollision(sphere, aabb, ration);
+
+	} else if ((typeA == ColliderType::Sphere && typeB == ColliderType::OBB) || (typeA == ColliderType::OBB && typeB == ColliderType::Sphere)) {
+
+		// タイプによる判別
+		SphereCollider* sphere = (typeA == ColliderType::Sphere) 
+			? dynamic_cast<SphereCollider*>(colliderA) 
+			: dynamic_cast<SphereCollider*>(colliderB);
+		OBBCollider* obb = (typeA == ColliderType::OBB) 
+			? dynamic_cast<OBBCollider*>(colliderA) 
+			: dynamic_cast<OBBCollider*>(colliderB);
+		float ration = (typeA == ColliderType::Sphere) ? pushBackRationA : (1.0f - pushBackRationA);
+		// 衝突判定による押し戻し処理
+		SphereToOBBCollision(sphere, obb, ration);
+
+	} else if ((typeA == ColliderType::AABB && typeB == ColliderType::OBB) || (typeA == ColliderType::OBB && typeB == ColliderType::AABB)) {
+
+		// タイプによる判別
+		AABBCollider* aabb = (typeA == ColliderType::AABB) 
+			? dynamic_cast<AABBCollider*>(colliderA) 
+			: dynamic_cast<AABBCollider*>(colliderB);
+		OBBCollider* obb = (typeA == ColliderType::OBB) 
+			? dynamic_cast<OBBCollider*>(colliderA) 
+			: dynamic_cast<OBBCollider*>(colliderB);
+		float ration = (typeA == ColliderType::AABB) ? pushBackRationA : (1.0f - pushBackRationA);
+		// 衝突判定による押し戻し処理
+		AABBToOBBCollision(aabb, obb, ration);
+	 }
 }
 
 ///-------------------------------------------/// 
@@ -99,7 +123,7 @@ void ColliderCollision::SphereToSphereCollision(SphereCollider* sphereA, SphereC
 }
 
 ///-------------------------------------------/// 
-/// OBBとOBBとの衝突処理（SAT実装版）
+/// OBBとOBBとの衝突処理
 ///-------------------------------------------///
 void ColliderCollision::OBBToOBBCollision(OBBCollider* obbA, OBBCollider* obbB, float pushBackRatio) {
 	// 位置の取得
@@ -108,11 +132,6 @@ void ColliderCollision::OBBToOBBCollision(OBBCollider* obbA, OBBCollider* obbB, 
 
 	// 分離軸判定を実行
 	SATResult result = PerformSAT(obbA->GetOBB(), obbB->GetOBB());
-
-	// 衝突していない場合は早期リターン
-	if (result.depth <= 0.0f) {
-		return;
-	}
 
 	// 軸の方向を確認(AからBへのベクトルと同じ向きにする)
 	Vector3 centerDiff = posB - posA;
@@ -129,29 +148,23 @@ void ColliderCollision::OBBToOBBCollision(OBBCollider* obbA, OBBCollider* obbB, 
 		}
 	}
 
-	// 小さすぎるめり込みは無視(安定性向上)
-	const float MIN_PENETRATION = 0.001f;
-	if (result.depth < MIN_PENETRATION) {
-		return;
+	// マージン
+	const float PushMargin = 0.5f;
+
+	// めり込んでいる場合のみ押し戻し 
+	if (result.depth > 0.0f) {
+		// マージンを考慮した調整深度
+		float adjustDepth = result.depth * PushMargin;
+
+		float moveAABB = adjustDepth * (1.0f - pushBackRatio);
+		float moveOBB = adjustDepth * pushBackRatio;
+
+		posA -= result.axis * moveAABB;
+		posB += result.axis * moveOBB;
+
+		obbA->SetTranslate(posA);
+		obbB->SetTranslate(posB);
 	}
-
-	// めり込み深度に制限を設ける(異常な値を防ぐ)
-	const float MAX_PENETRATION = 10.0f;
-	result.depth = (std::min)(result.depth, MAX_PENETRATION);
-
-	// ★★★ マージンを追加して完全接触を防ぐ ★★★
-	const float PUSH_BACK_MARGIN = 1.05f; // 5%の余裕
-	float adjustedDepth = result.depth * PUSH_BACK_MARGIN;
-
-	// 押し戻し量を計算
-	float pushA = adjustedDepth * (1.0f - pushBackRatio);
-	float pushB = adjustedDepth * pushBackRatio;
-
-	posA -= result.axis * pushA;
-	posB += result.axis * pushB;
-
-	obbA->SetTranslate(posA);
-	obbB->SetTranslate(posB);
 }
 
 ///-------------------------------------------/// 
@@ -284,10 +297,16 @@ void ColliderCollision::AABBToOBBCollision(AABBCollider* aabb, OBBCollider* obb,
 		result.axis = -result.axis;
 	}
 
+	// マージン
+	const float PushMargin = 0.5f;
+
 	// めり込んでいる場合のみ押し戻し 
 	if (result.depth > 0.0f) {
-		float moveAABB = result.depth * (1.0f - pushBackRatio);
-		float moveOBB = result.depth * pushBackRatio;
+		// マージンを考慮した調整深度
+		float adjustDepth = result.depth * PushMargin;
+
+		float moveAABB = adjustDepth * (1.0f - pushBackRatio);
+		float moveOBB = adjustDepth * pushBackRatio;
 
 		aabbPos -= result.axis * moveAABB;
 		obbPos += result.axis * moveOBB;

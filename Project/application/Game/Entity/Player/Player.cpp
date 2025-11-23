@@ -133,7 +133,8 @@ void Player::Initialize() {
 	// GameCharacterの設定
 	GameCharacter::Initialize();
 	name_ = ColliderName::Player;
-	obb_.halfSize = { 1.5f, 1.5f, 2.0f };
+	// コライダーに追加
+	ColliderService::AddCollider(this);
 
 	// Weaponの初期化
 	weapon_ = std::make_unique<PlayerWeapon>();
@@ -147,14 +148,11 @@ void Player::Initialize() {
 	// HPの設定
 	baseInfo_.HP = 5;
 
-	// CollisionTimerの初期化
-	collisionTimer_ = 0.2f;
-
 	// 初期設定
 	ChangState(std::make_unique<RootState>());
 
-	// コライダーに追加
-	ColliderService::AddCollider(this);
+	// Updateを一回行う
+	UpdateAnimation();
 }
 
 
@@ -213,7 +211,6 @@ void Player::Information() {
 	GameCharacter::Information();
 	ImGui::DragFloat("invincibleTime", &invicibleInfo_.timer, 0.01f);
 	ImGui::End();
-
 	weapon_->Information();
 #endif // USE_IMGUI
 }
@@ -224,51 +221,45 @@ void Player::Information() {
 ///-------------------------------------------///
 void Player::OnCollision(Collider* collider) {
 
-	if (collisionTimer_ >= 0.0f)return;
-
 	/// ===GameCharacterの衝突=== ///
 	GameCharacter::OnCollision(collider);
 
-	//// Colliderによって処理を変更
-	//if (collider->GetColliderName() == ColliderName::Enemy || collider->GetColliderName() == ColliderName::EnemyBullet) {
+	// Colliderによって処理を変更
+	/*if (collider->GetColliderName() == ColliderName::Enemy || collider->GetColliderName() == ColliderName::EnemyBullet) {
 
-	//	// 無敵状態でなければダメージを受ける
-	//	if (!invicibleInfo_.isFlag) {
+		// 無敵状態でなければダメージを受ける
+		if (!invicibleInfo_.isFlag) {
 
-	//		// ===ノックバック処理=== ///
-	//		// 敵の位置を取得
-	//		Vector3 enemyPos = collider->GetTransform().translate;
-	//		// プレイヤーから敵への方向ベクトルを計算
-	//		Vector3 knockbackDirection = transform_.translate - enemyPos;
-	//		// Y軸は無視(水平方向のみノックバック)
-	//		knockbackDirection.y = 0.0f;
-	//		// 正規化
-	//		if (knockbackDirection.x != 0.0f || knockbackDirection.z != 0.0f) {
-	//			knockbackDirection = Normalize(knockbackDirection);
-	//		}
-	//		// ノックバックの速度を設定(適切な値に調整してください)
-	//		const float knockbackSpeed = 1.5f;
-	//		baseInfo_.velocity = knockbackDirection * knockbackSpeed;
+			// ===ノックバック処理=== ///
+			// 敵の位置を取得
+			Vector3 enemyPos = collider->GetTransform().translate;
+			// プレイヤーから敵への方向ベクトルを計算
+			Vector3 knockbackDirection = transform_.translate - enemyPos;
+			// Y軸は無視(水平方向のみノックバック)
+			knockbackDirection.y = 0.0f;
+			// 正規化
+			if (knockbackDirection.x != 0.0f || knockbackDirection.z != 0.0f) {
+				knockbackDirection = Normalize(knockbackDirection);
+			}
+			// ノックバックの速度を設定(適切な値に調整してください)
+			const float knockbackSpeed = 1.5f;
+			baseInfo_.velocity = knockbackDirection * knockbackSpeed;
 
-	//		// Stateを Root に変更
-	//		ChangState(std::make_unique<RootState>());
+			// Stateを Root に変更
+			ChangState(std::make_unique<RootState>());
 
-	//		// ダメージ処理
-	//		baseInfo_.HP--;
-	//		// 無敵状態にする
-	//		SetInvicibleTime(0.5f);
-	//	}
-	//}
+			// ダメージ処理
+			baseInfo_.HP--;
+			// 無敵状態にする
+			SetInvicibleTime(0.5f);
+		}
+	}*/
 }
 
 ///-------------------------------------------/// 
 /// 時間を進める
 ///-------------------------------------------///
 void Player::advanceTimer() {
-
-	if (collisionTimer_ >= 0.0f) {
-		collisionTimer_ -= baseInfo_.deltaTime;
-	}
 
 	// 無敵タイマーを進める
 	if (invicibleInfo_.timer > 0.0f) {

@@ -256,7 +256,7 @@ void GameScene::UpdateGame() {
 	enemyManager_->SetPlayer(player_.get()); // Playerを設定
 
 	// Playerが死んだら
-	if (player_->GetHP() <= 0 || InputService::TriggerKey(DIK_Q)) {
+	if (player_->GetIsDead() || InputService::TriggerKey(DIK_Q)) {
 		gameOverAnimation_->Initialize(camera_.get());
 		currentPhase_ = GamePhase::GameOverAnimation; // GameOverAnimationへ
 
@@ -311,6 +311,8 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 
 	// オブジェクト分回す
 	for (const auto& obj : levelData->objects) {
+		// OBBの半分の大きさを計算
+		Vector3 obbHalfSize = obj.colliderInfo2 / 2.0f;
 
 		/// ===クラス名で分岐=== ///
 		switch (obj.classType) {
@@ -319,14 +321,15 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 			player_->Initialize();
 			player_->SetTranslate(obj.translation);
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
+			player_->SethalfSize(obbHalfSize);
 			break;
 		case LevelData::ClassTypeLevel::Enemy1:
 			// Enemyの座標設定
-			enemyManager_->Spawn(EnemyType::LongRange, obj.translation);
+			enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.rotation), obbHalfSize);
 			break;
 		case LevelData::ClassTypeLevel::Enemy2:
 			// Enemyの座標設定
-			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation);
+			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.rotation), obbHalfSize);
 			break;
 		}
 	}
