@@ -503,6 +503,9 @@
     <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp" />
     <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp" />
     <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp" />
+    <ClCompile Include="application\Game\Particle\RoadWalkParticle.cpp" />
+    <ClCompile Include="application\Game\Particle\AttackTrajectoryParticle.cpp" />
+    <ClCompile Include="application\Game\Particle\DustCloudParticle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -970,6 +973,9 @@
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h" />
     <ClInclude Include="application\Game\Animation\GameClearAnimation.h" />
+    <ClInclude Include="application\Game\Particle\RoadWalkParticle.h" />
+    <ClInclude Include="application\Game\Particle\AttackTrajectoryParticle.h" />
+    <ClInclude Include="application\Game\Particle\DustCloudParticle.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
