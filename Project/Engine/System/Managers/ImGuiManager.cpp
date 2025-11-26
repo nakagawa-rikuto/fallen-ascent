@@ -42,6 +42,25 @@ void ImGuiManager::Initialize(WinApp* winApp, DXCommon* dxCommon, SRVManager* sr
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // ドッキングを有効にする
+
+	/// ===日本語フォント適用=== ///
+	// 日本語フォントの読み込み
+	ImFontConfig fontConfig;
+	fontConfig.MergeMode = false;
+	fontConfig.OversampleH = 1;
+	fontConfig.OversampleV = 1;
+	fontConfig.PixelSnapH = true;
+
+	// 日本語グリフの範囲を指定
+	io.Fonts->AddFontFromFileTTF(
+		"Resource/Fonts/JNRfont_n.ttf",
+		16.0f,
+		&fontConfig,
+		io.Fonts->GetGlyphRangesJapanese()
+	);
+
+	// フォントアトラスのビルド
+	io.Fonts->Build();
 #endif // USE_IMGUI
 }
 
@@ -154,9 +173,9 @@ void ImGuiManager::DrawMainDockWindow() {
 void ImGuiManager::MenuBar() {
 #ifdef USE_IMGUI
 	if (ImGui::BeginMenuBar()) {
-		if (ImGui::BeginMenu("File")) {
-			ImGui::MenuItem("Open", "Ctrl+O");
-			ImGui::MenuItem("Save", "Ctrl+S");
+		if (ImGui::BeginMenu("ファイル")) {
+			ImGui::MenuItem("開く", "Ctrl+O");
+			ImGui::MenuItem("保存", "Ctrl+S");
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Edit")) {

@@ -127,16 +127,18 @@ void PlayerWeapon::Draw(BlendMode mode) {
 void PlayerWeapon::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("PlayerWeapon");
-	ImGui::Checkbox("IsAttacking", &attackInfo_.isAttacking);
-	ImGui::Checkbox("IsChargeAttacking", &attackInfo_.isChargeAttack);
-	ImGui::DragFloat("Progress", &attackInfo_.progress, 0.01f, 0.0f, 1.0f);
-	ImGui::DragFloat("Timer", &attackInfo_.timer, 0.01f);
-	ImGui::DragFloat("Duration", &attackInfo_.duration, 0.01f);
-	ImGui::Text("Arc Motion:");
-	ImGui::DragFloat3("Center", &attackInfo_.arcCenter.x, 0.1f);
-	ImGui::DragFloat("Radius", &attackInfo_.arcRadius, 0.1f);
-	ImGui::DragFloat("Start Angle", &attackInfo_.startAngle, 1.0f);
-	ImGui::DragFloat("End Angle", &attackInfo_.endAngle, 1.0f);
+	ImGui::Text("フラグ");
+	ImGui::Checkbox("攻撃フラグ", &attackInfo_.isAttacking);
+	ImGui::Checkbox("チャージ攻撃フラグ", &attackInfo_.isChargeAttack);
+	ImGui::Text("攻撃情報");
+	ImGui::DragFloat("タイマー", &attackInfo_.timer, 0.01f);
+	ImGui::DragFloat("進行度", &attackInfo_.progress, 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat("接続時間", &attackInfo_.duration, 0.01f);
+	ImGui::Text("円弧");
+	ImGui::DragFloat3("中心", &attackInfo_.arcCenter.x, 0.1f);
+	ImGui::DragFloat("半径", &attackInfo_.arcRadius, 0.1f);
+	ImGui::DragFloat("開始角度", &attackInfo_.startAngle, 1.0f);
+	ImGui::DragFloat("終了角度", &attackInfo_.endAngle, 1.0f);
 	//OBBCollider::Information();
 	ImGui::End();
 #endif // USE_IMGUI
