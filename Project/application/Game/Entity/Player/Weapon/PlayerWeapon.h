@@ -1,9 +1,9 @@
 #pragma once
 /// ===Include=== ///
+// OBB
 #include "Engine/Collider/OBBCollider.h"
-// Math
-#include "Math/Vector3.h"
-#include "Math/Quaternion.h"
+// Particle
+#include "application/Game/Particle/AttackTrajectoryParticle.h"
 
 /// ===前方宣言=== ///
 class Player;
@@ -85,13 +85,10 @@ public: /// ===衝突=== ///
 public: /// ===Getter=== ///
 	// 攻撃中かどうか
 	bool GetIsAttack() const;
-
 	// 攻撃の進行度を取得
 	float GetAttackProgress() const;
 
 public: /// ===Setter=== ///
-	// デルタタイムの設定
-	void SetDeltaTime(float deltaTime);
 
 	// アクティブ状態の設定
 	void SetActive(bool flag);
@@ -99,6 +96,9 @@ public: /// ===Setter=== ///
 private:
 	// Player
 	Player* player_ = nullptr;
+
+	// Particle
+	std::shared_ptr<AttackTrajectoryParticle> particle_;
 
 	/// ===基本情報=== ///
 	struct BaseInfo {

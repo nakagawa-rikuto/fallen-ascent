@@ -16,6 +16,9 @@
 #include "Engine/Graphics/Particle/Derivative/HitEffectParticle.h"
 #include "Engine/Graphics/Particle/Derivative/RingParticle.h"
 #include "Engine/Graphics/Particle/Derivative/CylinderParticle.h"
+#include "application/Game/Particle/DustCloudParticle.h"
+// GameParticle
+#include "application/Game/Particle/AttackTrajectoryParticle.h"
 // Math
 #include "Math/SMath.h"
 
@@ -59,6 +62,7 @@ void GameScene::Initialize() {
 	ParticleService::AddParticle("Ring", std::make_unique<RingParticle>());
 	ParticleService::AddParticle("HitEffect", std::make_unique<HitEffectParticle>());
 	ParticleService::AddParticle("Cylinder", std::make_unique<CylinderParticle>());
+	ParticleService::AddParticle("DustCloud", std::make_unique<DustCloudParticle>());
 
 	/// ===Line=== ///
 	line_ = std::make_unique<Line>();
