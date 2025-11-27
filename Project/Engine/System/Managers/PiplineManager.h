@@ -1,9 +1,9 @@
 #pragma once
 /// ===Include=== ///
 // Engine
-#include "Engine/DataInfo/PipelineStateObjectType.h"
-#include "Engine/Graphics/Pipeline/PipelineStateObjectCommon.h"
-#include "Engine/Graphics/Pipeline/Compiler.h"
+#include "Engine/Graphics/Pipeline/GraphicsPipelineStateObject.h"
+#include "Engine/Graphics/Pipeline/ComputePipelineStateObject.h"
+#include "Engine/Graphics/Pipeline/Setting/Compiler.h"
 // c++
 #include <unordered_map>
 #include <memory>
@@ -52,8 +52,11 @@ public:
     void SetPipeline(ID3D12GraphicsCommandList* commandList, PipelineType type, BlendMode mode, D3D12_PRIMITIVE_TOPOLOGY topology);
 
 private:/// ===変数=== ///
-    /// パイプラインの管理
-    std::unordered_map<std::pair<PipelineType, BlendMode>, std::unique_ptr<PipelineStateObjectCommon>> pipelines_;
+    
+	// グラフィックスパイプライン
+    std::unordered_map<std::pair<PipelineType, BlendMode>, std::unique_ptr<GraphicsPipelineStateObject>> graphicsPipelines_;
+	// コンピュートパイプライン
+	std::unordered_map<PipelineType, std::unique_ptr<ComputePipelineStateObject>> computePipelines_;
     std::unordered_map<PipelineType, std::unique_ptr<Compiler>> compiler_;
 
 private:/// ===関数=== ///
@@ -63,5 +66,12 @@ private:/// ===関数=== ///
     /// <param name="type">取得するパイプラインの種類を示す値。</param>
     /// <param name="mode">適用するブレンドモードを示す値。</param>
     /// <returns>要求したパイプライン状態を表す PipelineStateObjectCommon へのポインタ。</returns>
-    PipelineStateObjectCommon* GetPipeline(PipelineType type, BlendMode mode);
+    GraphicsPipelineStateObject* GetGraphicsPipeline(PipelineType type, BlendMode mode);
+
+    /// <summary>
+    /// 指定された PipelineType に基づいてコンピュートパイプライン状態オブジェクトを取得
+    /// </summary>
+    /// <param name="type">取得するパイプラインの種類を指定する PipelineType 値。</param>
+    /// <returns>対応する ComputePipelineStateObject へのポインタ。</returns>
+    ComputePipelineStateObject* GetComputePipeline(PipelineType type);
 };

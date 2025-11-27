@@ -1,20 +1,18 @@
-#include "PipelineStateObjectCommon.h"
+#include "GraphicsPipelineStateObject.h"
 // Compiler
-#include "Engine/Graphics/Pipeline/Compiler.h"
+#include "Engine/Graphics/Pipeline/Setting/Compiler.h"
 // Engine
 #include "Engine/Core/DXCommon.h"
-// c++
-#include <cassert>
 
 ///-------------------------------------------/// 
 /// コンストラクタ
 ///-------------------------------------------///
-PipelineStateObjectCommon::PipelineStateObjectCommon() = default;
+GraphicsPipelineStateObject::GraphicsPipelineStateObject() = default;
 
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
-PipelineStateObjectCommon::~PipelineStateObjectCommon() {
+GraphicsPipelineStateObject::~GraphicsPipelineStateObject() {
 
 	rootSignature_.reset();
 	inputLayout_.reset();
@@ -27,7 +25,7 @@ PipelineStateObjectCommon::~PipelineStateObjectCommon() {
 ///-------------------------------------------/// 
 /// PSOの作成
 ///-------------------------------------------///
-void PipelineStateObjectCommon::Create(DXCommon* dxCommon, Compiler* compiler, PipelineType Type, BlendMode Mode) {
+void GraphicsPipelineStateObject::Create(DXCommon* dxCommon, Compiler* compiler, PipelineType Type, BlendMode Mode) {
 
 	// RootSignatureの生成
 	rootSignature_ = std::make_unique<RootSignature>();
@@ -59,7 +57,7 @@ void PipelineStateObjectCommon::Create(DXCommon* dxCommon, Compiler* compiler, P
 ///-------------------------------------------/// 
 /// パイプラインの設定
 ///-------------------------------------------///
-void PipelineStateObjectCommon::SetPSO(ID3D12GraphicsCommandList* commandList) {
+void GraphicsPipelineStateObject::SetPSO(ID3D12GraphicsCommandList* commandList) {
 
 	// assertチェック
 	assert(rootSignature_);
@@ -75,7 +73,7 @@ void PipelineStateObjectCommon::SetPSO(ID3D12GraphicsCommandList* commandList) {
 ///-------------------------------------------/// 
 /// パイプラインの作成
 ///-------------------------------------------///
-void PipelineStateObjectCommon::CreatePipelineState(DXCommon* dxCommon, PipelineType type) {
+void GraphicsPipelineStateObject::CreatePipelineState(DXCommon* dxCommon, PipelineType type) {
 	HRESULT hr;
 
 	// PSOの取得
@@ -101,11 +99,9 @@ void PipelineStateObjectCommon::CreatePipelineState(DXCommon* dxCommon, Pipeline
 		graphicsPipelineStateDesc_.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
 	} else {
 		graphicsPipelineStateDesc_.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-
 	}
 	
-
-	// どのように画面に色を打ち込むかの設定(気にしなくて良い)
+	// どのように画面に色を打ち込むかの設定
 	graphicsPipelineStateDesc_.SampleDesc.Count = 1;
 	graphicsPipelineStateDesc_.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
 

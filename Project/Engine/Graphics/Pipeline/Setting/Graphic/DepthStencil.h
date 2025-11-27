@@ -11,7 +11,6 @@
 ///=====================================================///
 class DepthStencil {
 public:
-
 	DepthStencil() = default;
 	~DepthStencil() = default;
 

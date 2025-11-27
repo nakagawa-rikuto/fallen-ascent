@@ -118,6 +118,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Scene\GameScene.cpp" />
     <ClCompile Include="application\Game\Particle\AttackTrajectoryParticle.cpp" />
     <ClCompile Include="application\Game\Particle\DustCloudParticle.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\Setting\Compute\CSRootSignature.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\ComputePipelineStateObject.cpp" />
     <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp" />
     <ClCompile Include="Engine\System\Service\DeltaTimeSevice.cpp" />
     <ClCompile Include="Engine\System\DeltraTime\DeltaTime.cpp" />
@@ -183,16 +185,16 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Math\Vector2.cpp" />
     <ClCompile Include="Math\Vector3.cpp" />
     <ClCompile Include="Math\Vector4.cpp" />
-    <ClCompile Include="Engine\Graphics\Pipeline\BlendState.cpp" />
-    <ClCompile Include="Engine\Graphics\Pipeline\Compiler.cpp" />
-    <ClCompile Include="Engine\Graphics\Pipeline\InputLayout.cpp" />
-    <ClCompile Include="Engine\Graphics\Pipeline\PipelineStateObjectCommon.cpp" />
-    <ClCompile Include="Engine\Graphics\Pipeline\RasterizerState.cpp" />
-    <ClCompile Include="Engine\Graphics\Pipeline\RootSignature.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\Setting\Graphic\BlendState.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\Setting\Compiler.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\Setting\Graphic\InputLayout.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\GraphicsPipelineStateObject.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\Setting\Graphic\RasterizerState.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\Setting\Graphic\RootSignature.cpp" />
     <ClCompile Include="Engine\Core\Mii.cpp" />
     <ClCompile Include="Engine\Graphics\3d\Base\Transform3D.cpp" />
     <ClCompile Include="Engine\Core\WinApp.cpp" />
-    <ClCompile Include="Engine\Graphics\Pipeline\DepthStencil.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\Setting\Graphic\DepthStencil.cpp" />
     <ClCompile Include="Engine\Graphics\2d\Base\IndexBuffer2D.cpp" />
     <ClCompile Include="Engine\Graphics\3d\Base\IndexBuffer3D.cpp" />
     <ClCompile Include="Engine\Graphics\Base\BufferBase.cpp" />
@@ -257,6 +259,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\3d\Oshan\OshanCommon.cpp" />
     <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp" />
     <ClCompile Include="application\Game\Particle\RoadWalkParticle.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\Base\PipelineStateObjectBase.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\Setting\Compute\UAV.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
@@ -266,6 +270,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h" />
     <ClInclude Include="application\Game\Particle\AttackTrajectoryParticle.h" />
     <ClInclude Include="application\Game\Particle\DustCloudParticle.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\Setting\Compute\CSRootSignature.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\ComputePipelineStateObject.h" />
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
     <ClInclude Include="Engine\System\Service\DeltaTimeSevice.h" />
     <ClInclude Include="Engine\System\DeltraTime\DeltaTime.h" />
@@ -343,18 +349,18 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Math\Vector2.h" />
     <ClInclude Include="Math\Vector3.h" />
     <ClInclude Include="Math\Vector4.h" />
-    <ClInclude Include="Engine\Graphics\Pipeline\BlendState.h" />
-    <ClInclude Include="Engine\Graphics\Pipeline\Compiler.h" />
-    <ClInclude Include="Engine\Graphics\Pipeline\InputLayout.h" />
-    <ClInclude Include="Engine\Graphics\Pipeline\PipelineStateObjectCommon.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\Setting\Graphic\BlendState.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\Setting\Compiler.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\Setting\Graphic\InputLayout.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\GraphicsPipelineStateObject.h" />
     <ClInclude Include="Engine\DataInfo\PipelineStateObjectType.h" />
-    <ClInclude Include="Engine\Graphics\Pipeline\RasterizerState.h" />
-    <ClInclude Include="Engine\Graphics\Pipeline\RootSignature.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\Setting\Graphic\RasterizerState.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\Setting\Graphic\RootSignature.h" />
     <ClInclude Include="Engine\Core\Mii.h" />
     <ClInclude Include="Engine\Graphics\3d\Base\Transform3D.h" />
     <ClInclude Include="Engine\Core\WinApp.h" />
     <ClInclude Include="Engine\Core\ComPtr.h" />
-    <ClInclude Include="Engine\Graphics\Pipeline\DepthStencil.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\Setting\Graphic\DepthStencil.h" />
     <ClInclude Include="application\Scene\GameScene.h" />
     <ClInclude Include="application\Drawing\2d\Sprite.h" />
     <ClInclude Include="Engine\System\Managers\TextureManager.h" />
@@ -419,6 +425,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\3d\Oshan\OshanCommon.h" />
     <ClInclude Include="application\Game\Object\StageObject\StageObject.h" />
     <ClInclude Include="application\Game\Particle\RoadWalkParticle.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\Base\PipelineStateObjectBase.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\Setting\Compute\UAV.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -435,6 +443,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <FxCompile Include="Resource\Shaders\3D\LIne3D.VS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\3D\SkinningObj3D.CS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

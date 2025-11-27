@@ -79,6 +79,7 @@
     <FxCompile Include="Resource\Shaders\3D\Oshan.PS.hlsl">
       <Filter>Resource\Shaders\Oshan</Filter>
     </FxCompile>
+    <FxCompile Include="Resource\Shaders\3D\SkinningObj3D.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -286,25 +287,25 @@
     <ClCompile Include="Engine\Graphics\Particle\Derivative\WindParticle.cpp">
       <Filter>Engine\Graphics\Particle\Derivative</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\BlendState.cpp">
+    <ClCompile Include="Engine\Graphics\Pipeline\Setting\Graphic\BlendState.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\Compiler.cpp">
+    <ClCompile Include="Engine\Graphics\Pipeline\Setting\Compiler.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\DepthStencil.cpp">
+    <ClCompile Include="Engine\Graphics\Pipeline\Setting\Graphic\DepthStencil.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\InputLayout.cpp">
+    <ClCompile Include="Engine\Graphics\Pipeline\Setting\Graphic\InputLayout.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\PipelineStateObjectCommon.cpp">
+    <ClCompile Include="Engine\Graphics\Pipeline\GraphicsPipelineStateObject.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\RootSignature.cpp">
+    <ClCompile Include="Engine\Graphics\Pipeline\Setting\Graphic\RootSignature.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\RasterizerState.cpp">
+    <ClCompile Include="Engine\Graphics\Pipeline\Setting\Graphic\RasterizerState.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Scene\AbstractSceneFactory.cpp">
@@ -506,6 +507,10 @@
     <ClCompile Include="application\Game\Particle\RoadWalkParticle.cpp" />
     <ClCompile Include="application\Game\Particle\AttackTrajectoryParticle.cpp" />
     <ClCompile Include="application\Game\Particle\DustCloudParticle.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\Base\PipelineStateObjectBase.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\ComputePipelineStateObject.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\Setting\Compute\CSRootSignature.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\Setting\Compute\UAV.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -754,25 +759,25 @@
     <ClInclude Include="Engine\Graphics\Particle\Derivative\WindParticle.h">
       <Filter>Engine\Graphics\Particle\Derivative</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\BlendState.h">
+    <ClInclude Include="Engine\Graphics\Pipeline\Setting\Graphic\BlendState.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\Compiler.h">
+    <ClInclude Include="Engine\Graphics\Pipeline\Setting\Compiler.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\DepthStencil.h">
+    <ClInclude Include="Engine\Graphics\Pipeline\Setting\Graphic\DepthStencil.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\InputLayout.h">
+    <ClInclude Include="Engine\Graphics\Pipeline\Setting\Graphic\InputLayout.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\PipelineStateObjectCommon.h">
+    <ClInclude Include="Engine\Graphics\Pipeline\GraphicsPipelineStateObject.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\RootSignature.h">
+    <ClInclude Include="Engine\Graphics\Pipeline\Setting\Graphic\RootSignature.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\RasterizerState.h">
+    <ClInclude Include="Engine\Graphics\Pipeline\Setting\Graphic\RasterizerState.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Scene\AbstractSceneFactory.h">
@@ -976,6 +981,10 @@
     <ClInclude Include="application\Game\Particle\RoadWalkParticle.h" />
     <ClInclude Include="application\Game\Particle\AttackTrajectoryParticle.h" />
     <ClInclude Include="application\Game\Particle\DustCloudParticle.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\Base\PipelineStateObjectBase.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\ComputePipelineStateObject.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\Setting\Compute\CSRootSignature.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\Setting\Compute\UAV.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

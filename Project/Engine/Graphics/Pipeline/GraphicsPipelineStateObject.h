@@ -1,33 +1,26 @@
 #pragma once
 /// ===Include=== ///
-// Engine
-#include "Engine/Graphics/Pipeline/RootSignature.h"
-#include "Engine/Graphics/Pipeline/InputLayout.h"
-#include "Engine/Graphics/Pipeline/BlendState.h"
-#include "Engine/Graphics/Pipeline/DepthStencil.h"
-#include "Engine/Graphics/Pipeline/RasterizerState.h"
-// PipelineType
-#include "Engine/DataInfo/PipelineStateObjectType.h"
-// c++
-#include <memory>
-#include <array>
-#include <cassert>
-// directX
-#include <d3d12.h>
-#include <dxgidebug.h>
-#include <dxgi1_6.h>
-#include <dxcapi.h>
-
+// Base
+#include "Engine/Graphics/Pipeline/Base/PipelineStateObjectBase.h"
+// Pipeline Components
+#include "Engine/Graphics/Pipeline/Setting/Graphic/RootSignature.h"
+#include "Engine/Graphics/Pipeline/Setting/Graphic/InputLayout.h"
+#include "Engine/Graphics/Pipeline/Setting/Graphic/BlendState.h"
+#include "Engine/Graphics/Pipeline/Setting/Graphic/DepthStencil.h"
+#include "Engine/Graphics/Pipeline/Setting/Graphic/RasterizerState.h"
 
 /// ===前方宣言=== ///
 class DXCommon;
 class Compiler;
 
-class PipelineStateObjectCommon {
+///=====================================================/// 
+/// GraphicsPipelineStateObject
+///=====================================================///
+class GraphicsPipelineStateObject : public PipelineStateObjectBase {
 public:
 
-	PipelineStateObjectCommon();
-	~PipelineStateObjectCommon();
+	GraphicsPipelineStateObject();
+	~GraphicsPipelineStateObject();
 
 	/// <summary>
 	/// PSOの生成処理
@@ -42,7 +35,7 @@ public:
 	/// PSOの設定処理
 	/// </summary>
 	/// <param name="commandList">PSO を設定する対象の ID3D12GraphicsCommandList へのポインタ。有効なコマンドリストを渡してください。</param>
-	void SetPSO(ID3D12GraphicsCommandList* commandList);
+	void SetPSO(ID3D12GraphicsCommandList* commandList) override;
 
 private:/// ===変数=== ///
 
@@ -54,6 +47,7 @@ private:/// ===変数=== ///
 	std::unique_ptr<DepthStencil> depthStencil_;       // DepthStencil
 	Compiler* compiler_;                               // Compiler
 
+	// GraphicsPipelineState
 	ComPtr<ID3D12PipelineState> graphicsPipelineState_;
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc_{};
 
