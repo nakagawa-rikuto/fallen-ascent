@@ -8,4 +8,5 @@ enum class SceneType {
 	Game,
 	Clear,
 	GameOver,
+	ParticleEditor,
 };

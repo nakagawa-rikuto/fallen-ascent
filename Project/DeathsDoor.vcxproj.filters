@@ -259,32 +259,14 @@
     <ClCompile Include="Engine\Graphics\OffScreen\RenderTexture.cpp">
       <Filter>Engine\Graphics\OffScreen</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Particle\Base\ParticleCommon.cpp">
+    <ClCompile Include="Engine\Graphics\Particle\ParticleCommon.cpp">
       <Filter>Engine\Graphics\Particle\Base</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Particle\Base\ParticleGroup.cpp">
+    <ClCompile Include="Engine\Graphics\Particle\ParticleGroup.cpp">
       <Filter>Engine\Graphics\Particle\Base</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Particle\Base\ParticleSetUp.cpp">
+    <ClCompile Include="Engine\Graphics\Particle\ParticleSetUp.cpp">
       <Filter>Engine\Graphics\Particle\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Particle\Derivative\ConfettiParticle.cpp">
-      <Filter>Engine\Graphics\Particle\Derivative</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Particle\Derivative\CylinderParticle.cpp">
-      <Filter>Engine\Graphics\Particle\Derivative</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Particle\Derivative\ExplosionParticle.cpp">
-      <Filter>Engine\Graphics\Particle\Derivative</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Particle\Derivative\HitEffectParticle.cpp">
-      <Filter>Engine\Graphics\Particle\Derivative</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Particle\Derivative\RingParticle.cpp">
-      <Filter>Engine\Graphics\Particle\Derivative</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Particle\Derivative\WindParticle.cpp">
-      <Filter>Engine\Graphics\Particle\Derivative</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Pipeline\BlendState.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
@@ -503,9 +485,11 @@
     <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp" />
     <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp" />
     <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp" />
-    <ClCompile Include="application\Game\Particle\RoadWalkParticle.cpp" />
-    <ClCompile Include="application\Game\Particle\AttackTrajectoryParticle.cpp" />
-    <ClCompile Include="application\Game\Particle\DustCloudParticle.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleFactory.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp" />
+    <ClCompile Include="Engine\System\Editor\ParticleEditor.cpp" />
+    <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleParameter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -727,32 +711,14 @@
     <ClInclude Include="Engine\Graphics\OffScreen\RenderTexture.h">
       <Filter>Engine\Graphics\OffScreen</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Particle\Base\ParticleGroup.h">
+    <ClInclude Include="Engine\Graphics\Particle\ParticleGroup.h">
       <Filter>Engine\Graphics\Particle\Base</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Particle\Base\ParticleCommon.h">
+    <ClInclude Include="Engine\Graphics\Particle\ParticleCommon.h">
       <Filter>Engine\Graphics\Particle\Base</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Particle\Base\ParticleSetUp.h">
+    <ClInclude Include="Engine\Graphics\Particle\ParticleSetUp.h">
       <Filter>Engine\Graphics\Particle\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Particle\Derivative\ConfettiParticle.h">
-      <Filter>Engine\Graphics\Particle\Derivative</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Particle\Derivative\CylinderParticle.h">
-      <Filter>Engine\Graphics\Particle\Derivative</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Particle\Derivative\ExplosionParticle.h">
-      <Filter>Engine\Graphics\Particle\Derivative</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Particle\Derivative\HitEffectParticle.h">
-      <Filter>Engine\Graphics\Particle\Derivative</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Particle\Derivative\RingParticle.h">
-      <Filter>Engine\Graphics\Particle\Derivative</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Particle\Derivative\WindParticle.h">
-      <Filter>Engine\Graphics\Particle\Derivative</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Pipeline\BlendState.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
@@ -973,9 +939,11 @@
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h" />
     <ClInclude Include="application\Game\Animation\GameClearAnimation.h" />
-    <ClInclude Include="application\Game\Particle\RoadWalkParticle.h" />
-    <ClInclude Include="application\Game\Particle\AttackTrajectoryParticle.h" />
-    <ClInclude Include="application\Game\Particle\DustCloudParticle.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleFactory.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
+    <ClInclude Include="Engine\System\Editor\ParticleEditor.h" />
+    <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleParameter.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

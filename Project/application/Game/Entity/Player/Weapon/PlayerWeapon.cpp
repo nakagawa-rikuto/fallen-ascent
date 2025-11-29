@@ -17,7 +17,7 @@
 /// デストラクタ
 ///-------------------------------------------///
 PlayerWeapon::~PlayerWeapon() {
-	particle_.reset();
+	//particle_.reset();
 	object3d_.reset();
 }
 
@@ -48,8 +48,8 @@ void PlayerWeapon::Initialize() {
 	obb_.halfSize = { 0.5f, 0.5f, 3.0f };
 
 	/// ===Particle=== ///
-	particle_ = std::make_unique<AttackTrajectoryParticle>();
-	particle_->Initialze(object3d_->GetWorldTranslate());
+	/*particle_ = std::make_unique<AttackTrajectoryParticle>();
+	particle_->Initialze(object3d_->GetWorldTranslate());*/
 
 	// DeltaTime初期化
 	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
@@ -88,7 +88,7 @@ void PlayerWeapon::Update() {
 		attackInfo_.isChargeAttack = false;
 		attackInfo_.progress = 1.0f;
 		SetActive(false);
-		particle_->StopEmission();
+		//particle_->StopEmission();
 		ColliderService::RemoveCollider(this);
 		OBBCollider::Update();
 		return;
@@ -96,15 +96,15 @@ void PlayerWeapon::Update() {
 
 	// 攻撃軌道の更新
 	if (attackInfo_.isAttacking) {
-		particle_->SetTrajectoryTransform(object3d_->GetWorldTranslate(), object3d_->GetWorldRotate());
+		//particle_->SetTrajectoryTransform(object3d_->GetWorldTranslate(), object3d_->GetWorldRotate());
 		UpdateAttackTrajectory();
 	} else if (attackInfo_.isChargeAttack) {
-		particle_->SetTrajectoryTransform(object3d_->GetWorldTranslate(), object3d_->GetWorldRotate());
+		//particle_->SetTrajectoryTransform(object3d_->GetWorldTranslate(), object3d_->GetWorldRotate());
 		UpdateChargeAttackTrajectory();
 	}
 	
 	/// ===Particle=== ///
-	particle_->Update();
+	//particle_->Update();
 
 	/// ===OBBCollider=== ///
 	OBBCollider::Update();
@@ -117,7 +117,7 @@ void PlayerWeapon::Draw(BlendMode mode) {
 	// 攻撃中のみ描画
 	if (attackInfo_.isAttacking || attackInfo_.isChargeAttack) {
 		OBBCollider::Draw(mode);
-		particle_->Draw(BlendMode::kBlendModeAdd);
+		//particle_->Draw(BlendMode::kBlendModeAdd);
 	}
 }
 
@@ -200,10 +200,10 @@ void PlayerWeapon::StartAttack(
 	// コライダーを有効化
 	SetActive(true);
 
-	// Particleの開始
-	particle_->ClearParticle();
-	particle_->SetTrajectoryTransform(startPoint, startRotation);
-	particle_->StartEmission();
+	//// Particleの開始
+	//particle_->ClearParticle();
+	//particle_->SetTrajectoryTransform(startPoint, startRotation);
+	//particle_->StartEmission();
 
 	// 初期位置を設定
 	transform_.translate = startPoint;
@@ -239,10 +239,10 @@ void PlayerWeapon::StartChargeAttack(
 	// コライダーを有効化
 	SetActive(true);
 
-	// Particleの開始
-	particle_->ClearParticle();
-	particle_->SetTrajectoryTransform(startPoint, startRotation);
-	particle_->StartEmission();
+	//// Particleの開始
+	//particle_->ClearParticle();
+	//particle_->SetTrajectoryTransform(startPoint, startRotation);
+	//particle_->StartEmission();
 
 	// 初期位置を設定
 	transform_.translate = startPoint;

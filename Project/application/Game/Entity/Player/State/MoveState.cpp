@@ -77,7 +77,6 @@ void MoveState::Update(Player * player, GameCamera* camera) {
 		// 回避の準備ができていれば
 		if (player_->GetpreparationFlag(actionType::kAvoidance)) {
 			// パーティクル発生
-			ParticleService::Emit("DustCloud", player_->GetTransform().translate);
 			player_->ChangState(std::make_unique<AvoidanceState>(Normalize(info_.direction)));
 		}
 	// 移動が無ければ通常状態へ

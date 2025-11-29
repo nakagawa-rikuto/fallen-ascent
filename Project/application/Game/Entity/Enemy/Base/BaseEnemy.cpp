@@ -215,7 +215,7 @@ void BaseEnemy::OnCollision(Collider* collider) {
 				color_ = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 赤色
 
 				// パーティクルを発生
-				ParticleService::Emit("Explosion", transform_.translate);
+				//ParticleService::Emit("Explosion", transform_.translate);
 				baseInfo_.HP--; // HPを減少
 
 				// タイマーをセット

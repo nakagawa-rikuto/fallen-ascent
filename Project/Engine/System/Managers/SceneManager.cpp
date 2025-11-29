@@ -7,6 +7,7 @@
 #include "application/Scene/GameScene.h"
 #include "application/Scene/ClearScene.h"
 #include "application/Scene/GameOverScene.h"
+#include "Engine/Scene/Debug/ParticleEditorScene.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -84,25 +85,29 @@ void SceneManager::SceneObservation() {
 
 	/// ===シーン変更用のドロップダウンメニュー=== ///
 	if (ImGui::BeginCombo("Select Scene", "Change Scene")) {
-		///タイトルシーン
+		/// タイトルシーン
 		if (ImGui::Selectable("Title Scene", currentSceneType_ == SceneType::Title)) {
 			ChangeScene(SceneType::Title);
 		}
-		///セレクトシーン
+		/// セレクトシーン
 		if (ImGui::Selectable("Select Scene", currentSceneType_ == SceneType::Select)) {
 			ChangeScene(SceneType::Select);
 		}
-		///ゲームシーン
+		/// ゲームシーン
 		if (ImGui::Selectable("Game Scene", currentSceneType_ == SceneType::Game)) {
 			ChangeScene(SceneType::Game);
 		}
-		///クリアシーン
+		/// クリアシーン
 		if (ImGui::Selectable("Clear Scene", currentSceneType_ == SceneType::Clear)) {
 			ChangeScene(SceneType::Clear);
 		}
-		///ゲームオーバー
+		/// ゲームオーバー
 		if (ImGui::Selectable("GameOver Scene", currentSceneType_ == SceneType::GameOver)) {
 			ChangeScene(SceneType::GameOver);
+		}
+		/// 粒子エディターシーン
+		if (ImGui::Selectable("ParticleEditor", currentSceneType_ == SceneType::ParticleEditor)) {
+			ChangeScene(SceneType::ParticleEditor);
 		}
 		ImGui::EndCombo();
 	}

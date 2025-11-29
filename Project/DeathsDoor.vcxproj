@@ -116,8 +116,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\Manager\EnemyManager.cpp" />
     <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp" />
     <ClCompile Include="application\Scene\GameScene.cpp" />
-    <ClCompile Include="application\Game\Particle\AttackTrajectoryParticle.cpp" />
-    <ClCompile Include="application\Game\Particle\DustCloudParticle.cpp" />
     <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp" />
     <ClCompile Include="Engine\System\Service\DeltaTimeSevice.cpp" />
     <ClCompile Include="Engine\System\DeltraTime\DeltaTime.cpp" />
@@ -131,11 +129,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Transition\SceneTransition.cpp" />
     <ClCompile Include="Engine\System\Service\ColliderService.cpp" />
     <ClCompile Include="Engine\Collider\AABBCollider.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\Derivative\CylinderParticle.cpp" />
     <ClCompile Include="Engine\Graphics\3d\Model\AnimationModel.cpp" />
     <ClCompile Include="Engine\Collider\Base\Collider.cpp" />
     <ClCompile Include="Engine\System\Managers\ColliderManager.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\Derivative\HitEffectParticle.cpp" />
     <ClCompile Include="Engine\System\Managers\DSVManager.cpp" />
     <ClCompile Include="Engine\DataInfo\FunctionData.cpp" />
     <ClCompile Include="Engine\System\Service\GraphicsResourceGetter.cpp" />
@@ -156,7 +152,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Math\EasingMath.cpp" />
     <ClCompile Include="Engine\System\Managers\AnimationManager.cpp" />
     <ClCompile Include="Engine\System\Service\AudioService.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\Derivative\ConfettiParticle.cpp" />
     <ClCompile Include="Engine\System\Input\Controller.cpp" />
     <ClCompile Include="Engine\System\Managers\CSVManager.cpp" />
     <ClCompile Include="Engine\Scene\AbstractSceneFactory.cpp" />
@@ -173,7 +168,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\System\Managers\ImGuiManager.cpp" />
     <ClCompile Include="Engine\Scene\IScene.cpp" />
     <ClCompile Include="Engine\System\Service\Loader.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\Derivative\ExplosionParticle.cpp" />
     <ClCompile Include="Engine\System\Input\InputCommon.cpp" />
     <ClCompile Include="Engine\System\Input\Keyboard.cpp" />
     <ClCompile Include="Math\Matrix3x3.cpp" />
@@ -215,11 +209,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Scene\SelectScene.cpp" />
     <ClCompile Include="application\Scene\TitleScene.cpp" />
     <ClCompile Include="Engine\Scene\SceneFactory.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\Base\ParticleGroup.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\Base\ParticleSetUp.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleGroup.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleSetUp.cpp" />
     <ClCompile Include="Engine\System\Managers\ParticleManager.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\Base\ParticleCommon.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\Derivative\WindParticle.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleCommon.cpp" />
     <ClCompile Include="Engine\System\Input\Mouse.cpp" />
     <ClCompile Include="Math\Quaternion.cpp" />
     <ClCompile Include="Engine\System\Service\Render.cpp" />
@@ -234,7 +227,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Drawing\3d\Object3d.cpp" />
     <ClCompile Include="Engine\System\ImGui\SceneView.cpp" />
     <ClCompile Include="Engine\System\Service\OffScreenService.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\Derivative\RingParticle.cpp" />
     <ClCompile Include="Engine\Graphics\3d\SkyBox\SkyBox.cpp" />
     <ClCompile Include="Engine\System\Service\CameraService.cpp" />
     <ClCompile Include="Engine\System\Service\ParticleService.cpp" />
@@ -256,7 +248,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\3d\Oshan\Oshan.cpp" />
     <ClCompile Include="Engine\Graphics\3d\Oshan\OshanCommon.cpp" />
     <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp" />
-    <ClCompile Include="application\Game\Particle\RoadWalkParticle.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp" />
+    <ClCompile Include="Engine\System\Editor\ParticleEditor.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleFactory.cpp" />
+    <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleParameter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
@@ -264,8 +260,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyMoveState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Manager\EnemyManager.h" />
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h" />
-    <ClInclude Include="application\Game\Particle\AttackTrajectoryParticle.h" />
-    <ClInclude Include="application\Game\Particle\DustCloudParticle.h" />
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
     <ClInclude Include="Engine\System\Service\DeltaTimeSevice.h" />
     <ClInclude Include="Engine\System\DeltraTime\DeltaTime.h" />
@@ -285,11 +279,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\DataInfo\LightData.h" />
     <ClInclude Include="Engine\DataInfo\OffScreenData.h" />
     <ClInclude Include="Engine\DataInfo\LineObjectData.h" />
-    <ClInclude Include="Engine\Graphics\Particle\Derivative\CylinderParticle.h" />
     <ClInclude Include="Engine\Graphics\3d\Model\AnimationModel.h" />
     <ClInclude Include="Engine\Collider\Base\Collider.h" />
     <ClInclude Include="Engine\System\Managers\ColliderManager.h" />
-    <ClInclude Include="Engine\Graphics\Particle\Derivative\HitEffectParticle.h" />
     <ClInclude Include="Engine\System\Managers\DSVManager.h" />
     <ClInclude Include="Engine\DataInfo\FunctionData.h" />
     <ClInclude Include="Engine\System\Service\GraphicsResourceGetter.h" />
@@ -311,7 +303,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\System\Managers\AnimationManager.h" />
     <ClInclude Include="Engine\DataInfo\AnimationData.h" />
     <ClInclude Include="Engine\System\Service\AudioService.h" />
-    <ClInclude Include="Engine\Graphics\Particle\Derivative\ConfettiParticle.h" />
     <ClInclude Include="Engine\DataInfo\InputData.h" />
     <ClInclude Include="Engine\System\Input\Controller.h" />
     <ClInclude Include="Engine\System\Managers\CSVManager.h" />
@@ -332,7 +323,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Scene\IScene.h" />
     <ClInclude Include="Engine\DataInfo\SceneType.h" />
     <ClInclude Include="Engine\System\Service\Loader.h" />
-    <ClInclude Include="Engine\Graphics\Particle\Derivative\ExplosionParticle.h" />
     <ClInclude Include="Engine\System\Input\InputCommon.h" />
     <ClInclude Include="Engine\System\Input\Keyboard.h" />
     <ClInclude Include="Engine\DataInfo\ColliderData.h" />
@@ -377,11 +367,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Scene\SelectScene.h" />
     <ClInclude Include="application\Scene\TitleScene.h" />
     <ClInclude Include="Engine\Scene\SceneFactory.h" />
-    <ClInclude Include="Engine\Graphics\Particle\Base\ParticleGroup.h" />
-    <ClInclude Include="Engine\Graphics\Particle\Base\ParticleSetUp.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleGroup.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleSetUp.h" />
     <ClInclude Include="Engine\System\Managers\ParticleManager.h" />
-    <ClInclude Include="Engine\Graphics\Particle\Base\ParticleCommon.h" />
-    <ClInclude Include="Engine\Graphics\Particle\Derivative\WindParticle.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleCommon.h" />
     <ClInclude Include="Engine\System\Input\Mouse.h" />
     <ClInclude Include="Math\Quaternion.h" />
     <ClInclude Include="Engine\System\Service\Render.h" />
@@ -396,7 +385,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Drawing\3d\Object3d.h" />
     <ClInclude Include="Engine\System\ImGui\SceneView.h" />
     <ClInclude Include="Engine\System\Service\OffScreenService.h" />
-    <ClInclude Include="Engine\Graphics\Particle\Derivative\RingParticle.h" />
     <ClInclude Include="Engine\Graphics\3d\SkyBox\SkyBox.h" />
     <ClInclude Include="Engine\System\Service\CameraService.h" />
     <ClInclude Include="Engine\System\Service\ParticleService.h" />
@@ -418,7 +406,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\3d\Oshan\Oshan.h" />
     <ClInclude Include="Engine\Graphics\3d\Oshan\OshanCommon.h" />
     <ClInclude Include="application\Game\Object\StageObject\StageObject.h" />
-    <ClInclude Include="application\Game\Particle\RoadWalkParticle.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
+    <ClInclude Include="Engine\System\Editor\ParticleEditor.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleFactory.h" />
+    <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleParameter.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

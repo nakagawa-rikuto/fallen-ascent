@@ -4,33 +4,55 @@
 #include <map>
 #include <memory>
 #include <string>
-// PartlceGroup
-#include "Engine/Graphics/Particle/Base/ParticleGroup.h"
+#include <vector>
+// ParticleGroup
+#include "Engine/Graphics/Particle/ParticleGroup.h"
+#include "Engine/Graphics/Particle/ParticleDefinition.h"
+#include "Engine/Graphics/Particle/ParticleParameter.h"
 
 /// ===前方宣言=== ///
-class Camera;
+class GameCamera;
 
 ///=====================================================/// 
-/// ParticleManager
+/// ParticleManager（新方式のみ）
+/// 定義ベースの管理システム
 ///=====================================================///
 class ParticleManager {
 public:
-	ParticleManager() = default;
-	~ParticleManager();
+    ParticleManager() = default;
+    ~ParticleManager();
+
+    /// ===定義の管理=== ///
 
     /// <summary>
-    /// パーティクルの追加処理
+    /// パーティクル定義の追加（JSONファイルから）
     /// </summary>
-    /// <param name="name">追加するパーティクルの名前</param>
-    /// <param name="particle">追加するパーティクル</param>
-    void AddParticle(const std::string& name, std::unique_ptr<ParticleGroup> particle);
+    /// <param name="jsonPath">JSONファイルのパス</param>
+    /// <returns>読み込みに成功したかどうか</returns>
+    bool LoadParticleDefinition(const std::string& jsonPath);
+
+    /// <summary>
+    /// パーティクル定義の追加（直接指定）
+    /// </summary>
+    /// <param name="name">パーティクルの名前</param>
+    /// <param name="definition">パーティクル定義</param>
+    void AddParticleDefinition(const std::string& name, const ParticleDefinition& definition);
+
+    /// <summary>
+    /// パーティクル定義の削除
+    /// </summary>
+    /// <param name="name">削除するパーティクルの名前</param>
+    void RemoveParticleDefinition(const std::string& name);
+
+    /// ===パーティクルの操作=== ///
 
     /// <summary>
     /// パーティクルの発生処理
     /// </summary>
     /// <param name="name">発生させるパーティクルの名前</param>
     /// <param name="translate">発生させる場所</param>
-    void Emit(const std::string& name, const Vector3& translate);
+    /// <returns>発生に成功したかどうか</returns>
+    bool Emit(const std::string& name, const Vector3& translate);
 
     /// <summary>
     /// パーティクルのテクスチャを設定
@@ -40,10 +62,23 @@ public:
     void SetTexture(const std::string& name, const std::string& textureName);
 
     /// <summary>
-    /// パーティクルの削除処理
+    /// 実行時パラメータ変更（型安全版）
     /// </summary>
-    /// <param name="name">削除するパーティクルの名前</param>
-    void RemoveParticle(const std::string& name);
+    /// <param name="name">対象パーティクルの名前</param>
+    /// <param name="param">変更するパラメータ</param>
+    /// <param name="value">設定する値</param>
+    void SetParameter(const std::string& name, ParticleParameter param, float value);
+
+    /// <summary>
+    /// 指定した名前のアクティブなパーティクルをすべて停止
+    /// </summary>
+    /// <param name="name">停止するパーティクルの名前</param>
+    void StopParticle(const std::string& name);
+
+    /// <summary>
+    /// すべてのアクティブなパーティクルを停止
+    /// </summary>
+    void StopAllParticles();
 
     /// <summary>
     /// パーティクル全体の更新処理
@@ -56,10 +91,46 @@ public:
     /// <param name="mode">ブレンドモード</param>
     void Draw(BlendMode mode = BlendMode::kBlendModeAdd);
 
+    /// ===情報取得=== ///
+
+    /// <summary>
+    /// パーティクル定義を取得
+    /// </summary>
+    /// <param name="name">取得するパーティクルの名前</param>
+    /// <returns>パーティクル定義へのポインタ（存在しない場合はnullptr）</returns>
+    const ParticleDefinition* GetDefinition(const std::string& name) const;
+
+    /// <summary>
+    /// パーティクル定義が登録されているか確認
+    /// </summary>
+    /// <param name="name">確認するパーティクルの名前</param>
+    /// <returns>登録されている場合はtrue</returns>
+    bool HasDefinition(const std::string& name) const;
+
+    /// <summary>
+    /// アクティブなパーティクル数を取得
+    /// </summary>
+    /// <param name="name">対象パーティクルの名前</param>
+    /// <returns>アクティブなパーティクルの総数</returns>
+    uint32_t GetActiveParticleCount(const std::string& name) const;
+
+    /// <summary>
+    /// 登録されているパーティクル定義の一覧を取得
+    /// </summary>
+    /// <returns>定義名のリスト</returns>
+    std::vector<std::string> GetDefinitionNames() const;
+
+    /// <summary>
+    /// アクティブなパーティクルグループ数を取得
+    /// </summary>
+    /// <param name="name">対象パーティクルの名前</param>
+    /// <returns>アクティブなグループ数</returns>
+    size_t GetActiveGroupCount(const std::string& name) const;
+
 private:
-    // 登録されたテンプレート
-    std::map<std::string, std::unique_ptr<ParticleGroup>> prototype_;
-    // 実際に動いているパーティクル
+    // 定義ベース
+    std::map<std::string, ParticleDefinition> definitions_;
+
+    // アクティブなパーティクル
     std::map<std::string, std::vector<std::unique_ptr<ParticleGroup>>> activeParticles_;
 };
-

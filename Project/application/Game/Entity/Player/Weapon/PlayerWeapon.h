@@ -3,7 +3,7 @@
 // OBB
 #include "Engine/Collider/OBBCollider.h"
 // Particle
-#include "application/Game/Particle/AttackTrajectoryParticle.h"
+//#include "application/Game/Particle/AttackTrajectoryParticle.h"
 
 /// ===前方宣言=== ///
 class Player;
@@ -98,7 +98,7 @@ private:
 	Player* player_ = nullptr;
 
 	// Particle
-	std::shared_ptr<AttackTrajectoryParticle> particle_;
+	//std::shared_ptr<AttackTrajectoryParticle> particle_;
 
 	/// ===基本情報=== ///
 	struct BaseInfo {
