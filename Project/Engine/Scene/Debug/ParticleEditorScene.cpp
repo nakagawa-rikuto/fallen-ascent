@@ -42,7 +42,7 @@ void ParticleEditorScene::Initialize() {
 ///-------------------------------------------///
 void ParticleEditorScene::Update() {
 	/// ===カメラの更新=== ///
-	UpdateCamera();
+	//UpdateCamera();
 
 	/// ===エディターの更新=== ///
 	if (particleEditor_) {
@@ -51,22 +51,20 @@ void ParticleEditorScene::Update() {
 
 	/// ===ImGui描画=== ///
 #ifdef USE_IMGUI
-	RenderMenuBar();
+	//RenderMenuBar();
 
 	// エディターメインウィンドウ
-	if (particleEditor_) {
-		particleEditor_->Render();
-	}
+	particleEditor_->Render();
 
 	// サブウィンドウ
-	if (showHelp_) {
+	/*if (showHelp_) {
 		RenderHelpWindow();
 	}
 	if (showStats_) {
 		RenderStatsWindow();
-	}
+	}*/
 
-	RenderCameraControl();
+	//RenderCameraControl();
 #endif // USE_IMGUI
 
 	/// ===ISceneの更新=== ///
