@@ -376,13 +376,13 @@ void ParticleEditor::RenderBasicSettings() {
 void ParticleEditor::RenderPhysicsSettings() {
     ImGui::SeparatorText("物理設定");
 
-    if (ImGui::Checkbox("ランダム速度を使用しない", &currentDefinition_.physics.useRandomVelocity)) {
+    if (ImGui::Checkbox("ランダム速度を使用", &currentDefinition_.physics.useRandomVelocity)) {
         // チェックボックス変更時にプレビューパーティクルに適用
         if (previewParticle_) {
             previewParticle_->SetDefinition(currentDefinition_);
         }
     }
-    ImGui::TextDisabled("オンの場合はランダム速度になります");
+    ImGui::TextDisabled("オフの場合はランダム速度になります");
 
     ImGui::Spacing();
 
