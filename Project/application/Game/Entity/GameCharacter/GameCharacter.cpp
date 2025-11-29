@@ -84,12 +84,12 @@ template<typename TCollider>
 void GameCharacter<TCollider>::Information() {
 #ifdef USE_IMGUI
 	TCollider::Information();
-	ImGui::Text("GameCharacterInfo");
-	ImGui::DragFloat3("Velocity", &baseInfo_.velocity.x, 0.1f);
-	ImGui::DragFloat("DeltaTime", &baseInfo_.deltaTime, 0.01f, 0.0f, 1.0f);
-	ImGui::DragFloat("Gravity", &baseInfo_.gravity, 0.1f, -20.0f, 0.0f);
-	ImGui::Checkbox("IsDead", &baseInfo_.isDead);
-	ImGui::Checkbox("IsGrounded", &groundInfo_.isGrounded);
+	ImGui::Text("ゲームキャラクター情報");
+	ImGui::DragFloat("デルタタイム", &baseInfo_.deltaTime, 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat3("速度", &baseInfo_.velocity.x, 0.1f);
+	ImGui::DragFloat("重力", &baseInfo_.gravity, 0.1f, -20.0f, 0.0f);
+	ImGui::Checkbox("死亡フラグ", &baseInfo_.isDead);
+	ImGui::Checkbox("接地フラグ", &groundInfo_.isGrounded);
 #endif // USE_IMGUI
 }
 

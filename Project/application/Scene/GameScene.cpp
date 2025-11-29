@@ -9,16 +9,16 @@
 #include "Engine/System/Service/GraphicsResourceGetter.h"
 #include "Engine/System/Service/OffScreenService.h"
 #include "Engine/System/Service/Loader.h"
-// Particle
-#include "Engine/Graphics/Particle/Derivative/ConfettiParticle.h"
-#include "Engine/Graphics/Particle/Derivative/ExplosionParticle.h"
-#include "Engine/Graphics/Particle/Derivative/WindParticle.h"
-#include "Engine/Graphics/Particle/Derivative/HitEffectParticle.h"
-#include "Engine/Graphics/Particle/Derivative/RingParticle.h"
-#include "Engine/Graphics/Particle/Derivative/CylinderParticle.h"
-#include "application/Game/Particle/DustCloudParticle.h"
-// GameParticle
-#include "application/Game/Particle/AttackTrajectoryParticle.h"
+//// Particle
+//#include "Engine/Graphics/Particle/Derivative/ConfettiParticle.h"
+//#include "Engine/Graphics/Particle/Derivative/ExplosionParticle.h"
+//#include "Engine/Graphics/Particle/Derivative/WindParticle.h"
+//#include "Engine/Graphics/Particle/Derivative/HitEffectParticle.h"
+//#include "Engine/Graphics/Particle/Derivative/RingParticle.h"
+//#include "Engine/Graphics/Particle/Derivative/CylinderParticle.h"
+//#include "application/Game/Particle/DustCloudParticle.h"
+//// GameParticle
+//#include "application/Game/Particle/AttackTrajectoryParticle.h"
 // Math
 #include "Math/SMath.h"
 
@@ -54,18 +54,6 @@ void GameScene::Initialize() {
 	// Jsonの読み込み
 	Loader::LoadLevelJson("StageData.json");
 	Loader::LoadLevelJson("EntityData.json");
-
-	// Particleの追加
-	ParticleService::AddParticle("Confetti", std::make_unique<ConfettiParticle>());
-	ParticleService::AddParticle("Explosion", std::make_unique<ExplosionParticle>());
-	ParticleService::AddParticle("Wind", std::make_unique<WindParticle>());
-	ParticleService::AddParticle("Ring", std::make_unique<RingParticle>());
-	ParticleService::AddParticle("HitEffect", std::make_unique<HitEffectParticle>());
-	ParticleService::AddParticle("Cylinder", std::make_unique<CylinderParticle>());
-	ParticleService::AddParticle("DustCloud", std::make_unique<DustCloudParticle>());
-
-	/// ===Line=== ///
-	line_ = std::make_unique<Line>();
 
 	/// ===Transition=== ///
 	transiton_ = std::make_unique<SceneTransition>();

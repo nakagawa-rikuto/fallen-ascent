@@ -209,7 +209,7 @@ void Player::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("Player");
 	GameCharacter::Information();
-	ImGui::DragFloat("invincibleTime", &invicibleInfo_.timer, 0.01f);
+	ImGui::DragFloat("無敵時間", &invicibleInfo_.timer, 0.01f);
 	ImGui::End();
 	weapon_->Information();
 #endif // USE_IMGUI

@@ -54,8 +54,6 @@ private:/// ===メンバ変数=== ///
 	/// </summary>
 
 	/// ===Classの宣言=== /// 
-	// Line
-	std::unique_ptr<Line> line_;
 	// Transition
 	std::unique_ptr<SceneTransition> transiton_;
 	// Camera
