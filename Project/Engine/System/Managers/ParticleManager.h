@@ -70,6 +70,23 @@ public:
     void SetParameter(const std::string& name, ParticleParameter param, float value);
 
     /// <summary>
+    /// アクティブなパーティクルのエミッタ位置を設定
+    /// </summary>
+    /// <param name="name">対象パーティクルの名前</param>
+    /// <param name="position">新しい位置</param>
+    /// <param name="groupIndex">グループのインデックス(-1で全グループ)</param>
+    void SetEmitterPosition(const std::string& name, const Vector3& position, int groupIndex = -1);
+
+    /// <summary>
+    /// アクティブなパーティクルのエミッタ位置を移動
+    /// </summary>
+    /// <param name="name">対象パーティクルの名前</param>
+    /// <param name="offset">移動量</param>
+    /// <param name="groupIndex">グループのインデックス(-1で全グループ)</param>
+    void MoveEmitterPosition(const std::string& name, const Vector3& offset, int groupIndex = -1);
+
+
+    /// <summary>
     /// 指定した名前のアクティブなパーティクルをすべて停止
     /// </summary>
     /// <param name="name">停止するパーティクルの名前</param>
@@ -126,6 +143,14 @@ public:
     /// <param name="name">対象パーティクルの名前</param>
     /// <returns>アクティブなグループ数</returns>
     size_t GetActiveGroupCount(const std::string& name) const;
+
+    /// <summary>
+    /// 特定のグループのエミッタ位置を取得
+    /// </summary>
+    /// <param name="name">対象パーティクルの名前</param>
+    /// <param name="groupIndex">グループのインデックス(0-based)</param>
+    /// <returns>エミッタ位置(グループが存在しない場合はゼロベクトル)</returns>
+    Vector3 GetEmitterPosition(const std::string& name, size_t groupIndex = 0) const;
 
 private:
     // 定義ベース

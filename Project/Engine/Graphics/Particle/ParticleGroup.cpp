@@ -216,16 +216,16 @@ void ParticleGroup::SetParameter(ParticleParameter param, float value) {
     }
 }
 
+void ParticleGroup::SetEmitterPosition(const Vector3& position) { group_.transform.translate = position; }
+
+void ParticleGroup::MoveEmitterPosition(const Vector3& offset) { group_.transform.translate += offset; }
+
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
-const ParticleDefinition& ParticleGroup::GetDefinition() const {
-    return definition_;
-}
-
-uint32_t ParticleGroup::GetActiveParticleCount() const {
-    return static_cast<uint32_t>(group_.particles.size());
-}
+const ParticleDefinition& ParticleGroup::GetDefinition() const {return definition_;}
+uint32_t ParticleGroup::GetActiveParticleCount() const {return static_cast<uint32_t>(group_.particles.size());}
+const Vector3& ParticleGroup::GetEmitterPosition() const {return group_.transform.translate;}
 
 ///-------------------------------------------/// 
 /// インスタンシング初期化

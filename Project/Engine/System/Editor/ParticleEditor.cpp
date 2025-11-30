@@ -353,21 +353,49 @@ void ParticleEditor::RenderBasicSettings() {
     ImGui::Spacing();
     ImGui::Separator();
 
-    // プレビュー位置
-    ImGui::Text("プレビュー設定");
-    if (ImGui::DragFloat3("発生位置", &previewPosition_.x, 0.1f)) {
-        // 位置変更時は既存のパーティクルグループの位置を更新
-        if (previewParticle_) {
-           // previewParticle_->SetParameter(ParticleParameter::);
+    // ★ プレビュー位置設定 (拡張版)
+    ImGui::SeparatorText("プレビュー設定");
 
-            // なければ再生成
-            ResetPreview();
-            CreatePreviewParticle();
-            if (isPlaying_) {
-                PlayPreview();
-            }
-        }
+    bool positionChanged = false;
+
+    // XYZ個別スライダー
+    positionChanged |= ImGui::DragFloat("発生位置 X", &previewPosition_.x, 0.1f, -100.0f, 100.0f);
+    positionChanged |= ImGui::DragFloat("発生位置 Y", &previewPosition_.y, 0.1f, -100.0f, 100.0f);
+    positionChanged |= ImGui::DragFloat("発生位置 Z", &previewPosition_.z, 0.1f, -100.0f, 100.0f);
+
+    // まとめてリセット
+    if (ImGui::Button("位置をリセット", ImVec2(150, 25))) {
+        previewPosition_ = { 0.0f, 0.0f, 0.0f };
+        positionChanged = true;
     }
+
+    ImGui::SameLine();
+
+    // プリセット位置
+    if (ImGui::Button("地面レベル", ImVec2(150, 25))) {
+        previewPosition_ = { 0.0f, 0.0f, 0.0f };
+        positionChanged = true;
+    }
+
+    if (ImGui::Button("上空位置", ImVec2(150, 25))) {
+        previewPosition_ = { 0.0f, 10.0f, 0.0f };
+        positionChanged = true;
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("前方位置", ImVec2(150, 25))) {
+        previewPosition_ = { 0.0f, 0.0f, 5.0f };
+        positionChanged = true;
+    }
+
+    // 位置変更時にプレビューパーティクルの位置も更新
+    if (positionChanged && previewParticle_) {
+        previewParticle_->SetEmitterPosition(previewPosition_);
+    }
+
+    ImGui::Spacing();
+    ImGui::TextDisabled("Tips: プレビュー再生中でも位置を変更できます");
 }
 
 ///-------------------------------------------/// 
