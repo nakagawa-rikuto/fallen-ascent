@@ -4,8 +4,10 @@
 // Service
 #include "Engine/System/Service/ParticleService.h"
 #include "Engine/System/Service/DeltaTimeSevice.h"
+#ifdef USE_IMGUI
 // ImGui
 #include <imgui.h>
+#endif // USE_IMGUI
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -91,6 +93,7 @@ void ParticleEditorScene::Draw() {
 /// メニューバーの描画
 ///-------------------------------------------///
 void ParticleEditorScene::RenderMenuBar() {
+#ifdef USE_IMGUI
 	if (ImGui::BeginMainMenuBar()) {
 		if (ImGui::BeginMenu("ファイル")) {
 			if (ImGui::MenuItem("新規作成", "Ctrl+N")) {
@@ -135,12 +138,14 @@ void ParticleEditorScene::RenderMenuBar() {
 
 		ImGui::EndMainMenuBar();
 	}
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// ヘルプウィンドウの描画
 ///-------------------------------------------///
 void ParticleEditorScene::RenderHelpWindow() {
+#ifdef USE_IMGUI
 	ImGui::Begin("使い方", &showHelp_);
 
 	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "パーティクルエディターの使い方");
@@ -179,12 +184,14 @@ void ParticleEditorScene::RenderHelpWindow() {
 	}
 
 	ImGui::End();
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// 統計情報ウィンドウの描画
 ///-------------------------------------------///
 void ParticleEditorScene::RenderStatsWindow() {
+#ifdef USE_IMGUI
 	ImGui::Begin("統計情報", &showStats_);
 
 	// FPS表示
@@ -227,12 +234,14 @@ void ParticleEditorScene::RenderStatsWindow() {
 		cameraRotation_.x, cameraRotation_.y, cameraRotation_.z);
 
 	ImGui::End();
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// カメラコントロールウィンドウの描画
 ///-------------------------------------------///
 void ParticleEditorScene::RenderCameraControl() {
+#ifdef USE_IMGUI
 	ImGui::Begin("カメラコントロール");
 
 	ImGui::Text("カメラ設定");
@@ -273,6 +282,7 @@ void ParticleEditorScene::RenderCameraControl() {
 	ImGui::TextDisabled("QE: 上下移動");
 
 	ImGui::End();
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 

@@ -1,8 +1,10 @@
 #include "ParticleEditor.h"
 #include "Engine/Graphics/Particle/ParticleFactory.h"
 #include "Engine/Graphics/Particle/ParticleGroup.h"
+#ifdef USE_IMGUI
 // ImGui
 #include <imgui.h>
+#endif // USE_IMGUI
 // c++
 #include <fstream>
 #include <filesystem>
@@ -54,6 +56,7 @@ void ParticleEditor::Update() {
 /// ImGui描画
 ///-------------------------------------------///
 void ParticleEditor::Render() {
+#ifdef USE_IMGUI
     if (!isVisible_) return;
 
     ImGui::Begin("パーティクルエディター", &isVisible_, ImGuiWindowFlags_MenuBar);
@@ -106,15 +109,19 @@ void ParticleEditor::Render() {
     RenderFileOperations();
 
     ImGui::End();
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// プレビュー描画
 ///-------------------------------------------///
 void ParticleEditor::DrawPreview(BlendMode mode) {
+    mode;
+#ifdef USE_IMGUI
     if (isPlaying_ && previewParticle_) {
         previewParticle_->Draw(mode);
     }
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
@@ -136,6 +143,7 @@ bool ParticleEditor::IsVisible() const {
 /// JSON保存
 ///-------------------------------------------///
 void ParticleEditor::SaveToJson() {
+#ifdef USE_IMGUI
     try {
         nlohmann::json j = currentDefinition_.ToJson();
 
@@ -157,12 +165,14 @@ void ParticleEditor::SaveToJson() {
         // エラーハンドリング（コンソールに出力など）
         e;
     }
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// JSON読み込み
 ///-------------------------------------------///
 void ParticleEditor::LoadFromJson() {
+#ifdef USE_IMGUI
     try {
         std::string filepath = filePathBuffer_;
         if (filepath.find(kFileExtension) == std::string::npos) {
@@ -188,12 +198,14 @@ void ParticleEditor::LoadFromJson() {
         // エラーハンドリング
         e;
     }
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// 新規作成
 ///-------------------------------------------///
 void ParticleEditor::CreateNew() {
+#ifdef USE_IMGUI
     currentDefinition_ = ParticleDefinition();
     currentFilePath_.clear();
     strcpy_s(filePathBuffer_, kDefaultSavePath);
@@ -201,37 +213,45 @@ void ParticleEditor::CreateNew() {
     if (isPlaying_) {
         StopPreview();
     }
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// プレビュー再生
 ///-------------------------------------------///
 void ParticleEditor::PlayPreview() {
+#ifdef USE_IMGUI
     if (!previewParticle_) {
         CreatePreviewParticle();
     }
     isPlaying_ = true;
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// プレビュー停止
 ///-------------------------------------------///
 void ParticleEditor::StopPreview() {
+#ifdef USE_IMGUI
     isPlaying_ = false;
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// プレビューリセット
 ///-------------------------------------------///
 void ParticleEditor::ResetPreview() {
+#ifdef USE_IMGUI
     previewParticle_.reset();
     isPlaying_ = false;
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// プレビューパーティクル生成
 ///-------------------------------------------///
 void ParticleEditor::CreatePreviewParticle() {
+#ifdef USE_IMGUI
     // ParticleGroupを生成してDefinitionを適用
     previewParticle_ = std::make_unique<ParticleGroup>();
     previewParticle_->Initialze(previewPosition_, currentDefinition_);
@@ -240,12 +260,14 @@ void ParticleEditor::CreatePreviewParticle() {
     if (!currentDefinition_.appearance.texturePath.empty()) {
         previewParticle_->SetTexture(currentDefinition_.appearance.texturePath);
     }
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// メニューバー描画
 ///-------------------------------------------///
 void ParticleEditor::RenderMenuBar() {
+#ifdef USE_IMGUI
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("ファイル")) {
             if (ImGui::MenuItem("新規作成", "Ctrl+N")) {
@@ -276,12 +298,14 @@ void ParticleEditor::RenderMenuBar() {
 
         ImGui::EndMenuBar();
     }
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// 基本設定UI
 ///-------------------------------------------///
 void ParticleEditor::RenderBasicSettings() {
+#ifdef USE_IMGUI
     ImGui::SeparatorText("基本設定");
 
     // 名前
@@ -396,12 +420,14 @@ void ParticleEditor::RenderBasicSettings() {
 
     ImGui::Spacing();
     ImGui::TextDisabled("Tips: プレビュー再生中でも位置を変更できます");
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// 物理設定UI
 ///-------------------------------------------///
 void ParticleEditor::RenderPhysicsSettings() {
+#ifdef USE_IMGUI
     ImGui::SeparatorText("物理設定");
 
     if (ImGui::Checkbox("ランダム速度を使用", &currentDefinition_.physics.useRandomVelocity)) {
@@ -473,12 +499,14 @@ void ParticleEditor::RenderPhysicsSettings() {
         }
     }
     ImGui::TextDisabled("発生位置からのランダム範囲");
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// 見た目設定UI
 ///-------------------------------------------///
 void ParticleEditor::RenderAppearanceSettings() {
+#ifdef USE_IMGUI
     ImGui::SeparatorText("見た目設定");
 
     // 色設定
@@ -569,12 +597,14 @@ void ParticleEditor::RenderAppearanceSettings() {
     if (!currentDefinition_.appearance.texturePath.empty()) {
         ImGui::TextDisabled("現在: %s", currentDefinition_.appearance.texturePath.c_str());
     }
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// 回転設定UI
 ///-------------------------------------------///
 void ParticleEditor::RenderRotationSettings() {
+#ifdef USE_IMGUI
     ImGui::SeparatorText("回転設定");
 
     if (ImGui::Checkbox("回転を有効化", &currentDefinition_.rotation.enableRotation)) {
@@ -618,12 +648,14 @@ void ParticleEditor::RenderRotationSettings() {
         ImGui::Spacing();
         ImGui::TextDisabled("回転が無効化されています");
     }
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// 発生設定UI
 ///-------------------------------------------///
 void ParticleEditor::RenderEmissionSettings() {
+#ifdef USE_IMGUI
     ImGui::SeparatorText("発生設定");
 
     // 寿命設定
@@ -688,12 +720,14 @@ void ParticleEditor::RenderEmissionSettings() {
             currentDefinition_.emission.emissionRate * currentDefinition_.emission.frequency);
         ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u 個ずつ発生", actualCount);
     }
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// プレビューコントロールUI
 ///-------------------------------------------///
 void ParticleEditor::RenderPreviewControls() {
+#ifdef USE_IMGUI
     ImGui::SeparatorText("プレビュー");
 
     // 再生/停止ボタン
@@ -724,12 +758,14 @@ void ParticleEditor::RenderPreviewControls() {
         ImGui::Spacing();
         ImGui::Text("アクティブパーティクル数: %u", previewParticle_->GetActiveParticleCount());
     }
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// ファイル操作UI
 ///-------------------------------------------///
 void ParticleEditor::RenderFileOperations() {
+#ifdef USE_IMGUI
     ImGui::Separator();
     ImGui::SeparatorText("ファイル操作");
 
@@ -772,36 +808,42 @@ void ParticleEditor::RenderFileOperations() {
             LoadFromJson();
         }
     }
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// 利用可能なモデル更新
 ///-------------------------------------------///
 void ParticleEditor::UpdateAvailableModels() {
+#ifdef USE_IMGUI
     availableModels_.clear();
     // 実際の実装では、Assets/Modelsディレクトリをスキャンする
     availableModels_.push_back("plane");
     availableModels_.push_back("sphere");
     availableModels_.push_back("cube");
-	availableModels_.push_back("triangle");
+    availableModels_.push_back("triangle");
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// 利用可能なテクスチャ更新
 ///-------------------------------------------///
 void ParticleEditor::UpdateAvailableTextures() {
+#ifdef USE_IMGUI
     availableTextures_.clear();
-    
+
     // テクスチャの種類
     availableTextures_.push_back("circle");
     availableTextures_.push_back("circle2");
     availableTextures_.push_back("gradationLine");
+#endif // USE_IMGUI   
 }
 
 ///-------------------------------------------/// 
 /// 利用可能なプリセット更新
 ///-------------------------------------------///
 void ParticleEditor::UpdateAvailablePresets() {
+#ifdef USE_IMGUI
     availablePresets_.clear();
 
     // Assets/Particlesディレクトリをスキャン
@@ -813,4 +855,5 @@ void ParticleEditor::UpdateAvailablePresets() {
             }
         }
     }
+#endif // USE_IMGUI
 }

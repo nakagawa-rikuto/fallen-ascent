@@ -52,7 +52,7 @@ void MyGame::Initialize(const wchar_t* title) {
 	// シーンマネージャの初期化
 	sceneManager_ = std::make_unique<SceneManager>();
 	sceneManager_->SetSceneFactory(sceneFactory_.get());
-	sceneManager_->ChangeScene(SceneType::ParticleEditor);   //　スタートシーンの設定
+	sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
 }
  
 ///-------------------------------------------/// 
