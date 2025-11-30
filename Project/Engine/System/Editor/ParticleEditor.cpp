@@ -97,6 +97,12 @@ void ParticleEditor::Render() {
             ImGui::EndTabItem();
         }
 
+        // 高度設定タブ
+        if (ImGui::BeginTabItem("高度設定")) {
+            RenderAdvancedSettings();
+            ImGui::EndTabItem();
+        }
+
         ImGui::EndTabBar();
     }
 
@@ -724,6 +730,296 @@ void ParticleEditor::RenderEmissionSettings() {
 }
 
 ///-------------------------------------------/// 
+/// 高度設定UI
+///-------------------------------------------///
+void ParticleEditor::RenderAdvancedSettings() {
+#ifdef USE_IMGUI
+    ImGui::SeparatorText("高度な設定");
+
+    // ===軌跡パーティクルモード=== ///
+    ImGui::Text("パーティクルタイプ");
+    if (ImGui::Checkbox("軌跡パーティクルモード", &currentDefinition_.advanced.isTrajectoryParticle)) {
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+    ImGui::TextDisabled("攻撃の軌道などに使用する連続発生モード");
+
+    if (currentDefinition_.advanced.isTrajectoryParticle) {
+        ImGui::Indent();
+
+        if (ImGui::DragFloat("軌跡間隔 (秒)", &currentDefinition_.advanced.trailSpacing, 0.001f, 0.001f, 0.1f, "%.3f")) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+        ImGui::TextDisabled("パーティクルを発生させる間隔");
+
+        ImGui::Checkbox("停止時にクリア", &currentDefinition_.advanced.clearOnStop);
+        ImGui::TextDisabled("発生停止時に既存のパーティクルをクリア");
+
+        ImGui::Unindent();
+    }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+
+    // ===発生パターン設定=== ///
+    ImGui::SeparatorText("発生パターン");
+
+    const char* patterns[] = { "点", "球", "円錐", "軌跡", "リング", "バースト" };
+    int currentPattern = static_cast<int>(currentDefinition_.advanced.emissionPattern.pattern);
+    if (ImGui::Combo("発生パターン", &currentPattern, patterns, IM_ARRAYSIZE(patterns))) {
+        currentDefinition_.advanced.emissionPattern.pattern =
+            static_cast<ParticleEmissionPattern::Pattern>(currentPattern);
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+
+    // パターンに応じたパラメータ
+    auto& pattern = currentDefinition_.advanced.emissionPattern;
+
+    if (pattern.pattern != ParticleEmissionPattern::Pattern::Point) {
+        if (ImGui::DragFloat("パターン半径", &pattern.patternRadius, 0.01f, 0.0f, 10.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+    }
+
+    if (pattern.pattern == ParticleEmissionPattern::Pattern::Cone) {
+        if (ImGui::DragFloat("円錐角度", &pattern.patternAngle, 1.0f, 0.0f, 180.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+        ImGui::TextDisabled("円錐の開き角度（度）");
+    }
+
+    if (ImGui::DragInt("発生粒子数", &pattern.particlesPerEmit, 1, 1, 50)) {
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+    ImGui::TextDisabled("1回の発生で生成される粒子数");
+
+    ImGui::Spacing();
+    ImGui::Separator();
+
+    // ===動作設定=== ///
+    ImGui::SeparatorText("パーティクル動作");
+
+    auto& motion = currentDefinition_.advanced.motion;
+
+    // 渦巻き運動
+    if (ImGui::Checkbox("渦巻き運動", &motion.enableSwirling)) {
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+
+    if (motion.enableSwirling) {
+        ImGui::Indent();
+
+        if (ImGui::DragFloat("渦巻き速度", &motion.swirlingSpeed, 0.1f, 0.0f, 20.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+
+        if (ImGui::DragFloat("拡散速度", &motion.expansionRate, 0.1f, 0.0f, 5.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+
+        ImGui::Unindent();
+    }
+
+    ImGui::Spacing();
+
+    // エミッタ追従
+    if (ImGui::Checkbox("エミッタに追従", &motion.followEmitter)) {
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+    ImGui::TextDisabled("エミッタの移動に追従する");
+
+    if (motion.followEmitter) {
+        ImGui::Indent();
+
+        if (ImGui::SliderFloat("追従強度", &motion.followStrength, 0.0f, 1.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+        ImGui::TextDisabled("0.0 = 追従しない、1.0 = 完全追従");
+
+        ImGui::Unindent();
+    }
+
+    ImGui::Spacing();
+
+    // 回転影響
+    if (ImGui::Checkbox("回転影響を受ける", &motion.useRotationInfluence)) {
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+    ImGui::TextDisabled("エミッタの回転がパーティクルに影響");
+
+    if (motion.useRotationInfluence) {
+        ImGui::Indent();
+
+        if (ImGui::DragFloat("回転影響係数", &motion.rotationInfluence, 0.1f, 0.0f, 5.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+
+        ImGui::Unindent();
+    }
+
+    ImGui::Spacing();
+
+    // 速度減衰
+    if (ImGui::SliderFloat("速度減衰率", &motion.velocityDamping, 0.0f, 1.0f)) {
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+    ImGui::TextDisabled("毎フレーム速度に掛ける係数 (1.0 = 減衰なし)");
+
+    ImGui::Spacing();
+
+    // ビルボード回転
+    ImGui::Checkbox("ビルボード回転", &motion.enableBillboardRotation);
+
+    if (motion.enableBillboardRotation) {
+        ImGui::Indent();
+
+        if (ImGui::DragFloat("回転速度", &motion.billboardRotationSpeed, 0.1f, 0.0f, 10.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+
+        ImGui::Unindent();
+    }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+
+    // ===カラーグラデーション設定=== ///
+    ImGui::SeparatorText("高度なカラー設定");
+
+    auto& colorGradient = currentDefinition_.advanced.colorGradient;
+
+    if (ImGui::Checkbox("カラーグラデーション使用", &colorGradient.useGradient)) {
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+
+    if (colorGradient.useGradient) {
+        ImGui::Indent();
+
+        if (ImGui::ColorEdit4("主要色", &colorGradient.primaryColor.x)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+
+        if (ImGui::ColorEdit4("セカンダリ色", &colorGradient.secondaryColor.x)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+
+        if (ImGui::DragFloat("ブレンドカーブ", &colorGradient.colorBlendCurve, 0.1f, 0.1f, 5.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+        ImGui::TextDisabled("1.0 = 線形, > 1.0 = 非線形");
+
+        if (ImGui::Checkbox("色を振動させる", &colorGradient.oscillateColor)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+
+        ImGui::Unindent();
+    }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+
+    // ===スケールアニメーション設定=== ///
+    ImGui::SeparatorText("高度なスケールアニメーション");
+
+    auto& scaleAnim = currentDefinition_.advanced.scaleAnimation;
+
+    const char* animTypes[] = { "なし", "線形", "徐々に大きく", "徐々に小さく", "膨らんで縮む", "脈動" };
+    int currentAnimType = static_cast<int>(scaleAnim.type);
+    if (ImGui::Combo("アニメーションタイプ", &currentAnimType, animTypes, IM_ARRAYSIZE(animTypes))) {
+        scaleAnim.type = static_cast<ParticleScaleAnimation::AnimationType>(currentAnimType);
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+
+    if (scaleAnim.type != ParticleScaleAnimation::AnimationType::None) {
+        ImGui::Indent();
+
+        if (ImGui::DragFloat("開始スケール", &scaleAnim.startScale, 0.01f, 0.0f, 10.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+
+        if (ImGui::DragFloat("最大スケール", &scaleAnim.maxScale, 0.01f, 0.0f, 10.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+
+        if (ImGui::DragFloat("終了スケール", &scaleAnim.endScale, 0.01f, 0.0f, 10.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+
+        ImGui::Unindent();
+    }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+
+    // プリセットボタン
+    ImGui::SeparatorText("プリセット");
+
+    if (ImGui::Button("攻撃軌跡プリセット", ImVec2(200, 30))) {
+        ApplyTrajectoryPreset();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("爆発プリセット", ImVec2(200, 30))) {
+        ApplyExplosionPreset();
+    }
+
+    if (ImGui::Button("魔法陣プリセット", ImVec2(200, 30))) {
+        ApplyMagicCirclePreset();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("煙プリセット", ImVec2(200, 30))) {
+        ApplySmokePreset();
+    }
+#endif // USE_IMGUI
+}
+
+///-------------------------------------------/// 
 /// プレビューコントロールUI
 ///-------------------------------------------///
 void ParticleEditor::RenderPreviewControls() {
@@ -856,4 +1152,127 @@ void ParticleEditor::UpdateAvailablePresets() {
         }
     }
 #endif // USE_IMGUI
+}
+
+///-------------------------------------------/// 
+/// プリセット適用関数
+///-------------------------------------------///
+void ParticleEditor::ApplyTrajectoryPreset() {
+    // 攻撃軌跡用のプリセット
+    currentDefinition_.advanced.isTrajectoryParticle = true;
+    currentDefinition_.advanced.trailSpacing = 0.008f;
+    currentDefinition_.advanced.clearOnStop = true;
+
+    currentDefinition_.advanced.emissionPattern.pattern = ParticleEmissionPattern::Pattern::Sphere;
+    currentDefinition_.advanced.emissionPattern.patternRadius = 0.25f;
+    currentDefinition_.advanced.emissionPattern.particlesPerEmit = 6;
+
+    currentDefinition_.advanced.motion.enableSwirling = true;
+    currentDefinition_.advanced.motion.swirlingSpeed = 3.0f;
+    currentDefinition_.advanced.motion.expansionRate = 0.8f;
+    currentDefinition_.advanced.motion.useRotationInfluence = true;
+    currentDefinition_.advanced.motion.rotationInfluence = 1.2f;
+    currentDefinition_.advanced.motion.velocityDamping = 0.95f;
+    currentDefinition_.advanced.motion.enableBillboardRotation = true;
+    currentDefinition_.advanced.motion.billboardRotationSpeed = 3.0f;
+
+    currentDefinition_.advanced.colorGradient.useGradient = true;
+    currentDefinition_.advanced.colorGradient.primaryColor = { 0.2f, 0.8f, 1.0f, 1.0f };
+    currentDefinition_.advanced.colorGradient.secondaryColor = { 1.0f, 0.9f, 0.3f, 1.0f };
+    currentDefinition_.advanced.colorGradient.oscillateColor = true;
+
+    currentDefinition_.advanced.scaleAnimation.type = ParticleScaleAnimation::AnimationType::Bounce;
+    currentDefinition_.advanced.scaleAnimation.startScale = 0.3f;
+    currentDefinition_.advanced.scaleAnimation.maxScale = 1.5f;
+    currentDefinition_.advanced.scaleAnimation.endScale = 0.1f;
+
+    currentDefinition_.emission.lifetimeMin = 0.4f;
+    currentDefinition_.emission.lifetimeMax = 0.8f;
+
+    if (previewParticle_) {
+        ResetPreview();
+        CreatePreviewParticle();
+        PlayPreview();
+    }
+}
+void ParticleEditor::ApplyExplosionPreset() {
+    // 爆発用のプリセット
+    currentDefinition_.advanced.isTrajectoryParticle = false;
+    currentDefinition_.advanced.emissionPattern.pattern = ParticleEmissionPattern::Pattern::Burst;
+    currentDefinition_.advanced.emissionPattern.patternRadius = 2.0f;
+    currentDefinition_.advanced.emissionPattern.particlesPerEmit = 30;
+
+    currentDefinition_.advanced.motion.enableSwirling = false;
+    currentDefinition_.advanced.motion.velocityDamping = 0.92f;
+
+    currentDefinition_.advanced.colorGradient.useGradient = true;
+    currentDefinition_.advanced.colorGradient.primaryColor = { 1.0f, 0.5f, 0.0f, 1.0f };
+    currentDefinition_.advanced.colorGradient.secondaryColor = { 1.0f, 0.0f, 0.0f, 1.0f };
+
+    currentDefinition_.advanced.scaleAnimation.type = ParticleScaleAnimation::AnimationType::EaseOut;
+    currentDefinition_.emission.isBurst = true;
+    currentDefinition_.emission.burstCount = 50;
+
+    if (previewParticle_) {
+        ResetPreview();
+        CreatePreviewParticle();
+        PlayPreview();
+    }
+}
+void ParticleEditor::ApplyMagicCirclePreset() {
+    // 魔法陣用のプリセット
+    currentDefinition_.advanced.emissionPattern.pattern = ParticleEmissionPattern::Pattern::Ring;
+    currentDefinition_.advanced.emissionPattern.patternRadius = 3.0f;
+    currentDefinition_.advanced.emissionPattern.particlesPerEmit = 12;
+
+    currentDefinition_.advanced.motion.enableSwirling = true;
+    currentDefinition_.advanced.motion.swirlingSpeed = 2.0f;
+    currentDefinition_.advanced.motion.followEmitter = true;
+    currentDefinition_.advanced.motion.followStrength = 0.8f;
+
+    currentDefinition_.advanced.colorGradient.useGradient = true;
+    currentDefinition_.advanced.colorGradient.primaryColor = { 0.5f, 0.2f, 1.0f, 1.0f };
+    currentDefinition_.advanced.colorGradient.secondaryColor = { 0.8f, 0.8f, 1.0f, 1.0f };
+    currentDefinition_.advanced.colorGradient.oscillateColor = true;
+
+    currentDefinition_.advanced.scaleAnimation.type = ParticleScaleAnimation::AnimationType::Pulse;
+    currentDefinition_.emission.isBurst = false;
+    currentDefinition_.emission.emissionRate = 20.0f;
+    currentDefinition_.emission.frequency = 0.05f;
+
+    if (previewParticle_) {
+        ResetPreview();
+        CreatePreviewParticle();
+        PlayPreview();
+    }
+}
+void ParticleEditor::ApplySmokePreset() {
+    // 煙用のプリセット
+    currentDefinition_.advanced.emissionPattern.pattern = ParticleEmissionPattern::Pattern::Cone;
+    currentDefinition_.advanced.emissionPattern.patternRadius = 0.5f;
+    currentDefinition_.advanced.emissionPattern.patternAngle = 30.0f;
+    currentDefinition_.advanced.emissionPattern.particlesPerEmit = 3;
+
+    currentDefinition_.advanced.motion.enableSwirling = true;
+    currentDefinition_.advanced.motion.swirlingSpeed = 0.5f;
+    currentDefinition_.advanced.motion.expansionRate = 1.5f;
+    currentDefinition_.advanced.motion.velocityDamping = 0.98f;
+
+    currentDefinition_.advanced.colorGradient.useGradient = true;
+    currentDefinition_.advanced.colorGradient.primaryColor = { 0.3f, 0.3f, 0.3f, 0.8f };
+    currentDefinition_.advanced.colorGradient.secondaryColor = { 0.6f, 0.6f, 0.6f, 0.2f };
+
+    currentDefinition_.advanced.scaleAnimation.type = ParticleScaleAnimation::AnimationType::Linear;
+    currentDefinition_.advanced.scaleAnimation.startScale = 0.5f;
+    currentDefinition_.advanced.scaleAnimation.endScale = 3.0f;
+
+    currentDefinition_.emission.lifetimeMin = 2.0f;
+    currentDefinition_.emission.lifetimeMax = 3.0f;
+    currentDefinition_.physics.upwardForce = 2.0f;
+
+    if (previewParticle_) {
+        ResetPreview();
+        CreatePreviewParticle();
+        PlayPreview();
+    }
 }

@@ -129,6 +129,11 @@ private:
     void RenderEmissionSettings();
 
     /// <summary>
+    /// 項で設定UIの描画
+    /// </summary>
+    void RenderAdvancedSettings();
+
+    /// <summary>
     /// プレビューコントロールUIの描画
     /// </summary>
     void RenderPreviewControls();
@@ -154,6 +159,14 @@ private:
     /// プリセット一覧の取得
     /// </summary>
     void UpdateAvailablePresets();
+
+    /// <summary>
+    ///  プリセット
+    /// </summary>
+    void ApplyTrajectoryPreset();
+    void ApplyExplosionPreset();
+    void ApplyMagicCirclePreset();
+    void ApplySmokePreset();
 
 private:
 
