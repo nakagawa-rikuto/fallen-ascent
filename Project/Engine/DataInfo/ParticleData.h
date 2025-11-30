@@ -92,3 +92,92 @@ struct ParticleEmissionSettings {
 	float frequency = 0.5f;                            // 発生頻度（秒）
 	bool isBurst = false;                              // バーストモード
 };
+
+///=====================================================/// 
+/// パーティクル動作設定
+///=====================================================///
+struct ParticleMotionSettings {
+    // 渦巻き設定
+    bool enableSwirling = false;           // 渦巻き運動を有効化
+    float swirlingSpeed = 3.0f;            // 渦巻き速度
+    float expansionRate = 0.8f;            // 拡散速度
+
+    // 軌跡追従設定
+    bool followEmitter = false;            // エミッタに追従するか
+    float followStrength = 1.0f;           // 追従強度(0.0~1.0)
+
+    // 回転影響設定
+    bool useRotationInfluence = false;     // エミッタの回転影響を受けるか
+    float rotationInfluence = 1.2f;        // 回転速度の影響係数
+
+    // 速度減衰
+    float velocityDamping = 0.95f;         // 速度減衰率(0.0~1.0)
+
+    // ビルボード回転
+    bool enableBillboardRotation = true;   // ビルボード回転を有効化
+    float billboardRotationSpeed = 3.0f;   // ビルボード回転速度
+};
+
+///=====================================================/// 
+/// パーティクル発生パターン設定
+///=====================================================///
+struct ParticleEmissionPattern {
+    enum class Pattern {
+        Point,          // 点から発生
+        Sphere,         // 球状に発生
+        Cone,           // 円錐状に発生
+        Trail,          // 軌跡として発生
+        Ring,           // リング状に発生
+        Burst           // 爆発的に発生
+    };
+
+    Pattern pattern = Pattern::Sphere;
+    float patternRadius = 0.25f;           // パターンの半径
+    float patternAngle = 45.0f;            // 円錐の角度(度)
+    int particlesPerEmit = 5;              // 1回の発生での粒子数
+};
+
+///=====================================================/// 
+/// パーティクルカラーグラデーション設定
+///=====================================================///
+struct ParticleColorGradient {
+    bool useGradient = false;              // グラデーションを使用するか
+    Vector4 primaryColor = { 0.2f, 0.8f, 1.0f, 1.0f };    // 主要色
+    Vector4 secondaryColor = { 1.0f, 0.9f, 0.3f, 1.0f };  // セカンダリ色
+    float colorBlendCurve = 1.0f;          // ブレンドカーブ(1.0=線形)
+    bool oscillateColor = false;           // 色を振動させるか
+};
+
+///=====================================================/// 
+/// パーティクルスケールアニメーション設定
+///=====================================================///
+struct ParticleScaleAnimation {
+    enum class AnimationType {
+        None,           // アニメーションなし
+        Linear,         // 線形
+        EaseIn,         // 徐々に大きく
+        EaseOut,        // 徐々に小さく
+        Bounce,         // 膨らんで縮む
+        Pulse           // 脈動
+    };
+
+    AnimationType type = AnimationType::Bounce;
+    float startScale = 0.3f;               // 開始スケール
+    float maxScale = 1.5f;                 // 最大スケール
+    float endScale = 0.1f;                 // 終了スケール
+};
+
+///-------------------------------------------/// 
+/// パーティクル高度設定
+///-------------------------------------------///
+struct ParticleAdvancedSettings {
+    ParticleMotionSettings motion;
+    ParticleEmissionPattern emissionPattern;
+    ParticleColorGradient colorGradient;
+    ParticleScaleAnimation scaleAnimation;
+
+    // 軌跡特有の設定
+    bool isTrajectoryParticle = false;     // 軌跡パーティクルモード
+    float trailSpacing = 0.008f;           // 軌跡の間隔(秒)
+    bool clearOnStop = true;               // 停止時にクリアするか
+};
