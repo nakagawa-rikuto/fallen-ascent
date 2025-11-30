@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.1.63",
+		"generator":"Khronos glTF Blender I/O v4.5.47",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -56,8 +56,8 @@
 	"images":[
 		{
 			"mimeType":"image/png",
-			"name":"circle2",
-			"uri":"circle2.png"
+			"name":"Particle",
+			"uri":"Particle.png"
 		}
 	],
 	"accessors":[

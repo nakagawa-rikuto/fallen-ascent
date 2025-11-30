@@ -9,16 +9,6 @@
 #include "Engine/System/Service/GraphicsResourceGetter.h"
 #include "Engine/System/Service/OffScreenService.h"
 #include "Engine/System/Service/Loader.h"
-//// Particle
-//#include "Engine/Graphics/Particle/Derivative/ConfettiParticle.h"
-//#include "Engine/Graphics/Particle/Derivative/ExplosionParticle.h"
-//#include "Engine/Graphics/Particle/Derivative/WindParticle.h"
-//#include "Engine/Graphics/Particle/Derivative/HitEffectParticle.h"
-//#include "Engine/Graphics/Particle/Derivative/RingParticle.h"
-//#include "Engine/Graphics/Particle/Derivative/CylinderParticle.h"
-//#include "application/Game/Particle/DustCloudParticle.h"
-//// GameParticle
-//#include "application/Game/Particle/AttackTrajectoryParticle.h"
 // Math
 #include "Math/SMath.h"
 
@@ -52,8 +42,11 @@ void GameScene::Initialize() {
 	IScene::Initialize();
 
 	// Jsonの読み込み
-	Loader::LoadLevelJson("StageData.json");
-	Loader::LoadLevelJson("EntityData.json");
+	Loader::LoadLevelJson("Level/StageData.json");
+	Loader::LoadLevelJson("Level/EntityData.json");
+
+	// Particleの読み込み
+	ParticleService::LoadParticleDefinition("Game.json");
 
 	/// ===Transition=== ///
 	transiton_ = std::make_unique<SceneTransition>();
@@ -78,13 +71,13 @@ void GameScene::Initialize() {
 	enemyManager_ = std::make_unique<EnemyManager>();
 
 	/// ===SponEntity=== ///
-	SpawnEntity("EntityData.json");
+	SpawnEntity("Level/EntityData.json");
 	// EnemyにPlayerを設定
 	enemyManager_->SetPlayer(player_.get());
 
 	/// ===GameStage=== ///
 	stage_ = std::make_unique<GameStage>();
-	stage_->Initialize("StageData.json");
+	stage_->Initialize("Level/StageData.json");
 
 	/// ===StartAnimation=== ///
 	startAnimation_ = std::make_unique<StartAnimation>();

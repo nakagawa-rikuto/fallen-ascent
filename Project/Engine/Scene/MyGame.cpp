@@ -108,17 +108,14 @@ void MyGame::LoadTexture() {
 	Loader::LoadTexture("monsterBall", "monsterBall.png");
 	Loader::LoadTexture("White", "WhiteTexture.png");
 	// Particleで使用。
-	Loader::LoadTexture("circle", "circle.png");
-	Loader::LoadTexture("circle2", "circle2.png");
-	Loader::LoadTexture("gradationLine", "gradationLine.png");
-
-	// OffScreen
+	Loader::LoadTexture("circle", "Particle/circle.png");
+	Loader::LoadTexture("circle2", "Particle/circle2.png");
+	Loader::LoadTexture("gradationLine", "Particle/gradationLine.png");
+	// OffScreenで使用
 	Loader::LoadTexture("noise0", "OffScreen/noise0.png");
 	Loader::LoadTexture("noise1", "OffScreen/noise1.png");
-
-	// SkyBox
-	Loader::LoadTexture("skyBox", "rostock_laage_airport_4k.dds");
-
+	// DDS
+	Loader::LoadTexture("skyBox", "DDS/rostock_laage_airport_4k.dds");
 	// Game(Title)
 	Loader::LoadTexture("TitleBG", "TitleUI/SkyBG.png");
 	Loader::LoadTexture("TitleBGKiri", "TitleUI/BGsecond.png");
@@ -127,28 +124,29 @@ void MyGame::LoadTexture() {
 	Loader::LoadTexture("Option", "TitleUI/Option.png");
 	Loader::LoadTexture("Exit", "TitleUI/Exit.png");
 	Loader::LoadTexture("OverLay", "TitleUI/OverLay.png");
-
 	// GameAnimaiton
 	Loader::LoadTexture("GameOvverAnimation", "Animation/GameOverAnimation.png");
 }
 // モデル
 void MyGame::LoadModel() {
-	// DebugSceneで使用。
-	Loader::LoadModel("MonsterBall", "MonsterBall.obj");
-	Loader::LoadModel("terrain", "terrain.obj");
-	Loader::LoadModel("plane", "plane.obj");
-	// Particleで使用。
-	Loader::LoadModel("Particle", "Particle.obj");
-	Loader::LoadModel("ParticlePlane", "ParticlePlane.gltf");
+	// DebugSceneで使用
+	Loader::LoadModel("MonsterBall", "MonsterBall/MonsterBall.obj");
+	Loader::LoadModel("terrain", "terrain/terrain.obj");
+	// Particleで使用
+	Loader::LoadModel("plane", "Particle/Plane/ParticlePlane.gltf");
+	Loader::LoadModel("sphere", "Particle/Sphere/ParticleSphere.obj");
+	Loader::LoadModel("cube", "Particle/Cube/ParticleCube.obj");
+	Loader::LoadModel("triangle", "Particle/Triangle/ParticleTriangle.obj");
 	// Game
-	Loader::LoadModel("player", "player.gltf");
-	Loader::LoadModel("Ground", "Ground.obj");
-	Loader::LoadModel("Object1", "Object1.obj");
-	Loader::LoadModel("Object2", "Object2.obj");
+	Loader::LoadModel("player", "player/player.gltf");
+	Loader::LoadModel("Ground", "Ground/Ground.obj");
+	Loader::LoadModel("Object1", "Object1/Object1.obj");
+	Loader::LoadModel("Object2", "Object2/Object2.obj");
+	Loader::LoadModel("PlayerWeapon", "PlayerWeapon/PlayerWeapon.obj");
 }
 // アニメーション
 void MyGame::LoadAnimation() {
 	// DebugSceneで使用。
-	Loader::LoadAnimation("simpleSkin", "simpleSkin.gltf");
-	Loader::LoadAnimation("human", "sneakWalk.gltf");
+	Loader::LoadAnimation("simpleSkin", "simpleSkin/simpleSkin.gltf");
+	Loader::LoadAnimation("human", "human/sneakWalk.gltf");
 }

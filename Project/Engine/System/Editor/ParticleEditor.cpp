@@ -755,6 +755,7 @@ void ParticleEditor::UpdateAvailableModels() {
     availableModels_.push_back("plane");
     availableModels_.push_back("sphere");
     availableModels_.push_back("cube");
+	availableModels_.push_back("triangle");
 }
 
 ///-------------------------------------------/// 
