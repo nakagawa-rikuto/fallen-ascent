@@ -35,7 +35,7 @@ void ModelManager::Load(const std::string& baseDirectoryPath, const std::string&
 	// Dataの宣言
 	ModelData modeldata;
 	// モデル読み込み
-	modeldata = LoadObjFile(baseDirectoryPath + "/" + Key, filename);
+	modeldata = LoadObjFile(baseDirectoryPath, filename);
 
 	// テクスチャの読み込みとインデックス設定
 	if (!modeldata.material.textureFilePath.empty()) { // 空でなければ
@@ -94,6 +94,12 @@ ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std:
 	std::string filePath = directoryPath + "/" + filename;
 	const aiScene* scene = importer.ReadFile(filePath.c_str(), aiProcess_FlipWindingOrder | aiProcess_FlipUVs);
 	assert(scene->HasMeshes()); // メッシュがないのは対応しない。
+
+	// モデルファイルのディレクトリパスを取得（テクスチャ用）
+	std::string modelDirectory = directoryPath;
+	size_t lastSlash = filename.find_last_of("/\\");
+	if (lastSlash != std::string::npos) {modelDirectory = directoryPath + "/" + filename.substr(0, lastSlash);}
+
 	/// ===meshを解析=== ///
 	for (uint32_t meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex) {
 		aiMesh* mesh = scene->mMeshes[meshIndex];
@@ -153,7 +159,8 @@ ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std:
 			if (material->GetTextureCount(aiTextureType_DIFFUSE) != 0) {
 				aiString textureFilePath;
 				material->GetTexture(aiTextureType_DIFFUSE, 0, &textureFilePath);
-				modelData.material.textureFilePath = directoryPath + "/" + textureFilePath.C_Str();
+				// モデルと同じディレクトリにあるテクスチャのパスを構築
+				modelData.material.textureFilePath = modelDirectory + "/" + textureFilePath.C_Str();
 			}
 		}
 	}

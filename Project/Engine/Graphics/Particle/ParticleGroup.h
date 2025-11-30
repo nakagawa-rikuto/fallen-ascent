@@ -22,14 +22,14 @@ public:
 	~ParticleGroup();
 
 	/// <summary>
-	/// 初期化処理（パラメータ駆動型）
+	/// 初期化処理
 	/// </summary>
 	/// <param name="translate">発生位置</param>
 	/// <param name="definition">パーティクル定義</param>
 	void Initialze(const Vector3& translate, const ParticleDefinition& definition);
 
 	/// <summary>
-	/// 更新処理（汎用ロジック）
+	/// 更新処理
 	/// </summary>
 	void Update();
 
@@ -64,6 +64,18 @@ public: /// ===Setter=== ///
 	/// <param name="value">設定する値</param>
 	void SetParameter(ParticleParameter param, float value);
 
+	/// <summary>
+	/// エミッタの位置を設定
+	/// </summary>
+	/// <param name="position">新しい位置</param>
+	void SetEmitterPosition(const Vector3& position);
+
+	/// <summary>
+	/// エミッタの位置を移動(相対移動)
+	/// </summary>
+	/// <param name="offset">移動量</param>
+	void MoveEmitterPosition(const Vector3& offset);
+
 public: /// ===Getter=== ///
 
 	/// <summary>
@@ -75,6 +87,11 @@ public: /// ===Getter=== ///
 	/// アクティブなパーティクル数を取得
 	/// </summary>
 	uint32_t GetActiveParticleCount() const;
+
+	/// <summary>
+	/// エミッタの現在位置を取得
+	/// </summary>
+	const Vector3& GetEmitterPosition() const;
 
 private:
 

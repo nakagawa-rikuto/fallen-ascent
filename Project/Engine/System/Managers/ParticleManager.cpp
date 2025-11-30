@@ -210,6 +210,52 @@ void ParticleManager::SetParameter(const std::string& name, ParticleParameter pa
 }
 
 ///-------------------------------------------/// 
+/// エミッタ位置の設定
+///-------------------------------------------///
+void ParticleManager::SetEmitterPosition(const std::string& name, const Vector3& position, int groupIndex) {
+	auto it = activeParticles_.find(name);
+	if (it == activeParticles_.end()) return;
+
+	// 全グループに適用
+	if (groupIndex == -1) {
+		for (auto& particle : it->second) {
+			if (particle) {
+				particle->SetEmitterPosition(position);
+			}
+		}
+	}
+	// 特定のグループに適用
+	else if (groupIndex >= 0 && groupIndex < static_cast<int>(it->second.size())) {
+		if (it->second[groupIndex]) {
+			it->second[groupIndex]->SetEmitterPosition(position);
+		}
+	}
+}
+
+///-------------------------------------------/// 
+/// エミッタ位置の移動
+///-------------------------------------------///
+void ParticleManager::MoveEmitterPosition(const std::string& name, const Vector3& offset, int groupIndex) {
+	auto it = activeParticles_.find(name);
+	if (it == activeParticles_.end()) return;
+
+	// 全グループに適用
+	if (groupIndex == -1) {
+		for (auto& particle : it->second) {
+			if (particle) {
+				particle->MoveEmitterPosition(offset);
+			}
+		}
+	}
+	// 特定のグループに適用
+	else if (groupIndex >= 0 && groupIndex < static_cast<int>(it->second.size())) {
+		if (it->second[groupIndex]) {
+			it->second[groupIndex]->MoveEmitterPosition(offset);
+		}
+	}
+}
+
+///-------------------------------------------/// 
 /// 停止処理
 ///-------------------------------------------///
 void ParticleManager::StopParticle(const std::string& name) {
@@ -294,4 +340,20 @@ size_t ParticleManager::GetActiveGroupCount(const std::string& name) const {
 		return it->second.size();
 	}
 	return 0;
+}
+
+///-------------------------------------------/// 
+/// エミッタ位置の取得
+///-------------------------------------------///
+Vector3 ParticleManager::GetEmitterPosition(const std::string& name, size_t groupIndex) const {
+	auto it = activeParticles_.find(name);
+	if (it == activeParticles_.end()) {
+		return Vector3{ 0.0f, 0.0f, 0.0f };
+	}
+
+	if (groupIndex < it->second.size() && it->second[groupIndex]) {
+		return it->second[groupIndex]->GetEmitterPosition();
+	}
+
+	return Vector3{ 0.0f, 0.0f, 0.0f };
 }

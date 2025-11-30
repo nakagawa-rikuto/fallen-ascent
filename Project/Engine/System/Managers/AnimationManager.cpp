@@ -22,7 +22,7 @@ void AnimationManager::Load(const std::string& baseDirectoryPath, const std::str
 	// Dataの宣言
 	std::map<std::string, Animation> animationData;
 	// アニメーションの読み込み
-	animationData = LoadAnimation(baseDirectoryPath + "/" + Key, filename);
+	animationData = LoadAnimation(baseDirectoryPath, filename);
 
 	// アニメーションをMapコンテナに格納
 	animationDatas_[Key] = animationData;
