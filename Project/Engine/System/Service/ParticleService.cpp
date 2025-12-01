@@ -47,6 +47,21 @@ void ParticleService::SetParameter(const std::string& name, ParticleParameter pa
 	ServiceLocator::GetParticleManager()->SetParameter(name, param, value);
 }
 
+// エミッタ位置を設定
+void ParticleService::SetEmitterPosition(const std::string& name, const Vector3& position, int groupIndex) {
+	ServiceLocator::GetParticleManager()->SetEmitterPosition(name, position, groupIndex);
+}
+
+// エミッタ位置を移動
+void ParticleService::MoveEmitterPosition(const std::string& name, const Vector3& offset, int groupIndex) {
+	ServiceLocator::GetParticleManager()->MoveEmitterPosition(name, offset, groupIndex);
+}
+
+// エミッタの回転を設定
+void ParticleService::SetEmitterRotate(const std::string& name, const Vector3& rotate, int groupIndex) {
+	ServiceLocator::GetParticleManager()->SetEmitterRotation(name, rotate, groupIndex);
+}
+
 // パーティクルを停止
 void ParticleService::StopParticle(const std::string& name) {
 	ServiceLocator::GetParticleManager()->StopParticle(name);

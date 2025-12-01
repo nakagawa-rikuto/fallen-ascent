@@ -43,6 +43,11 @@ void ParticleGroup::Initialze(const Vector3& translate, const ParticleDefinition
        {0.0f, 23.0f, 10.0f}
     };
 
+    /// 軌跡用の初期化
+    group_.previouseEmitterPosition = translate;
+    group_.previouseEmitterRotation = { 0.0f, 0.0f, 0.0f };
+    group_.trajectoryTimer = 0.0f;
+
     /// ===パーティクルグループの初期化=== ///
     InstancingInit(definition_.modelName, translate, group_.maxInstance, definition_.shape);
 
@@ -60,6 +65,9 @@ void ParticleGroup::Initialze(const Vector3& translate, const ParticleDefinition
     if (!definition_.appearance.texturePath.empty()) {
         SetTexture(definition_.appearance.texturePath);
     }
+
+    // 
+    Update();
 }
 
 ///-------------------------------------------/// 
@@ -215,10 +223,17 @@ void ParticleGroup::SetParameter(ParticleParameter param, float value) {
         break;
     }
 }
-
-void ParticleGroup::SetEmitterPosition(const Vector3& position) { group_.transform.translate = position; }
-
+// エミッタ位置設定
+void ParticleGroup::SetEmitterPosition(const Vector3& position) { 
+    group_.previouseEmitterPosition = group_.transform.translate;
+    group_.transform.translate = position; 
+}
 void ParticleGroup::MoveEmitterPosition(const Vector3& offset) { group_.transform.translate += offset; }
+// エミッタ回転設定
+void ParticleGroup::SetEmitterRotate(const Vector3& rotate) { 
+    group_.previouseEmitterRotation = group_.transform.rotate;
+    group_.transform.rotate = rotate;
+}
 
 ///-------------------------------------------/// 
 /// Getter
@@ -275,17 +290,69 @@ void ParticleGroup::InstancingUpdate(std::list<ParticleData>::iterator it) {
 /// パーティクル生成（パラメータ駆動型）
 ///-------------------------------------------///
 ParticleData ParticleGroup::MakeParticle(const Vector3& translate) {
-    return ParticleFactory::CreateParticle(definition_, randomEngine_, translate);
+    // 基本パーティクルを生成
+    ParticleData particle = ParticleFactory::CreateParticle(definition_, randomEngine_, translate);
+
+    // 🆕 軌跡モードの場合、エミッタの回転を考慮
+    if (definition_.advanced.isTrajectoryParticle) {
+        // エミッタの回転をクォータニオンに変換
+        Quaternion emitterQuat = Math::QuaternionFromVector(group_.transform.rotate);
+
+        // 発生位置のオフセットをエミッタの回転空間で適用
+        Vector3 localOffset = particle.transform.translate - translate;
+        Vector3 worldOffset = Math::RotateVector(localOffset, emitterQuat);
+        particle.transform.translate = translate + worldOffset;
+
+        // 初速度もエミッタの回転を適用
+        particle.velocity = Math::RotateVector(particle.velocity, emitterQuat);
+
+        // パーティクル自体の初期回転もエミッタに合わせる
+        if (definition_.rotation.enableRotation) {
+            Quaternion particleRot = Math::QuaternionFromVector(particle.transform.rotate);
+            Quaternion finalRot = Multiply(emitterQuat, particleRot);
+            particle.transform.rotate = Math::QuaternionToEuler(finalRot);
+        }
+    }
+
+    return particle;
 }
 
 ///-------------------------------------------/// 
 /// パーティクル発生処理
 ///-------------------------------------------///
 void ParticleGroup::Emit() {
+    // 軌跡パーティクルモード
+    if (definition_.advanced.isTrajectoryParticle) {
+        group_.trajectoryTimer += kDeltaTime_;
+
+        if (group_.trajectoryTimer >= definition_.advanced.trailSpacing) {
+            // エミッタが移動している場合のみ発生
+            Vector3 movementDelta = group_.transform.translate - group_.previouseEmitterPosition;
+            float distanceMoved = std::sqrt(
+                movementDelta.x * movementDelta.x +
+                movementDelta.y * movementDelta.y +
+                movementDelta.z * movementDelta.z
+            );
+
+            if (distanceMoved > 0.01f) {
+                // パーティクル生成数
+                uint32_t particlesPerEmit = definition_.advanced.emissionPattern.particlesPerEmit;
+
+                for (uint32_t i = 0; i < particlesPerEmit; ++i) {
+                    if (group_.particles.size() < group_.maxInstance) {
+                        group_.particles.push_back(MakeParticle(group_.transform.translate));
+                    }
+                }
+            }
+
+            group_.trajectoryTimer = 0.0f;
+        }
+        return;
+    }
+
     // バーストモード
     if (definition_.emission.isBurst) {
         if (!group_.hasEmitted) {
-            // 一度だけ大量発生
             std::list<ParticleData> burstParticles = ParticleFactory::CreateParticleBurst(
                 definition_,
                 randomEngine_,
@@ -302,7 +369,6 @@ void ParticleGroup::Emit() {
     group_.frequencyTimer += kDeltaTime_;
 
     if (group_.frequencyTimer >= definition_.emission.frequency) {
-        // 発生レートに基づいてパーティクルを生成
         uint32_t emitCount = static_cast<uint32_t>(
             definition_.emission.emissionRate * definition_.emission.frequency);
 
@@ -320,7 +386,10 @@ void ParticleGroup::Emit() {
 /// パーティクル更新処理
 ///-------------------------------------------///
 void ParticleGroup::UpdateParticles() {
-    group_.numInstance = 0; // インスタンス数をリセット
+    group_.numInstance = 0;
+
+    // エミッタの移動量計算
+    Vector3 emitterDelta = group_.transform.translate - group_.previouseEmitterPosition;
 
     for (auto it = group_.particles.begin(); it != group_.particles.end();) {
         // 寿命チェック
@@ -329,11 +398,81 @@ void ParticleGroup::UpdateParticles() {
             continue;
         }
 
-        // Factoryの更新ロジックを使用
+        // 基本更新（ParticleFactory使用）
         ParticleFactory::UpdateParticle(*it, definition_, kDeltaTime_, randomEngine_);
+
+        // 軌跡専用の追加処理
+        if (definition_.advanced.isTrajectoryParticle) {
+            float progress = it->currentTime / it->lifeTime;
+
+            // エミッタ追従
+            if (definition_.advanced.motion.followEmitter) {
+                Vector3 followOffset = emitterDelta * definition_.advanced.motion.followStrength;
+                it->transform.translate += followOffset;
+            }
+
+            // 速度減衰
+            if (definition_.advanced.motion.velocityDamping < 1.0f) {
+                it->velocity = it->velocity * definition_.advanced.motion.velocityDamping;
+            }
+
+            // 渦巻き運動
+            if (definition_.advanced.motion.enableSwirling) {
+                ApplySwirlMotion(*it, progress);
+            }
+
+            // 回転影響
+            if (definition_.advanced.motion.useRotationInfluence) {
+                ApplyRotationInfluence(*it, progress);
+            }
+        }
 
         // インスタンシング更新
         InstancingUpdate(it);
         ++it;
     }
+
+    // 前回の状態を保存
+    group_.previouseEmitterPosition = group_.transform.translate;
+    group_.previouseEmitterRotation = group_.transform.rotate;
+}
+
+///-------------------------------------------/// 
+/// 渦巻き運動の適用
+///-------------------------------------------///
+void ParticleGroup::ApplySwirlMotion(ParticleData& particle, float progress) {
+    float swirl = particle.currentTime * definition_.advanced.motion.swirlingSpeed;
+
+    // エミッタの回転を考慮したローカル空間での渦巻き
+    Vector3 localSwirlingOffset = {
+        std::cos(swirl) * definition_.advanced.motion.expansionRate * progress,
+        std::sin(swirl * 1.3f) * definition_.advanced.motion.expansionRate * progress * 0.5f,
+        std::sin(swirl) * definition_.advanced.motion.expansionRate * progress
+    };
+
+    // エミッタの回転をクォータニオンに変換
+    Quaternion emitterRotation = Math::QuaternionFromVector(group_.transform.rotate);
+
+    // ワールド空間に変換して適用
+    Vector3 worldSwirlingOffset = Math::RotateVector(localSwirlingOffset, emitterRotation);
+    particle.transform.translate += worldSwirlingOffset * kDeltaTime_;
+}
+
+///-------------------------------------------/// 
+/// 回転影響の適用
+///-------------------------------------------///
+void ParticleGroup::ApplyRotationInfluence(ParticleData& particle, float progress) {
+    progress;
+    // 現在と前回のエミッタ回転を比較
+    Quaternion currentRot = Math::QuaternionFromVector(group_.transform.rotate);
+    Quaternion previousRot = Math::QuaternionFromVector(group_.previouseEmitterRotation);
+    Quaternion rotationDelta = Multiply(currentRot, Math::Conjugate(previousRot));
+
+    // 回転による遠心力的な速度を追加
+    Vector3 rotationalVelocity = Math::RotateVector(
+        particle.velocity * definition_.advanced.motion.rotationInfluence,
+        rotationDelta
+    );
+
+    particle.transform.translate += rotationalVelocity * kDeltaTime_ * 0.3f;
 }
