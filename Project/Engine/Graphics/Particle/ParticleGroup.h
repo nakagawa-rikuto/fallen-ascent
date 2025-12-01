@@ -114,14 +114,14 @@ private:
 		bool hasEmitted;                             // 初回発生済みフラグ（バースト用）
 
 		// 軌跡パーティクル用
-		float trajectoryTimer = 0.0f;               // 軌跡タイマー
+		float trajectoryTimer = 0.0f;                // 軌跡タイマー
 		Vector3 previouseEmitterPosition = { 0.0f, 0.0f, 0.0f }; // 前回のエミッタ位置
 		Vector3 previouseEmitterRotation = { 0.0f, 0.0f, 0.0f }; // 前回のエミッタ回転
 	};
 
 	Group group_{};
 	ParticleDefinition definition_;                  // パーティクル定義
-	float kDeltaTime_ = 1.0f / 60.0f;               // デルタタイム
+	float kDeltaTime_ = 1.0f / 60.0f;                // デルタタイム
 	std::mt19937 randomEngine_;                      // 乱数生成器
 
 private:
