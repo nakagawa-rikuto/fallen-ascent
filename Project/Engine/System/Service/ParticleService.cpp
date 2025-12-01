@@ -67,9 +67,9 @@ void ParticleService::StopParticle(const std::string& name) {
 	ServiceLocator::GetParticleManager()->StopParticle(name);
 }
 
-// 全パーティクルを停止
-void ParticleService::StopAllParticles() {
-	ServiceLocator::GetParticleManager()->StopAllParticles();
+// 全パーティクルを削除
+void ParticleService::RemoveAllParticles() {
+	ServiceLocator::GetParticleManager()->RemoveAllParticles();
 }
 
 ///-------------------------------------------/// 
