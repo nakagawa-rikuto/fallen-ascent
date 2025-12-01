@@ -34,20 +34,31 @@ public:
     static void AddParticleDefinition(const std::string& name, const ParticleDefinition& definition);
 
     /// <summary>
-    /// パーティクル定義の削除
-    /// </summary>
-    /// <param name="name">削除するパーティクルの名前</param>
-    static void RemoveParticleDefinition(const std::string& name);
-
-    /// ===パーティクルの操作=== ///
-
-    /// <summary>
     /// パーティクルの発生処理
     /// </summary>
     /// <param name="name">発生させるパーティクルの名前</param>
     /// <param name="translate">発生させる場所</param>
     /// <returns>発生に成功したかどうか</returns>
     static bool Emit(const std::string& name, const Vector3& translate);
+
+    /// <summary>
+    /// 指定した名前のアクティブなパーティクルをすべて停止
+    /// </summary>
+    /// <param name="name">停止するパーティクルの名前</param>
+    static void StopParticle(const std::string& name);
+
+    /// <summary>
+    /// パーティクル定義の削除
+    /// </summary>
+    /// <param name="name">削除するパーティクルの名前</param>
+    static void RemoveParticleDefinition(const std::string& name);
+
+    /// <summary>
+    /// 全てのパーティクルを削除
+    /// </summary>
+    static void RemoveAllParticles();
+
+public: /// ===設定=== ///
 
     /// <summary>
     /// パーティクルのテクスチャを設定
@@ -88,18 +99,7 @@ public:
     /// <param name="groupIndex">適用するグループのインデックス（省略可、デフォルトは -1）。</param>
     static void SetEmitterRotate(const std::string& name, const Vector3& rotate, int groupIndex = -1);
 
-    /// <summary>
-    /// 指定した名前のアクティブなパーティクルをすべて停止
-    /// </summary>
-    /// <param name="name">停止するパーティクルの名前</param>
-    static void StopParticle(const std::string& name);
-
-    /// <summary>
-    /// すべてのアクティブなパーティクルを停止
-    /// </summary>
-    static void StopAllParticles();
-
-    /// ===Getter=== ///
+public: /// ===取得=== ///
     /// <summary>
     /// パーティクル定義を取得
     /// </summary>
@@ -133,12 +133,4 @@ public:
     /// <param name="name">対象パーティクルの名前</param>
     /// <returns>アクティブなグループ数</returns>
     static size_t GetActiveGroupCount(const std::string& name);
-
-	/// <summary>
-	/// 指定したエミッタの位置を取得します。
-	/// </summary>
-	/// <param name="name">取得するエミッタの名前。</param>
-	/// <param name="groupIndex">エミッタのグループインデックス（省略時は0）。</param>
-	/// <returns>エミッタの位置を表す Vector3 を返します。</returns>
-	static Vector3 GetEmitterPosition(const std::string& name, int groupIndex = 0);
 };

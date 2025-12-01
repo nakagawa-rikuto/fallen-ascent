@@ -44,17 +44,6 @@ void ParticleManager::AddParticleDefinition(const std::string& name, const Parti
 }
 
 ///-------------------------------------------/// 
-/// パーティクル定義の削除
-///-------------------------------------------///
-void ParticleManager::RemoveParticleDefinition(const std::string& name) {
-	// 定義から削除
-	definitions_.erase(name);
-
-	// アクティブなパーティクルも削除
-	activeParticles_.erase(name);
-}
-
-///-------------------------------------------/// 
 /// 発生
 ///-------------------------------------------///
 bool ParticleManager::Emit(const std::string& name, const Vector3& translate) {
@@ -71,6 +60,57 @@ bool ParticleManager::Emit(const std::string& name, const Vector3& translate) {
 
 	return true;
 }
+
+///-------------------------------------------/// 
+/// 全てのParticleの更新
+///-------------------------------------------///
+void ParticleManager::Update() {
+	for (auto& [name, list] : activeParticles_) {
+		for (auto it = list.begin(); it != list.end();) {
+			(*it)->Update();
+			if ((*it)->IsFinish()) {
+				it = list.erase(it);
+			} else {
+				++it;
+			}
+		}
+	}
+}
+
+///-------------------------------------------/// 
+/// 全てのParticleの描画
+///-------------------------------------------///
+void ParticleManager::Draw(BlendMode mode) {
+	for (auto& [name, list] : activeParticles_) {
+		for (const auto& particle : list) {
+			particle->Draw(mode);
+		}
+	}
+}
+
+///-------------------------------------------/// 
+/// 停止処理
+///-------------------------------------------///
+void ParticleManager::StopParticle(const std::string& name) {
+	activeParticles_.erase(name);
+}
+
+///-------------------------------------------/// 
+/// パーティクル削除
+///-------------------------------------------///
+void ParticleManager::RemoveParticleDefinition(const std::string& name) {
+	// 定義から削除
+	definitions_.erase(name);
+
+	// アクティブなパーティクルも削除
+	activeParticles_.erase(name);
+}
+void ParticleManager::RemoveAllParticles() {
+	activeParticles_.clear();
+	definitions_.clear();
+}
+
+
 
 ///-------------------------------------------/// 
 /// テクスチャ設定
@@ -274,43 +314,6 @@ void ParticleManager::SetEmitterRotation(const std::string& name, const Vector3&
 	else if (groupIndex >= 0 && groupIndex < static_cast<int>(it->second.size())) {
 		if (it->second[groupIndex]) {
 			it->second[groupIndex]->SetEmitterRotate(rotation);
-		}
-	}
-}
-
-///-------------------------------------------/// 
-/// 停止処理
-///-------------------------------------------///
-void ParticleManager::StopParticle(const std::string& name) {
-	activeParticles_.erase(name);
-}
-void ParticleManager::StopAllParticles() {
-	activeParticles_.clear();
-}
-
-///-------------------------------------------/// 
-/// 全てのParticleの更新
-///-------------------------------------------///
-void ParticleManager::Update() {
-	for (auto& [name, list] : activeParticles_) {
-		for (auto it = list.begin(); it != list.end();) {
-			(*it)->Update();
-			if ((*it)->IsFinish()) {
-				it = list.erase(it);
-			} else {
-				++it;
-			}
-		}
-	}
-}
-
-///-------------------------------------------/// 
-/// 全てのParticleの描画
-///-------------------------------------------///
-void ParticleManager::Draw(BlendMode mode) {
-	for (auto& [name, list] : activeParticles_) {
-		for (const auto& particle : list) {
-			particle->Draw(mode);
 		}
 	}
 }

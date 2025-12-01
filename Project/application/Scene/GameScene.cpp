@@ -20,6 +20,8 @@ GameScene::~GameScene() {
 	IScene::~IScene();
 	// Colliderのリセット
 	ColliderService::Reset();
+	// Particleのリセット
+	ParticleService::RemoveAllParticles();
 	// StartAnimation
 	startAnimation_.reset();
 	// Camera
