@@ -161,6 +161,11 @@ private:
     void UpdateAvailablePresets();
 
     /// <summary>
+    /// 軌跡プレビューの更新
+    /// </summary>
+    void UpdateTrajectoryPreview();
+
+    /// <summary>
     ///  プリセット
     /// </summary>
     void ApplyTrajectoryPreset();
@@ -193,6 +198,14 @@ private:
     int selectedPresetIndex_ = 0;                        // 選択中のプリセットインデックス
     bool showSaveDialog_ = false;                        // 保存ダイアログ表示フラグ
     bool showLoadDialog_ = false;                        // 読み込みダイアログ表示フラグ
+
+    /// ===軌跡プレビュー=== ///
+    bool trajectoryPreviewMode_ = false;        // 軌跡プレビューモード
+    Vector3 trajectoryStartPos_ = { -3, 0, 0 };   // 軌跡開始位置
+    Vector3 trajectoryEndPos_ = { 3, 0, 0 };      // 軌跡終了位置
+    float trajectoryProgress_ = 0.0f;           // 軌跡の進行度(0~1)
+    float trajectorySpeed_ = 1.0f;              // 軌跡の速度
+    Vector3 trajectoryRotation_ = { 0, 0, 0 };    // 軌跡の回転
 
     /// ===定数=== ///
     static constexpr const char* kDefaultSavePath = "Resource/Json/Particles/";

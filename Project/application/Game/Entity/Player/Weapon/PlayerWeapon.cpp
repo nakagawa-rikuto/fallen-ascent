@@ -7,6 +7,7 @@
 // Service
 #include "Engine/System/Service/ColliderService.h"
 #include "Engine/System/Service/DeltaTimeSevice.h"
+#include "Engine/System/Service/ParticleService.h"
 
 // ImGui
 #ifdef USE_IMGUI
@@ -48,10 +49,6 @@ void PlayerWeapon::Initialize() {
 	name_ = ColliderName::PlayerWeapon;
 	obb_.halfSize = { 0.5f, 0.5f, 3.0f };
 
-	/// ===Particle=== ///
-	/*particle_ = std::make_unique<AttackTrajectoryParticle>();
-	particle_->Initialze(object3d_->GetWorldTranslate());*/
-
 	// DeltaTime初期化
 	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
 
@@ -89,7 +86,7 @@ void PlayerWeapon::Update() {
 		attackInfo_.isChargeAttack = false;
 		attackInfo_.progress = 1.0f;
 		SetActive(false);
-		//particle_->StopEmission();
+		ParticleService::StopParticle("WeaponAttack");
 		ColliderService::RemoveCollider(this);
 		OBBCollider::Update();
 		return;
@@ -97,15 +94,14 @@ void PlayerWeapon::Update() {
 
 	// 攻撃軌道の更新
 	if (attackInfo_.isAttacking) {
-		//particle_->SetTrajectoryTransform(object3d_->GetWorldTranslate(), object3d_->GetWorldRotate());
+		// Particleの軌道更新
+		ParticleService::SetEmitterPosition("WeaponAttack", object3d_->GetWorldTranslate());
+		// コンボ攻撃の軌道更新
 		UpdateAttackTrajectory();
 	} else if (attackInfo_.isChargeAttack) {
-		//particle_->SetTrajectoryTransform(ppp->GetWorldTranslate(), object3d_->GetWorldRotate());
+		ParticleService::SetEmitterPosition("WeaponAttack", object3d_->GetWorldTranslate());
 		UpdateChargeAttackTrajectory();
 	}
-	
-	/// ===Particle=== ///
-	//particle_->Update();
 
 	/// ===OBBCollider=== ///
 	OBBCollider::Update();
@@ -204,9 +200,9 @@ void PlayerWeapon::StartAttack(
 	SetActive(true);
 
 	//// Particleの開始
-	//particle_->ClearParticle();
-	//particle_->SetTrajectoryTransform(startPoint, startRotation);
-	//particle_->StartEmission();
+	ParticleService::StopParticle("WeaponAttack");
+	ParticleService::Emit("WeaponAttack", startPoint);
+	ParticleService::SetEmitterPosition("WeaponAttack", object3d_->GetWorldTranslate());
 
 	// 初期位置を設定
 	transform_.translate = startPoint;
@@ -243,9 +239,9 @@ void PlayerWeapon::StartChargeAttack(
 	SetActive(true);
 
 	//// Particleの開始
-	//particle_->ClearParticle();
-	//particle_->SetTrajectoryTransform(startPoint, startRotation);
-	//particle_->StartEmission();
+	ParticleService::StopParticle("WeaponAttack");
+	ParticleService::Emit("WeaponAttack", startPoint);
+	ParticleService::SetEmitterPosition("WeaponAttack", object3d_->GetWorldTranslate());
 
 	// 初期位置を設定
 	transform_.translate = startPoint;

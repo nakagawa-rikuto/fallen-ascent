@@ -76,6 +76,12 @@ public: /// ===Setter=== ///
 	/// <param name="offset">移動量</param>
 	void MoveEmitterPosition(const Vector3& offset);
 
+	/// <summary>
+	/// エミッターの回転を設定します。
+	/// </summary>
+	/// <param name="rotate">設定する回転ベクトル。const Vector3& で参照渡しされます。</param>
+	void SetEmitterRotate(const Vector3& rotate);
+
 public: /// ===Getter=== ///
 
 	/// <summary>
@@ -106,6 +112,11 @@ private:
 		float frequencyTimer;                        // 発生頻度タイマー
 		GameCamera* camera = nullptr;
 		bool hasEmitted;                             // 初回発生済みフラグ（バースト用）
+
+		// 軌跡パーティクル用
+		float trajectoryTimer = 0.0f;               // 軌跡タイマー
+		Vector3 previouseEmitterPosition = { 0.0f, 0.0f, 0.0f }; // 前回のエミッタ位置
+		Vector3 previouseEmitterRotation = { 0.0f, 0.0f, 0.0f }; // 前回のエミッタ回転
 	};
 
 	Group group_{};
@@ -139,4 +150,14 @@ private:
 	/// パーティクルの更新処理
 	/// </summary>
 	void UpdateParticles();
+
+	/// <summary>
+    /// 渦巻き運動を適用
+    /// </summary>
+    void ApplySwirlMotion(ParticleData& particle, float progress);
+
+    /// <summary>
+    /// エミッタの回転影響を適用
+    /// </summary>
+    void ApplyRotationInfluence(ParticleData& particle, float progress);
 };

@@ -43,7 +43,7 @@ private:
 		AttackType currentAttack = AttackType::kCombo1; // 現在の攻撃タイプ
 
 		float activTime = 0.0f;			// 攻撃のアクティブ時間
-		float comboWindowTime = 0.5f;	// コンボ受付時間
+		float comboWindowTime = 1.0f;	// コンボ受付時間
 		float comboTimer = 0.0f;		// コンボ受付タイマー
 
 		bool isAttacking = false;		// 攻撃中フラグ
@@ -55,7 +55,7 @@ private:
 
 		// 各攻撃の接続時間
 		float combo1Duration = 0.4f;	// コンボ1段目の持続時間
-		float combo2Duration = 0.4f;	// コンボ2段目の持続時間
+		float combo2Duration = 0.5f;	// コンボ2段目の持続時間
 
 		// クールタイム
 		float coolTime = 0.3f;			// 攻撃後のクールタイム

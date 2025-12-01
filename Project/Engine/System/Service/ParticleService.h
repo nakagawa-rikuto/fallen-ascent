@@ -65,6 +65,30 @@ public:
     static void SetParameter(const std::string& name, ParticleParameter param, float value);
 
     /// <summary>
+    /// アクティブなパーティクルのエミッタ位置を設定
+    /// </summary>
+    /// <param name="name">対象パーティクルの名前</param>
+    /// <param name="position">新しい位置</param>
+    /// <param name="groupIndex">グループのインデックス(-1で全グループ)</param>
+    static void SetEmitterPosition(const std::string& name, const Vector3& position, int groupIndex = -1);
+
+    /// <summary>
+    /// アクティブなパーティクルのエミッタ位置を移動
+    /// </summary>
+    /// <param name="name">対象パーティクルの名前</param>
+    /// <param name="offset">移動量</param>
+    /// <param name="groupIndex">グループのインデックス(-1で全グループ)</param>
+    static void MoveEmitterPosition(const std::string& name, const Vector3& offset, int groupIndex = -1);
+
+    /// <summary>
+    /// 指定したエミッタの回転を設定する。
+    /// </summary>
+    /// <param name="name">設定対象のエミッタを識別する名前。</param>
+    /// <param name="rotate">適用する回転を表す Vector3 型のベクトル。</param>
+    /// <param name="groupIndex">適用するグループのインデックス（省略可、デフォルトは -1）。</param>
+    static void SetEmitterRotate(const std::string& name, const Vector3& rotate, int groupIndex = -1);
+
+    /// <summary>
     /// 指定した名前のアクティブなパーティクルをすべて停止
     /// </summary>
     /// <param name="name">停止するパーティクルの名前</param>
@@ -75,8 +99,7 @@ public:
     /// </summary>
     static void StopAllParticles();
 
-    /// ===情報取得=== ///
-
+    /// ===Getter=== ///
     /// <summary>
     /// パーティクル定義を取得
     /// </summary>
@@ -110,4 +133,12 @@ public:
     /// <param name="name">対象パーティクルの名前</param>
     /// <returns>アクティブなグループ数</returns>
     static size_t GetActiveGroupCount(const std::string& name);
+
+	/// <summary>
+	/// 指定したエミッタの位置を取得します。
+	/// </summary>
+	/// <param name="name">取得するエミッタの名前。</param>
+	/// <param name="groupIndex">エミッタのグループインデックス（省略時は0）。</param>
+	/// <returns>エミッタの位置を表す Vector3 を返します。</returns>
+	static Vector3 GetEmitterPosition(const std::string& name, int groupIndex = 0);
 };

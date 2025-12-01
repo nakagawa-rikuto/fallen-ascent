@@ -84,7 +84,14 @@ public:
     /// <param name="offset">移動量</param>
     /// <param name="groupIndex">グループのインデックス(-1で全グループ)</param>
     void MoveEmitterPosition(const std::string& name, const Vector3& offset, int groupIndex = -1);
-
+    
+    /// <summary>
+    /// 指定された名前のエミッターの回転を設定します。
+    /// </summary>
+    /// <param name="name">設定対象のエミッターを識別する名前。</param>
+    /// <param name="rotation">エミッターに適用する回転（Vector3で表現）。</param>
+    /// <param name="groupIndex">適用先のグループインデックス。省略時は -1（グループ未指定または既定動作を示す）。</param>
+    void SetEmitterRotation(const std::string& name, const Vector3& rotation, int groupIndex = -1);
 
     /// <summary>
     /// 指定した名前のアクティブなパーティクルをすべて停止

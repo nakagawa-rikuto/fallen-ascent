@@ -256,12 +256,34 @@ void ParticleManager::MoveEmitterPosition(const std::string& name, const Vector3
 }
 
 ///-------------------------------------------/// 
+/// エミッタ回転の設定
+///-------------------------------------------///
+void ParticleManager::SetEmitterRotation(const std::string& name, const Vector3& rotation, int groupIndex) {
+	auto it = activeParticles_.find(name);
+	if (it == activeParticles_.end()) return;
+
+	// 全グループに適用
+	if (groupIndex == -1) {
+		for (auto& particle : it->second) {
+			if (particle) {
+				particle->SetEmitterRotate(rotation);
+			}
+		}
+	}
+	// 特定のグループに適用
+	else if (groupIndex >= 0 && groupIndex < static_cast<int>(it->second.size())) {
+		if (it->second[groupIndex]) {
+			it->second[groupIndex]->SetEmitterRotate(rotation);
+		}
+	}
+}
+
+///-------------------------------------------/// 
 /// 停止処理
 ///-------------------------------------------///
 void ParticleManager::StopParticle(const std::string& name) {
 	activeParticles_.erase(name);
 }
-
 void ParticleManager::StopAllParticles() {
 	activeParticles_.clear();
 }

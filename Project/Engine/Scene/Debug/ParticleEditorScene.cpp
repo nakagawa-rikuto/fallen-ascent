@@ -54,6 +54,7 @@ void ParticleEditorScene::Update() {
 	/// ===ImGui描画=== ///
 #ifdef USE_IMGUI
 	//RenderMenuBar();
+	defaultCamera_->ImGuiUpdate();
 
 	// エディターメインウィンドウ
 	particleEditor_->Render();

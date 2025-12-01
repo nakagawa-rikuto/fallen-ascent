@@ -1,6 +1,8 @@
 #include "ParticleEditor.h"
 #include "Engine/Graphics/Particle/ParticleFactory.h"
 #include "Engine/Graphics/Particle/ParticleGroup.h"
+#include "Engine/System/Service/DeltaTimeSevice.h"
+
 #ifdef USE_IMGUI
 // ImGui
 #include <imgui.h>
@@ -42,6 +44,11 @@ void ParticleEditor::Update() {
 
     // プレビューパーティクルの更新
     if (isPlaying_ && previewParticle_) {
+        // 軌跡プレビューモードの場合
+        if (trajectoryPreviewMode_ && currentDefinition_.advanced.isTrajectoryParticle) {
+            UpdateTrajectoryPreview();
+        }
+
         previewParticle_->Update();
 
         // 終了したら自動リプレイ
@@ -998,6 +1005,78 @@ void ParticleEditor::RenderAdvancedSettings() {
     ImGui::Spacing();
     ImGui::Separator();
 
+    // 🆕 軌跡プレビューセクション
+    ImGui::SeparatorText("軌跡プレビュー");
+
+    if (ImGui::Checkbox("軌跡プレビューモード", &trajectoryPreviewMode_)) {
+        if (trajectoryPreviewMode_ && !currentDefinition_.advanced.isTrajectoryParticle) {
+            // 警告表示
+            trajectoryPreviewMode_ = false;
+        }
+    }
+    ImGui::TextDisabled("エミッタを自動で移動させて軌跡を確認");
+
+    if (trajectoryPreviewMode_) {
+        ImGui::Indent();
+
+        ImGui::Text("軌跡経路設定");
+        ImGui::DragFloat3("開始位置", &trajectoryStartPos_.x, 0.1f, -20.0f, 20.0f);
+        ImGui::DragFloat3("終了位置", &trajectoryEndPos_.x, 0.1f, -20.0f, 20.0f);
+        ImGui::DragFloat("移動速度", &trajectorySpeed_, 0.1f, 0.1f, 5.0f);
+        ImGui::DragFloat3("基本回転", &trajectoryRotation_.x, 0.1f, -6.28f, 6.28f);
+
+        ImGui::Spacing();
+        ImGui::Text("クイック設定");
+
+        // クイック設定ボタン
+        if (ImGui::Button("横スラッシュ", ImVec2(140, 25))) {
+            trajectoryStartPos_ = { -3, 0, 0 };
+            trajectoryEndPos_ = { 3, 1, 0 };
+            trajectoryRotation_ = { 0, 0, 0 };
+            trajectorySpeed_ = 1.5f;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("縦スラッシュ", ImVec2(140, 25))) {
+            trajectoryStartPos_ = { 0, 3, 0 };
+            trajectoryEndPos_ = { 0, -1, 0 };
+            trajectoryRotation_ = { 0, 0, 1.57f };
+            trajectorySpeed_ = 1.8f;
+        }
+
+        if (ImGui::Button("円運動", ImVec2(140, 25))) {
+            // 円運動は開始位置から計算
+            float radius = 3.0f;
+            trajectoryStartPos_ = { radius, 0, 0 };
+            trajectoryEndPos_ = { -radius, 0, 0 };
+            trajectoryRotation_ = { 0, 0, 0 };
+            trajectorySpeed_ = 0.5f;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("螺旋", ImVec2(140, 25))) {
+            trajectoryStartPos_ = { -2, -2, 0 };
+            trajectoryEndPos_ = { 2, 2, 0 };
+            trajectoryRotation_ = { 0, 0, 0 };
+            trajectorySpeed_ = 0.8f;
+        }
+
+        ImGui::Spacing();
+
+        // 進行状況表示
+        ImGui::ProgressBar(trajectoryProgress_, ImVec2(-1, 0));
+        ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f),
+            "進行度: %.1f%% | 位置: (%.1f, %.1f, %.1f)",
+            trajectoryProgress_ * 100.0f,
+            previewPosition_.x,
+            previewPosition_.y,
+            previewPosition_.z
+        );
+
+        ImGui::Unindent();
+    }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+
     // プリセットボタン
     ImGui::SeparatorText("プリセット");
 
@@ -1151,6 +1230,37 @@ void ParticleEditor::UpdateAvailablePresets() {
             }
         }
     }
+#endif // USE_IMGUI
+}
+
+///-------------------------------------------/// 
+/// 軌跡プレビューの更新
+///-------------------------------------------///
+void ParticleEditor::UpdateTrajectoryPreview() {
+#ifdef USE_IMGUI
+    float deltaTime = DeltaTimeSevice::GetDeltaTime();
+
+    // 進行度を更新
+    trajectoryProgress_ += deltaTime * trajectorySpeed_;
+
+    // ループ
+    if (trajectoryProgress_ >= 1.0f) {
+        trajectoryProgress_ = 0.0f;
+    }
+
+    // 現在位置を補間（線形補間）
+    Vector3 currentPos;
+    currentPos.x = trajectoryStartPos_.x + (trajectoryEndPos_.x - trajectoryStartPos_.x) * trajectoryProgress_;
+    currentPos.y = trajectoryStartPos_.y + (trajectoryEndPos_.y - trajectoryStartPos_.y) * trajectoryProgress_;
+    currentPos.z = trajectoryStartPos_.z + (trajectoryEndPos_.z - trajectoryStartPos_.z) * trajectoryProgress_;
+
+    // 回転も補間（オプション：螺旋運動など）
+    Vector3 currentRot = trajectoryRotation_;
+    currentRot.y += trajectoryProgress_ * 3.14159f * 2.0f; // 1周回転
+
+    // エミッタ位置と回転を更新
+    previewParticle_->SetEmitterPosition(currentPos);
+    previewParticle_->SetEmitterRotate(currentRot);
 #endif // USE_IMGUI
 }
 
