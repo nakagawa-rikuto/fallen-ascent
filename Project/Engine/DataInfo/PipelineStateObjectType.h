@@ -47,23 +47,53 @@ enum PipelineType {
 
 // 列挙型の全値を取得する関数
 constexpr std::array<PipelineType, static_cast<size_t>(PipelineType::CountOfPipelineType)> AllPipelineTypes() {
-	return { 
-		PipelineType::ForGround2D, 
-		PipelineType::BackGround2D, 
-		PipelineType::Obj3D, 
-		PipelineType::PrimitiveSkyBox, 
-		PipelineType::Particle , 
-		PipelineType::Skinning3D, 
+	return {
+		PipelineType::ForGround2D,
+		PipelineType::BackGround2D,
+		PipelineType::Obj3D,
+		PipelineType::PrimitiveSkyBox,
+		PipelineType::Particle ,
+		PipelineType::Skinning3D,
 		PipelineType::PrimitiveOshan,
 		PipelineType::Line3D,
-		PipelineType::OffScreen, 
-		PipelineType::Grayscale, 
-		PipelineType::Vignette, 
-		PipelineType::Dissolve, 
-		PipelineType::BoxFilter3x3, 
-		PipelineType::BoxFilter5x5, 
-		PipelineType::RadiusBlur, 
-		PipelineType::OutLine, 
-		PipelineType::ShatterGlass 
+		PipelineType::OffScreen,
+		PipelineType::Grayscale,
+		PipelineType::Vignette,
+		PipelineType::Dissolve,
+		PipelineType::BoxFilter3x3,
+		PipelineType::BoxFilter5x5,
+		PipelineType::RadiusBlur,
+		PipelineType::OutLine,
+		PipelineType::ShatterGlass
 	};
+}
+
+// Computeパイプラインかどうかを判定する関数
+inline bool IsComputePipeline(PipelineType type) {
+	switch (type) {
+		/// ===Compute Pipelines=== ///
+
+		/// ===Graphics Pipelines=== ///
+	case PipelineType::ForGround2D:
+	case PipelineType::BackGround2D:
+	case PipelineType::Obj3D:
+	case PipelineType::Skinning3D:
+	case PipelineType::PrimitiveSkyBox:
+	case PipelineType::Particle:
+	case PipelineType::PrimitiveOshan:
+	case PipelineType::Line3D:
+	case PipelineType::OffScreen:
+	case PipelineType::Grayscale:
+	case PipelineType::Vignette:
+	case PipelineType::Dissolve:
+	case PipelineType::BoxFilter3x3:
+	case PipelineType::BoxFilter5x5:
+	case PipelineType::RadiusBlur:
+	case PipelineType::OutLine:
+	case PipelineType::ShatterGlass:
+		return false;
+
+	default:
+		return false;
+	}
 }

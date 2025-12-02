@@ -1,11 +1,11 @@
 #pragma once
 /// ===Include=== ///
 // Engine
-#include "Engine/Graphics/Pipeline/RootSignature.h"
-#include "Engine/Graphics/Pipeline/InputLayout.h"
-#include "Engine/Graphics/Pipeline/BlendState.h"
-#include "Engine/Graphics/Pipeline/DepthStencil.h"
-#include "Engine/Graphics/Pipeline/RasterizerState.h"
+#include "GSRootSignature.h"
+#include "InputLayout.h"
+#include "BlendState.h"
+#include "DepthStencil.h"
+#include "RasterizerState.h"
 // PipelineType
 #include "Engine/DataInfo/PipelineStateObjectType.h"
 // c++
@@ -18,16 +18,18 @@
 #include <dxgi1_6.h>
 #include <dxcapi.h>
 
-
 /// ===前方宣言=== ///
 class DXCommon;
 class Compiler;
 
-class PipelineStateObjectCommon {
+///=====================================================/// 
+/// GrapicsPipelineStateObjectCommon
+///=====================================================///
+class GSPSOCommon {
 public:
 
-	PipelineStateObjectCommon();
-	~PipelineStateObjectCommon();
+	GSPSOCommon();
+	~GSPSOCommon();
 
 	/// <summary>
 	/// PSOの生成処理
@@ -47,7 +49,7 @@ public:
 private:/// ===変数=== ///
 
 	/// ===PSOに必要な情報=== ///
-	std::unique_ptr<RootSignature> rootSignature_;     // RootSignature
+	std::unique_ptr<GSRootSignature> rootSignature_;     // RootSignature
 	std::unique_ptr<InputLayout> inputLayout_;         // InputLayout
 	std::unique_ptr<BlendState> blendState_;           // BlendState
 	std::unique_ptr<RasterizerState> rasterizerState_; // RasterizerState

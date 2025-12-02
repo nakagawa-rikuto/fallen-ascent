@@ -1,4 +1,4 @@
-#include "RootSignature.h"
+#include "GSRootSignature.h"
 // Engine
 #include "Engine/Core/Logger.h"
 #include "Engine/Core/DXCommon.h"
@@ -13,7 +13,7 @@
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
-RootSignature::~RootSignature() {
+GSRootSignature::~GSRootSignature() {
 	rootSignature_.Reset();
 }
 
@@ -823,7 +823,7 @@ namespace {
 ///-------------------------------------------/// 
 /// ルートシグネイチャの生成
 ///-------------------------------------------///
-void RootSignature::Create(DXCommon* dxCommon, PipelineType Type) {
+void GSRootSignature::Create(DXCommon* dxCommon, PipelineType Type) {
 	auto it = kRootSignatureTable_.find(Type);
 	if (it != kRootSignatureTable_.end()) {
 		// 直接 RootSignature を作って返す構成に変更
@@ -836,5 +836,5 @@ void RootSignature::Create(DXCommon* dxCommon, PipelineType Type) {
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
-ID3D12RootSignature* RootSignature::GetRootSignature() const { return rootSignature_.Get(); }
+ID3D12RootSignature* GSRootSignature::GetRootSignature() const { return rootSignature_.Get(); }
 

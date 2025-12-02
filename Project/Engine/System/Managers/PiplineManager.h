@@ -2,7 +2,8 @@
 /// ===Include=== ///
 // Engine
 #include "Engine/DataInfo/PipelineStateObjectType.h"
-#include "Engine/Graphics/Pipeline/PipelineStateObjectCommon.h"
+#include "Engine/Graphics/Pipeline/GS/GSPSOCommon.h"
+#include "Engine/Graphics/Pipeline/CS/CSPSOCommon.h"
 #include "Engine/Graphics/Pipeline/Compiler.h"
 // c++
 #include <unordered_map>
@@ -53,7 +54,11 @@ public:
 
 private:/// ===変数=== ///
     /// パイプラインの管理
-    std::unordered_map<std::pair<PipelineType, BlendMode>, std::unique_ptr<PipelineStateObjectCommon>> pipelines_;
+	// Graphicsパイプライン
+    std::unordered_map<std::pair<PipelineType, BlendMode>, std::unique_ptr<GSPSOCommon>> graphicsPipelines_;
+	// Computeパイプライン
+    std::unordered_map<PipelineType, std::unique_ptr<CSPSOCommon>> computePipelines_;
+	// Compilerの管理
     std::unordered_map<PipelineType, std::unique_ptr<Compiler>> compiler_;
 
 private:/// ===関数=== ///
@@ -62,6 +67,13 @@ private:/// ===関数=== ///
     /// </summary>
     /// <param name="type">取得するパイプラインの種類を示す値。</param>
     /// <param name="mode">適用するブレンドモードを示す値。</param>
-    /// <returns>要求したパイプライン状態を表す PipelineStateObjectCommon へのポインタ。</returns>
-    PipelineStateObjectCommon* GetPipeline(PipelineType type, BlendMode mode);
+    /// <returns>要求したパイプライン状態を表す GSPSOCommon へのポインタ。</returns>
+    GSPSOCommon* GetGSPipeline(PipelineType type, BlendMode mode);
+
+	/// <summary>
+	/// 指定された種類の CSPSOCommon パイプラインへのポインタを取得します。
+	/// </summary>
+	/// <param name="type">取得するパイプラインの種類を示す PipelineType の値。</param>
+	/// <returns>指定された種類に対応する CSPSOCommon へのポインタ。該当するパイプラインが存在しない場合は nullptr を返すことがあります。</returns>
+	CSPSOCommon* GetCSPipeline(PipelineType type);
 };

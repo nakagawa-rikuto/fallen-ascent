@@ -268,25 +268,25 @@
     <ClCompile Include="Engine\Graphics\Particle\ParticleSetUp.cpp">
       <Filter>Engine\Graphics\Particle\Base</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\BlendState.cpp">
+    <ClCompile Include="Engine\Graphics\Pipeline\GS\BlendState.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Pipeline\Compiler.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\DepthStencil.cpp">
+    <ClCompile Include="Engine\Graphics\Pipeline\GS\DepthStencil.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\InputLayout.cpp">
+    <ClCompile Include="Engine\Graphics\Pipeline\GS\InputLayout.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\PipelineStateObjectCommon.cpp">
+    <ClCompile Include="Engine\Graphics\Pipeline\GS\GSPSOCommon.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\RootSignature.cpp">
+    <ClCompile Include="Engine\Graphics\Pipeline\GS\GSRootSignature.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\RasterizerState.cpp">
+    <ClCompile Include="Engine\Graphics\Pipeline\GS\RasterizerState.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Scene\AbstractSceneFactory.cpp">
@@ -490,6 +490,10 @@
     <ClCompile Include="Engine\System\Editor\ParticleEditor.cpp" />
     <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleParameter.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\CS\CSRootSignature.cpp" />
+    <ClCompile Include="Engine\Graphics\Base\UAV.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -720,25 +724,25 @@
     <ClInclude Include="Engine\Graphics\Particle\ParticleSetUp.h">
       <Filter>Engine\Graphics\Particle\Base</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\BlendState.h">
+    <ClInclude Include="Engine\Graphics\Pipeline\GS\BlendState.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Pipeline\Compiler.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\DepthStencil.h">
+    <ClInclude Include="Engine\Graphics\Pipeline\GS\DepthStencil.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\InputLayout.h">
+    <ClInclude Include="Engine\Graphics\Pipeline\GS\InputLayout.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\PipelineStateObjectCommon.h">
+    <ClInclude Include="Engine\Graphics\Pipeline\GS\GSPSOCommon.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\RootSignature.h">
+    <ClInclude Include="Engine\Graphics\Pipeline\GS\GSRootSignature.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\RasterizerState.h">
+    <ClInclude Include="Engine\Graphics\Pipeline\GS\RasterizerState.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Scene\AbstractSceneFactory.h">
@@ -944,6 +948,10 @@
     <ClInclude Include="Engine\System\Editor\ParticleEditor.h" />
     <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleParameter.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
+    <ClInclude Include="Engine\Graphics\Base\UAV.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
