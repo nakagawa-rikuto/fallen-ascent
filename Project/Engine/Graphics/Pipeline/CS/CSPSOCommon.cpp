@@ -16,7 +16,6 @@ CSPSOCommon::CSPSOCommon() = default;
 ///-------------------------------------------///
 CSPSOCommon::~CSPSOCommon() {
 	rootSignature_.reset();
-	uav_.reset();
 	computePipelineState_.Reset();
 }
 
@@ -27,9 +26,6 @@ void CSPSOCommon::Create(DXCommon* dxCommon, Compiler* compiler, PipelineType Ty
 	// RootSignatureの生成
 	rootSignature_ = std::make_unique<CSRootSignature>();
 	rootSignature_->Create(dxCommon, Type);
-	// UAVの生成
-	uav_ = std::make_unique<UAV>();
-	// uav_->Create(dxCommon, Type, ); numElementsとstructureByteStrideの設定を考え中
 	compiler_ = compiler;
 	// PipelineState
 	CreatePipelineState(dxCommon, Type);
@@ -54,6 +50,7 @@ void CSPSOCommon::SetPSO(ID3D12GraphicsCommandList* commandList) {
 ///-------------------------------------------///
 void CSPSOCommon::CreatePipelineState(DXCommon* dxCommon, PipelineType type) {
 	HRESULT hr;
+	type;
 
 	// ComputePipelineStateDescの設定
 	computePipelineStateDesc_.CS = {

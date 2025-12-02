@@ -7,7 +7,8 @@
 ///-------------------------------------------///
 PipelineManager::PipelineManager() = default;
 PipelineManager::~PipelineManager() { 
-	pipelines_.clear(); 
+	graphicsPipelines_.clear();
+	computePipelines_.clear();
 	compiler_.clear();
 }
 
@@ -17,22 +18,31 @@ PipelineManager::~PipelineManager() {
 void PipelineManager::Initialize(DXCommon* dxCommon) {
 	for (PipelineType type : AllPipelineTypes()) {
 
-		// もしかしたらブレンドモード以外も作るべきかも
+		// Compilerの作成と初期化
 		auto compiler = std::make_unique<Compiler>();
 		compiler->Initialize(dxCommon, type);
 		compiler_[type] = std::move(compiler);
 
+		// Computeパイプラインの作成
+		if (IsComputePipeline(type)) {
+			auto CSPipeline = std::make_unique<CSPSOCommon>();
+			CSPipeline->Create(dxCommon, compiler_[type].get(), type);
+			// パイプラインの追加
+			computePipelines_[type] = std::move(CSPipeline);
+		}
+
+		// BlendMode毎にパイプラインを作成
 		for (BlendMode mode : AllBlendModes()) {
 			
 			// ペアのキーをｓ作成
 			auto key = std::make_pair(type, mode);
 
 			// パイプラインの作成
-			auto pipeline = std::make_unique<GSPSOCommon>();
-			pipeline->Create(dxCommon, compiler_[type].get(), type, mode);
+			auto GSpipeline = std::make_unique<GSPSOCommon>();
+			GSpipeline->Create(dxCommon, compiler_[type].get(), type, mode);
 
 			// パイプラインの追加
-			pipelines_[key] = std::move(pipeline);
+			graphicsPipelines_[key] = std::move(GSpipeline);
 		}
 	}
 }
@@ -40,14 +50,22 @@ void PipelineManager::Initialize(DXCommon* dxCommon) {
 ///-------------------------------------------/// 
 /// パイプラインの登録
 ///-------------------------------------------///
-void PipelineManager::SetPipeline(
-	ID3D12GraphicsCommandList * commandList, PipelineType type, BlendMode mode, D3D12_PRIMITIVE_TOPOLOGY topology) {
-	// パイプラインの取得
-	GSPSOCommon* pipeline = GetPipeline(type, mode);
-	assert(pipeline != nullptr);
+void PipelineManager::SetPipeline(ID3D12GraphicsCommandList * commandList, PipelineType type, BlendMode mode, D3D12_PRIMITIVE_TOPOLOGY topology) {
+	
+	// Computeパイプラインの場合
+	if (IsComputePipeline(type)) {
+		CSPSOCommon* CSPipeline = GetCSPipeline(type);
+		assert(CSPipeline != nullptr);
+		// PSO を設定
+		CSPipeline->SetPSO(commandList);
+	}
+	
+	// Graphicsパイプラインの取得
+	GSPSOCommon* GSPipeline = GetGSPipeline(type, mode);
+	assert(GSPipeline != nullptr);
 
 	// PSO を設定
-	pipeline->SetPSO(commandList);
+	GSPipeline->SetPSO(commandList);
 
 	//プリミティブトポロジー設定
 	commandList->IASetPrimitiveTopology(topology);
@@ -59,8 +77,8 @@ void PipelineManager::SetPipeline(
 ///-------------------------------------------///
 GSPSOCommon* PipelineManager::GetGSPipeline(PipelineType type, BlendMode mode) {
 	auto key = std::make_pair(type, mode);
-	auto it = pipelines_.find(key);
-	if (it != pipelines_.end()) {
+	auto it = graphicsPipelines_.find(key);
+	if (it != graphicsPipelines_.end()) {
 		return it->second.get();
 	}
 	return nullptr;

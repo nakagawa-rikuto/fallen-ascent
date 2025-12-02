@@ -79,7 +79,6 @@
     <FxCompile Include="Resource\Shaders\3D\Oshan.PS.hlsl">
       <Filter>Resource\Shaders\Oshan</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Shaders\3D\SkinningObj3D.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -493,7 +492,7 @@
     <ClCompile Include="Engine\Graphics\Particle\ParticleParameter.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSRootSignature.cpp" />
-    <ClCompile Include="Engine\Graphics\Pipeline\CS\UAV.cpp" />
+    <ClCompile Include="Engine\Graphics\Base\UAV.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -951,7 +950,7 @@
     <ClInclude Include="Engine\Graphics\Particle\ParticleParameter.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
-    <ClInclude Include="Engine\Graphics\Pipeline\CS\UAV.h" />
+    <ClInclude Include="Engine\Graphics\Base\UAV.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h" />
   </ItemGroup>
   <ItemGroup>

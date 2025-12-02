@@ -31,7 +31,7 @@ namespace {
 	{ PipelineType::Obj3D,			 { L"3D/Obj3D.VS.hlsl",				 L"3D/Obj3D.PS.hlsl",						 L""}},
 	{ PipelineType::PrimitiveSkyBox, { L"3D/SkyBox.VS.hlsl",             L"3D/SkyBox.PS.hlsl",						 L""}},
 	{ PipelineType::PrimitiveOshan,  { L"3D/Oshan.VS.hlsl",              L"3D/Oshan.PS.hlsl",						 L""}},
-	{ PipelineType::Skinning3D,		 { L"3D/SkinningObj3D.VS.hlsl",      L"3D/SkinningObj3D.PS.hlsl",				 L"3D/SkinningObj3D.CS.hlsl"}},
+	{ PipelineType::Skinning3D,		 { L"3D/SkinningObj3D.VS.hlsl",      L"3D/SkinningObj3D.PS.hlsl",				 L""}},
 	{ PipelineType::Line3D,			 { L"3D/Line3D.VS.hlsl",             L"3D/Line3D.PS.hlsl",						 L""}},
 	{ PipelineType::Particle,		 { L"Particle/Particle.VS.hlsl",     L"Particle/Particle.PS.hlsl",				 L""}},
 	{ PipelineType::OffScreen,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/CopyImage.PS.hlsl",			 L""}},
@@ -79,7 +79,6 @@ void Compiler::Initialize(DXCommon* dxCommon, PipelineType type) {
 	// コンパイル結果を確認
 	assert(objVSBlob_ && "Vertex Shader Compile Failed");
 	assert(objPSBlob_ && "Pixel Shader Compile Failed");
-	assert(objCSBlob_ && "Compute Shader Compile Failed");
 }
 
 ///-------------------------------------------/// 

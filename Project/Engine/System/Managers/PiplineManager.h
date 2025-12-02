@@ -54,8 +54,11 @@ public:
 
 private:/// ===変数=== ///
     /// パイプラインの管理
-    std::unordered_map<std::pair<PipelineType, BlendMode>, std::unique_ptr<GSPSOCommon>> pipelines_;
-	std::unordered_map<PipelineType, std::unique_ptr<CSPSOCommon>> computePipelines_;
+	// Graphicsパイプライン
+    std::unordered_map<std::pair<PipelineType, BlendMode>, std::unique_ptr<GSPSOCommon>> graphicsPipelines_;
+	// Computeパイプライン
+    std::unordered_map<PipelineType, std::unique_ptr<CSPSOCommon>> computePipelines_;
+	// Compilerの管理
     std::unordered_map<PipelineType, std::unique_ptr<Compiler>> compiler_;
 
 private:/// ===関数=== ///

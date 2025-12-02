@@ -1,11 +1,12 @@
 #include "UAV.h"
-// Engine
-#include "Engine/Core/DXCommon.h"
 
 ///-------------------------------------------/// 
 /// UAVの生成処理
 ///-------------------------------------------///
-void UAV::Create(DXCommon* dxCommon, PipelineType Type, UINT numElements, UINT structureByteStride) {
+void UAV::Create(ID3D12Device* device, ID3D12Resource* targetResorce, UINT numElements, UINT structureByteStride, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle) {
+
+	// リソースを保存
+	resource_ = targetResorce;
 
 	// デスクの設定
 	desc_.Format = DXGI_FORMAT_UNKNOWN;
@@ -16,10 +17,11 @@ void UAV::Create(DXCommon* dxCommon, PipelineType Type, UINT numElements, UINT s
 	desc_.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 	desc_.Buffer.StructureByteStride = structureByteStride;
 
-	dxCommon->GetDevice()->CreateUnorderedAccessView(resource_.Get(), nullptr, &desc_, );
+	device->CreateUnorderedAccessView(resource_, nullptr, &desc_, cpuHandle);
 }
 
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
 D3D12_UNORDERED_ACCESS_VIEW_DESC UAV::GetUAVDesc() const { return desc_; }
+ID3D12Resource* UAV::GetResource() const { return resource_; }

@@ -1,7 +1,6 @@
 #pragma once
 /// ===Include=== ///
 #include "CSRootSignature.h"
-#include "UAV.h"
 // PipelineType
 #include "Engine/DataInfo/PipelineStateObjectType.h"
 // c++
@@ -45,7 +44,6 @@ private: /// ===変数=== ///
 
 	/// ===PSOに必要な情報=== ///
 	std::unique_ptr<CSRootSignature> rootSignature_;    // RootSignature
-	std::unique_ptr<UAV> uav_;                          // UAV
 	Compiler* compiler_;                                // Compiler
 
 	ComPtr<ID3D12PipelineState> computePipelineState_;

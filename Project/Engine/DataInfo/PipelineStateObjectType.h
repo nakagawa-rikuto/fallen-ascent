@@ -72,13 +72,12 @@ constexpr std::array<PipelineType, static_cast<size_t>(PipelineType::CountOfPipe
 inline bool IsComputePipeline(PipelineType type) {
 	switch (type) {
 		/// ===Compute Pipelines=== ///
-	case PipelineType::Skinning3D:
-		return true;
 
 		/// ===Graphics Pipelines=== ///
 	case PipelineType::ForGround2D:
 	case PipelineType::BackGround2D:
 	case PipelineType::Obj3D:
+	case PipelineType::Skinning3D:
 	case PipelineType::PrimitiveSkyBox:
 	case PipelineType::Particle:
 	case PipelineType::PrimitiveOshan:
