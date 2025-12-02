@@ -1,4 +1,4 @@
-#include "PipelineStateObjectCommon.h"
+#include "GSPSOCommon.h"
 // Compiler
 #include "Engine/Graphics/Pipeline/Compiler.h"
 // Engine
@@ -9,12 +9,12 @@
 ///-------------------------------------------/// 
 /// コンストラクタ
 ///-------------------------------------------///
-PipelineStateObjectCommon::PipelineStateObjectCommon() = default;
+GSPSOCommon::GSPSOCommon() = default;
 
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
-PipelineStateObjectCommon::~PipelineStateObjectCommon() {
+GSPSOCommon::~GSPSOCommon() {
 
 	rootSignature_.reset();
 	inputLayout_.reset();
@@ -27,10 +27,10 @@ PipelineStateObjectCommon::~PipelineStateObjectCommon() {
 ///-------------------------------------------/// 
 /// PSOの作成
 ///-------------------------------------------///
-void PipelineStateObjectCommon::Create(DXCommon* dxCommon, Compiler* compiler, PipelineType Type, BlendMode Mode) {
+void GSPSOCommon::Create(DXCommon* dxCommon, Compiler* compiler, PipelineType Type, BlendMode Mode) {
 
 	// RootSignatureの生成
-	rootSignature_ = std::make_unique<RootSignature>();
+	rootSignature_ = std::make_unique<GSRootSignature>();
 	rootSignature_->Create(dxCommon, Type);
 
 	// InputLayoutの生成
@@ -59,7 +59,7 @@ void PipelineStateObjectCommon::Create(DXCommon* dxCommon, Compiler* compiler, P
 ///-------------------------------------------/// 
 /// パイプラインの設定
 ///-------------------------------------------///
-void PipelineStateObjectCommon::SetPSO(ID3D12GraphicsCommandList* commandList) {
+void GSPSOCommon::SetPSO(ID3D12GraphicsCommandList* commandList) {
 
 	// assertチェック
 	assert(rootSignature_);
@@ -75,7 +75,7 @@ void PipelineStateObjectCommon::SetPSO(ID3D12GraphicsCommandList* commandList) {
 ///-------------------------------------------/// 
 /// パイプラインの作成
 ///-------------------------------------------///
-void PipelineStateObjectCommon::CreatePipelineState(DXCommon* dxCommon, PipelineType type) {
+void GSPSOCommon::CreatePipelineState(DXCommon* dxCommon, PipelineType type) {
 	HRESULT hr;
 
 	// PSOの取得

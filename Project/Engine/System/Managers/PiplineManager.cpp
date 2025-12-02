@@ -28,7 +28,7 @@ void PipelineManager::Initialize(DXCommon* dxCommon) {
 			auto key = std::make_pair(type, mode);
 
 			// パイプラインの作成
-			auto pipeline = std::make_unique<PipelineStateObjectCommon>();
+			auto pipeline = std::make_unique<GSPSOCommon>();
 			pipeline->Create(dxCommon, compiler_[type].get(), type, mode);
 
 			// パイプラインの追加
@@ -43,7 +43,7 @@ void PipelineManager::Initialize(DXCommon* dxCommon) {
 void PipelineManager::SetPipeline(
 	ID3D12GraphicsCommandList * commandList, PipelineType type, BlendMode mode, D3D12_PRIMITIVE_TOPOLOGY topology) {
 	// パイプラインの取得
-	PipelineStateObjectCommon* pipeline = GetPipeline(type, mode);
+	GSPSOCommon* pipeline = GetPipeline(type, mode);
 	assert(pipeline != nullptr);
 
 	// PSO を設定
@@ -53,10 +53,11 @@ void PipelineManager::SetPipeline(
 	commandList->IASetPrimitiveTopology(topology);
 }
 
+
 ///-------------------------------------------/// 
 /// タイプとモードを取得
 ///-------------------------------------------///
-PipelineStateObjectCommon* PipelineManager::GetPipeline(PipelineType type, BlendMode mode) {
+GSPSOCommon* PipelineManager::GetGSPipeline(PipelineType type, BlendMode mode) {
 	auto key = std::make_pair(type, mode);
 	auto it = pipelines_.find(key);
 	if (it != pipelines_.end()) {
@@ -65,3 +66,13 @@ PipelineStateObjectCommon* PipelineManager::GetPipeline(PipelineType type, Blend
 	return nullptr;
 }
 
+///-------------------------------------------/// 
+/// CSパイプラインの取得
+///-------------------------------------------///
+CSPSOCommon* PipelineManager::GetCSPipeline(PipelineType type) {
+	auto it = computePipelines_.find(type);
+	if (it != computePipelines_.end()) {
+		return it->second.get();
+	}
+	return nullptr;
+}

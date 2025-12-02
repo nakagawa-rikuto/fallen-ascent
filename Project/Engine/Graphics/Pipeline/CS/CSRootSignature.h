@@ -1,8 +1,7 @@
 #pragma once
-/// ===include=== ///
-// Engine
+/// ===Include=== ///
 #include "Engine/Core/ComPtr.h"
-// PipelineType
+// Type
 #include "Engine/DataInfo/PipelineStateObjectType.h"
 // c++
 #include <d3d12.h>
@@ -13,13 +12,12 @@
 class DXCommon;
 
 ///=====================================================/// 
-/// ルートシグネイチャ
+/// ComputeShader用RootSignature
 ///=====================================================///
-class RootSignature {
+class CSRootSignature {
 public:
-
-	RootSignature() = default;
-	~RootSignature();
+	CSRootSignature() = default;
+	~CSRootSignature();
 
 	/// <summary>
 	/// ルートシグネイチャの生成処理
@@ -38,3 +36,4 @@ private:
 
 	ComPtr<ID3D12RootSignature> rootSignature_; // ルートシグネイチャ
 };
+

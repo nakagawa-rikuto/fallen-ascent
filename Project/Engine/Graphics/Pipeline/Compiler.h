@@ -37,12 +37,15 @@ public:
 	IDxcBlob* GetObjVS();
 	// PixelShader
 	IDxcBlob* GetObjPS();
+	// ComputeShader
+	IDxcBlob* GetObjCS();
 
 private:
 
 	//　ObjectShader
 	ComPtr<IDxcBlob> objVSBlob_;
 	ComPtr<IDxcBlob> objPSBlob_;
+	ComPtr<IDxcBlob> objCSBlob_;
 
 private:
 	/// <summary>
