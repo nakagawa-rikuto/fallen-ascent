@@ -6,6 +6,7 @@
 /// PipelineType
 ///-------------------------------------------///
 enum PipelineType {
+	// === GraphicsPipelines === //
 	// 前景2D
 	ForGround2D,
 	// 背景2D
@@ -15,7 +16,7 @@ enum PipelineType {
 	// SkyBox
 	PrimitiveSkyBox,
 	// Oshan
-	PrimitiveOshan,
+	PrimitiveOcean,
 	// Particle
 	Particle,
 	// Skinning3D
@@ -41,6 +42,9 @@ enum PipelineType {
 	// ShatterGlass
 	ShatterGlass,
 
+	// === ComputePipelines === //
+	CSOcean,
+
 	// 総数(これは最後にしなければいけない)
 	CountOfPipelineType,
 };
@@ -48,13 +52,14 @@ enum PipelineType {
 // 列挙型の全値を取得する関数
 constexpr std::array<PipelineType, static_cast<size_t>(PipelineType::CountOfPipelineType)> AllPipelineTypes() {
 	return {
+		// Graphics Pipelines
 		PipelineType::ForGround2D,
 		PipelineType::BackGround2D,
 		PipelineType::Obj3D,
 		PipelineType::PrimitiveSkyBox,
 		PipelineType::Particle ,
 		PipelineType::Skinning3D,
-		PipelineType::PrimitiveOshan,
+		PipelineType::PrimitiveOcean,
 		PipelineType::Line3D,
 		PipelineType::OffScreen,
 		PipelineType::Grayscale,
@@ -64,7 +69,9 @@ constexpr std::array<PipelineType, static_cast<size_t>(PipelineType::CountOfPipe
 		PipelineType::BoxFilter5x5,
 		PipelineType::RadiusBlur,
 		PipelineType::OutLine,
-		PipelineType::ShatterGlass
+		PipelineType::ShatterGlass,
+		// Compute Pipelines
+		PipelineType::CSOcean
 	};
 }
 
@@ -72,7 +79,8 @@ constexpr std::array<PipelineType, static_cast<size_t>(PipelineType::CountOfPipe
 inline bool IsComputePipeline(PipelineType type) {
 	switch (type) {
 		/// ===Compute Pipelines=== ///
-
+	case PipelineType::CSOcean:
+		return true;
 		/// ===Graphics Pipelines=== ///
 	case PipelineType::ForGround2D:
 	case PipelineType::BackGround2D:
@@ -80,7 +88,7 @@ inline bool IsComputePipeline(PipelineType type) {
 	case PipelineType::Skinning3D:
 	case PipelineType::PrimitiveSkyBox:
 	case PipelineType::Particle:
-	case PipelineType::PrimitiveOshan:
+	case PipelineType::PrimitiveOcean:
 	case PipelineType::Line3D:
 	case PipelineType::OffScreen:
 	case PipelineType::Grayscale:

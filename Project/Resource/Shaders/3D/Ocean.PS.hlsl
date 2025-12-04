@@ -1,4 +1,4 @@
-#include "Oshan.hlsli"
+#include "Ocean.hlsli"
 
 /// ===================================================
 /// PixelShader
@@ -43,7 +43,7 @@ struct Camera
 ConstantBuffer<Material> gMaterial : register(b0);
 ConstantBuffer<DirectionalLight> gDirectionalLight : register(b2);
 ConstantBuffer<Camera> gCamera : register(b3);
-ConstantBuffer<Color> gColor : register(b10);
+ConstantBuffer<Color> gColor : register(b4);
 
 struct PixlShaderOutput
 {

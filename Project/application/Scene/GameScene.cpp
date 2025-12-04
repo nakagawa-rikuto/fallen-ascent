@@ -107,8 +107,8 @@ void GameScene::Update() {
 	ImGui::End();
 
 	// Camera
-	camera_->ImGuiUpdate();
-	camera_->DebugUpdate();
+	defaultCamera_->ImGuiUpdate();
+	defaultCamera_->DebugUpdate();
 
 	// Player
 	player_->Information();
@@ -249,7 +249,7 @@ void GameScene::UpdateGame() {
 		currentPhase_ = GamePhase::GameOverAnimation; // GameOverAnimationへ
 
 	// ゲームが終わったらFadeOutへ
-	} else if (enemyManager_->GetTotalEnemyCount() <= 0 || InputService::TriggerKey(DIK_SPACE)) {
+	} else if (enemyManager_->GetTotalEnemyCount() <= 0 || InputService::TriggerKey(DIK_W)) {
 		gameClearAnimation_->Initialize(player_.get(), camera_.get());
 		currentPhase_ = GamePhase::GameClearAnimation; // GameClearへ
 	}
