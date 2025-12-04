@@ -24,8 +24,8 @@ namespace {
 		// SkyBox（深度有効, 書き込みなし, 比較LessEqual）
 		{ PipelineType::PrimitiveSkyBox, CreateDepthDesc(true,  D3D12_DEPTH_WRITE_MASK_ZERO, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
 
-		// Oshan (深度有効、書き込み無し、比較LessEqual)
-		{ PipelineType::PrimitiveOshan, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL)},
+		// Ocean (深度有効、書き込み無し、比較LessEqual)
+		{ PipelineType::PrimitiveOcean, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL)},
 
 		// Particle（深度有効, 書き込みなし, 比較LessEqual）
 		{ PipelineType::Particle, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ZERO, D3D12_COMPARISON_FUNC_LESS_EQUAL) },

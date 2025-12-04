@@ -14,8 +14,8 @@ enum PipelineType {
 	Obj3D,
 	// SkyBox
 	PrimitiveSkyBox,
-	// Oshan
-	PrimitiveOshan,
+	// Ocean
+	PrimitiveOcean,
 	// Particle
 	Particle,
 	// Skinning3D
@@ -54,7 +54,7 @@ constexpr std::array<PipelineType, static_cast<size_t>(PipelineType::CountOfPipe
 		PipelineType::PrimitiveSkyBox,
 		PipelineType::Particle ,
 		PipelineType::Skinning3D,
-		PipelineType::PrimitiveOshan,
+		PipelineType::PrimitiveOcean,
 		PipelineType::Line3D,
 		PipelineType::OffScreen,
 		PipelineType::Grayscale,
@@ -80,7 +80,7 @@ inline bool IsComputePipeline(PipelineType type) {
 	case PipelineType::Skinning3D:
 	case PipelineType::PrimitiveSkyBox:
 	case PipelineType::Particle:
-	case PipelineType::PrimitiveOshan:
+	case PipelineType::PrimitiveOcean:
 	case PipelineType::Line3D:
 	case PipelineType::OffScreen:
 	case PipelineType::Grayscale:

@@ -1,4 +1,4 @@
-#include "Oshan.h"
+#include "Ocean.h"
 // c++
 #include <cassert>
 #include <cmath>
@@ -6,8 +6,6 @@
 #include "Engine/System/Service/GraphicsResourceGetter.h"
 #include "Engine/System/Service/Render.h"
 #include "Engine/System/Service/CameraService.h"
-// camera
-#include "application/Game/Camera/GameCamera.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/MatrixMath.h"
@@ -20,7 +18,7 @@
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
-Oshan::~Oshan() {
+Ocean::~Ocean() {
     vertex_.reset();
     index_.reset();
     material_.reset();
@@ -37,7 +35,7 @@ Oshan::~Oshan() {
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
-void Oshan::SetWaveInfo(int waveIndex, const Vector3& direction, float amplitude, float length, float speed) {
+void Ocean::SetWaveInfo(int waveIndex, const Vector3& direction, float amplitude, float length, float speed) {
     if (waveIndex >= 0 && waveIndex < 3 && oceanShaderData_[waveIndex]) {
         oceanShaderData_[waveIndex]->distance = direction;
         oceanShaderData_[waveIndex]->amplitude = amplitude;
@@ -45,16 +43,16 @@ void Oshan::SetWaveInfo(int waveIndex, const Vector3& direction, float amplitude
         oceanShaderData_[waveIndex]->speed = speed;
     }
 }
-void Oshan::SetColorInfo(const OceanColorInfo& colorInfo) {
+void Ocean::SetColorInfo(const OceanColorInfo& colorInfo) {
     colorInfo_ = colorInfo;
 }
-void Oshan::SetRippleSpeed(float speed) { rippleSpeed_ = speed; }
-void Oshan::SetRippleDecay(float decay) { rippleDecay_ = decay; }
+void Ocean::SetRippleSpeed(float speed) { rippleSpeed_ = speed; }
+void Ocean::SetRippleDecay(float decay) { rippleDecay_ = decay; }
 
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void Oshan::Initialize(int gridSize) {
+void Ocean::Initialize(int gridSize) {
     /// ===コマンドリストのポインタの取得=== ///
     ID3D12Device* device = GraphicsResourceGetter::GetDXDevice();
 
@@ -113,8 +111,8 @@ void Oshan::Initialize(int gridSize) {
     indexBufferView_.SizeInBytes = sizeof(uint32_t) * indexCount_;
     indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
 
-    /// ===OshanCommon=== ///
-    OshanCommon::Initialize(device);
+    /// ===OceanCommon=== ///
+    OceanCommon::Initialize(device);
 
     /// ===OceanShaderInfo=== ///
     for (int i = 0; i < 3; ++i) {
@@ -170,9 +168,7 @@ void Oshan::Initialize(int gridSize) {
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
-void Oshan::Update() {
-    /// ===カメラの設定=== ///
-    camera_ = CameraService::GetActiveCamera().get();
+void Ocean::Update() {
 
     /// ===時間の更新=== ///
     currentTime_ += 1.0f / 60.0f;
@@ -186,7 +182,7 @@ void Oshan::Update() {
     UpdateRipples();
 
     /// ===データの書き込み=== ///
-	OshanCommon::Update();
+    OceanCommon::Update();
     OceanShaderDataWrite();
     RippleDataWrite();
     ColorDataWrite();
@@ -195,13 +191,13 @@ void Oshan::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void Oshan::Draw(BlendMode mode) {
+void Ocean::Draw(BlendMode mode) {
     /// ===コマンドリストのポインタの取得=== ///
     ID3D12GraphicsCommandList* commandList = GraphicsResourceGetter::GetDXCommandList();
 
     /// ===コマンドリストに設定=== ///
     // PSOの設定（オーシャン用のPipelineを使用）
-    Render::SetPSO(commandList, PipelineType::PrimitiveOshan, mode);
+    Render::SetPSO(commandList, PipelineType::PrimitiveOcean, mode);
 
     // Viewの設定
     commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
@@ -234,9 +230,9 @@ void Oshan::Draw(BlendMode mode) {
 ///-------------------------------------------/// 
 /// ImGui
 ///-------------------------------------------///
-void Oshan::ShowImGui() {
+void Ocean::ShowImGui() {
 #ifdef USE_IMGUI
-    ImGui::Begin("OshanInfo");
+    ImGui::Begin("Ocean");
 
     // === Transform情報 === //
     if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -246,7 +242,7 @@ void Oshan::ShowImGui() {
     }
 
     // === グリッド情報 === //
-    if (ImGui::CollapsingHeader("Grid Info")) {
+    if (ImGui::CollapsingHeader("グリッド情報")) {
         ImGui::Text("Grid Size: %d x %d", gridSize_, gridSize_);
         ImGui::Text("Vertex Count: %d", vertexCount_);
         ImGui::Text("Index Count: %d", indexCount_);
@@ -254,7 +250,7 @@ void Oshan::ShowImGui() {
     }
 
     // === 波情報 === //
-    if (ImGui::CollapsingHeader("Wave Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
+    if (ImGui::CollapsingHeader("波パラメーター", ImGuiTreeNodeFlags_DefaultOpen)) {
         for (int i = 0; i < 3; ++i) {
             ImGui::PushID(i);
             if (ImGui::TreeNode("Wave", "Wave %d", i)) {
@@ -292,7 +288,7 @@ void Oshan::ShowImGui() {
     }
 
     // === 波紋情報 === //
-    if (ImGui::CollapsingHeader("Ripple Info", ImGuiTreeNodeFlags_DefaultOpen)) {
+    if (ImGui::CollapsingHeader("波紋情報", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Text("Active Ripples: %d / 8", rippleBufferData_->activeCount);
         ImGui::Text("Ripple Speed: %.2f", rippleSpeed_);
         ImGui::Text("Ripple Decay: %.2f", rippleDecay_);
@@ -333,7 +329,7 @@ void Oshan::ShowImGui() {
     }
 
     // === 色情報 === //
-    if (ImGui::CollapsingHeader("Color Parameters")) {
+    if (ImGui::CollapsingHeader("色情報")) {
         ImGui::ColorEdit3("Sea Base", &colorInfo_.seaBase.x);
         ImGui::ColorEdit3("Sea Shallow", &colorInfo_.seaShallow.x);
         ImGui::ColorEdit3("Sky", &colorInfo_.sky.x);
@@ -431,7 +427,7 @@ void Oshan::ShowImGui() {
 ///-------------------------------------------/// 
 /// グリッドメッシュの生成
 ///-------------------------------------------///
-void Oshan::CreateGridMesh() {
+void Ocean::CreateGridMesh() {
     // より広い範囲のグリッドを生成
     float gridWidth = 100.0f;   // グリッドの幅
     float gridDepth = 100.0f;   // グリッドの奥行き
@@ -462,14 +458,14 @@ void Oshan::CreateGridMesh() {
 ///-------------------------------------------/// 
 /// OceanShaderDataの書き込み
 ///-------------------------------------------///
-void Oshan::OceanShaderDataWrite() {
+void Ocean::OceanShaderDataWrite() {
     // 既にUpdateで時間は更新済み
 }
 
 ///-------------------------------------------/// 
 /// RippleDataの書き込み
 ///-------------------------------------------///
-void Oshan::RippleDataWrite() {
+void Ocean::RippleDataWrite() {
     rippleBufferData_->currentTime = currentTime_;
     rippleBufferData_->rippleSpeed = rippleSpeed_;
     rippleBufferData_->rippleDecay = rippleDecay_;
@@ -478,14 +474,14 @@ void Oshan::RippleDataWrite() {
 ///-------------------------------------------/// 
 /// ColorDataの書き込み
 ///-------------------------------------------///
-void Oshan::ColorDataWrite() {
+void Ocean::ColorDataWrite() {
     *oceanColorData_ = colorInfo_;
 }
 
 ///-------------------------------------------/// 
 /// 波紋の更新
 ///-------------------------------------------///
-void Oshan::UpdateRipples() {
+void Ocean::UpdateRipples() {
     int activeCount = 0;
 
     for (int i = 0; i < 8; ++i) {
@@ -512,7 +508,7 @@ void Oshan::UpdateRipples() {
 ///-------------------------------------------/// 
 /// 円状に広がる波紋の追加（優先順位付き）
 ///-------------------------------------------///
-void Oshan::AddCircularRipple(const Vector3& center, float duration, float intensity, float maxRadius) {
+void Ocean::AddCircularRipple(const Vector3& center, float duration, float intensity, float maxRadius) {
     int targetSlot = -1;
 
     // 1. まず空いているスロットを探す
@@ -552,7 +548,7 @@ void Oshan::AddCircularRipple(const Vector3& center, float duration, float inten
 ///-------------------------------------------/// 
 /// すべての波紋をクリア
 ///-------------------------------------------///
-void Oshan::ClearRipples() {
+void Ocean::ClearRipples() {
     for (int i = 0; i < 8; ++i) {
         ripples_[i].isActive = false;
     }

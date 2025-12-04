@@ -2,17 +2,17 @@
 /// ===Indlude=== ///
 // Collider
 #include "Engine/Collider/AABBCollider.h"
-// Oshan
-#include "Engine/Graphics/3d/Oshan/Oshan.h"
+// Ocean
+#include "Engine/Graphics/3d/Ocean/Ocean.h"
 
 ///=====================================================/// 
-/// GroundOshan
+/// GroundOcean
 ///=====================================================///
-class GroundOshan : public AABBCollider {
+class GroundOcean : public AABBCollider {
 public: 
 
-	GroundOshan() = default;
-	~GroundOshan();
+	GroundOcean() = default;
+	~GroundOcean();
 
 	/// <summary>
 	/// 初期化処理
@@ -46,6 +46,6 @@ public: /// ===衝突処理=== ///
 private:
 
 	/// ===オーシャン=== ///
-	std::unique_ptr<Oshan> oshan_;
+	std::unique_ptr<Ocean> ocean_;
 };
 

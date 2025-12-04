@@ -1,4 +1,4 @@
-#include "Oshan.hlsli"
+#include "Ocean.hlsli"
 
 /// ===================================================
 /// VertexShader

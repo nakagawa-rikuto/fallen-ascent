@@ -18,6 +18,17 @@ void GameStage::Initialize(const std::string& levelData) {
 ///-------------------------------------------///
 void GameStage::Update() {
 
+	// GroundOceanの更新
+	for (const auto& ocean : oceans_) {
+		if (ocean) {
+#ifdef USE_IMGUI
+			ocean->ShowImGui();
+#endif // USE_IMGUI
+
+			ocean->Update();
+		}
+	}
+
 	// Groundの更新
 	for (const auto& ground : grounds_) {
 		if (ground) {
@@ -38,7 +49,14 @@ void GameStage::Update() {
 ///-------------------------------------------///
 void GameStage::Draw(BlendMode mode) {
 
-	// Groundの更新
+	// GroundOceanの描画
+	for (const auto& ocean : oceans_) {
+		if (ocean) {
+			ocean->Draw(mode);
+		}
+	}
+
+	// Groundの描画
 	for (const auto& ground : grounds_) {
 		if (ground) {
 			ground->Draw(mode);
@@ -64,25 +82,25 @@ void GameStage::LoadStageData(const std::string& stageData) {
 	for (const auto& stage : levelData->objects) {
 		if (stage.classType == LevelData::ClassTypeLevel::Ground1) {
 			// Object3dの生成
-			std::shared_ptr<Ground> ground = std::make_shared<Ground>();
+			std::shared_ptr<GroundOcean> ocean = std::make_shared<GroundOcean>();
 			// 初期化
-			ground->GameInit(stage.fileName);
+			ocean->Initialize();
 
 			// AABB設定
 			Vector3 min = stage.translation + stage.colliderInfo1;
 			Vector3 max = stage.translation + stage.colliderInfo2;
-			ground->SetAABB({ min, max });
+			ocean->SetAABB({ min, max });
 
 			// 座標設定
-			ground->SetTranslate(stage.translation);
-			ground->SetRotate(Math::QuaternionFromVector(stage.rotation));
-			ground->SetScale(stage.scaling);
+			ocean->SetTranslate(stage.translation);
+			ocean->SetRotate(Math::QuaternionFromVector(stage.rotation));
+			ocean->SetScale(stage.scaling);
 
 			// 一回更新を入れる
-			ground->Update();
+			ocean->Update();
 
 			// 配列に追加
-			grounds_.emplace_back(ground);
+			oceans_.emplace_back(ocean);
 		} else if (stage.classType == LevelData::ClassTypeLevel::Object1) {
 
 			// Object3dの生成

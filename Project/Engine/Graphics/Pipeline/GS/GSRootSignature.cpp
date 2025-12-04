@@ -802,7 +802,7 @@ namespace {
 	const std::unordered_map<PipelineType, RootSigGenerator> kRootSignatureTable_ = {
 		{ PipelineType::Obj3D,				Type3D },
 		{ PipelineType::PrimitiveSkyBox,	Type3D },
-		{ PipelineType::PrimitiveOshan,     TypeOshan },
+		{ PipelineType::PrimitiveOcean,     TypeOshan },
 		{ PipelineType::ForGround2D,		Type2D },
 		{ PipelineType::BackGround2D,		Type2D },
 		{ PipelineType::Particle,			TypeParticle },

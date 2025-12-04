@@ -4,12 +4,12 @@
 #include "Engine/Graphics/3d/Base/VertexBuffer3D.h"
 #include "Engine/Graphics/3d/Base/IndexBuffer3D.h"
 // Common
-#include "OshanCommon.h"
+#include "OceanCommon.h"
 
 // Pipeline
 #include "Engine/DataInfo/PipelineStateObjectType.h"
 // Data
-#include "Engine/DataInfo/OshanData.h"
+#include "Engine/DataInfo/OceanData.h"
 #include "Engine/DataInfo/LightData.h"
 // c++
 #include <memory>
@@ -21,12 +21,12 @@
 class GameCamera;
 
 ///=====================================================/// 
-/// Oshan - オーシャンオブジェクト管理クラス
+/// Ocean
 ///=====================================================///
-class Oshan : public OshanCommon {
+class Ocean : public OceanCommon {
 public:
-	Oshan() = default;
-	~Oshan();
+	Ocean() = default;
+	~Ocean();
 
 	/// <summary>
 	/// 初期化処理

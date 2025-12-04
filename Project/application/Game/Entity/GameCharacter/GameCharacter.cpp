@@ -153,7 +153,7 @@ void GameCharacter<TCollider>::GroundCollision() {
 	/// ===地面から離れている場合の処理=== ///
 	if (!groundInfo_.isGrounded) {
 		// 重力の適用
-		baseInfo_.velocity.y += baseInfo_.gravity * baseInfo_.deltaTime;
+		//baseInfo_.velocity.y += baseInfo_.gravity * baseInfo_.deltaTime;
 
 		// Y方向の速度の最大値を制限
 		const float kMaxFollSpeed = -10.0f;

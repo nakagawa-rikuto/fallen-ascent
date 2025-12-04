@@ -1,4 +1,4 @@
-#include "OshanCommon.h"
+#include "OceanCommon.h"
 // Service
 #include "Engine/System/Service/Render.h"
 #include "Engine/System/Service/CameraService.h"
@@ -12,7 +12,7 @@
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
-OshanCommon::~OshanCommon() {
+OceanCommon::~OceanCommon() {
 	material_.reset();
 	wvp_.reset();
 	directionallight_.reset();
@@ -22,22 +22,22 @@ OshanCommon::~OshanCommon() {
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
-const QuaternionTransform& OshanCommon::GetWorldTransform() const { return worldTransform_; }
-const Vector4& OshanCommon::GetColor() const { return color_; }
+const QuaternionTransform& OceanCommon::GetWorldTransform() const { return worldTransform_; }
+const Vector4& OceanCommon::GetColor() const { return color_; }
 
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
-void OshanCommon::SetTranslate(const Vector3& position) { worldTransform_.translate = position; }
-void OshanCommon::SetRotate(const Quaternion& rotate) { worldTransform_.rotate = rotate; }
-void OshanCommon::SetScale(const Vector3& scale) { worldTransform_.scale = scale; }
-void OshanCommon::SetColor(const Vector4& color) { color_ = color; }
-void OshanCommon::SetLightData(LightInfo light) { light_ = light; }
+void OceanCommon::SetTranslate(const Vector3& position) { worldTransform_.translate = position; }
+void OceanCommon::SetRotate(const Quaternion& rotate) { worldTransform_.rotate = rotate; }
+void OceanCommon::SetScale(const Vector3& scale) { worldTransform_.scale = scale; }
+void OceanCommon::SetColor(const Vector4& color) { color_ = color; }
+void OceanCommon::SetLightData(LightInfo light) { light_ = light; }
 
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void OshanCommon::Initialize(ID3D12Device* device) {
+void OceanCommon::Initialize(ID3D12Device* device) {
 	/// ===生成=== ///
 	material_ = std::make_unique<Material3D>();
 	wvp_ = std::make_unique<Transform3D>();
@@ -85,7 +85,7 @@ void OshanCommon::Initialize(ID3D12Device* device) {
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
-void OshanCommon::Update() {
+void OceanCommon::Update() {
 	camera_ = CameraService::GetActiveCamera().get();
 
 	MaterialDataWrite();
@@ -97,7 +97,7 @@ void OshanCommon::Update() {
 ///-------------------------------------------/// 
 /// 描画準備
 ///-------------------------------------------///
-void OshanCommon::Bind(ID3D12GraphicsCommandList* commandList) {
+void OceanCommon::Bind(ID3D12GraphicsCommandList* commandList) {
 	/// ===コマンドリストに設定=== ///
 	// MaterialBufferの設定
 	commandList->SetGraphicsRootConstantBufferView(0, material_->GetBuffer()->GetGPUVirtualAddress());
@@ -112,7 +112,7 @@ void OshanCommon::Bind(ID3D12GraphicsCommandList* commandList) {
 ///-------------------------------------------/// 
 /// MaterialDataの書き込み処理
 ///-------------------------------------------///
-void OshanCommon::MaterialDataWrite() {
+void OceanCommon::MaterialDataWrite() {
 	// UV変換行列の計算
 	Matrix4x4 uvTransformMatrix = Math::MakeScaleMatrix(uvTransform_.scale);
 	Matrix4x4 uvTransformMatrixMultiply = Multiply(uvTransformMatrix, Math::MakeRotateZMatrix(uvTransform_.rotate.z));
@@ -127,7 +127,7 @@ void OshanCommon::MaterialDataWrite() {
 ///-------------------------------------------/// 
 /// Transform情報の書き込み処理
 ///-------------------------------------------///
-void OshanCommon::TransformDataWrite() {
+void OceanCommon::TransformDataWrite() {
 	// ワールド行列の計算
 	Matrix4x4 worldMatrix = Math::MakeAffineQuaternionMatrix(worldTransform_.scale, worldTransform_.rotate, worldTransform_.translate);
 	Matrix4x4 worldViewProjectionMatrix;
@@ -144,7 +144,7 @@ void OshanCommon::TransformDataWrite() {
 ///-------------------------------------------/// 
 /// LightData書き込み処理
 ///-------------------------------------------///
-void OshanCommon::LightDataWrite() {
+void OceanCommon::LightDataWrite() {
 	// 平行光源のデータ書き込み
 	directionalLightData_->color = light_.directional.color;
 	directionalLightData_->direction = light_.directional.direction;
@@ -154,7 +154,7 @@ void OshanCommon::LightDataWrite() {
 ///-------------------------------------------/// 
 /// CameraData書き込み処理
 ///-------------------------------------------///
-void OshanCommon::CameraDataWrite() {
+void OceanCommon::CameraDataWrite() {
 	// カメラのワールド位置を書き込み
 	cameraData_->worldPosition = camera_->GetTranslate();
 }

@@ -30,7 +30,7 @@ namespace {
 	{ PipelineType::BackGround2D,	 { L"2D/Obj2D.VS.hlsl",				 L"2D/Obj2D.PS.hlsl",		 				 L""}},
 	{ PipelineType::Obj3D,			 { L"3D/Obj3D.VS.hlsl",				 L"3D/Obj3D.PS.hlsl",						 L""}},
 	{ PipelineType::PrimitiveSkyBox, { L"3D/SkyBox.VS.hlsl",             L"3D/SkyBox.PS.hlsl",						 L""}},
-	{ PipelineType::PrimitiveOshan,  { L"3D/Oshan.VS.hlsl",              L"3D/Oshan.PS.hlsl",						 L""}},
+	{ PipelineType::PrimitiveOcean,  { L"3D/Ocean.VS.hlsl",              L"3D/Ocean.PS.hlsl",						 L""}},
 	{ PipelineType::Skinning3D,		 { L"3D/SkinningObj3D.VS.hlsl",      L"3D/SkinningObj3D.PS.hlsl",				 L""}},
 	{ PipelineType::Line3D,			 { L"3D/Line3D.VS.hlsl",             L"3D/Line3D.PS.hlsl",						 L""}},
 	{ PipelineType::Particle,		 { L"Particle/Particle.VS.hlsl",     L"Particle/Particle.PS.hlsl",				 L""}},
