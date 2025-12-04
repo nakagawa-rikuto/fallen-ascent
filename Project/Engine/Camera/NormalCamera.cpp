@@ -1,4 +1,4 @@
-#include "NormalCaemra.h"
+#include "NormalCamera.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
@@ -22,38 +22,38 @@
 /// Getter
 ///-------------------------------------------///
 // WorldMatrix
-const Matrix4x4& NormalCaemra::GetWorldMatrix() const { return worldMatrix_; }
+const Matrix4x4& NormalCamera::GetWorldMatrix() const { return worldMatrix_; }
 // ViewMatrix
-const Matrix4x4& NormalCaemra::GetViewMatrix() const { return viewMatrix_; }
+const Matrix4x4& NormalCamera::GetViewMatrix() const { return viewMatrix_; }
 // ProjectionMatrix
-const Matrix4x4& NormalCaemra::GetProjectionMatrix() const { return projectionMatrix_; }
+const Matrix4x4& NormalCamera::GetProjectionMatrix() const { return projectionMatrix_; }
 // ViewProjectionMatrix
-const Matrix4x4& NormalCaemra::GetViewProjectionMatrix() const { return viewProjectionMatrix_; }
+const Matrix4x4& NormalCamera::GetViewProjectionMatrix() const { return viewProjectionMatrix_; }
 // Translate
-const Vector3& NormalCaemra::GetTranslate() const { return transform_.translate; }
+const Vector3& NormalCamera::GetTranslate() const { return transform_.translate; }
 // Rotate
-const Quaternion& NormalCaemra::GetRotate() const { return transform_.rotate; }
+const Quaternion& NormalCamera::GetRotate() const { return transform_.rotate; }
 
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
 // Translate
-void NormalCaemra::SetTranslate(const Vector3& translate) { transform_.translate = translate; }
+void NormalCamera::SetTranslate(const Vector3& translate) { transform_.translate = translate; }
 // Rotate
-void NormalCaemra::SetRotate(const Quaternion& rotate) { transform_.rotate = rotate; }
+void NormalCamera::SetRotate(const Quaternion& rotate) { transform_.rotate = rotate; }
 // ForY
-void NormalCaemra::SetForY(const float& forY) { horizontalView_ = forY; }
+void NormalCamera::SetForY(const float& forY) { horizontalView_ = forY; }
 // AspectRatio
-void NormalCaemra::SetAspectRatio(const float& aspect) { aspect_ = aspect; }
+void NormalCamera::SetAspectRatio(const float& aspect) { aspect_ = aspect; }
 // NearClip
-void NormalCaemra::SetNearClip(const float& nearClip) { nearClip_ = nearClip; }
+void NormalCamera::SetNearClip(const float& nearClip) { nearClip_ = nearClip; }
 // FarClip
-void NormalCaemra::SetFarClip(const float& farClip) { farClip_ = farClip; }
+void NormalCamera::SetFarClip(const float& farClip) { farClip_ = farClip; }
 
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void NormalCaemra::Initialize() {
+void NormalCamera::Initialize() {
 	transform_ = { {1.0f, 1.0f, 1.0f},{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f} };
 	horizontalView_ = 0.45f;
 	aspect_ = static_cast<float>(GraphicsResourceGetter::GetWindowWidth()) / static_cast<float>(GraphicsResourceGetter::GetWindowHeight());
@@ -66,7 +66,7 @@ void NormalCaemra::Initialize() {
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
-void NormalCaemra::Update() {
+void NormalCamera::Update() {
 	UpdateMatrices();
 }
 
@@ -74,7 +74,7 @@ void NormalCaemra::Update() {
 ///-------------------------------------------/// 
 /// 情報
 ///-------------------------------------------///
-void NormalCaemra::ImGuiUpdate() {
+void NormalCamera::ImGuiUpdate() {
 #ifdef USE_IMGUI
 	ImGui::Begin("Caemra");
 	ImGui::DragFloat3("Translate", &transform_.translate.x, 0.01f);
@@ -90,7 +90,7 @@ void NormalCaemra::ImGuiUpdate() {
 ///-------------------------------------------/// 
 /// デバッグ用の更新
 ///-------------------------------------------///
-void NormalCaemra::DebugUpdate() {
+void NormalCamera::DebugUpdate() {
 #ifdef _DEBUG
 	// カメラのローカルX軸（右方向ベクトル）を取得
 	Vector3 right = Math::RotateVector({ 1.0f, 0.0f, 0.0f }, transform_.rotate);
@@ -135,7 +135,7 @@ void NormalCaemra::DebugUpdate() {
 ///-------------------------------------------/// 
 /// シェイク開始処理
 ///-------------------------------------------///
-void NormalCaemra::StartShake(float intensity, float duration, float frequency) {
+void NormalCamera::StartShake(float intensity, float duration, float frequency) {
 	isShaking_ = true;
 	shakeIntensity_ = intensity;
 	shakeDuration_ = duration;
@@ -152,7 +152,7 @@ void NormalCaemra::StartShake(float intensity, float duration, float frequency) 
 ///-------------------------------------------/// 
 /// シェイク処理終了
 ///-------------------------------------------///
-void NormalCaemra::StopShake() {
+void NormalCamera::StopShake() {
 	isShaking_ = false;
 	shakeTimer_ = 0.0f;
 	shakeOffset_ = { 0.0f, 0.0f, 0.0f };
@@ -161,7 +161,7 @@ void NormalCaemra::StopShake() {
 ///-------------------------------------------/// 
 /// 行列の更新処理
 ///-------------------------------------------///
-void NormalCaemra::UpdateMatrices() {
+void NormalCamera::UpdateMatrices() {
 	/// ===シェイク=== ///
 	// シェイクの更新
 	UpdateShake();
@@ -182,7 +182,7 @@ void NormalCaemra::UpdateMatrices() {
 ///-------------------------------------------/// 
 /// シェイク処理
 ///-------------------------------------------///
-void NormalCaemra::UpdateShake() {
+void NormalCamera::UpdateShake() {
 	if (!isShaking_) {
 		shakeOffset_ = { 0.0f, 0.0f, 0.0f };
 		return;

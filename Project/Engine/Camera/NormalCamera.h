@@ -5,10 +5,10 @@
 ///=====================================================/// 
 /// カメラ基底クラス
 ///=====================================================///
-class NormalCaemra {
+class NormalCamera {
 public:
-	NormalCaemra() = default;
-	virtual ~NormalCaemra() = default;
+	NormalCamera() = default;
+	virtual ~NormalCamera() = default;
 
 	/// <summary>
 	/// 初期化処理

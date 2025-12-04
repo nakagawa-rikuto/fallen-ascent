@@ -55,7 +55,7 @@ void FollowCamera::SetStick(const Vector2& stickValue) { stickValue_ = stickValu
 ///-------------------------------------------///
 void FollowCamera::Initialize() {
 	// 基底クラスの初期化を呼ぶ
-	NormalCaemra::Initialize();
+	NormalCamera::Initialize();
 }
 
 ///-------------------------------------------/// 
@@ -68,7 +68,7 @@ void FollowCamera::Update() {
 	}
 
 	// 基底クラスの更新を呼ぶ（行列計算）
-	NormalCaemra::Update();
+	NormalCamera::Update();
 }
 
 ///-------------------------------------------/// 
@@ -76,7 +76,7 @@ void FollowCamera::Update() {
 ///-------------------------------------------///
 void FollowCamera::ImGuiUpdate() {
 #ifdef USE_IMGUI
-	NormalCaemra::ImGuiUpdate();
+	NormalCamera::ImGuiUpdate();
 	ImGui::Begin("FollowCamera");
 	ImGui::DragFloat3("Offset", &offset_.x, 0.01f);
 	ImGui::DragFloat3("OrbitingOffset_", &OrbitingOffset_.x, 0.01f);

@@ -192,7 +192,7 @@ void GameCamera::Init(CameraType type) {
 	type_ = type;
 
 	if (type_ == CameraType::Normal) {
-		normal_ = std::make_shared<NormalCaemra>();
+		normal_ = std::make_shared<NormalCamera>();
 		normal_->Initialize();
 	} else {
 		follow_ = std::make_shared<FollowCamera>();

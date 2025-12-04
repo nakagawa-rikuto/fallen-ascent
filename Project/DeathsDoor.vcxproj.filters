@@ -161,7 +161,7 @@
     <ClCompile Include="Engine\Camera\FollowCamera.cpp">
       <Filter>Engine\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Camera\NormalCaemra.cpp">
+    <ClCompile Include="Engine\Camera\NormalCamera.cpp">
       <Filter>Engine\Camera</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Collider\Base\Collider.cpp">
@@ -579,7 +579,7 @@
     <ClInclude Include="Engine\Camera\FollowCamera.h">
       <Filter>Engine\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Camera\NormalCaemra.h">
+    <ClInclude Include="Engine\Camera\NormalCamera.h">
       <Filter>Engine\Camera</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Collider\Base\Collider.h">
