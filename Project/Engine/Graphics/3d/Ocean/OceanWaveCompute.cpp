@@ -73,7 +73,7 @@ void OceanWaveCompute::Initialize(ID3D12Device* device, int gridSize) {
     settingsData_->gridWidth = 100.0f;
     settingsData_->gridDepth = 100.0f;
     settingsData_->normalEpsilon = 0.1f;
-    settingsData_->worldMatrix = 
+    settingsData_->worldMatrix = Math::MakeIdentity4x4();
     settingsData_->worldOffset = { 0.0f, 0.0f, 0.0f };
     settingsData_->padding1 = 0.0f;
 
@@ -149,9 +149,12 @@ void OceanWaveCompute::UpdateWaveInfos(const std::array<OceanShaderInfo, kWaveCo
 ///-------------------------------------------/// 
 /// 波紋情報の更新
 ///-------------------------------------------///
-void OceanWaveCompute::UpdateRippleBuffer(const RippleBufferForGPU& rippleBuffer) {
-    *rippleBufferData_ = rippleBuffer;
-}
+void OceanWaveCompute::UpdateRippleBuffer(const RippleBufferForGPU& rippleBuffer) {*rippleBufferData_ = rippleBuffer;}
+
+///-------------------------------------------/// 
+/// ワールド行列の更新
+///-------------------------------------------///
+void OceanWaveCompute::UpdateWorldMatrix(const Matrix4x4& worldMatrix) {settingsData_->worldMatrix = worldMatrix;}
 
 ///-------------------------------------------/// 
 /// 計算結果を頂点バッファにコピー

@@ -160,14 +160,14 @@ void Ocean::Initialize(int gridSize) {
 void Ocean::InitializeWaveInfos() {
    
     //// 最初の3つは従来の波
-    //waveInfos_[0] = { { 0.53f, 0.0f, 0.77f }, 1.308f, 10.033f, 2.187f, 0.0f, 0.0f };
-    //waveInfos_[1] = { { 0.0f, 0.2f, 0.6f }, 0.056f, 7.369f, 2.320f, 0.0f, 0.0f };
-    //waveInfos_[2] = { { 0.28f, 0.03f, 0.0f }, 0.879f, 4.355f, 2.098f, 0.0f, 0.0f };
+    waveInfos_[0] = { { 0.53f, 0.0f, 0.77f }, 1.308f, 10.033f, 2.187f, 0.0f, 0.0f };
+    waveInfos_[1] = { { 0.0f, 0.2f, 0.6f }, 0.056f, 7.369f, 2.320f, 0.0f, 0.0f };
+    waveInfos_[2] = { { 0.28f, 0.03f, 0.0f }, 0.879f, 4.355f, 2.098f, 0.0f, 0.0f };
 
-    // 最初の3つは従来の波
-    waveInfos_[0] = { { 0.0f, 0.0f, 0.0f }, 1.308f, 10.033f, 2.187f, 0.0f, 0.0f };
-    waveInfos_[1] = { { 0.0f, 0.0f, 0.0f }, 0.056f, 7.369f, 2.320f, 0.0f, 0.0f };
-    waveInfos_[2] = { { 0.0f, 0.0f, 0.0f }, 0.879f, 4.355f, 2.098f, 0.0f, 0.0f };
+    //// 最初の3つは従来の波
+    //waveInfos_[0] = { { 0.0f, 0.0f, 0.0f }, 1.308f, 10.033f, 2.187f, 0.0f, 0.0f };
+    //waveInfos_[1] = { { 0.0f, 0.0f, 0.0f }, 0.056f, 7.369f, 2.320f, 0.0f, 0.0f };
+    //waveInfos_[2] = { { 0.0f, 0.0f, 0.0f }, 0.879f, 4.355f, 2.098f, 0.0f, 0.0f };
 }
 
 ///-------------------------------------------/// 
@@ -183,6 +183,9 @@ void Ocean::Update() {
 
     /// ===波紋の更新=== ///
     UpdateRipples();
+
+    /// ===WorldMatrixの更新=== ///
+	waveCompute_->UpdateWorldMatrix(Math::MakeAffineQuaternionMatrix(worldTransform_.scale, worldTransform_.rotate, worldTransform_.translate));
 
     /// ===Compute Shaderで波を計算=== ///
     waveCompute_->UpdateWaveInfos(waveInfos_);

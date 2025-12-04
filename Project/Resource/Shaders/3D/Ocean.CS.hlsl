@@ -51,7 +51,6 @@ cbuffer WaveSettings : register(b0)
     float gridDepth; // グリッドの奥行き
     float normalEpsilon; // 法線計算の微小変位
     float4x4 worldMatrix; // ワールド行列
-    float3 worldOffset; // ワールド座標のオフセット
     float padding1;
 };
 
@@ -61,9 +60,6 @@ ConstantBuffer<RippleBuffer> gRippleBuffer : register(b1);
 
 // 出力バッファ
 RWStructuredBuffer<WaveVertexData> gOutputVertices : register(u0);
-
-// 波の数
-const int Waceount = 3;
 
 // ゲルストナー波を計算する関数
 float3 GerstnerWave(float2 position, OceanShaderInfo info)
@@ -150,7 +146,7 @@ float3 CalculateWaveOffset(float2 worldXZ)
     float3 offset = float3(0.0, 0.0, 0.0);
 
     // Waceountの波を合成
-    for (int i = 0; i < Waceount; i++)
+    for (int i = 0; i < 3; i++)
     {
         offset += GerstnerWave(worldXZ, gWaveInfos[i]);
     }

@@ -49,6 +49,12 @@ public:
     void UpdateRippleBuffer(const RippleBufferForGPU& rippleBuffer);
 
     /// <summary>
+    /// 指定されたワールド行列で内部のワールド変換を更新します。
+    /// </summary>
+    /// <param name="worldMatrix">更新に使用する読み取り専用のワールド行列への参照。</param>
+    void UpdateWorldMatrix(const Matrix4x4& worldMatrix);
+
+    /// <summary>
     /// コマンドリストに対して結果を頂点バッファにコピーするコマンドを記録します。
     /// </summary>
     /// <param name="commandList">コピーコマンドを記録するID3D12GraphicsCommandListへのポインタ。</param>
@@ -97,6 +103,7 @@ private:
     int vertexCount_ = 0;
 
 private:
+
     /// <summary>
     /// UAV（Unordered Access View）用のバッファを作成します。
     /// </summary>
