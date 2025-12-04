@@ -50,6 +50,7 @@ cbuffer WaveSettings : register(b0)
     float gridWidth; // グリッドの幅
     float gridDepth; // グリッドの奥行き
     float normalEpsilon; // 法線計算の微小変位
+    float4x4 worldMatrix; // ワールド行列
     float3 worldOffset; // ワールド座標のオフセット
     float padding1;
 };
@@ -60,6 +61,9 @@ ConstantBuffer<RippleBuffer> gRippleBuffer : register(b1);
 
 // 出力バッファ
 RWStructuredBuffer<WaveVertexData> gOutputVertices : register(u0);
+
+// 波の数
+const int Waceount = 3;
 
 // ゲルストナー波を計算する関数
 float3 GerstnerWave(float2 position, OceanShaderInfo info)
@@ -145,8 +149,8 @@ float3 CalculateWaveOffset(float2 worldXZ)
 {
     float3 offset = float3(0.0, 0.0, 0.0);
 
-    // 3個の波を合成
-    for (int i = 0; i < 3; i++)
+    // Waceountの波を合成
+    for (int i = 0; i < Waceount; i++)
     {
         offset += GerstnerWave(worldXZ, gWaveInfos[i]);
     }
@@ -189,37 +193,37 @@ void main(uint3 DTid : SV_DispatchThreadID)
     int z = DTid.y;
     
     // グリッドサイズを超える場合は処理しない
-    if (x > gridSize || z > gridSize)
+    if (x >= gridSize + 1 || z >= gridSize + 1)
         return;
     
     // 頂点インデックス
     int vertexIndex = z * (gridSize + 1) + x;
-    
     // グリッドの各セルのサイズ
     float step = gridWidth / gridSize;
     
-    // ローカル座標(中心を原点とする) - これが元の頂点位置
+    // ローカル座標
     float localX = -gridWidth * 0.5 + x * step;
     float localZ = -gridDepth * 0.5 + z * step;
     
-    // VS版と同じ: まずワールド座標を計算
-    // (ここではworldOffsetを使用してワールド空間での位置を決定)
-    float2 worldXZ = float2(localX, localZ) + worldOffset.xz;
+    // ワールド座標のXZを計算
+    float4 localPos = float4(localX, 0.0f, localZ, 1.0f);
+    float4 worldPos = mul(localPos, worldMatrix);
+    float2 worldXZ = worldPos.xz;
     
-    // VS版と同じ: 波のオフセットを計算
+    // 波のオフセットを計算
     float3 waveOffset = CalculateWaveOffset(worldXZ);
     
-    // VS版と同じ: 元の頂点位置(ローカル座標)に波のオフセットを加算
-    // 重要: VS版では input.position.xyz + waveOffset
-    // ここでは (localX, 0, localZ) が元の平面頂点位置
+    // 元の頂点位置に波のオフセットを加算
     float3 finalPosition = float3(localX, 0.0, localZ) + waveOffset;
     
-    // VS版と同じ: 法線を計算
+    // 法線を計算
     float3 normal = CalculateNormal(worldXZ);
+    // ワールド空間に変換
+    float3 worldNormal = normalize(mul(normal, (float3x3) worldMatrix));
     
     // 結果を出力バッファに書き込み
     gOutputVertices[vertexIndex].position = finalPosition;
-    gOutputVertices[vertexIndex].normal = normal;
+    gOutputVertices[vertexIndex].normal = worldNormal;
     gOutputVertices[vertexIndex].worldXZ = worldXZ;
     gOutputVertices[vertexIndex].padding = 0.0;
 }

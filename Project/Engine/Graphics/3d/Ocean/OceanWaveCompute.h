@@ -78,6 +78,7 @@ private:
         float gridWidth;
         float gridDepth;
         float normalEpsilon;
+        Matrix4x4 worldMatrix;
         Vector3 worldOffset;
         float padding1;
     };

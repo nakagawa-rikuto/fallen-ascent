@@ -4,6 +4,9 @@
 // Service
 #include "Engine/System/Service/ServiceLocator.h"
 #include "Engine/System/Managers/SRVManager.h"
+// Math
+#include "Math/sMath.h"
+#include "Math/MatrixMath.h"
 
 
 ///-------------------------------------------/// 
@@ -70,6 +73,7 @@ void OceanWaveCompute::Initialize(ID3D12Device* device, int gridSize) {
     settingsData_->gridWidth = 100.0f;
     settingsData_->gridDepth = 100.0f;
     settingsData_->normalEpsilon = 0.1f;
+    settingsData_->worldMatrix = 
     settingsData_->worldOffset = { 0.0f, 0.0f, 0.0f };
     settingsData_->padding1 = 0.0f;
 
