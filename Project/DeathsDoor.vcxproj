@@ -247,8 +247,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp" />
     <ClCompile Include="Engine\Graphics\2d\Base\Object2DCommon.cpp" />
     <ClCompile Include="application\Game\Animation\StartAnimation.cpp" />
-    <ClCompile Include="Engine\Graphics\3d\Ocean\Ocean.cpp" />
-    <ClCompile Include="Engine\Graphics\3d\Ocean\OceanCommon.cpp" />
+    <ClCompile Include="Engine\Graphics\3d\Ocean\geltner\Ocean.cpp" />
+    <ClCompile Include="Engine\Graphics\3d\Ocean\geltner\OceanCommon.cpp" />
     <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp" />
     <ClCompile Include="Engine\System\Editor\ParticleEditor.cpp" />
@@ -257,7 +257,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Particle\ParticleParameter.cpp" />
     <ClCompile Include="Engine\Graphics\Base\UAV.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp" />
-    <ClCompile Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.cpp" />
+    <ClCompile Include="Engine\Graphics\3d\Ocean\geltner\OceanWaveCompute.cpp" />
+    <ClCompile Include="Engine\Graphics\3d\Ocean\FFT\OceanFFTCompute.cpp" />
+    <ClCompile Include="Engine\Graphics\3d\Ocean\FFT\OceanFFT.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
@@ -265,12 +267,13 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyMoveState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Manager\EnemyManager.h" />
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h" />
+    <ClInclude Include="Engine\DataInfo\OceanFFTData.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.h" />
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
     <ClInclude Include="Engine\System\Service\DeltaTimeSevice.h" />
     <ClInclude Include="Engine\System\DeltraTime\DeltaTime.h" />
-    <ClInclude Include="Engine\DataInfo\OshanData.h" />
+    <ClInclude Include="Engine\DataInfo\OceanData.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\BoxFilter3x3Effect.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\BoxFilter5x5Effect.h" />
@@ -410,8 +413,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h" />
     <ClInclude Include="Engine\Graphics\2d\Base\Object2DCommon.h" />
     <ClInclude Include="application\Game\Animation\StartAnimation.h" />
-    <ClInclude Include="Engine\Graphics\3d\Ocean\Ocean.h" />
-    <ClInclude Include="Engine\Graphics\3d\Ocean\OceanCommon.h" />
+    <ClInclude Include="Engine\Graphics\3d\Ocean\geltner\Ocean.h" />
+    <ClInclude Include="Engine\Graphics\3d\Ocean\geltner\OceanCommon.h" />
     <ClInclude Include="application\Game\Object\StageObject\StageObject.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
     <ClInclude Include="Engine\System\Editor\ParticleEditor.h" />
@@ -420,7 +423,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Particle\ParticleParameter.h" />
     <ClInclude Include="Engine\Graphics\Base\UAV.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h" />
-    <ClInclude Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.h" />
+    <ClInclude Include="Engine\Graphics\3d\Ocean\geltner\OceanWaveCompute.h" />
+    <ClInclude Include="Engine\Graphics\3d\Ocean\FFT\OceanFFTCompute.h" />
+    <ClInclude Include="Engine\Graphics\3d\Ocean\FFT\OceanFFT.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -441,6 +446,42 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Resource\Shaders\3D\Ocean.CS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\3D\OceanDisplacement.CS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\3D\OceanFFT.CS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\3D\OceanFFT.PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\3D\OceanFFT.VS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\3D\OceanSpectrum.CS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>

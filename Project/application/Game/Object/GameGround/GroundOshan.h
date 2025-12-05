@@ -3,7 +3,8 @@
 // Collider
 #include "Engine/Collider/AABBCollider.h"
 // Oshan
-#include "Engine/Graphics/3d/Ocean/Ocean.h"
+#include "Engine/Graphics/3d/Ocean/geltner/Ocean.h"
+#include "Engine/Graphics/3d/Ocean/FFT/OceanFFT.h"
 
 ///=====================================================/// 
 /// GroundOshan
@@ -46,6 +47,6 @@ public: /// ===衝突処理=== ///
 private:
 
 	/// ===オーシャン=== ///
-	std::unique_ptr<Ocean> ocean_;
+	std::unique_ptr<OceanFFT> ocean_;
 };
 

@@ -5,7 +5,7 @@
 #include "Engine/Graphics/Base/BufferBase.h"
 #include "Engine/Graphics/Base/UAV.h"
 // Data
-#include "Engine/DataInfo/OshanData.h"
+#include "Engine/DataInfo/OceanData.h"
 // c++
 #include <d3d12.h>
 #include <memory>

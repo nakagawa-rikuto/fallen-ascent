@@ -1,3 +1,4 @@
+#pragma once
 /// ===Include=== ///
 // Engien
 #include "Engine/Core/ComPtr.h"

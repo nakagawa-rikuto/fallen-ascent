@@ -777,12 +777,110 @@ namespace {
 		return rootSignature;
 	}
 
+	// ===OceanFFT (Graphics)=== ///
+	ComPtr<ID3D12RootSignature> TypeOceanFFT(ID3D12Device* device) {
+		// DescriptorRange の生成
+		// t0: Displacement Map
+		D3D12_DESCRIPTOR_RANGE descriptorRange0 = {};
+		descriptorRange0.BaseShaderRegister = 0;
+		descriptorRange0.NumDescriptors = 1;
+		descriptorRange0.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		descriptorRange0.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+		// t1: Normal Map
+		D3D12_DESCRIPTOR_RANGE descriptorRange1 = {};
+		descriptorRange1.BaseShaderRegister = 1;
+		descriptorRange1.NumDescriptors = 1;
+		descriptorRange1.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		descriptorRange1.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+		// RootParameter の生成
+		D3D12_ROOT_PARAMETER rootParameters[7] = {};
+
+		// [0] CBV - Transform (b0)
+		rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+		rootParameters[0].Descriptor.ShaderRegister = 0;
+
+		// [1] DescriptorTable - Displacement Map (t0)
+		rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+		rootParameters[1].DescriptorTable.pDescriptorRanges = &descriptorRange0;
+		rootParameters[1].DescriptorTable.NumDescriptorRanges = 1;
+
+		// [2] DescriptorTable - Normal Map (t1)
+		rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+		rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRange1;
+		rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
+
+		// [3] CBV - Material (b0)
+		rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+		rootParameters[3].Descriptor.ShaderRegister = 0;
+
+		// [4] CBV - DirectionalLight (b1)
+		rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+		rootParameters[4].Descriptor.ShaderRegister = 1;
+
+		// [5] CBV - Camera (b2)
+		rootParameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		rootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+		rootParameters[5].Descriptor.ShaderRegister = 2;
+
+		// [6] CBV - OceanColor (b3)
+		rootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+		rootParameters[6].Descriptor.ShaderRegister = 3;
+
+		// Sampler の設定
+		D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
+		staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+		staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+		staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+		staticSamplers[0].ShaderRegister = 0;
+		staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+
+		// RootSignature の生成
+		D3D12_ROOT_SIGNATURE_DESC desc{};
+		desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+		desc.pParameters = rootParameters;
+		desc.NumParameters = _countof(rootParameters);
+		desc.pStaticSamplers = staticSamplers;
+		desc.NumStaticSamplers = _countof(staticSamplers);
+
+		// シリアライズ & 作成
+		ComPtr<ID3DBlob> signatureBlob;
+		ComPtr<ID3DBlob> errorBlob;
+		HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+		if (FAILED(hr)) {
+			if (errorBlob) {
+				OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+			}
+			assert(false);
+			return nullptr;
+		}
+
+		ComPtr<ID3D12RootSignature> rootSignature;
+		hr = device->CreateRootSignature(
+			0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
+			IID_PPV_ARGS(&rootSignature));
+		assert(SUCCEEDED(hr));
+
+		return rootSignature;
+	}
+
 	/// ===マップに登録=== ///
 	using RootSigGenerator = std::function<ComPtr<ID3D12RootSignature>(ID3D12Device*)>;
 	const std::unordered_map<PipelineType, RootSigGenerator> kRootSignatureTable_ = {
 		{ PipelineType::Obj3D,				Type3D },
 		{ PipelineType::PrimitiveSkyBox,	Type3D },
 		{ PipelineType::PrimitiveOcean,     TypeOshan },
+		{ PipelineType::PrimitiveOceanFFT,  TypeOceanFFT},
 		{ PipelineType::ForGround2D,		Type2D },
 		{ PipelineType::BackGround2D,		Type2D },
 		{ PipelineType::Particle,			TypeParticle },

@@ -23,27 +23,35 @@ namespace {
 		std::wstring vsPath;
 		std::wstring psPath;
 		std::wstring csPath;
+		std::wstring csEntryPoint;
 	};
 
 	const std::unordered_map<PipelineType, ShaderInfo> kShaderTable_ = {
-	{ PipelineType::ForGround2D,	 { L"2D/Obj2D.VS.hlsl",				 L"2D/Obj2D.PS.hlsl",						 L""}},
-	{ PipelineType::BackGround2D,	 { L"2D/Obj2D.VS.hlsl",				 L"2D/Obj2D.PS.hlsl",		 				 L""}},
-	{ PipelineType::Obj3D,			 { L"3D/Obj3D.VS.hlsl",				 L"3D/Obj3D.PS.hlsl",						 L""}},
-	{ PipelineType::PrimitiveSkyBox, { L"3D/SkyBox.VS.hlsl",             L"3D/SkyBox.PS.hlsl",						 L""}},
-	{ PipelineType::PrimitiveOcean,  { L"3D/Ocean.VS.hlsl",              L"3D/Ocean.PS.hlsl",						 L""}},
-	{ PipelineType::Skinning3D,		 { L"3D/SkinningObj3D.VS.hlsl",      L"3D/SkinningObj3D.PS.hlsl",				 L""}},
-	{ PipelineType::Line3D,			 { L"3D/Line3D.VS.hlsl",             L"3D/Line3D.PS.hlsl",						 L""}},
-	{ PipelineType::Particle,		 { L"Particle/Particle.VS.hlsl",     L"Particle/Particle.PS.hlsl",				 L""}},
-	{ PipelineType::OffScreen,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/CopyImage.PS.hlsl",			 L""}},
-	{ PipelineType::Grayscale,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Grayscale.PS.hlsl",			 L""}},
-	{ PipelineType::Vignette ,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Vignette.PS.hlsl",				 L""}},
-	{ PipelineType::Dissolve,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Dissolve.PS.hlsl",				 L""}},
-	{ PipelineType::BoxFilter3x3,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/BoxFilter3x3.PS.hlsl",			 L""}},
-	{ PipelineType::BoxFilter5x5,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/BoxFilter5x5.PS.hlsl",			 L""}},
-	{ PipelineType::RadiusBlur,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/RadialBlur.PS.hlsl",			 L""}},
-	{ PipelineType::OutLine,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/LuminanceBasedOutline.PS.hlsl", L""}},
-	{ PipelineType::ShatterGlass,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/ShatterGlass.PS.hlsl",			 L""}},
-	{ PipelineType::CSOcean,		 { L"",								 L"",   									 L"3D/Ocean.CS.hlsl"}},
+	//									VertexShader,						PixelShader,						ComputeShader, EntryPoint
+	{ PipelineType::ForGround2D,		{ L"2D/Obj2D.VS.hlsl",				L"2D/Obj2D.PS.hlsl",						 L"", L""}},
+	{ PipelineType::BackGround2D,		{ L"2D/Obj2D.VS.hlsl",				L"2D/Obj2D.PS.hlsl",		 				 L"", L""}},
+	{ PipelineType::Obj3D,				{ L"3D/Obj3D.VS.hlsl",				L"3D/Obj3D.PS.hlsl",						 L"", L""}},
+	{ PipelineType::PrimitiveSkyBox,	{ L"3D/SkyBox.VS.hlsl",             L"3D/SkyBox.PS.hlsl",						 L"", L""}},
+	{ PipelineType::PrimitiveOcean,		{ L"3D/Ocean.VS.hlsl",              L"3D/Ocean.PS.hlsl",						 L"", L""}},
+	{ PipelineType::PrimitiveOceanFFT,  { L"3D/OceanFFT.VS.hlsl",           L"3D/OceanFFT.PS.hlsl",						 L"", L""}},
+	{ PipelineType::Skinning3D,			{ L"3D/SkinningObj3D.VS.hlsl",      L"3D/SkinningObj3D.PS.hlsl",				 L"", L""}},
+	{ PipelineType::Line3D,				{ L"3D/Line3D.VS.hlsl",             L"3D/Line3D.PS.hlsl",						 L"", L""}},
+	{ PipelineType::Particle,			{ L"Particle/Particle.VS.hlsl",     L"Particle/Particle.PS.hlsl",				 L"", L""}},
+	{ PipelineType::OffScreen,			{ L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/CopyImage.PS.hlsl",				 L"", L""}},
+	{ PipelineType::Grayscale,			{ L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Grayscale.PS.hlsl",				 L"", L""}},
+	{ PipelineType::Vignette ,			{ L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Vignette.PS.hlsl",				 L"", L""}},
+	{ PipelineType::Dissolve,			{ L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Dissolve.PS.hlsl",				 L"", L""}},
+	{ PipelineType::BoxFilter3x3,		{ L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/BoxFilter3x3.PS.hlsl",			 L"", L""}},
+	{ PipelineType::BoxFilter5x5,		{ L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/BoxFilter5x5.PS.hlsl",			 L"", L""}},
+	{ PipelineType::RadiusBlur,			{ L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/RadialBlur.PS.hlsl",			 L"", L""}},
+	{ PipelineType::OutLine,			{ L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/LuminanceBasedOutline.PS.hlsl",  L"", L""}},
+	{ PipelineType::ShatterGlass,		{ L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/ShatterGlass.PS.hlsl",			 L"", L""}},
+	// ComputeShader
+	{ PipelineType::CSOcean,			{ L"", L"", L"3D/Ocean.CS.hlsl",				L"main"}},
+	{ PipelineType::CSOceanFFT,			{ L"", L"", L"3D/OceanFFT.CS.hlsl",				L"main"}},
+	{ PipelineType::CSOceanSpectrum,	{ L"", L"", L"3D/OceanSpectrum.CS.hlsl",		L"UpdateHKT"}},
+	{ PipelineType::CSOceanSpectrumH0,	{ L"", L"", L"3D/OceanSpectrum.CS.hlsl",		L"GenerateH0"}},
+	{ PipelineType::CSOceanDisplacement,{ L"", L"", L"3D/OceanDisplacement.CS.hlsl",	L"main"}},
 	};
 }
 
@@ -72,8 +80,10 @@ void Compiler::Initialize(DXCommon* dxCommon, PipelineType type) {
 	}
 	// CSシェーダのコンパイル
 	if (!info.csPath.empty()) {
+		// エントリーポイントの設定
+		const wchar_t* entryPoint = info.csEntryPoint.empty() ? L"main" : info.csEntryPoint.c_str();
 		objCSBlob_ = CompileShader(info.csPath, L"cs_6_0",
-			dxCommon->GetDxcUtils(), dxCommon->GetDxcCompiler(), dxCommon->GetIncludeHandler());
+			dxCommon->GetDxcUtils(), dxCommon->GetDxcCompiler(), dxCommon->GetIncludeHandler(), entryPoint);
 		assert(objCSBlob_ && "Compute Shader Compile Failed");
 	}
 }
@@ -92,7 +102,7 @@ IDxcBlob* Compiler::GetObjCS() { return objCSBlob_.Get(); }
 /// CompileShader関数
 ///-------------------------------------------///
 ComPtr<IDxcBlob> Compiler::CompileShader(
-	const std::wstring& filePath, const wchar_t* profile, IDxcUtils* dxcUtils, IDxcCompiler3* dxcCompiler, IDxcIncludeHandler* includeHandler) {
+	const std::wstring& filePath, const wchar_t* profile, IDxcUtils* dxcUtils, IDxcCompiler3* dxcCompiler, IDxcIncludeHandler* includeHandler, const wchar_t* entryPoint) {
 
 	HRESULT hr;
 
@@ -121,7 +131,7 @@ ComPtr<IDxcBlob> Compiler::CompileShader(
 #ifdef _DEBUG
 	LPCWSTR arguments[] = {
 		shaderFileName.c_str(),
-		L"-E", L"main",
+		L"-E", entryPoint,
 		L"-T", profile,
 		L"-Zi", L"-Qembed_debug",   // デバッグ情報あり
 		L"-Od",                     // 最適化オフ
@@ -131,7 +141,7 @@ ComPtr<IDxcBlob> Compiler::CompileShader(
 #else
 	LPCWSTR arguments[] = {
 		shaderFileName.c_str(),
-		L"-E", L"main",
+		L"-E", entryPoint,
 		L"-T", profile,
 		// デバッグ情報はなし
 		L"-O2",                     // 高速化のための最適化

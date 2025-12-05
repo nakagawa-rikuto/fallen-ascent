@@ -10,6 +10,7 @@ namespace {
 	{ PipelineType::Obj3D,				D3D12_CULL_MODE_BACK },
 	{ PipelineType::PrimitiveSkyBox,    D3D12_CULL_MODE_NONE },
 	{ PipelineType::PrimitiveOcean,     D3D12_CULL_MODE_BACK },
+	{ PipelineType::PrimitiveOceanFFT, D3D12_CULL_MODE_BACK },
 	{ PipelineType::Particle,			D3D12_CULL_MODE_NONE },
 	{ PipelineType::Skinning3D,			D3D12_CULL_MODE_BACK },
 	{ PipelineType::Line3D,				D3D12_CULL_MODE_NONE },

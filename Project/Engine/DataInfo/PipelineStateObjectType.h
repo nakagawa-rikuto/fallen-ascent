@@ -7,43 +7,44 @@
 ///-------------------------------------------///
 enum PipelineType {
 	// === GraphicsPipelines === //
-	// 前景2D
+	// === 2D ===
 	ForGround2D,
-	// 背景2D
 	BackGround2D,
-	// 3D
+
+	// === 3D ===
 	Obj3D,
-	// SkyBox
-	PrimitiveSkyBox,
-	// Oshan
-	PrimitiveOcean,
-	// Particle
-	Particle,
-	// Skinning3D
 	Skinning3D,
-	// Line3D
 	Line3D,
-	// OffScreen
+
+	// === Primitive ===
+	PrimitiveSkyBox,
+	PrimitiveOcean,        // Gerstner波版
+	PrimitiveOceanFFT,     // FFT版
+
+	// === Particle ===
+	Particle,
+
+	// === Post Effect ===
 	OffScreen,
-	// Grayscale
 	Grayscale,
-	// Vignette
 	Vignette,
-	// Dissolve
 	Dissolve,
-	// BoxFilter3x3
 	BoxFilter3x3,
-	// BoxFilter5x5
 	BoxFilter5x5,
-	// RadiusBlur
 	RadiusBlur,
-	// OutLine
 	OutLine,
-	// ShatterGlass
 	ShatterGlass,
 
 	// === ComputePipelines === //
+	// OceanComputeShader
 	CSOcean,
+	// FFT
+	CSOceanFFT,
+	// Spectrum
+	CSOceanSpectrum,
+	CSOceanSpectrumH0,
+	// Displacement
+	CSOceanDisplacement,
 
 	// 総数(これは最後にしなければいけない)
 	CountOfPipelineType,
@@ -60,6 +61,7 @@ constexpr std::array<PipelineType, static_cast<size_t>(PipelineType::CountOfPipe
 		PipelineType::Particle ,
 		PipelineType::Skinning3D,
 		PipelineType::PrimitiveOcean,
+		PipelineType::PrimitiveOceanFFT,
 		PipelineType::Line3D,
 		PipelineType::OffScreen,
 		PipelineType::Grayscale,
@@ -71,7 +73,11 @@ constexpr std::array<PipelineType, static_cast<size_t>(PipelineType::CountOfPipe
 		PipelineType::OutLine,
 		PipelineType::ShatterGlass,
 		// Compute Pipelines
-		PipelineType::CSOcean
+		PipelineType::CSOcean,
+		PipelineType::CSOceanFFT,
+		PipelineType::CSOceanSpectrum,
+		PipelineType::CSOceanSpectrumH0,
+		PipelineType::CSOceanDisplacement,
 	};
 }
 
@@ -80,6 +86,10 @@ inline bool IsComputePipeline(PipelineType type) {
 	switch (type) {
 		/// ===Compute Pipelines=== ///
 	case PipelineType::CSOcean:
+	case PipelineType::CSOceanFFT:
+	case PipelineType::CSOceanSpectrum:
+	case PipelineType::CSOceanSpectrumH0:
+	case PipelineType::CSOceanDisplacement:
 		return true;
 		/// ===Graphics Pipelines=== ///
 	case PipelineType::ForGround2D:
@@ -89,6 +99,7 @@ inline bool IsComputePipeline(PipelineType type) {
 	case PipelineType::PrimitiveSkyBox:
 	case PipelineType::Particle:
 	case PipelineType::PrimitiveOcean:
+	case PipelineType::PrimitiveOceanFFT:
 	case PipelineType::Line3D:
 	case PipelineType::OffScreen:
 	case PipelineType::Grayscale:

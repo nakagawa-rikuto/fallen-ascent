@@ -80,6 +80,11 @@
       <Filter>Resource\Shaders\Oshan</Filter>
     </FxCompile>
     <FxCompile Include="Resource\Shaders\3D\Ocean.CS.hlsl" />
+    <FxCompile Include="Resource\Shaders\3D\OceanSpectrum.CS.hlsl" />
+    <FxCompile Include="Resource\Shaders\3D\OceanFFT.CS.hlsl" />
+    <FxCompile Include="Resource\Shaders\3D\OceanDisplacement.CS.hlsl" />
+    <FxCompile Include="Resource\Shaders\3D\OceanFFT.VS.hlsl" />
+    <FxCompile Include="Resource\Shaders\3D\OceanFFT.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -476,10 +481,10 @@
     <ClCompile Include="application\Game\Object\GameStage.cpp">
       <Filter>application\Game\Object</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\3d\Ocean\Ocean.cpp">
+    <ClCompile Include="Engine\Graphics\3d\Ocean\geltner\Ocean.cpp">
       <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\3d\Ocean\OceanCommon.cpp">
+    <ClCompile Include="Engine\Graphics\3d\Ocean\geltner\OceanCommon.cpp">
       <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClCompile>
     <ClCompile Include="application\Scene\GameScene.cpp" />
@@ -495,7 +500,9 @@
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSRootSignature.cpp" />
     <ClCompile Include="Engine\Graphics\Base\UAV.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp" />
-    <ClCompile Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.cpp" />
+    <ClCompile Include="Engine\Graphics\3d\Ocean\geltner\OceanWaveCompute.cpp" />
+    <ClCompile Include="Engine\Graphics\3d\Ocean\FFT\OceanFFTCompute.cpp" />
+    <ClCompile Include="Engine\Graphics\3d\Ocean\FFT\OceanFFT.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -933,13 +940,13 @@
     <ClInclude Include="application\Game\Object\GameStage.h">
       <Filter>application\Game\Object</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\3d\Ocean\Ocean.h">
+    <ClInclude Include="Engine\Graphics\3d\Ocean\geltner\Ocean.h">
       <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\3d\Ocean\OceanCommon.h">
+    <ClInclude Include="Engine\Graphics\3d\Ocean\geltner\OceanCommon.h">
       <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\DataInfo\OshanData.h">
+    <ClInclude Include="Engine\DataInfo\OceanData.h">
       <Filter>Engine\DataInfo</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
@@ -954,7 +961,10 @@
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
     <ClInclude Include="Engine\Graphics\Base\UAV.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h" />
-    <ClInclude Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.h" />
+    <ClInclude Include="Engine\Graphics\3d\Ocean\geltner\OceanWaveCompute.h" />
+    <ClInclude Include="Engine\Graphics\3d\Ocean\FFT\OceanFFTCompute.h" />
+    <ClInclude Include="Engine\DataInfo\OceanFFTData.h" />
+    <ClInclude Include="Engine\Graphics\3d\Ocean\FFT\OceanFFT.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

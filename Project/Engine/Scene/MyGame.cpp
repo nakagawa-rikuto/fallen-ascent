@@ -28,16 +28,17 @@ void MyGame::Initialize(const wchar_t* title) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	/// ===読み込み処理=== ///
-	// スレッドの生成
-	std::thread loadingThread([this] {
-		LoadAudio();
-		LoadTexture();
-		LoadModel();
-		LoadAnimation();
-	});
+	// 各読み込み処理用のスレッドを生成
+	LoadTexture();
+	std::vector<std::thread> loadingThreads;
+	loadingThreads.emplace_back([this] { LoadAudio(); });
+	loadingThreads.emplace_back([this] { LoadModel(); });
+	loadingThreads.emplace_back([this] { LoadAnimation(); });
 
-	// 終了を待機
-	loadingThread.join();
+	// すべてのスレッドの終了を待機
+	for (auto& thread : loadingThreads) {
+		thread.join();
+	}
 
 	// 処理時間を計測（end）
 	auto end = std::chrono::high_resolution_clock::now();

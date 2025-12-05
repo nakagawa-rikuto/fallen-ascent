@@ -56,6 +56,7 @@ private:
 	/// <param name="dxcUtils">初期化済みのIDxcUtilsインターフェイス。ファイル読み込みやユーティリティ操作に使用されます。</param>
 	/// <param name="dxcCompiler">初期化済みのIDxcCompiler3インターフェイス。実際のコンパイル処理を行います。</param>
 	/// <param name="includeHandler">初期化済みのIDxcIncludeHandlerインターフェイス。#includeの解決を担当します。</param>
+	/// <param name="entryPoint">エントリーポイント名（デフォルトは"main"）</param> 
 	/// <returns>コンパイル結果を保持するComPtr<IDxcBlob>。コンパイル成功時はシェーダーバイナリが格納され、失敗時はエラーメッセージを含むBlobが返される場合があります。</returns>
 	ComPtr<IDxcBlob> CompileShader(
 		// CompilerするShaderファイルへのパス
@@ -67,6 +68,8 @@ private:
 		// 初期化で生成したものを3つ
 		IDxcUtils* dxcUtils,
 		IDxcCompiler3* dxcCompiler,
-		IDxcIncludeHandler* includeHandler);
+		IDxcIncludeHandler* includeHandler,
 
+		// エントリーポイント
+		const wchar_t* entryPoint = L"main");
 };
