@@ -1,6 +1,6 @@
 #pragma once
 /// ===Include=== ///
-#include "Engine/Camera/NormalCaemra.h"
+#include "Engine/Camera/NormalCamera.h"
 #include "Engine/Camera/FollowCamera.h"
 
 /// ===CameraType=== ///
@@ -102,7 +102,7 @@ public: /// ===Setter=== ///
 private:
 
 	/// ===クラス=== ///
-	std::shared_ptr<NormalCaemra> normal_; // 通常カメラ
+	std::shared_ptr<NormalCamera> normal_; // 通常カメラ
 	std::shared_ptr<FollowCamera> follow_; // 追従カメラ
 
 	/// ===カメラタイプ=== ///

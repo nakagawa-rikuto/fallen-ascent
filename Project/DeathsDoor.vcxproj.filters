@@ -73,12 +73,13 @@
     <FxCompile Include="Resource\Shaders\OffScreen\ShatterGlass.PS.hlsl">
       <Filter>Resource\Shaders\OffScreen</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Shaders\3D\Oshan.VS.hlsl">
+    <FxCompile Include="Resource\Shaders\3D\Ocean.VS.hlsl">
       <Filter>Resource\Shaders\Oshan</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Shaders\3D\Oshan.PS.hlsl">
+    <FxCompile Include="Resource\Shaders\3D\Ocean.PS.hlsl">
       <Filter>Resource\Shaders\Oshan</Filter>
     </FxCompile>
+    <FxCompile Include="Resource\Shaders\3D\Ocean.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -160,7 +161,7 @@
     <ClCompile Include="Engine\Camera\FollowCamera.cpp">
       <Filter>Engine\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Camera\NormalCaemra.cpp">
+    <ClCompile Include="Engine\Camera\NormalCamera.cpp">
       <Filter>Engine\Camera</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Collider\Base\Collider.cpp">
@@ -475,10 +476,10 @@
     <ClCompile Include="application\Game\Object\GameStage.cpp">
       <Filter>application\Game\Object</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\3d\Oshan\Oshan.cpp">
+    <ClCompile Include="Engine\Graphics\3d\Ocean\Ocean.cpp">
       <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\3d\Oshan\OshanCommon.cpp">
+    <ClCompile Include="Engine\Graphics\3d\Ocean\OceanCommon.cpp">
       <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClCompile>
     <ClCompile Include="application\Scene\GameScene.cpp" />
@@ -494,6 +495,7 @@
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSRootSignature.cpp" />
     <ClCompile Include="Engine\Graphics\Base\UAV.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp" />
+    <ClCompile Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -577,7 +579,7 @@
     <ClInclude Include="Engine\Camera\FollowCamera.h">
       <Filter>Engine\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Camera\NormalCaemra.h">
+    <ClInclude Include="Engine\Camera\NormalCamera.h">
       <Filter>Engine\Camera</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Collider\Base\Collider.h">
@@ -931,10 +933,10 @@
     <ClInclude Include="application\Game\Object\GameStage.h">
       <Filter>application\Game\Object</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\3d\Oshan\Oshan.h">
+    <ClInclude Include="Engine\Graphics\3d\Ocean\Ocean.h">
       <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\3d\Oshan\OshanCommon.h">
+    <ClInclude Include="Engine\Graphics\3d\Ocean\OceanCommon.h">
       <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClInclude>
     <ClInclude Include="Engine\DataInfo\OshanData.h">
@@ -952,6 +954,7 @@
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
     <ClInclude Include="Engine\Graphics\Base\UAV.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h" />
+    <ClInclude Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -975,7 +978,7 @@
     <None Include="Resource\Shaders\OffScreen\Fullscreen.hlsli">
       <Filter>Resource\Shaders\OffScreen</Filter>
     </None>
-    <None Include="Resource\Shaders\3D\Oshan.hlsli">
+    <None Include="Resource\Shaders\3D\Ocean.hlsli">
       <Filter>Resource\Shaders\Oshan</Filter>
     </None>
   </ItemGroup>

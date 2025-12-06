@@ -22,16 +22,16 @@ CSRootSignature::~CSRootSignature() {
 ///-------------------------------------------///
 namespace {
 
-	/// ===CSSkinning=== ///
-	ComPtr<ID3D12RootSignature> TypeCSSkinning(ID3D12Device* device) {
-		// SRV用のDescriptorRange (t0, t1, t2)
+	/// ===CSOcean=== ///
+	ComPtr<ID3D12RootSignature> TypeCSOcean(ID3D12Device* device) {
+		// SRV用のDescriptorRange (t0: 波情報)
 		D3D12_DESCRIPTOR_RANGE srvRange = {};
 		srvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-		srvRange.NumDescriptors = 3; // t0:MatrixPalette, t1:InputVertices, t2:Influences
+		srvRange.NumDescriptors = 1; // t0:WaveInfos
 		srvRange.BaseShaderRegister = 0;
 		srvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-		// UAV用のDescriptorRange (u0)
+		// UAV用のDescriptorRange (u0: 出力頂点)
 		D3D12_DESCRIPTOR_RANGE uavRange = {};
 		uavRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
 		uavRange.NumDescriptors = 1; // u0:OutputVertices
@@ -39,28 +39,36 @@ namespace {
 		uavRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 		// RootParameterの生成
-		D3D12_ROOT_PARAMETER rootParameters[3] = {};
-		// [0] SRV - 入力リソース (t0, t1, t2)
-		rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		D3D12_ROOT_PARAMETER rootParameters[4] = {};
+
+		// [0] CBV - 設定バッファ (b0:WaveSettings)
+		rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 		rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-		rootParameters[0].DescriptorTable.pDescriptorRanges = &srvRange;
-		rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;
-		// [1] UAV - 出力リソース (u0)
-		rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		rootParameters[0].Descriptor.ShaderRegister = 0;
+
+		// [1] CBV - 波紋バッファ (b1:RippleBuffer)
+		rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 		rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-		rootParameters[1].DescriptorTable.pDescriptorRanges = &uavRange;
-		rootParameters[1].DescriptorTable.NumDescriptorRanges = 1;
-		// [2] CBV - 定数バッファ (b0:SkinningInformation)
-		rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		rootParameters[1].Descriptor.ShaderRegister = 1;
+
+		// [2] SRV - 波情報 (t0:WaveInfos)
+		rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 		rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-		rootParameters[2].Descriptor.ShaderRegister = 0;
+		rootParameters[2].DescriptorTable.pDescriptorRanges = &srvRange;
+		rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
+
+		// [3] UAV - 出力バッファ (u0:OutputVertices)
+		rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+		rootParameters[3].DescriptorTable.pDescriptorRanges = &uavRange;
+		rootParameters[3].DescriptorTable.NumDescriptorRanges = 1;
 
 		// RootSignatureの生成
 		D3D12_ROOT_SIGNATURE_DESC desc{};
-		desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE; // ComputeではALLOW_INPUT_ASSEMBLER不要
+		desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
 		desc.pParameters = rootParameters;
 		desc.NumParameters = _countof(rootParameters);
-		desc.pStaticSamplers = nullptr; // Computeではサンプラー不要
+		desc.pStaticSamplers = nullptr;
 		desc.NumStaticSamplers = 0;
 
 		// --- シリアライズ & 作成 ---
@@ -96,8 +104,8 @@ namespace {
 			// Computeパイプラインのみ登録
 			if (IsComputePipeline(type)) {
 				switch (type) {
-				case PipelineType::Skinning3D:
-					table[type] = TypeCSSkinning;
+				case PipelineType::CSOcean:
+					table[type] = TypeCSOcean;
 					break;
 				default:
 					// Computeと判定されたが、対応する関数がない場合

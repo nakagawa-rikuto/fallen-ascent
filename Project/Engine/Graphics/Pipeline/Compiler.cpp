@@ -30,7 +30,7 @@ namespace {
 	{ PipelineType::BackGround2D,	 { L"2D/Obj2D.VS.hlsl",				 L"2D/Obj2D.PS.hlsl",		 				 L""}},
 	{ PipelineType::Obj3D,			 { L"3D/Obj3D.VS.hlsl",				 L"3D/Obj3D.PS.hlsl",						 L""}},
 	{ PipelineType::PrimitiveSkyBox, { L"3D/SkyBox.VS.hlsl",             L"3D/SkyBox.PS.hlsl",						 L""}},
-	{ PipelineType::PrimitiveOshan,  { L"3D/Oshan.VS.hlsl",              L"3D/Oshan.PS.hlsl",						 L""}},
+	{ PipelineType::PrimitiveOcean,  { L"3D/Ocean.VS.hlsl",              L"3D/Ocean.PS.hlsl",						 L""}},
 	{ PipelineType::Skinning3D,		 { L"3D/SkinningObj3D.VS.hlsl",      L"3D/SkinningObj3D.PS.hlsl",				 L""}},
 	{ PipelineType::Line3D,			 { L"3D/Line3D.VS.hlsl",             L"3D/Line3D.PS.hlsl",						 L""}},
 	{ PipelineType::Particle,		 { L"Particle/Particle.VS.hlsl",     L"Particle/Particle.PS.hlsl",				 L""}},
@@ -43,6 +43,8 @@ namespace {
 	{ PipelineType::RadiusBlur,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/RadialBlur.PS.hlsl",			 L""}},
 	{ PipelineType::OutLine,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/LuminanceBasedOutline.PS.hlsl", L""}},
 	{ PipelineType::ShatterGlass,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/ShatterGlass.PS.hlsl",			 L""}},
+	/// ===CS=== ///
+	{ PipelineType::CSOcean,		 { L"", L"", L"3D/Ocean.CS.hlsl"}},
 	};
 }
 
@@ -75,10 +77,6 @@ void Compiler::Initialize(DXCommon* dxCommon, PipelineType type) {
 			dxCommon->GetDxcUtils(), dxCommon->GetDxcCompiler(), dxCommon->GetIncludeHandler());
 		assert(objCSBlob_ && "Compute Shader Compile Failed");
 	}
-
-	// コンパイル結果を確認
-	assert(objVSBlob_ && "Vertex Shader Compile Failed");
-	assert(objPSBlob_ && "Pixel Shader Compile Failed");
 }
 
 ///-------------------------------------------/// 

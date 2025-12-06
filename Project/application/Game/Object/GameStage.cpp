@@ -3,6 +3,10 @@
 #include "Engine/System/Service/GraphicsResourceGetter.h"
 // Math
 #include "Math/sMath.h"
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
+
 
 ///-------------------------------------------/// 
 /// 初期化　
@@ -19,8 +23,11 @@ void GameStage::Initialize(const std::string& levelData) {
 void GameStage::Update() {
 
 	// Groundの更新
-	for (const auto& ground : grounds_) {
+	for (const auto& ground : oshans_) {
 		if (ground) {
+#ifdef USE_IMGUI
+			ground->ShowImGui();
+#endif // USE_IMGUI
 			ground->Update();
 		}
 	}
@@ -39,7 +46,7 @@ void GameStage::Update() {
 void GameStage::Draw(BlendMode mode) {
 
 	// Groundの更新
-	for (const auto& ground : grounds_) {
+	for (const auto& ground : oshans_) {
 		if (ground) {
 			ground->Draw(mode);
 		}
@@ -64,9 +71,9 @@ void GameStage::LoadStageData(const std::string& stageData) {
 	for (const auto& stage : levelData->objects) {
 		if (stage.classType == LevelData::ClassTypeLevel::Ground1) {
 			// Object3dの生成
-			std::shared_ptr<Ground> ground = std::make_shared<Ground>();
+			std::shared_ptr<GroundOshan> ground = std::make_shared<GroundOshan>();
 			// 初期化
-			ground->GameInit(stage.fileName);
+			ground->Initialize();
 
 			// AABB設定
 			Vector3 min = stage.translation + stage.colliderInfo1;
@@ -82,7 +89,7 @@ void GameStage::LoadStageData(const std::string& stageData) {
 			ground->Update();
 
 			// 配列に追加
-			grounds_.emplace_back(ground);
+			oshans_.emplace_back(ground);
 		} else if (stage.classType == LevelData::ClassTypeLevel::Object1) {
 
 			// Object3dの生成

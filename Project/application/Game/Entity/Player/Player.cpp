@@ -249,7 +249,7 @@ void Player::OnCollision(Collider* collider) {
 			ChangState(std::make_unique<RootState>());
 
 			// ダメージ処理
-			baseInfo_.HP--;
+			//baseInfo_.HP--;
 			// 無敵状態にする
 			SetInvicibleTime(0.5f);
 		}

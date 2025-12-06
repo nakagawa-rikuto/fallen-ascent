@@ -721,7 +721,7 @@ namespace {
 	/// ===Oshan=== ///
 	ComPtr<ID3D12RootSignature> TypeOshan(ID3D12Device* device) {
 		// ルートシグネチャの作成
-		D3D12_ROOT_PARAMETER rootParameters[9] = {};
+		D3D12_ROOT_PARAMETER rootParameters[5] = {};
 
 		// b0: Material (ObjectCommon)
 		rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -743,30 +743,10 @@ namespace {
 		rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 		rootParameters[3].Descriptor.ShaderRegister = 3;
 
-		// b4: OceanShaderInfo0
-		rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-		rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-		rootParameters[4].Descriptor.ShaderRegister = 4;
-
-		// b5: OceanShaderInfo1
-		rootParameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-		rootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-		rootParameters[5].Descriptor.ShaderRegister = 5;
-
-		// b9: OceanShaderInfo2
-		rootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-		rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-		rootParameters[6].Descriptor.ShaderRegister = 6;
-
-		// b10: RippleBuffer
-		rootParameters[7].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-		rootParameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-		rootParameters[7].Descriptor.ShaderRegister = 9;
-
 		// b10: OceanColor
-		rootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-		rootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-		rootParameters[8].Descriptor.ShaderRegister = 10;
+		rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+		rootParameters[4].Descriptor.ShaderRegister = 4;
 
 		// ルートシグネチャの記述
 		D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
@@ -802,7 +782,7 @@ namespace {
 	const std::unordered_map<PipelineType, RootSigGenerator> kRootSignatureTable_ = {
 		{ PipelineType::Obj3D,				Type3D },
 		{ PipelineType::PrimitiveSkyBox,	Type3D },
-		{ PipelineType::PrimitiveOshan,     TypeOshan },
+		{ PipelineType::PrimitiveOcean,     TypeOshan },
 		{ PipelineType::ForGround2D,		Type2D },
 		{ PipelineType::BackGround2D,		Type2D },
 		{ PipelineType::Particle,			TypeParticle },

@@ -10,9 +10,14 @@ BufferBase::~BufferBase() { buffer_.Reset(); }
 ///-------------------------------------------/// 
 /// リソースの生成
 ///-------------------------------------------///
-void BufferBase::Create(ID3D12Device* device, size_t sizeInBytes) {
-	buffer_ = CreateBufferResourceComPtr(device, sizeInBytes);
+void BufferBase::Create(ID3D12Device* device, size_t sizeInBytes, DXGI_FORMAT format, D3D12_RESOURCE_FLAGS flags) {
+	buffer_ = CreateBufferResourceComPtr(device, sizeInBytes, format, flags);
 }
+
+///-------------------------------------------/// 
+/// Setter
+///-------------------------------------------///
+void BufferBase::SetBuffer(ID3D12Resource* buffer) { buffer_ = buffer; }
 
 ///-------------------------------------------/// 
 /// Getter

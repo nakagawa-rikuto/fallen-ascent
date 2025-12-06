@@ -12,12 +12,12 @@
 class GameCamera;
 
 ///-------------------------------------------/// 
-/// OshanCommon
+/// OceanCommon
 ///-------------------------------------------///
-class OshanCommon {
-	public:
-	OshanCommon() = default;
-	~OshanCommon();
+class OceanCommon {
+public:
+	OceanCommon() = default;
+	~OceanCommon();
 
 	/// <summary>
 	/// 初期化処理
@@ -50,7 +50,7 @@ public: /// ===Setter=== ///
 	void SetColor(const Vector4& color);
 	// Light
 	void SetLightData(LightInfo light);
-protected: 
+protected:
 
 	/// ===バッファリソース=== ///
 	std::unique_ptr<Material3D> material_;
