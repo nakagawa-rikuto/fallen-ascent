@@ -21,17 +21,17 @@ struct DirectionalLight
 
 struct Color
 {
-    float3 seaBease; // 基本の海の色
+    float3 seaBease;       // 基本の海の色
     float padding1;
-    float3 seaShallow; // 浅瀬の色
+    float3 seaShallow;     // 浅瀬の色
     float padding2;
-    float3 sky; // 空の色
+    float3 sky;            // 空の色
     float padding3;
-    float3 deepWater; // 深い水の色
-    float beseStrength; // 色の強度
-    float hightOffset; // 波の高さに基づいた色のオフセット
-    float waterClarity; // 水の透明度
-    float foamThreshold; // 泡の閾値
+    float3 deepWater;      // 深い水の色
+    float beseStrength;    // 色の強度
+    float hightOffset;     // 波の高さに基づいた色のオフセット
+    float waterClarity;    // 水の透明度
+    float foamThreshold;   // 泡の閾値
 };
 
 struct Camera
@@ -58,7 +58,7 @@ float3 GetSkyColor(float3 dir, float3 c)
     return (1.0 - c) * et + c;
 }
 
-// シュリックのフレネル近似（より正確な計算）
+// シュリックのフレネル近似
 float FresnelSchlick(float cosTheta, float F0)
 {
     return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
@@ -85,7 +85,7 @@ PixlShaderOutput main(VertexShaderOutput input)
         // 法線が不正な場合のフォールバック
         if (length(normal) < 0.1)
         {
-            normal = float3(0.0, 1.0, 0.0);
+            normal = float3(0.0, 0.1, 0.0);
         }
         
         float3 viewDir = normalize(gCamera.worldPosition - input.worldPosition);
@@ -96,21 +96,19 @@ PixlShaderOutput main(VertexShaderOutput input)
         
         // 拡散反射の計算
         float NdotL = saturate(dot(normal, -gDirectionalLight.direction));
-        float diffuseStrength = pow(NdotL * 0.5 + 0.5, 2.0);
+        float diffuseStrength = pow(NdotL * 0.3 + 0.7, 2.0);
         
         // 拡散反射
-        float3 diffuse = gColor.seaBease * gDirectionalLight.color.rgb *
-                        diffuseStrength * gDirectionalLight.intensity;
+        float3 diffuse = gColor.seaBease * gDirectionalLight.color.rgb * diffuseStrength * gDirectionalLight.intensity;
         
         // アンビエント光
-        float3 ambient = gColor.seaBease * 0.3;
+        float3 ambient = gColor.seaBease * 0.8;
         diffuse += ambient;
         
         // 鏡面反射
         float NdotH = saturate(dot(normal, halfVector));
         float specularStrength = pow(NdotH, gMaterial.shininess);
-        float3 specular = gDirectionalLight.color.rgb * specularStrength *
-                         gDirectionalLight.intensity * 1.5;
+        float3 specular = gDirectionalLight.color.rgb * specularStrength * gDirectionalLight.intensity * 1.5;
         
         // フレネル効果
         float NdotV = saturate(dot(normal, viewDir));
@@ -123,7 +121,7 @@ PixlShaderOutput main(VertexShaderOutput input)
         float waveHeight = input.worldPosition.y;
         
         // 深度による色の変化
-        float depth = saturate((10.0 - input.worldPosition.y) / 20.0);
+        float depth = saturate((10.0 - input.worldPosition.y) / 40.0);
         
         // 3段階の色補間
         float3 waterColor;
@@ -179,7 +177,6 @@ PixlShaderOutput main(VertexShaderOutput input)
         output.color.rgb = finalColor;
         
         // アルファ値の計算（透明度）
-        // 角度が浅い（真上から見る）ほど透明に、斜めから見るほど不透明に
         float transparency = lerp(0.4, 0.9, fresnel); // 0.4～0.9の範囲
         
         // 水の透明度パラメータを適用

@@ -140,7 +140,7 @@ float CalculateAllRipples(float2 position)
     return totalRipple;
 }
 
-// すべての波を合成してオフセットを計算(VS版と同じロジック)
+// すべての波を合成してオフセットを計算
 float3 CalculateWaveOffset(float2 worldXZ)
 {
     float3 offset = float3(0.0, 0.0, 0.0);
@@ -151,17 +151,17 @@ float3 CalculateWaveOffset(float2 worldXZ)
         offset += GerstnerWave(worldXZ, gWaveInfos[i]);
     }
 
-    // 波紋の影響を加算(VS版と同じ係数)
+    // 波紋の影響を加算
     float rippleHeight = CalculateAllRipples(worldXZ);
     offset.y += rippleHeight * 0.5;
 
     return offset;
 }
 
-// 法線を計算(VS版と同じロジック)
+// 法線を計算
 float3 CalculateNormal(float2 worldXZ)
 {
-    float epsilon = 0.1; // VS版と同じ値
+    float epsilon = 0.1;
     
     float3 posCenter = CalculateWaveOffset(worldXZ);
     float3 posRight = CalculateWaveOffset(worldXZ + float2(epsilon, 0.0));
@@ -200,26 +200,24 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // ローカル座標
     float localX = -gridWidth * 0.5 + x * step;
     float localZ = -gridDepth * 0.5 + z * step;
+    float3 localPosition = float3(localX, 0.0, localZ);
     
     // ワールド座標のXZを計算
-    float4 localPos = float4(localX, 0.0f, localZ, 1.0f);
-    float4 worldPos = mul(localPos, worldMatrix);
-    float2 worldXZ = worldPos.xz;
+    float4 worldPos4 = mul(float4(localPosition, 1.0), worldMatrix);
+    float2 worldXZ = worldPos4.xz;
     
     // 波のオフセットを計算
     float3 waveOffset = CalculateWaveOffset(worldXZ);
     
     // 元の頂点位置に波のオフセットを加算
-    float3 finalPosition = float3(localX, 0.0, localZ) + waveOffset;
+    float3 finalLocalPosition = localPosition + waveOffset;
     
     // 法線を計算
     float3 normal = CalculateNormal(worldXZ);
-    // ワールド空間に変換
-    float3 worldNormal = normalize(mul(normal, (float3x3) worldMatrix));
     
     // 結果を出力バッファに書き込み
-    gOutputVertices[vertexIndex].position = finalPosition;
-    gOutputVertices[vertexIndex].normal = worldNormal;
+    gOutputVertices[vertexIndex].position = finalLocalPosition;
+    gOutputVertices[vertexIndex].normal = normal;
     gOutputVertices[vertexIndex].worldXZ = worldXZ;
     gOutputVertices[vertexIndex].padding = 0.0;
 }

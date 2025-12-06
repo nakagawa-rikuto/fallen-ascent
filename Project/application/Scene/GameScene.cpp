@@ -111,12 +111,10 @@ void GameScene::Update() {
 	defaultCamera_->DebugUpdate();
 
 	// Player
-	player_->Information();
+	//player_->Information();
 	// Enemy
-	enemyManager_->UpdateImGui();
-	// Oshan
-	//groundOshan_->ShowImGui();
-
+	//enemyManager_->UpdateImGui();
+	
 	// カメラ切り替え（デバッグ）
 	if (InputService::TriggerKey(DIK_O)) {
 		CameraService::SetActiveCamera("Game");

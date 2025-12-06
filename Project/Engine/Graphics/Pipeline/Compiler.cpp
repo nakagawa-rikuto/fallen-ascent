@@ -43,7 +43,8 @@ namespace {
 	{ PipelineType::RadiusBlur,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/RadialBlur.PS.hlsl",			 L""}},
 	{ PipelineType::OutLine,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/LuminanceBasedOutline.PS.hlsl", L""}},
 	{ PipelineType::ShatterGlass,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/ShatterGlass.PS.hlsl",			 L""}},
-	{ PipelineType::CSOcean,		 { L"",								 L"",   									 L"3D/Ocean.CS.hlsl"}},
+	/// ===CS=== ///
+	{ PipelineType::CSOcean,		 { L"", L"", L"3D/Ocean.CS.hlsl"}},
 	};
 }
 
