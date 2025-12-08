@@ -6,12 +6,7 @@
 #include <cstdint>
 
 class WinApp {
-
 public:
-	// ウィンドウサイズ
-	static const int kWindowWidth = 1280; // 横幅
-	static const int kWindowHeight = 720; // 縦幅
-
 	// ウィンドウクラス名
 	static const wchar_t kWindowClassName[];
 
@@ -45,8 +40,7 @@ public:
 	/// <param name="kWindowClassName"></param>
 	/// <param name="kClientWidth"></param>
 	/// <param name="kClientHeight"></param>
-	void CreateGameWindow(
-		const wchar_t* title, int32_t kClientWidth = kWindowWidth, int32_t kClientHeight = kWindowHeight);
+	void CreateGameWindow(const wchar_t* title, int32_t kClientWidth, int32_t kClientHeight);
 
 	/// <summary>
 	/// ゲームウィンドウの破棄
@@ -72,6 +66,10 @@ public:
 	WNDCLASS GetWNDClass();
 
 private:// メンバ変数
+
+	// ウィンドウサイズ
+	int32_t windowWidth_ = 1280;  // 横幅
+	int32_t windowHeight_ = 720; // 縦幅
 
 	WNDCLASS wndClass_{}; // ウィンドウクラス
 	HWND hwnd_ = nullptr; // ウィンドウハンドル

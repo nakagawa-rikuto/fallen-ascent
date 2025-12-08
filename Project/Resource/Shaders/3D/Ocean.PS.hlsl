@@ -85,7 +85,7 @@ PixlShaderOutput main(VertexShaderOutput input)
         // 法線が不正な場合のフォールバック
         if (length(normal) < 0.1)
         {
-            normal = float3(0.0, 0.1, 0.0);
+            normal = float3(0.0, 1.0, 0.0);
         }
         
         float3 viewDir = normalize(gCamera.worldPosition - input.worldPosition);
@@ -96,13 +96,13 @@ PixlShaderOutput main(VertexShaderOutput input)
         
         // 拡散反射の計算
         float NdotL = saturate(dot(normal, -gDirectionalLight.direction));
-        float diffuseStrength = pow(NdotL * 0.3 + 0.7, 2.0);
+        float diffuseStrength = pow(NdotL * 0.5 + 0.5, 2.0);
         
         // 拡散反射
         float3 diffuse = gColor.seaBease * gDirectionalLight.color.rgb * diffuseStrength * gDirectionalLight.intensity;
         
         // アンビエント光
-        float3 ambient = gColor.seaBease * 0.8;
+        float3 ambient = gColor.seaBease * 0.3;
         diffuse += ambient;
         
         // 鏡面反射
@@ -121,7 +121,7 @@ PixlShaderOutput main(VertexShaderOutput input)
         float waveHeight = input.worldPosition.y;
         
         // 深度による色の変化
-        float depth = saturate((10.0 - input.worldPosition.y) / 40.0);
+        float depth = saturate((10.0 - input.worldPosition.y) / 20.0);
         
         // 3段階の色補間
         float3 waterColor;

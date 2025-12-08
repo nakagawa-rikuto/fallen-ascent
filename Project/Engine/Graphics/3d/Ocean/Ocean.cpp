@@ -236,36 +236,39 @@ void Ocean::Draw(BlendMode mode) {
 ///-------------------------------------------///
 void Ocean::ShowImGui() {
 #ifdef USE_IMGUI
-    ImGui::Begin("Ocean");
+    ImGui::Begin("海洋シェーダー");
 
+    /// ===Transform情報=== ///
     if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::DragFloat3("Translate", &worldTransform_.translate.x, 0.1f);
         ImGui::DragFloat4("Rotate", &worldTransform_.rotate.x, 0.01f);
         ImGui::DragFloat3("Scale", &worldTransform_.scale.x, 0.1f);
     }
 
+    /// ===グリッド情報=== ///
     if (ImGui::CollapsingHeader("グリッド情報")) {
         ImGui::Text("グリッドサイズ : %d x %d", gridSize_, gridSize_);
-        ImGui::Text("Vertex Count : %d", vertexCount_);
-        ImGui::Text("Index Count : %d", indexCount_);
-        ImGui::Text("Triangle Count : %d", indexCount_ / 3);
+        ImGui::Text("Vertex数 : %d", vertexCount_);
+        ImGui::Text("Index数 : %d", indexCount_);
+        ImGui::Text("Triangle数 : %d", indexCount_ / 3);
     }
 
+    /// ===波の情報=== ///
     if (ImGui::CollapsingHeader("波のパラメータ", ImGuiTreeNodeFlags_DefaultOpen)) {
         for (int i = 0; i < kWaveCount_; ++i) {
             ImGui::PushID(i);
             if (ImGui::TreeNode("波", "波 %d", i)) {
-                ImGui::Text("Direction: (%.2f, %.2f, %.2f)", waveInfos_[i].distance.x, waveInfos_[i].distance.y, waveInfos_[i].distance.z);
-                ImGui::Text("Amplitude: %.2f", waveInfos_[i].amplitude);
-                ImGui::Text("Length: %.2f", waveInfos_[i].length);
-                ImGui::Text("Speed: %.2f", waveInfos_[i].speed);
+                ImGui::Text("波の方向 : (%.2f, %.2f, %.2f)", waveInfos_[i].distance.x, waveInfos_[i].distance.y, waveInfos_[i].distance.z);
+                ImGui::Text("波の振幅 : %.2f", waveInfos_[i].amplitude);
+                ImGui::Text("波の波長 : %.2f", waveInfos_[i].length);
+                ImGui::Text("波の速度 : %.2f", waveInfos_[i].speed);
 
                 ImGui::Separator();
 
-                ImGui::DragFloat3("Edit Direction", &waveInfos_[i].distance.x, 0.01f, -1.0f, 1.0f);
-                ImGui::SliderFloat("Edit Amplitude", &waveInfos_[i].amplitude, 0.0f, 2.0f);
-                ImGui::SliderFloat("Edit Length", &waveInfos_[i].length, 1.0f, 30.0f);
-                ImGui::SliderFloat("Edit Speed", &waveInfos_[i].speed, 0.5f, 10.0f);
+                ImGui::DragFloat3("方向", &waveInfos_[i].distance.x, 0.01f, -1.0f, 1.0f);
+                ImGui::SliderFloat("振幅", &waveInfos_[i].amplitude, 0.0f, 2.0f);
+                ImGui::SliderFloat("波長", &waveInfos_[i].length, 1.0f, 30.0f);
+                ImGui::SliderFloat("速度", &waveInfos_[i].speed, 0.5f, 10.0f);
 
                 ImGui::TreePop();
             }
@@ -273,31 +276,42 @@ void Ocean::ShowImGui() {
         }
     }
 
-    // 波紋情報
+    /// ===波紋情報=== ///
     if (ImGui::CollapsingHeader("波紋情報", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Text("Active Ripples: %d / 8", rippleBuffer_.activeCount);
 
-        if (ImGui::SliderFloat("Speed", &rippleSpeed_, 1.0f, 10.0f)) {
+        ImGui::Text("波紋の速度 : %.2f", rippleSpeed_);
+        ImGui::Text("波紋の減衰 : %.2f", rippleDecay_);
+
+        if (ImGui::SliderFloat("速度", &rippleSpeed_, 1.0f, 10.0f)) {
             rippleBuffer_.rippleSpeed = rippleSpeed_;
         }
-        if (ImGui::SliderFloat("Decay", &rippleDecay_, 0.1f, 3.0f)) {
+        if (ImGui::SliderFloat("減衰", &rippleDecay_, 0.1f, 3.0f)) {
             rippleBuffer_.rippleDecay = rippleDecay_;
         }
-
-        if (ImGui::Button("Clear All Ripples")) {
+        if (ImGui::Button("全ての波紋をクリア")) {
             ClearRipples();
         }
     }
 
-    // 色情報
+    /// ===色情報=== ///
     if (ImGui::CollapsingHeader("色")) {
-        ImGui::ColorEdit3("Sea Base", &colorInfo_.seaBase.x);
-        ImGui::ColorEdit3("Sea Shallow", &colorInfo_.seaShallow.x);
-        ImGui::ColorEdit3("Sky", &colorInfo_.sky.x);
-        ImGui::ColorEdit3("Deep Water", &colorInfo_.deepWater.x);
-        ImGui::SliderFloat("Base Strength", &colorInfo_.baseStrength, 0.0f, 2.0f);
-        ImGui::SliderFloat("Water Clarity", &colorInfo_.waterClarity, 0.0f, 1.0f);
-        ImGui::SliderFloat("Foam Threshold", &colorInfo_.foamThreshold, 0.0f, 3.0f);
+        ImGui::ColorEdit3("海面の基本色", &colorInfo_.seaBase.x);
+        ImGui::ColorEdit3("浅瀬の色", &colorInfo_.seaShallow.x);
+        ImGui::ColorEdit3("空の色", &colorInfo_.sky.x);
+        ImGui::ColorEdit3("深海の色", &colorInfo_.deepWater.x);
+        ImGui::SliderFloat("基本色の強度", &colorInfo_.baseStrength, 0.0f, 2.0f);
+        ImGui::SliderFloat("水の透明度", &colorInfo_.waterClarity, 0.0f, 1.0f);
+        ImGui::SliderFloat("泡の閾値", &colorInfo_.foamThreshold, 0.0f, 3.0f);
+    }
+
+    /// ===ライト情報=== ///
+    if (ImGui::CollapsingHeader("ライト情報")) {
+        ImGui::Text("光沢度: %.2f", light_.shininess);
+        ImGui::DragFloat("光沢度", &light_.shininess, 0.1f);
+        ImGui::ColorEdit4("ライトの色", &light_.directional.color.x);
+        ImGui::SliderFloat3("方向", &light_.directional.direction.x, -1.0f, 1.0f);
+        ImGui::SliderFloat("強度", &light_.directional.intensity, 0.0f, 5.0f);
     }
 
     // テスト機能
@@ -306,17 +320,16 @@ void Ocean::ShowImGui() {
         static float testPosX = 0.0f;
         static float testPosZ = 0.0f;
 
-        ImGui::SliderFloat("Test Intensity", &testIntensity, 0.1f, 3.0f);
-        ImGui::SliderFloat("Test Pos X", &testPosX, -50.0f, 50.0f);
-        ImGui::SliderFloat("Test Pos Z", &testPosZ, -50.0f, 50.0f);
+        ImGui::SliderFloat("テスト強度", &testIntensity, 0.1f, 10.0f);
+        ImGui::SliderFloat("テスト座標X", &testPosX, -50.0f, 50.0f);
+        ImGui::SliderFloat("テスト座標Z", &testPosZ, -50.0f, 50.0f);
 
-        if (ImGui::Button("Add Test Ripple")) {
+        if (ImGui::Button("波紋の追加")) {
             AddCircularRipple({ testPosX, 0.0f, testPosZ }, 3.0f, testIntensity);
         }
-
         ImGui::SameLine();
 
-        if (ImGui::Button("Random Ripple")) {
+        if (ImGui::Button("ランダムな位置に追加")) {
             float randX = static_cast<float>(rand() % 100 - 50);
             float randZ = static_cast<float>(rand() % 100 - 50);
             float randIntensity = 0.5f + (rand() % 100) / 100.0f * 1.5f;

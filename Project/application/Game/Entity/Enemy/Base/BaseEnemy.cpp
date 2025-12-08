@@ -215,8 +215,11 @@ void BaseEnemy::OnCollision(Collider* collider) {
 				color_ = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 赤色
 
 				// パーティクルを発生
-				ParticleService::Emit("Game", transform_.translate);
+				
 				baseInfo_.HP--; // HPを減少
+				if (baseInfo_.HP <= 0) {
+					ParticleService::Emit("nakagawa", transform_.translate);
+				}
 
 				// タイマーをセット
 				knockbackInfo_.hitColorTimer = knockbackInfo_.hitColorDuration;

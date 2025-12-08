@@ -11,17 +11,17 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg
 #endif // _DEBUG
 
 // ウィンドウクラスの名前
-const wchar_t WinApp::kWindowClassName[] = L"DirectX_MyEngine_WindowClass";
+const wchar_t WinApp::kWindowClassName[] = L"DeathsDoor";
 
 ///-------------------------------------------/// 
 /// ウィンドウの横幅の取得
 ///-------------------------------------------///
-const int WinApp::GetWindowWidth() { return kWindowWidth; }
+const int WinApp::GetWindowWidth() { return windowWidth_; }
 
 ///-------------------------------------------/// 
 /// ウィンドウの縦幅の取得
 ///-------------------------------------------///
-const int WinApp::GetWindowHeight() { return kWindowHeight; }
+const int WinApp::GetWindowHeight() { return windowHeight_; }
 
 ///-------------------------------------------/// 
 /// ウィンドウプロージャ
@@ -52,6 +52,10 @@ LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 /// ゲームウィンドウの作成
 ///-------------------------------------------///
 void WinApp::CreateGameWindow(const wchar_t* title, int32_t kClientWidth, int32_t kClientHeight) {
+
+	// ウィンドウサイズの設定
+	windowWidth_ = kClientWidth;
+	windowHeight_ = kClientHeight;
 
 	/* /////////////////////////////////////
 					COMの初期化

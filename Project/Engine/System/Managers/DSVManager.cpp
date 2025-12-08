@@ -1,6 +1,7 @@
 #include "DSVManager.h"
 // Engine
 #include "Engine/Core/DXCommon.h"
+#include "Engine/Core/WinApp.h"
 // Service
 #include "Engine/System/Service/GraphicsResourceGetter.h"
 
@@ -34,8 +35,9 @@ D3D12_GPU_DESCRIPTOR_HANDLE DSVManager::GetGPUDescriptorHandle(uint32_t index) c
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void DSVManager::Initialize(DXCommon* dxcommon) {
+void DSVManager::Initialize(DXCommon* dxcommon, WinApp* winApp) {
     dxcommon_ = dxcommon;
+    winApp_ = winApp;
     // DescriptorSizeの取得, Heapの生成
     descriptorHeap_ = dxcommon_->CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, kMaxDSVCount_, false);
     descriptorSize_ = dxcommon_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
@@ -70,8 +72,8 @@ bool DSVManager::AssertAllocate() { return useIndex_ < kMaxDSVCount_; }
 ///-------------------------------------------///
 void DSVManager::CreateDepthBufferView(uint32_t index) {
     D3D12_RESOURCE_DESC desc{};
-    desc.Width = GraphicsResourceGetter::GetWindowWidth();
-    desc.Height = GraphicsResourceGetter::GetWindowHeight();
+    desc.Width = winApp_->GetWindowWidth();
+    desc.Height = winApp_->GetWindowHeight();
     desc.MipLevels = 1;
     desc.DepthOrArraySize = 1;
     desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
