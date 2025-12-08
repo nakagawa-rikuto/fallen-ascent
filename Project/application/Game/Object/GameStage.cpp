@@ -23,12 +23,19 @@ void GameStage::Initialize(const std::string& levelData) {
 void GameStage::Update() {
 
 	// Groundの更新
-	for (const auto& ground : oshans_) {
+	for (const auto& ground : grounds_) {
 		if (ground) {
-#ifdef USE_IMGUI
-			ground->ShowImGui();
-#endif // USE_IMGUI
 			ground->Update();
+		}
+	}
+
+	// Groundの更新
+	for (const auto& ocean : oshans_) {
+		if (ocean) {
+#ifdef USE_IMGUI
+			ocean->ShowImGui();
+#endif // USE_IMGUI
+			ocean->Update();
 		}
 	}
 
@@ -45,10 +52,17 @@ void GameStage::Update() {
 ///-------------------------------------------///
 void GameStage::Draw(BlendMode mode) {
 
-	// Groundの更新
-	for (const auto& ground : oshans_) {
+	// GroundOceanの更新
+	for (const auto& ground : grounds_) {
 		if (ground) {
 			ground->Draw(mode);
+		}
+	}
+
+	// GroundOceanの更新
+	for (const auto& ocean : oshans_) {
+		if (ocean) {
+			ocean->Draw(mode);
 		}
 	}
 
@@ -71,9 +85,10 @@ void GameStage::LoadStageData(const std::string& stageData) {
 	for (const auto& stage : levelData->objects) {
 		if (stage.classType == LevelData::ClassTypeLevel::Ground1) {
 			// Object3dの生成
-			std::shared_ptr<GroundOshan> ground = std::make_shared<GroundOshan>();
+			std::shared_ptr<Ground> ground = std::make_shared<Ground>();
 			// 初期化
-			ground->Initialize();
+			//ground->Initialize();
+			ground->GameInit(stage.fileName);
 
 			// AABB設定
 			Vector3 min = stage.translation + stage.colliderInfo1;
@@ -89,7 +104,7 @@ void GameStage::LoadStageData(const std::string& stageData) {
 			ground->Update();
 
 			// 配列に追加
-			oshans_.emplace_back(ground);
+			grounds_.emplace_back(ground);
 		} else if (stage.classType == LevelData::ClassTypeLevel::Object1) {
 
 			// Object3dの生成

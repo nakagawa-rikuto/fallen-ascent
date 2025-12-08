@@ -105,7 +105,7 @@ void ParticleEditor::Render() {
         }
 
         // 高度設定タブ
-        if (ImGui::BeginTabItem("高度設定")) {
+        if (ImGui::BeginTabItem("動作設定")) {
             RenderAdvancedSettings();
             ImGui::EndTabItem();
         }
@@ -158,6 +158,7 @@ bool ParticleEditor::IsVisible() const {
 void ParticleEditor::SaveToJson() {
 #ifdef USE_IMGUI
     try {
+        // 編集中の定義を保存
         nlohmann::json j = currentDefinition_.ToJson();
 
         std::string filepath = filePathBuffer_;
@@ -321,17 +322,16 @@ void ParticleEditor::RenderBasicSettings() {
 #ifdef USE_IMGUI
     ImGui::SeparatorText("基本設定");
 
-    // 名前
+    /// ===名前=== ///
     char nameBuffer[256];
     strcpy_s(nameBuffer, currentDefinition_.name.c_str());
     if (ImGui::InputText("パーティクル", nameBuffer, sizeof(nameBuffer))) {
         currentDefinition_.name = nameBuffer;
     }
     ImGui::TextDisabled("エミッター登録時に使用する識別名");
-
     ImGui::Spacing();
 
-    // モデル選択
+    /// ===モデル選択=== ///
     if (!availableModels_.empty()) {
         if (ImGui::Combo("モデル", &selectedModelIndex_,
             [](void* data, int idx, const char** out_text) {
@@ -356,24 +356,16 @@ void ParticleEditor::RenderBasicSettings() {
         }
     }
 
-    // 形状選択
+    /// ===形状選択=== ///
     const char* shapes[] = { "円", "円柱", "なし" };
     int currentShape = static_cast<int>(currentDefinition_.shape);
     if (ImGui::Combo("形状タイプ", &currentShape, shapes, IM_ARRAYSIZE(shapes))) {
         currentDefinition_.shape = static_cast<shapeType>(currentShape);
-
-        // 形状変更時もプレビューを再生成
-        if (isPlaying_) {
-            ResetPreview();
-            CreatePreviewParticle();
-            PlayPreview();
-        }
     }
     ImGui::TextDisabled("カスタム頂点バッファを使用する形状");
-
     ImGui::Spacing();
 
-    // 最大インスタンス数
+    /// ===最大インスタンス数=== ///
     int maxInstance = static_cast<int>(currentDefinition_.maxInstance);
     if (ImGui::DragInt("最大パーティクル数", &maxInstance, 1, 1, 10000)) {
         currentDefinition_.maxInstance = static_cast<uint32_t>(maxInstance);
@@ -386,45 +378,25 @@ void ParticleEditor::RenderBasicSettings() {
         }
     }
     ImGui::TextDisabled("同時に表示できる最大数");
-
     ImGui::Spacing();
     ImGui::Separator();
 
-    // ★ プレビュー位置設定 (拡張版)
+    /// ===プレビュー位置設定=== ///
     ImGui::SeparatorText("プレビュー設定");
 
     bool positionChanged = false;
 
-    // XYZ個別スライダー
+    /// ===XYZ個別スライダー=== ///
     positionChanged |= ImGui::DragFloat("発生位置 X", &previewPosition_.x, 0.1f, -100.0f, 100.0f);
     positionChanged |= ImGui::DragFloat("発生位置 Y", &previewPosition_.y, 0.1f, -100.0f, 100.0f);
     positionChanged |= ImGui::DragFloat("発生位置 Z", &previewPosition_.z, 0.1f, -100.0f, 100.0f);
 
-    // まとめてリセット
+    /// ===まとめてリセット=== ///
     if (ImGui::Button("位置をリセット", ImVec2(150, 25))) {
         previewPosition_ = { 0.0f, 0.0f, 0.0f };
         positionChanged = true;
     }
-
     ImGui::SameLine();
-
-    // プリセット位置
-    if (ImGui::Button("地面レベル", ImVec2(150, 25))) {
-        previewPosition_ = { 0.0f, 0.0f, 0.0f };
-        positionChanged = true;
-    }
-
-    if (ImGui::Button("上空位置", ImVec2(150, 25))) {
-        previewPosition_ = { 0.0f, 10.0f, 0.0f };
-        positionChanged = true;
-    }
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("前方位置", ImVec2(150, 25))) {
-        previewPosition_ = { 0.0f, 0.0f, 5.0f };
-        positionChanged = true;
-    }
 
     // 位置変更時にプレビューパーティクルの位置も更新
     if (positionChanged && previewParticle_) {
@@ -443,6 +415,7 @@ void ParticleEditor::RenderPhysicsSettings() {
 #ifdef USE_IMGUI
     ImGui::SeparatorText("物理設定");
 
+	/// ===速度設定=== ///
     if (ImGui::Checkbox("ランダム速度を使用", &currentDefinition_.physics.useRandomVelocity)) {
         // チェックボックス変更時にプレビューパーティクルに適用
         if (previewParticle_) {
@@ -450,11 +423,11 @@ void ParticleEditor::RenderPhysicsSettings() {
         }
     }
     ImGui::TextDisabled("オフの場合はランダム速度になります");
-
     ImGui::Spacing();
 
     bool velocityChanged = false;
 
+	/// ===速度の設定=== ///
     if (currentDefinition_.physics.useRandomVelocity) {
         ImGui::Text("速度範囲");
         velocityChanged |= ImGui::DragFloat3("最小速度", &currentDefinition_.physics.velocityMin.x, 0.1f, -100.0f, 100.0f);
@@ -463,7 +436,7 @@ void ParticleEditor::RenderPhysicsSettings() {
         velocityChanged |= ImGui::DragFloat3("初期速度", &currentDefinition_.physics.velocityMin.x, 0.1f, -100.0f, 100.0f);
     }
 
-    // ★速度変更時にプレビューに適用
+    // 速度変更時にプレビューに適用
     if (velocityChanged && previewParticle_) {
         previewParticle_->SetParameter(ParticleParameter::VelocityMinX, currentDefinition_.physics.velocityMin.x);
         previewParticle_->SetParameter(ParticleParameter::VelocityMinY, currentDefinition_.physics.velocityMin.y);
@@ -472,10 +445,10 @@ void ParticleEditor::RenderPhysicsSettings() {
         previewParticle_->SetParameter(ParticleParameter::VelocityMaxY, currentDefinition_.physics.velocityMax.y);
         previewParticle_->SetParameter(ParticleParameter::VelocityMaxZ, currentDefinition_.physics.velocityMax.z);
     }
-
     ImGui::Spacing();
     ImGui::Separator();
 
+    /// ===加速度の設定=== ///
     ImGui::Text("加速度");
     if (ImGui::DragFloat3("加速度ベクトル", &currentDefinition_.physics.acceleration.x, 0.1f, -50.0f, 50.0f)) {
         if (previewParticle_) {
@@ -485,9 +458,9 @@ void ParticleEditor::RenderPhysicsSettings() {
         }
     }
     ImGui::TextDisabled("毎フレーム速度に加算される量");
-
     ImGui::Spacing();
 
+    /// ===重力の設定=== ///
     if (ImGui::DragFloat("重力", &currentDefinition_.physics.gravity, 0.1f, -50.0f, 50.0f)) {
         if (previewParticle_) {
             previewParticle_->SetParameter(ParticleParameter::Gravity, currentDefinition_.physics.gravity);
@@ -501,12 +474,12 @@ void ParticleEditor::RenderPhysicsSettings() {
         }
     }
     ImGui::TextDisabled("発生時にY軸速度に加算される値");
-
     ImGui::Spacing();
     ImGui::Separator();
 
+    /// ===発生範囲の設定=== ///
     ImGui::Text("発生範囲");
-    if (ImGui::DragFloat("爆発半径", &currentDefinition_.physics.explosionRadius, 0.1f, 0.0f, 20.0f)) {
+    if (ImGui::DragFloat("発生半径", &currentDefinition_.physics.explosionRadius, 0.1f, 0.0f, 20.0f)) {
         if (previewParticle_) {
             previewParticle_->SetParameter(ParticleParameter::ExplosionRadius, currentDefinition_.physics.explosionRadius);
         }
@@ -522,14 +495,13 @@ void ParticleEditor::RenderAppearanceSettings() {
 #ifdef USE_IMGUI
     ImGui::SeparatorText("見た目設定");
 
-    // 色設定
+    /// ===色設定=== ///
     ImGui::Text("色設定");
     if (ImGui::Checkbox("色のグラデーション", &currentDefinition_.appearance.useColorGradient)) {
         if (previewParticle_) {
             previewParticle_->SetDefinition(currentDefinition_);
         }
     }
-
     if (ImGui::ColorEdit4("開始色", &currentDefinition_.appearance.startColor.x)) {
         if (previewParticle_) {
             previewParticle_->SetParameter(ParticleParameter::StartColorR, currentDefinition_.appearance.startColor.x);
@@ -538,7 +510,6 @@ void ParticleEditor::RenderAppearanceSettings() {
             previewParticle_->SetParameter(ParticleParameter::StartColorA, currentDefinition_.appearance.startColor.w);
         }
     }
-
     if (currentDefinition_.appearance.useColorGradient) {
         if (ImGui::ColorEdit4("終了色", &currentDefinition_.appearance.endColor.x)) {
             if (previewParticle_) {
@@ -550,11 +521,53 @@ void ParticleEditor::RenderAppearanceSettings() {
         }
         ImGui::TextDisabled("寿命に応じて開始色→終了色へ変化");
     }
-
     ImGui::Spacing();
     ImGui::Separator();
 
-    // スケール設定
+    // ===カラーグラデーション設定=== ///
+    ImGui::SeparatorText("高度なカラー設定");
+    auto& colorGradient = currentDefinition_.advanced.colorGradient;
+    // カラーグラデーション使用
+    if (ImGui::Checkbox("カラーグラデーション使用", &colorGradient.useGradient)) {
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+    // カラーグラデーションパラメータの設定
+    if (colorGradient.useGradient) {
+        ImGui::Indent();
+        // 主要色
+        if (ImGui::ColorEdit4("主要色", &colorGradient.primaryColor.x)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+        // セカンダリ色
+        if (ImGui::ColorEdit4("セカンダリ色", &colorGradient.secondaryColor.x)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+        // ブレンドカーブ
+        if (ImGui::DragFloat("ブレンドカーブ", &colorGradient.colorBlendCurve, 0.1f, 0.1f, 5.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+        ImGui::TextDisabled("1.0 = 線形, > 1.0 = 非線形");
+        // 色振動
+        if (ImGui::Checkbox("色を振動させる", &colorGradient.oscillateColor)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+
+        ImGui::Unindent();
+    }
+    ImGui::Spacing();
+    ImGui::Separator();
+
+    /// ===スケール設定=== ///
     ImGui::Text("スケール設定");
     if (ImGui::Checkbox("スケールアニメーション", &currentDefinition_.appearance.useScaleAnimation)) {
         if (previewParticle_) {
@@ -566,22 +579,56 @@ void ParticleEditor::RenderAppearanceSettings() {
     bool scaleChanged = false;
     scaleChanged |= ImGui::DragFloat3("最小スケール", &currentDefinition_.appearance.startScaleMin.x, 0.01f, 0.0f, 10.0f);
     scaleChanged |= ImGui::DragFloat3("最大スケール", &currentDefinition_.appearance.startScaleMax.x, 0.01f, 0.0f, 10.0f);
-
     if (currentDefinition_.appearance.useScaleAnimation) {
         scaleChanged |= ImGui::DragFloat3("終了スケール", &currentDefinition_.appearance.endScale.x, 0.01f, 0.0f, 10.0f);
         ImGui::TextDisabled("寿命に応じて縮小・拡大します");
     }
-
     if (scaleChanged && previewParticle_) {
         previewParticle_->SetDefinition(currentDefinition_);
     }
-
     ImGui::Spacing();
     ImGui::Separator();
 
-    // テクスチャ選択
-    ImGui::Text("テクスチャ");
+    // ===スケールアニメーション設定=== ///
+    ImGui::SeparatorText("高度なスケールアニメーション");
+    auto& scaleAnim = currentDefinition_.advanced.scaleAnimation;
+    // アニメーションタイプ選択
+    const char* animTypes[] = { "なし", "線形", "徐々に大きく", "徐々に小さく", "膨らんで縮む", "脈動" };
+    int currentAnimType = static_cast<int>(scaleAnim.type);
+    if (ImGui::Combo("アニメーションタイプ", &currentAnimType, animTypes, IM_ARRAYSIZE(animTypes))) {
+        scaleAnim.type = static_cast<ParticleScaleAnimation::AnimationType>(currentAnimType);
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+    // アニメーションパラメータの設定
+    if (scaleAnim.type != ParticleScaleAnimation::AnimationType::None) {
+        ImGui::Indent();
+        // 開始スケール
+        if (ImGui::DragFloat("開始スケール", &scaleAnim.startScale, 0.01f, 0.0f, 10.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+        // 最大スケール
+        if (ImGui::DragFloat("最大スケール", &scaleAnim.maxScale, 0.01f, 0.0f, 10.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+        // 終了スケール
+        if (ImGui::DragFloat("終了スケール", &scaleAnim.endScale, 0.01f, 0.0f, 10.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+        ImGui::Unindent();
+    }
+    ImGui::Spacing();
+    ImGui::Separator();
 
+    /// ===テクスチャ設定=== ///
+    ImGui::Text("テクスチャ");
     if (!availableTextures_.empty()) {
         if (ImGui::Combo("テクスチャファイル", &selectedTextureIndex_,
             [](void* data, int idx, const char** out_text) {
@@ -620,6 +667,7 @@ void ParticleEditor::RenderRotationSettings() {
 #ifdef USE_IMGUI
     ImGui::SeparatorText("回転設定");
 
+    /// ===回転の設定=== ///
     if (ImGui::Checkbox("回転を有効化", &currentDefinition_.rotation.enableRotation)) {
         if (previewParticle_) {
             previewParticle_->SetDefinition(currentDefinition_);
@@ -656,7 +704,6 @@ void ParticleEditor::RenderRotationSettings() {
         }
 
         ImGui::Spacing();
-        ImGui::TextDisabled("3.14 ≒ 180度");
     } else {
         ImGui::Spacing();
         ImGui::TextDisabled("回転が無効化されています");
@@ -671,7 +718,7 @@ void ParticleEditor::RenderEmissionSettings() {
 #ifdef USE_IMGUI
     ImGui::SeparatorText("発生設定");
 
-    // 寿命設定
+    /// ===寿命の設定=== ///
     ImGui::Text("パーティクル寿命 (秒)");
     bool lifetimeChanged = false;
     lifetimeChanged |= ImGui::DragFloat("最小寿命", &currentDefinition_.emission.lifetimeMin, 0.1f, 0.1f, 100.0f);
@@ -686,9 +733,9 @@ void ParticleEditor::RenderEmissionSettings() {
     ImGui::Spacing();
     ImGui::Separator();
 
-    // 発生モード
+    /// ===発生モード=== ///
     ImGui::Text("発生モード");
-    if (ImGui::Checkbox("バーストモード", &currentDefinition_.emission.isBurst)) {
+    if (ImGui::Checkbox("一度に大量", &currentDefinition_.emission.isBurst)) {
         if (previewParticle_) {
             // バーストモード切り替え時は再生成
             ResetPreview();
@@ -699,13 +746,12 @@ void ParticleEditor::RenderEmissionSettings() {
         }
     }
     ImGui::TextDisabled("一度に大量発生するか、継続的に発生するか");
-
     ImGui::Spacing();
 
     if (currentDefinition_.emission.isBurst) {
         // バーストモード設定
         int burstCount = static_cast<int>(currentDefinition_.emission.burstCount);
-        if (ImGui::DragInt("バースト数", &burstCount, 1, 1, 10000)) {
+        if (ImGui::DragInt("パーティクル数", &burstCount, 1, 1, 10000)) {
             currentDefinition_.emission.burstCount = static_cast<uint32_t>(burstCount);
 
             if (previewParticle_) {
@@ -729,10 +775,50 @@ void ParticleEditor::RenderEmissionSettings() {
 
         ImGui::Spacing();
         ImGui::Text("実際の発生数");
-        uint32_t actualCount = static_cast<uint32_t>(
-            currentDefinition_.emission.emissionRate * currentDefinition_.emission.frequency);
+        uint32_t actualCount = static_cast<uint32_t>(currentDefinition_.emission.emissionRate * currentDefinition_.emission.frequency);
         ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u 個ずつ発生", actualCount);
     }
+
+    // ===発生パターン設定=== ///
+    ImGui::SeparatorText("発生パターン");
+    const char* patterns[] = { "点", "球", "円錐", "軌跡", "リング", "バースト" };
+    int currentPattern = static_cast<int>(currentDefinition_.advanced.emissionPattern.pattern);
+    if (ImGui::Combo("発生パターン", &currentPattern, patterns, IM_ARRAYSIZE(patterns))) {
+        currentDefinition_.advanced.emissionPattern.pattern =
+            static_cast<ParticleEmissionPattern::Pattern>(currentPattern);
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+    // パターンに応じたパラメータ
+    auto& pattern = currentDefinition_.advanced.emissionPattern;
+    // 半径設定
+    if (pattern.pattern != ParticleEmissionPattern::Pattern::Point) {
+        if (ImGui::DragFloat("パターン半径", &pattern.patternRadius, 0.01f, 0.0f, 10.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+    }
+    // 円錐角度設定
+    if (pattern.pattern == ParticleEmissionPattern::Pattern::Cone) {
+        if (ImGui::DragFloat("円錐角度", &pattern.patternAngle, 1.0f, 0.0f, 180.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+        ImGui::TextDisabled("円錐の開き角度（度）");
+    }
+    // 発生粒子数設定
+    if (ImGui::DragInt("発生粒子数", &pattern.particlesPerEmit, 1, 1, 50)) {
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+    ImGui::TextDisabled("1回の発生で生成される粒子数");
+    ImGui::Spacing();
+    ImGui::Separator();
+
 #endif // USE_IMGUI
 }
 
@@ -741,7 +827,7 @@ void ParticleEditor::RenderEmissionSettings() {
 ///-------------------------------------------///
 void ParticleEditor::RenderAdvancedSettings() {
 #ifdef USE_IMGUI
-    ImGui::SeparatorText("高度な設定");
+    ImGui::SeparatorText("動作設定");
 
     // ===軌跡パーティクルモード=== ///
     ImGui::Text("パーティクルタイプ");
@@ -767,247 +853,11 @@ void ParticleEditor::RenderAdvancedSettings() {
 
         ImGui::Unindent();
     }
-
     ImGui::Spacing();
     ImGui::Separator();
 
-    // ===発生パターン設定=== ///
-    ImGui::SeparatorText("発生パターン");
-
-    const char* patterns[] = { "点", "球", "円錐", "軌跡", "リング", "バースト" };
-    int currentPattern = static_cast<int>(currentDefinition_.advanced.emissionPattern.pattern);
-    if (ImGui::Combo("発生パターン", &currentPattern, patterns, IM_ARRAYSIZE(patterns))) {
-        currentDefinition_.advanced.emissionPattern.pattern =
-            static_cast<ParticleEmissionPattern::Pattern>(currentPattern);
-        if (previewParticle_) {
-            previewParticle_->SetDefinition(currentDefinition_);
-        }
-    }
-
-    // パターンに応じたパラメータ
-    auto& pattern = currentDefinition_.advanced.emissionPattern;
-
-    if (pattern.pattern != ParticleEmissionPattern::Pattern::Point) {
-        if (ImGui::DragFloat("パターン半径", &pattern.patternRadius, 0.01f, 0.0f, 10.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-    }
-
-    if (pattern.pattern == ParticleEmissionPattern::Pattern::Cone) {
-        if (ImGui::DragFloat("円錐角度", &pattern.patternAngle, 1.0f, 0.0f, 180.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-        ImGui::TextDisabled("円錐の開き角度（度）");
-    }
-
-    if (ImGui::DragInt("発生粒子数", &pattern.particlesPerEmit, 1, 1, 50)) {
-        if (previewParticle_) {
-            previewParticle_->SetDefinition(currentDefinition_);
-        }
-    }
-    ImGui::TextDisabled("1回の発生で生成される粒子数");
-
-    ImGui::Spacing();
-    ImGui::Separator();
-
-    // ===動作設定=== ///
-    ImGui::SeparatorText("パーティクル動作");
-
-    auto& motion = currentDefinition_.advanced.motion;
-
-    // 渦巻き運動
-    if (ImGui::Checkbox("渦巻き運動", &motion.enableSwirling)) {
-        if (previewParticle_) {
-            previewParticle_->SetDefinition(currentDefinition_);
-        }
-    }
-
-    if (motion.enableSwirling) {
-        ImGui::Indent();
-
-        if (ImGui::DragFloat("渦巻き速度", &motion.swirlingSpeed, 0.1f, 0.0f, 20.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-
-        if (ImGui::DragFloat("拡散速度", &motion.expansionRate, 0.1f, 0.0f, 5.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-
-        ImGui::Unindent();
-    }
-
-    ImGui::Spacing();
-
-    // エミッタ追従
-    if (ImGui::Checkbox("エミッタに追従", &motion.followEmitter)) {
-        if (previewParticle_) {
-            previewParticle_->SetDefinition(currentDefinition_);
-        }
-    }
-    ImGui::TextDisabled("エミッタの移動に追従する");
-
-    if (motion.followEmitter) {
-        ImGui::Indent();
-
-        if (ImGui::SliderFloat("追従強度", &motion.followStrength, 0.0f, 1.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-        ImGui::TextDisabled("0.0 = 追従しない、1.0 = 完全追従");
-
-        ImGui::Unindent();
-    }
-
-    ImGui::Spacing();
-
-    // 回転影響
-    if (ImGui::Checkbox("回転影響を受ける", &motion.useRotationInfluence)) {
-        if (previewParticle_) {
-            previewParticle_->SetDefinition(currentDefinition_);
-        }
-    }
-    ImGui::TextDisabled("エミッタの回転がパーティクルに影響");
-
-    if (motion.useRotationInfluence) {
-        ImGui::Indent();
-
-        if (ImGui::DragFloat("回転影響係数", &motion.rotationInfluence, 0.1f, 0.0f, 5.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-
-        ImGui::Unindent();
-    }
-
-    ImGui::Spacing();
-
-    // 速度減衰
-    if (ImGui::SliderFloat("速度減衰率", &motion.velocityDamping, 0.0f, 1.0f)) {
-        if (previewParticle_) {
-            previewParticle_->SetDefinition(currentDefinition_);
-        }
-    }
-    ImGui::TextDisabled("毎フレーム速度に掛ける係数 (1.0 = 減衰なし)");
-
-    ImGui::Spacing();
-
-    // ビルボード回転
-    ImGui::Checkbox("ビルボード回転", &motion.enableBillboardRotation);
-
-    if (motion.enableBillboardRotation) {
-        ImGui::Indent();
-
-        if (ImGui::DragFloat("回転速度", &motion.billboardRotationSpeed, 0.1f, 0.0f, 10.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-
-        ImGui::Unindent();
-    }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-
-    // ===カラーグラデーション設定=== ///
-    ImGui::SeparatorText("高度なカラー設定");
-
-    auto& colorGradient = currentDefinition_.advanced.colorGradient;
-
-    if (ImGui::Checkbox("カラーグラデーション使用", &colorGradient.useGradient)) {
-        if (previewParticle_) {
-            previewParticle_->SetDefinition(currentDefinition_);
-        }
-    }
-
-    if (colorGradient.useGradient) {
-        ImGui::Indent();
-
-        if (ImGui::ColorEdit4("主要色", &colorGradient.primaryColor.x)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-
-        if (ImGui::ColorEdit4("セカンダリ色", &colorGradient.secondaryColor.x)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-
-        if (ImGui::DragFloat("ブレンドカーブ", &colorGradient.colorBlendCurve, 0.1f, 0.1f, 5.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-        ImGui::TextDisabled("1.0 = 線形, > 1.0 = 非線形");
-
-        if (ImGui::Checkbox("色を振動させる", &colorGradient.oscillateColor)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-
-        ImGui::Unindent();
-    }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-
-    // ===スケールアニメーション設定=== ///
-    ImGui::SeparatorText("高度なスケールアニメーション");
-
-    auto& scaleAnim = currentDefinition_.advanced.scaleAnimation;
-
-    const char* animTypes[] = { "なし", "線形", "徐々に大きく", "徐々に小さく", "膨らんで縮む", "脈動" };
-    int currentAnimType = static_cast<int>(scaleAnim.type);
-    if (ImGui::Combo("アニメーションタイプ", &currentAnimType, animTypes, IM_ARRAYSIZE(animTypes))) {
-        scaleAnim.type = static_cast<ParticleScaleAnimation::AnimationType>(currentAnimType);
-        if (previewParticle_) {
-            previewParticle_->SetDefinition(currentDefinition_);
-        }
-    }
-
-    if (scaleAnim.type != ParticleScaleAnimation::AnimationType::None) {
-        ImGui::Indent();
-
-        if (ImGui::DragFloat("開始スケール", &scaleAnim.startScale, 0.01f, 0.0f, 10.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-
-        if (ImGui::DragFloat("最大スケール", &scaleAnim.maxScale, 0.01f, 0.0f, 10.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-
-        if (ImGui::DragFloat("終了スケール", &scaleAnim.endScale, 0.01f, 0.0f, 10.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-
-        ImGui::Unindent();
-    }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-
-    // 🆕 軌跡プレビューセクション
+    /// ===軌跡プレビューセクション=== ///
     ImGui::SeparatorText("軌跡プレビュー");
-
     if (ImGui::Checkbox("軌跡プレビューモード", &trajectoryPreviewMode_)) {
         if (trajectoryPreviewMode_ && !currentDefinition_.advanced.isTrajectoryParticle) {
             // 警告表示
@@ -1026,40 +876,6 @@ void ParticleEditor::RenderAdvancedSettings() {
         ImGui::DragFloat3("基本回転", &trajectoryRotation_.x, 0.1f, -6.28f, 6.28f);
 
         ImGui::Spacing();
-        ImGui::Text("クイック設定");
-
-        // クイック設定ボタン
-        if (ImGui::Button("横スラッシュ", ImVec2(140, 25))) {
-            trajectoryStartPos_ = { -3, 0, 0 };
-            trajectoryEndPos_ = { 3, 1, 0 };
-            trajectoryRotation_ = { 0, 0, 0 };
-            trajectorySpeed_ = 1.5f;
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("縦スラッシュ", ImVec2(140, 25))) {
-            trajectoryStartPos_ = { 0, 3, 0 };
-            trajectoryEndPos_ = { 0, -1, 0 };
-            trajectoryRotation_ = { 0, 0, 1.57f };
-            trajectorySpeed_ = 1.8f;
-        }
-
-        if (ImGui::Button("円運動", ImVec2(140, 25))) {
-            // 円運動は開始位置から計算
-            float radius = 3.0f;
-            trajectoryStartPos_ = { radius, 0, 0 };
-            trajectoryEndPos_ = { -radius, 0, 0 };
-            trajectoryRotation_ = { 0, 0, 0 };
-            trajectorySpeed_ = 0.5f;
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("螺旋", ImVec2(140, 25))) {
-            trajectoryStartPos_ = { -2, -2, 0 };
-            trajectoryEndPos_ = { 2, 2, 0 };
-            trajectoryRotation_ = { 0, 0, 0 };
-            trajectorySpeed_ = 0.8f;
-        }
-
-        ImGui::Spacing();
 
         // 進行状況表示
         ImGui::ProgressBar(trajectoryProgress_, ImVec2(-1, 0));
@@ -1070,26 +886,115 @@ void ParticleEditor::RenderAdvancedSettings() {
             previewPosition_.y,
             previewPosition_.z
         );
-
         ImGui::Unindent();
     }
 
     ImGui::Spacing();
     ImGui::Separator();
 
+    // ===渦巻=== ///
+    ImGui::SeparatorText("渦巻動作");
+    auto& motion = currentDefinition_.advanced.motion;
+
+    /// ===渦巻き運動=== ///
+    if (ImGui::Checkbox("渦巻き運動", &motion.enableSwirling)) {
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+	// 渦巻運動パラメータの設定
+    if (motion.enableSwirling) {
+        ImGui::Indent();
+		// 渦巻き速度
+        if (ImGui::DragFloat("渦巻き速度", &motion.swirlingSpeed, 0.1f, 0.0f, 20.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+		// 拡散速度
+        if (ImGui::DragFloat("拡散速度", &motion.expansionRate, 0.1f, 0.0f, 5.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+        ImGui::Unindent();
+    }
+    ImGui::Spacing();
+
+    // エミッタ追従
+    if (ImGui::Checkbox("エミッタに追従", &motion.followEmitter)) {
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+	// 追従パラメータの設定
+    ImGui::TextDisabled("エミッタの移動に追従する");
+    if (motion.followEmitter) {
+        ImGui::Indent();
+		// 追従強度
+        if (ImGui::SliderFloat("追従強度", &motion.followStrength, 0.0f, 1.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+        ImGui::TextDisabled("0.0 = 追従しない、1.0 = 完全追従");
+        ImGui::Unindent();
+    }
+    ImGui::Spacing();
+
+    // 回転影響
+    if (ImGui::Checkbox("回転影響を受ける", &motion.useRotationInfluence)) {
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+    ImGui::TextDisabled("エミッタの回転がパーティクルに影響");
+	// 回転影響パラメータの設定
+    if (motion.useRotationInfluence) {
+        ImGui::Indent();
+		// 回転影響係数
+        if (ImGui::DragFloat("回転影響係数", &motion.rotationInfluence, 0.1f, 0.0f, 5.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+        ImGui::Unindent();
+    }
+    ImGui::Spacing();
+
+    // 速度減衰
+    if (ImGui::SliderFloat("速度減衰率", &motion.velocityDamping, 0.0f, 1.0f)) {
+        if (previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+    }
+    ImGui::TextDisabled("毎フレーム速度に掛ける係数 (1.0 = 減衰なし)");
+    ImGui::Spacing();
+
+    // ビルボード回転
+    ImGui::Checkbox("ビルボード回転", &motion.enableBillboardRotation);
+	// ビルボード回転パラメータの設定
+    if (motion.enableBillboardRotation) {
+        ImGui::Indent();
+		// 回転速度
+        if (ImGui::DragFloat("回転速度", &motion.billboardRotationSpeed, 0.1f, 0.0f, 10.0f)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+        ImGui::Unindent();
+    }
+    ImGui::Spacing();
+    ImGui::Separator();
+
     // プリセットボタン
     ImGui::SeparatorText("プリセット");
-
     if (ImGui::Button("攻撃軌跡プリセット", ImVec2(200, 30))) {
         ApplyTrajectoryPreset();
     }
     ImGui::SameLine();
     if (ImGui::Button("爆発プリセット", ImVec2(200, 30))) {
         ApplyExplosionPreset();
-    }
-
-    if (ImGui::Button("魔法陣プリセット", ImVec2(200, 30))) {
-        ApplyMagicCirclePreset();
     }
     ImGui::SameLine();
     if (ImGui::Button("煙プリセット", ImVec2(200, 30))) {

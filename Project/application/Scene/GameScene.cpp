@@ -50,6 +50,7 @@ void GameScene::Initialize() {
 	// Particleの読み込み
 	ParticleService::LoadParticleDefinition("Game.json");
 	ParticleService::LoadParticleDefinition("WeaponAttack.json");
+	ParticleService::LoadParticleDefinition("nakagawa.json");
 
 	/// ===Transition=== ///
 	transiton_ = std::make_unique<SceneTransition>();

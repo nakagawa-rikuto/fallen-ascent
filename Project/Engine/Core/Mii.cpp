@@ -24,7 +24,7 @@ void Mii::Initialize(const wchar_t* title, int width, int height) {
 
 	// DSVManagerの生成
 	dsvManager_ = std::make_unique<DSVManager>();
-	dsvManager_->Initialize(dXCommon_.get());
+	dsvManager_->Initialize(dXCommon_.get(), winApp_.get());
 	dsvManager_->CreateDepthBufferView(0);
 
 	// ImGuiManagerの生成

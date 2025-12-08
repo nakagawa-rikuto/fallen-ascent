@@ -10,6 +10,7 @@
 
 /// ===前方宣言=== ///
 class DXCommon;
+class WinApp;
 
 ///=====================================================/// 
 /// DSVManager
@@ -24,7 +25,7 @@ public:
 	/// 初期化処理
 	/// </summary>
 	/// <param name="dxcommon">Class DXCommon</param>
-	void Initialize(DXCommon* dxcommon);
+	void Initialize(DXCommon* dxcommon, WinApp* winApp);
 
 	/// <summary>
 	/// 深度バッファの生成処理
@@ -66,6 +67,8 @@ public:/// ===定数=== ///
 private:
 	// DXCommon
 	DXCommon* dxcommon_ = nullptr;
+	// WinApp
+	WinApp* winApp_ = nullptr;
 	// depthStencilResource
 	ComPtr<ID3D12Resource> resource_[kMaxDSVCount_];
 	// ヒープ
