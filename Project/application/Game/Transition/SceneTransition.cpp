@@ -2,6 +2,7 @@
 #include <algorithm>
 // Service
 #include "Engine/System/Service/OffScreenService.h"
+#include "Engine/System/Service/GraphicsResourceGetter.h"
 // Math
 #include "Math/EasingMath.h"
 
@@ -22,7 +23,7 @@ void SceneTransition::StartFadeIn(float duration) {
 	// Sprite
 	sprite_ = std::make_unique<Sprite>();
 	sprite_->Initialize("White");
-	sprite_->SetSize({ 1280.0f, 720.0f });
+	sprite_->SetSize({ static_cast<float>(GraphicsResourceGetter::GetWindowWidth()), static_cast<float>(GraphicsResourceGetter::GetWindowHeight()) });
 	sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 黒で初期化
 	sprite_->Update();
 
