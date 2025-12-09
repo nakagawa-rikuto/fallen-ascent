@@ -15,7 +15,7 @@ struct VignetteData {
 ///=====================================================/// 
 /// VignetteEffect
 ///=====================================================///
-class VignetteEffect : RenderPass {
+class VignetteEffect : public RenderPass {
 public:
 	VignetteEffect() = default;
 	~VignetteEffect() = default;

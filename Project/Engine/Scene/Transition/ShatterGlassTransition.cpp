@@ -118,5 +118,7 @@ void ShatterGlassTransition::OnFadeOutUpdate() {
 
 	// 設定
 	OffScreenService::SetShatterGlassData(data_);
-	sprite_->Update();
+	if (sprite_) {
+		sprite_->Update();
+	}
 }

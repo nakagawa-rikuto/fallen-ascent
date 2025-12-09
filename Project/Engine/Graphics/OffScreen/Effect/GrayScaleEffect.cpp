@@ -7,7 +7,7 @@
 ///-------------------------------------------///
 void GrayscaleEffect::Initialize(ID3D12Device* device, std::shared_ptr<RenderTexture> RenderTexture) {
 	// RenderTextureを取得
-	renderTexture_ = RenderTexture;
+	outputTexture_ = RenderTexture;
 
 	// Deviceの初期化
 	ID3D12Device* devicePtr = device;
@@ -28,7 +28,7 @@ void GrayscaleEffect::Draw(ID3D12GraphicsCommandList* commandList) {
 	// コピーイメージ
 	Render::SetPSO(commandList, PipelineType::Grayscale, BlendMode::kBlendModeNone);
 
-	commandList->SetGraphicsRootDescriptorTable(0, renderTexture_->GetSRVHandle());
+	commandList->SetGraphicsRootDescriptorTable(0, inputTexture_->GetSRVHandle());
 	// 頂点3つを描画
 	commandList->DrawInstanced(3, 1, 0, 0);
 }

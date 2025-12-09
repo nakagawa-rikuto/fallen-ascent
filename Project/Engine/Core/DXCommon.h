@@ -41,8 +41,21 @@ public:
 	/// <param name="resource">準備対象のレンダーテクスチャを表す ID3D12Resource へのポインタ。nullptr を渡さないことが想定されます。</param>
 	void PreDrawRenderTexture(ID3D12Resource* resource);
 
-	// 描画前処理(swapChain)
-	// <param name="rtv">レンダーターゲットビューを管理する RTVManager オブジェクトへのポインタ。</param>
+	/// <summary>
+	/// バリアの状態遷移
+	/// </summary>
+	void TransitionRenderTarget();
+
+	/// <summary>
+	/// EffectTextureへの描画前処理
+	/// </summary>
+	/// <param name="resource">準備対象のエフェクトテクスチャを表す ID3D12Resource へのポインタ。</param>
+	void PreDrawEffectTexture(ID3D12Resource* resource);
+
+	/// <summary>
+	/// EffectTextureのバリア状態遷移
+	/// </summary>
+	void TransitionEffectTexture();
 
 	/// <summary>
 	/// SwapChainへの描画前処理
@@ -55,10 +68,7 @@ public:
 	/// </summary>
 	void BeginCommand();
 
-	/// <summary>
-	/// バリアの状態遷移
-	/// </summary>
-	void TransitionRenderTarget();
+	
 
 	/// <summary>
 	/// 描画前処理
@@ -150,6 +160,7 @@ private: // メンバ変数
 
 	/// ===バリア=== ///
 	D3D12_RESOURCE_BARRIER barrierRenderTexture_{};
+	D3D12_RESOURCE_BARRIER barrierEffectTexture_{};
 	D3D12_RESOURCE_BARRIER barrierSwapChain_{};
 
 	/// ===FPS固定=== ///

@@ -167,7 +167,8 @@ void Mii::BeginFrame() {
 	ID3D12GraphicsCommandList* commandList = dXCommon_->GetCommandList();
 
 	// Barrierの設定
-	dXCommon_->PreDrawRenderTexture(offScreenRenderer_->GetBuffer());
+	dXCommon_->PreDrawRenderTexture(offScreenRenderer_->GetSceneBuffer());
+	dXCommon_->PreDrawEffectTexture(offScreenRenderer_->GetEffectBuffer());
 
 	// 描画先のRTVを設定する
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvManager_->GetCPUDescriptorHandle(0); // 通常DSVは1つ
@@ -188,18 +189,29 @@ void Mii::BeginFrame() {
 /// フレーム終了処理
 ///=====================================================///
 void Mii::EndFrame() {
-
-	// ImGuiの開始処理
-	//NOTE:ここはswapChainで設定
+	// ImGuiの描画準備
 	dXCommon_->PreDrawImGui(rtvManager_.get());
-	// バリアの状態遷移
+
+	// sceneTextureのバリアの状態遷移
 	dXCommon_->TransitionRenderTarget();
-	// OffScreen
+
+	// OffScreenエフェクトをSwapChainに描画
 	offScreenRenderer_->Draw(dXCommon_->GetCommandList());
-	// ImGuiの開始処理
+
+	// EffectTextureのバリア状態遷移
+	dXCommon_->TransitionEffectTexture();
+
+	// effectTexture_ を SwapChain にコピー
+	UINT backBufferIndex = dXCommon_->GetBackBufferIndex();
+	D3D12_CPU_DESCRIPTOR_HANDLE swapChainRTV = rtvManager_->GetCPUDescriptorHandle(backBufferIndex);
+	offScreenRenderer_->CopyToSwapChain(dXCommon_->GetCommandList(), swapChainRTV);
+
+	// ImGuiのUI描画
 	imGuiManager_->Draw();
-	// ImGuiの終了処理
+
+	// ImGuiの描画実行
 	imGuiManager_->End();
+
 	// DXCommonの描画後処理
 	dXCommon_->PostDraw();
 }

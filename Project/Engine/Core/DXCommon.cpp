@@ -88,19 +88,19 @@ void DXCommon::Initialize(
 ///-------------------------------------------///
 /// ===RenderTexture=== ///
 void DXCommon::PreDrawRenderTexture(ID3D12Resource* resource) {
-
-	/* ///////////////////
-		　 バリアを張る
-	*/ ///////////////////
-	// TransitionBarrierの設定
-	// 今回のバリアはTransition
-	barrierRenderTexture_.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-
-	// Noneにしておく
-	barrierRenderTexture_.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-
-	// バリアを張る対象のリソース。現在のバックバッファに対して行う
+	// バリアの設定
 	barrierRenderTexture_.Transition.pResource = resource;
+	barrierRenderTexture_.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrierRenderTexture_.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrierRenderTexture_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+}
+/// ===EffectTexture=== ///
+void DXCommon::PreDrawEffectTexture(ID3D12Resource* resource) {
+	// バリアの設定
+	barrierEffectTexture_.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrierEffectTexture_.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrierEffectTexture_.Transition.pResource = resource;
+	barrierEffectTexture_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 }
 /// ===ImGui=== ///
 void DXCommon::PreDrawImGui(RTVManager* rtv) {
@@ -150,15 +150,31 @@ void DXCommon::BeginCommand() {
 ///-------------------------------------------/// 
 /// バリアの状態遷移
 ///-------------------------------------------///
+/// ===RenderTexture=== ///
 void DXCommon::TransitionRenderTarget() {
+	// リソースが正しく設定されているか確認
+	assert(barrierRenderTexture_.Transition.pResource != nullptr);
+
 	// 遷移前(現在)のResourceState
 	barrierRenderTexture_.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	// 遷移後のResourceState
 	barrierRenderTexture_.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	// Subresourceを明示的に設定
+	barrierRenderTexture_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	// TransitionBarrierを張る
 	commandList_->ResourceBarrier(1, &barrierRenderTexture_);
 }
-
+/// ===EffectTexture=== ///
+void DXCommon::TransitionEffectTexture() {
+	// 遷移前(現在)のResourceState
+	barrierEffectTexture_.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	// 遷移後のResourceState
+	barrierEffectTexture_.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	// Subresourceを明示的に設定
+	barrierEffectTexture_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	// TransitionBarrierを張る
+	commandList_->ResourceBarrier(1, &barrierEffectTexture_);
+}
 
 ///-------------------------------------------/// 
 /// 描画後処理
@@ -170,20 +186,31 @@ void DXCommon::PostDraw() {
 	// RenderTexture
 	barrierRenderTexture_.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 	barrierRenderTexture_.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrierRenderTexture_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+	// EffectTexture
+	barrierEffectTexture_.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	barrierEffectTexture_.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrierEffectTexture_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
 	// SwapChain
 	barrierSwapChain_.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrierSwapChain_.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+	barrierSwapChain_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
-	// TransitionBarrierを張る
-	commandList_->ResourceBarrier(1, &barrierRenderTexture_);
-	commandList_->ResourceBarrier(1, &barrierSwapChain_);
+	// 3つのバリアを一度に実行
+	D3D12_RESOURCE_BARRIER barriers[] = { 
+		barrierRenderTexture_, 
+		barrierEffectTexture_, 
+		barrierSwapChain_ 
+	};
+	commandList_->ResourceBarrier(3, barriers);
 
-	// コマンドリストの内容を確定させる。
-   // すべてのコマンドを積んでからCloseすること
+	// コマンドリストの内容を確定させる
 	hr = commandList_->Close();
 	assert(SUCCEEDED(hr));
 
-	// GPUコマンドリストの実行を行わせる
+	// GPUコマンドリストの実行
 	ID3D12CommandList* commandList[] = { commandList_.Get() };
 	commandQueue_->ExecuteCommandLists(1, commandList); // コマンドリストをキック
 

@@ -5,7 +5,7 @@
 ///=====================================================/// 
 /// BoxFilter3x3Effect
 ///=====================================================///
-class BoxFilter3x3Effect : RenderPass {
+class BoxFilter3x3Effect : public RenderPass {
 public:
 	BoxFilter3x3Effect() = default;
 	~BoxFilter3x3Effect() = default;
