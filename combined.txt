@@ -181,7 +181,15 @@
 └── └── └── ├── MyGame.cpp
 └── └── └── ├── MyGame.h
 └── └── └── ├── SceneFactory.cpp
-└── └── └── └── SceneFactory.h
+└── └── └── ├── SceneFactory.h
+└── └── └── └── Transition/
+└── └── └──     ├── Base/
+└── └── └──     └── ├── SceneTransitionBase.cpp
+└── └── └──     └── └── SceneTransitionBase.h
+└── └── └──     ├── SceneTransitionManager.cpp
+└── └── └──     ├── SceneTransitionManager.h
+└── └── └──     ├── ShatterGlassTransition.cpp
+└── └── └──     └── ShatterGlassTransition.h
 └── └── └── System/
 └── └──     ├── DeltraTime/
 └── └──     └── ├── DeltaTime.cpp
@@ -389,9 +397,6 @@
 └── └── └── └── └── StageObject/
 └── └── └── └──     ├── StageObject.cpp
 └── └── └── └──     └── StageObject.h
-└── └── └── ├── Transition/
-└── └── └── └── ├── SceneTransition.cpp
-└── └── └── └── └── SceneTransition.h
 └── └── └── └── UI/
 └── └── └──     └── Title/
 └── └── └──         ├── TitleUI.cpp
@@ -544,7 +549,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\Base\BaseEnemy.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\ChargeState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\AttackState.cpp" />
-    <ClCompile Include="application\Game\Transition\SceneTransition.cpp" />
+    <ClCompile Include="Engine\Scene\Transition\ShatterGlassTransition.cpp" />
     <ClCompile Include="Engine\System\Service\ColliderService.cpp" />
     <ClCompile Include="Engine\Collider\AABBCollider.cpp" />
     <ClCompile Include="Engine\Graphics\3d\Model\AnimationModel.cpp" />
@@ -674,6 +679,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Base\UAV.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp" />
     <ClCompile Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.cpp" />
+    <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp" />
+    <ClCompile Include="Engine\Scene\Transition\SceneTransitionManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
@@ -696,7 +703,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\DataInfo\BlendModeData.h" />
     <ClInclude Include="Engine\DataInfo\LevelData.h" />
     <ClInclude Include="application\Game\Entity\Enemy\CloseRange\CloseRangeEnemy.h" />
-    <ClInclude Include="application\Game\Transition\SceneTransition.h" />
+    <ClInclude Include="Engine\Scene\Transition\ShatterGlassTransition.h" />
     <ClInclude Include="Engine\System\Service\ColliderService.h" />
     <ClInclude Include="Engine\Collider\AABBCollider.h" />
     <ClInclude Include="Engine\DataInfo\LightData.h" />
@@ -837,6 +844,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Base\UAV.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h" />
     <ClInclude Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.h" />
+    <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h" />
+    <ClInclude Include="Engine\Scene\Transition\SceneTransitionManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -1494,7 +1503,7 @@ File Path: Project/DeathsDoor.vcxproj.filters
     <ClCompile Include="Engine\Graphics\2d\Base\Object2DCommon.cpp">
       <Filter>Engine\Graphics\2D\Base</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Transition\SceneTransition.cpp">
+    <ClCompile Include="Engine\Scene\Transition\ShatterGlassTransition.cpp">
       <Filter>application\Game\Transition</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Animation\StartAnimation.cpp">
@@ -1541,6 +1550,8 @@ File Path: Project/DeathsDoor.vcxproj.filters
     <ClCompile Include="Engine\Graphics\Base\UAV.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp" />
     <ClCompile Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.cpp" />
+    <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp" />
+    <ClCompile Include="Engine\Scene\Transition\SceneTransitionManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -1951,7 +1962,7 @@ File Path: Project/DeathsDoor.vcxproj.filters
     <ClInclude Include="Engine\Graphics\2d\Base\Object2DCommon.h">
       <Filter>Engine\Graphics\2D\Base</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Transition\SceneTransition.h">
+    <ClInclude Include="Engine\Scene\Transition\ShatterGlassTransition.h">
       <Filter>application\Game\Transition</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Animation\StartAnimation.h">
@@ -2000,6 +2011,8 @@ File Path: Project/DeathsDoor.vcxproj.filters
     <ClInclude Include="Engine\Graphics\Base\UAV.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h" />
     <ClInclude Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.h" />
+    <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h" />
+    <ClInclude Include="Engine\Scene\Transition\SceneTransitionManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -18395,6 +18408,8 @@ File Path: Project/Engine/Scene/Framework.h
 /// ===Include=== ///
 // MiiEngine
 #include "Engine/Core/Mii.h"
+// SceneFactory
+#include "Engine/Scene/AbstractSceneFactory.h"
 // CameraManager
 #include "Engine/System/Managers/CameraManager.h"
 // ParticleManager
@@ -18403,8 +18418,6 @@ File Path: Project/Engine/Scene/Framework.h
 #include "Engine/System/Managers/ColliderManager.h"
 // DeltaTime
 #include "Engine/System/DeltraTime/DeltaTime.h"
-// SceneFactory
-#include "Engine/Scene/AbstractSceneFactory.h"
 // ｃ++
 #include <memory>
 
@@ -18684,20 +18697,19 @@ void MyGame::Initialize(const wchar_t* title) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	/// ===読み込み処理=== ///
-	// スレッドの生成
-	std::thread loadingThread([this] {
-		LoadAudio();
-		LoadTexture();
-		LoadModel();
-		LoadAnimation();
-	});
-
-	// 終了を待機
-	loadingThread.join();
+	// 各読み込み処理用のスレッドを生成
+	LoadTexture();
+	std::vector<std::thread> loadingThreads;
+	loadingThreads.emplace_back([this] { LoadAudio(); });
+	loadingThreads.emplace_back([this] { LoadModel(); });
+	loadingThreads.emplace_back([this] { LoadAnimation(); });
+	// すべてのスレッドの終了を待機
+	for (auto& thread : loadingThreads) {
+		thread.join();
+	}
 
 	// 処理時間を計測（end）
 	auto end = std::chrono::high_resolution_clock::now();
-
 	// 経過時間をミリ秒単位で出力
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 	Log("time: " + std::to_string(duration.count()) + " ms\n");
@@ -18707,8 +18719,8 @@ void MyGame::Initialize(const wchar_t* title) {
 	sceneFactory_ = std::make_unique<SceneFactory>();
 	// シーンマネージャの初期化
 	sceneManager_ = std::make_unique<SceneManager>();
-	sceneManager_->SetSceneFactory(sceneFactory_.get());
-	sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
+	sceneManager_->Initialize(sceneFactory_.get());
+	sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
 }
  
 ///-------------------------------------------/// 
@@ -18752,7 +18764,6 @@ void MyGame::LoadAudio() {
 #pragma region Wave
 	Loader::LoadWave("fanfare", "fanfare.wav");
 #pragma endregion
-
 #pragma region MP3
 	Loader::LoadMP3("clear", "clear.mp3");
 #pragma endregion
@@ -18939,6 +18950,526 @@ public:
 	/// <param name="type">シーンタイプ</param>
 	/// <returns>ISceneを返す</returns>
 	std::unique_ptr<IScene> CreateScene(SceneType type) override;
+};
+
+
+
+============================================================
+File Path: Project/Engine/Scene/Transition/Base/SceneTransitionBase.cpp
+============================================================
+#include "SceneTransitionBase.h"
+#include "Engine/System/Service/DeltaTimeSevice.h"
+
+///-------------------------------------------/// 
+/// Getter
+///-------------------------------------------///
+bool SceneTransitionBase::IsFading() const { return animation_.isPlaying; }
+bool SceneTransitionBase::IsFinished() const { return animation_.isFinished; }
+FadeState SceneTransitionBase::GetState() const { return currentState_; }
+
+///-------------------------------------------/// 
+/// フェードイン開始処理
+///-------------------------------------------///
+void SceneTransitionBase::StartFadeIn(float duration) {
+	// 設定
+	animation_.isPlaying = true;
+	animation_.isFinished = false;
+	animation_.currentTime = 0.0f;
+	animation_.duration = duration;
+	currentState_ = FadeState::FadeIn;
+}
+
+///-------------------------------------------/// 
+/// フェードアウト開始処理
+///-------------------------------------------///
+void SceneTransitionBase::StartFadeOut(float duration) {
+	// 設定
+	animation_.isPlaying = true;
+	animation_.isFinished = false;
+	animation_.currentTime = 0.0f;
+	animation_.duration = duration;
+	currentState_ = FadeState::FadeOut;
+}
+
+///-------------------------------------------/// 
+/// フェードインの更新処理
+///-------------------------------------------///
+void SceneTransitionBase::FadeInUpdate() {
+	// 早期リターン
+	if (!animation_.isPlaying || animation_.isFinished || currentState_ != FadeState::FadeIn) {
+		return;
+	}
+
+	// 経過時間を加算
+	animation_.currentTime += DeltaTimeSevice::GetDeltaTime();
+
+	/// ===フェードインの更新処理=== ///
+	OnFadeInUpdate();
+}
+
+///-------------------------------------------/// 
+/// フェードアウトの更新処理
+///-------------------------------------------///
+void SceneTransitionBase::FadeOutUpdate() {
+	// 早期リターン
+	if (!animation_.isPlaying || animation_.isFinished || currentState_ != FadeState::FadeOut) {
+		return;
+	}
+
+	// 経過時間を加算
+	animation_.currentTime += DeltaTimeSevice::GetDeltaTime();
+
+	/// ===フェードアウトの更新処理=== ///
+	OnFadeOutUpdate();
+}
+
+///-------------------------------------------/// 
+/// 描画処理
+///-------------------------------------------///
+void SceneTransitionBase::Draw() {
+	// 基底クラスでは何もしない
+}
+
+
+============================================================
+File Path: Project/Engine/Scene/Transition/Base/SceneTransitionBase.h
+============================================================
+#pragma once
+/// ===Include=== ///
+
+/// ===前方宣言=== ///
+enum class FadeState {
+	None,
+	FadeIn,
+	FadeOut,
+	Finished
+};
+
+///=====================================================/// 
+/// シーントランジション基底クラス
+///=====================================================///
+class SceneTransitionBase {
+public:
+
+	virtual ~SceneTransitionBase() = default;
+
+	/// <summary>
+	/// 指定した時間でフェードインを開始する
+	/// </summary>
+	/// <param name="duration">フェードインにかける時間（秒）。</param>
+	virtual void StartFadeIn(const float duration);
+
+	/// <summary>
+	/// 指定した継続時間でフェードアウトを開始する
+	/// </summary>
+	/// <param name="duration">フェードアウトにかける時間（秒）。</param>
+	virtual void StartFadeOut(const float duration);
+
+	/// <summary>
+	/// フェードインの更新処理を行う純粋仮想関数
+	/// </summary>
+	void FadeInUpdate();
+
+	/// <summary>
+	/// フェードアウトの更新処理を行う純粋仮想関数
+	/// </summary>
+	void FadeOutUpdate();
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	virtual void Draw();
+
+public: /// ===Getter=== ///
+
+	// フェード中か
+	virtual bool IsFading() const;
+	// 完了したか
+	virtual bool IsFinished() const;
+	// 現在の状態
+	virtual FadeState GetState() const;
+
+protected:
+
+	// アニメーション制御用構造体
+	struct TransitionData {
+		bool isPlaying = false;
+		bool isFinished = true;
+		float currentTime = 0.0f;
+		float duration = 1.2f;  // エフェクトの総時間
+	};
+	TransitionData animation_;
+
+	// フェード
+	FadeState currentState_ = FadeState::None;
+
+protected:
+
+	/// <summary>
+	/// フェードインの更新時に呼び出される処理を行う関数。
+	/// </summary>
+	virtual void OnFadeInUpdate() {};
+
+	/// <summary>
+	/// フェードアウトの進行に応じた更新処理を行います。
+	/// </summary>
+	virtual void OnFadeOutUpdate() {};
+};
+
+
+
+============================================================
+File Path: Project/Engine/Scene/Transition/SceneTransitionManager.cpp
+============================================================
+#include "SceneTransitionManager.h"
+// Transition
+#include "Engine/Scene/Transition/ShatterGlassTransition.h"
+
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+SceneTransitionManager::~SceneTransitionManager() {
+	currentTransition_.reset();
+}
+
+///-------------------------------------------/// 
+/// Getter
+///-------------------------------------------///
+bool SceneTransitionManager::IsFading() const {return currentTransition_->IsFading();}
+bool SceneTransitionManager::IsFinished() const {return currentTransition_->IsFinished();}
+FadeState SceneTransitionManager::GetState() const {return currentTransition_->GetState();}
+
+///-------------------------------------------/// 
+/// 初期化
+///-------------------------------------------///
+void SceneTransitionManager::Initialize() {
+	// トランジションタイプの初期化
+	currentType_ = TransitionType::None;
+
+	// トランジションの作成
+	currentTransition_ = std::move(std::make_unique<SceneTransitionBase>());
+}
+
+///-------------------------------------------/// 
+/// 更新
+///-------------------------------------------///
+void SceneTransitionManager::Update() {
+	// フェードイン更新
+	currentTransition_->FadeInUpdate();
+	// フェードアウト更新
+	currentTransition_->FadeOutUpdate();
+}
+
+///-------------------------------------------/// 
+/// 描画
+///-------------------------------------------///
+void SceneTransitionManager::Draw() {
+	// 描画
+	currentTransition_->Draw();
+}
+
+///-------------------------------------------/// 
+/// 遷移フェードインを開始
+///-------------------------------------------///
+void SceneTransitionManager::StartFadeIn(TransitionType type, const float duration) {
+	// 既存のトランジションを変更
+	CreateTransition(type);
+	// フェードイン開始
+	currentTransition_->StartFadeIn(duration);
+}
+
+///-------------------------------------------/// 
+/// 遷移フェードアウトを開始
+///-------------------------------------------///
+void SceneTransitionManager::StartFadeOut(TransitionType type, const float duration) {
+	// 既存のトランジションを変更
+	CreateTransition(type);
+	// フェードアウト開始
+	currentTransition_->StartFadeOut(duration);
+}
+
+///-------------------------------------------/// 
+/// 指定した種類のシーン遷移を作成
+///-------------------------------------------///
+void SceneTransitionManager::CreateTransition(TransitionType type) {
+	// トランジションタイプが異なる場合のみ作成
+	if (currentType_ != type) {
+		switch (type) {
+		case TransitionType::ShatterGlass:
+			// 既存のトランジションを破棄
+			currentTransition_.reset();
+			// 新しいトランジションを作成
+			currentTransition_ = std::move(std::make_unique<ShatterGlassTransition>());
+			// 現在のトランジションタイプを更新
+			currentType_ = type;
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+============================================================
+File Path: Project/Engine/Scene/Transition/SceneTransitionManager.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Engine/Scene/Transition/Base/SceneTransitionBase.h"
+// C++
+#include <memory>
+#include <functional>
+
+/// ===トランジションタイプ=== ///
+enum class TransitionType {
+	None,
+	ShatterGlass,
+};
+
+///=====================================================/// 
+/// シーントランジションマネージャ
+///=====================================================///
+class SceneTransitionManager {
+public:
+
+	SceneTransitionManager() = default;
+	~SceneTransitionManager();
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	void Initialize();
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update();
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	void Draw();
+
+	/// <summary>
+	/// 遷移（フェード）を開始する関数
+	/// </summary>
+	/// <param name="type">開始する遷移の種類を示す値（TransitionType）。</param>
+	/// <param name="duration">遷移にかかる時間（秒）。float 型で指定する。</param>
+	void StartFadeIn(TransitionType type, const float duration);
+
+	/// <summary>
+	/// 指定した継続時間でフェードアウトを開始します。
+	/// </summary>
+	/// <param name="duration">フェードアウトにかける時間（秒）</param>
+	void StartFadeOut(TransitionType type, const float duration);
+
+public: /// ===Getter=== ///
+
+	// フェード中か
+	bool IsFading() const;
+	// 完了したか
+	bool IsFinished() const;
+	// 現在の状態
+	FadeState GetState() const;
+
+private:
+
+	// 現在のトランジションタイプ
+	TransitionType currentType_ = TransitionType::None;
+
+	// トランジション
+	std::unique_ptr<SceneTransitionBase> currentTransition_;
+
+private:
+
+	/// <summary>
+	/// 指定した種類のシーン遷移（SceneTransitionBase 派生）を生成し、その所有権を持つ std::unique_ptr を返します。
+	/// </summary>
+	/// <param name="type">生成するトランジションの種類を示す値（TransitionType）。</param>
+	void CreateTransition(TransitionType type);
+};
+
+
+
+============================================================
+File Path: Project/Engine/Scene/Transition/ShatterGlassTransition.cpp
+============================================================
+#include "ShatterGlassTransition.h"
+#include <algorithm>
+// Service
+#include "Engine/System/Service/OffScreenService.h"
+#include "Engine/System/Service/GraphicsResourceGetter.h"
+// Math
+#include "Math/EasingMath.h"
+
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+ShatterGlassTransition::~ShatterGlassTransition() {
+	if (sprite_) {
+		sprite_.reset();
+	}
+}
+
+///-------------------------------------------/// 
+/// フェードイン開始処理
+///-------------------------------------------///
+void ShatterGlassTransition::StartFadeIn(float duration) {
+	// Sprite
+	sprite_ = std::make_unique<Sprite>();
+	sprite_->Initialize("White");
+	sprite_->SetSize({ static_cast<float>(GraphicsResourceGetter::GetWindowWidth()), static_cast<float>(GraphicsResourceGetter::GetWindowHeight()) });
+	sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 黒で初期化
+	sprite_->Update();
+
+	// フェードイン開始
+	SceneTransitionBase::StartFadeIn(duration);
+}
+
+///-------------------------------------------/// 
+/// フェードアウト開始処理
+///-------------------------------------------///
+void ShatterGlassTransition::StartFadeOut(float duration) {
+	// エフェクトタイプの設定
+	OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
+	// Spriteの色をリセット
+	if (sprite_) {
+		sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 白で初期化
+	}
+
+	// デフォルトパラメータの設定
+	data_.progress = 0.0f;
+	data_.impactX = 0.5f;
+	data_.impactY = 0.5f;
+	data_.crackDensity = 15.0f;
+	data_.dispersion = 1.2f;
+	data_.rotation = 1.5f;
+	data_.fadeOut = 0.5f;  // フェードアウトを有効に
+
+	// 新しいランダムパターンを生成
+	data_.randomSeed = static_cast<float>(rand() % 10000) / 10.0f;
+
+	// フェードアウト開始
+	SceneTransitionBase::StartFadeOut(duration);
+}
+
+///-------------------------------------------/// 
+/// 描画
+///-------------------------------------------///
+void ShatterGlassTransition::Draw() {
+	if (sprite_) {
+		sprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
+	}
+}
+
+///-------------------------------------------/// 
+/// フェードイン固有の更新処理
+///-------------------------------------------///
+void ShatterGlassTransition::OnFadeInUpdate() {
+	// スプライトの色（アルファ値のみ更新）
+	Vector4 color = sprite_->GetColor();
+	color.w += 0.01f; // アルファ値を更新
+
+	// 透明度が1.0に到達したら終了
+	if (color.w >= 1.0f) {
+		animation_.isPlaying = false;
+		animation_.isFinished = true;
+		currentState_ = FadeState::Finished;
+	}
+
+	sprite_->SetColor(color);
+	sprite_->Update();
+}
+
+///-------------------------------------------/// 
+/// フェードアウト固有の更新処理
+///-------------------------------------------///
+void ShatterGlassTransition::OnFadeOutUpdate() {
+	// 進行度を計算（0.0 ~ 1.0）
+	float normalizedTime = (std::min)(animation_.currentTime / animation_.duration, 1.0f);
+
+	// イージング適用（最初は速く、後でゆっくり）
+	float easedTime = Easing::EaseOutCubic(normalizedTime);
+
+	if (data_.progress < 0.5f) {
+		// 各フェーズでの動きを調整
+		if (normalizedTime < 0.5f) {
+			// Phase 1: ひび割れが広がる（0.0 ~ 0.15秒）
+			data_.crackDensity = 15.0f;
+			data_.progress = easedTime * 0.3f;
+		} else {
+			// Phase 3: 破片が飛散して消える（0.5 ~ 1.0秒）
+			data_.crackDensity = 15.0f;
+			data_.dispersion = 4.0f;
+			float phaseTime = (normalizedTime - 0.5f) / 0.5f;
+			data_.progress = 0.25f + Easing::EaseOutCubic(phaseTime) * 0.3f;
+		}
+	} else {
+		// エフェクト終了判定
+		animation_.isPlaying = false;
+		animation_.isFinished = true;
+		currentState_ = FadeState::Finished;
+		data_.progress = 1.0f;
+	}
+
+	// 設定
+	OffScreenService::SetShatterGlassData(data_);
+	sprite_->Update();
+}
+
+
+============================================================
+File Path: Project/Engine/Scene/Transition/ShatterGlassTransition.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Engine/Scene/Transition/Base/SceneTransitionBase.h"
+#include "Engine/Graphics/OffScreen/Effect/ShatterGlassEffect.h"
+#include "application/Drawing/2d/Sprite.h"
+
+///=====================================================/// 
+/// ShatterGlassTransition
+///=====================================================///
+class ShatterGlassTransition : public SceneTransitionBase {
+public: 
+
+    ShatterGlassTransition() = default;
+    ~ShatterGlassTransition();
+
+    /// <summary>
+    /// フェードイン開始処理
+    /// </summary>
+    /// <param name="duration">フェードインにかかる時間（秒）。省略時は1.2秒が使用されます。</param>
+    void StartFadeIn(float duration = 1.2f) override;
+
+    /// <summary>
+    /// フェードアウト開始処理
+    /// </summary>
+    /// <param name="duration">フェードアウトの継続時間（秒）。省略した場合の既定値は1.0秒です。</param>
+    void StartFadeOut(float duration = 1.0f) override;  
+
+    /// <summary>
+    /// 描画処理
+    /// </summary>
+    void Draw() override;
+
+private: 
+    // Sprite
+	std::unique_ptr<Sprite> sprite_;
+    // Data
+    ShatterGlassData data_;
+
+protected:
+    /// <summary>
+    /// フェードイン固有の更新処理
+    /// </summary>
+    void OnFadeInUpdate() override;
+
+    /// <summary>
+    /// フェードアウト固有の更新処理
+    /// </summary>
+    void OnFadeOutUpdate() override;
+
+
 };
 
 
@@ -25101,6 +25632,8 @@ File Path: Project/Engine/System/Managers/SceneManager.cpp
 #include "SceneManager.h"
 // c++
 #include <cassert>
+// SceneTransitionManager
+#include "Engine/Scene/Transition/SceneTransitionManager.h"
 // 各シーン
 #include "application/Scene/TitleScene.h"
 #include "application/Scene/SelectScene.h"
@@ -25114,23 +25647,44 @@ File Path: Project/Engine/System/Managers/SceneManager.cpp
 ///-------------------------------------------///
 SceneManager::~SceneManager() {
 	currentScene_.reset();
+	sceneTransitionManager_.reset();
 }
+
+///-------------------------------------------/// 
+/// Setter
+///-------------------------------------------///
+void SceneManager::SetSelectedLevel(int level) { selectLevel_ = level; }
+void SceneManager::SetSceneFactory(AbstractSceneFactory* sceneFactory) { sceneFactory_ = sceneFactory; }
+
+///-------------------------------------------/// 
+/// Getter
+///-------------------------------------------///
+// 選択されたレベル番号の取得
+int SceneManager::GetSelectedLevel() const { return selectLevel_; }
+// トランジション完了の取得
+bool SceneManager::GetTransitionFinished() const { return sceneTransitionManager_->IsFinished(); }
+// フェード状態の取得
+FadeState SceneManager::GetFadeState() const { return sceneTransitionManager_->GetState(); }
 
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void SceneManager::Initialize() {
-	// シーンの確認
-	if (currentScene_) {
-		// 現在のシーンの初期化
-		currentScene_->Initialize();
-	}
+void SceneManager::Initialize(AbstractSceneFactory* sceneFactor) {
+	// シーンファクトリーのセット
+	SetSceneFactory(sceneFactor);
+
+	// シーントランジションマネージャの生成
+	sceneTransitionManager_ = std::make_unique<SceneTransitionManager>();
+	sceneTransitionManager_->Initialize();
 }
 
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
 void SceneManager::Update() {
+	// シーントランジションマネージャの更新
+	sceneTransitionManager_->Update();
+
 	// シーンの確認
 	if (currentScene_) {
 		// 現在のシーンの更新
@@ -25151,6 +25705,9 @@ void SceneManager::Draw() {
 		// 現在のシーンの描画
 		currentScene_->Draw();
 	}
+
+	// シーントランジションマネージャの描画
+	sceneTransitionManager_->Draw();
 }
 
 ///-------------------------------------------/// 
@@ -25166,7 +25723,7 @@ void SceneManager::ChangeScene(SceneType type) {
 	if (currentScene_) {
 		currentScene_->SetSceneManager(this);
 	}
-	Initialize();
+	SceneInit();
 }
 
 ///-------------------------------------------/// 
@@ -25216,15 +25773,30 @@ void SceneManager::SceneObservation() {
 }
 
 ///-------------------------------------------/// 
-/// Setter
+/// フェードイン開始
 ///-------------------------------------------///
-void SceneManager::SetSelectedLevel(int level) { selectLevel_ = level; }
-void SceneManager::SetSceneFactory(AbstractSceneFactory* sceneFactory) { sceneFactory_ = sceneFactory; }
+void SceneManager::StartFadeIn(TransitionType type, const float duration) {
+	sceneTransitionManager_->StartFadeIn(type, duration);
+}
 
 ///-------------------------------------------/// 
-/// Getter
+/// フェードアウト開始
 ///-------------------------------------------///
-int SceneManager::GetSelectedLevel() const { return selectLevel_; }
+void SceneManager::StartFadeOut(TransitionType type, const float duration) {
+	sceneTransitionManager_->StartFadeOut(type, duration);
+}
+
+///-------------------------------------------/// 
+/// シーン初期化
+///-------------------------------------------///
+void SceneManager::SceneInit() {
+	// シーンの確認
+	if (currentScene_) {
+		// 現在のシーンの初期化
+		currentScene_->Initialize();
+	}
+}
+
 
 
 ============================================================
@@ -25237,6 +25809,8 @@ File Path: Project/Engine/System/Managers/SceneManager.h
 #include <string>
 // Game
 #include "Engine/Scene/AbstractSceneFactory.h"
+// SceneTransitionManager
+#include "Engine/Scene/Transition/SceneTransitionManager.h"
 // Imgui
 #ifdef USE_IMGUI
 #include <imgui.h>
@@ -25254,7 +25828,7 @@ public:/// ===基本的な関数=== ///
 	/// <summary>
 	/// 初期化処理
 	/// </summary>
-	void Initialize();
+	void Initialize(AbstractSceneFactory* sceneFactor);
 
 	/// <summary>
 	/// 現在のシーンの更新処理
@@ -25271,7 +25845,9 @@ public:/// ===シーン処理=== ///
 	/// <summary>
 	/// シーンの切り替え処理
 	/// </summary>
-	/// <param name="type">切り替えるシーンの種類を指定します（通常は SceneType 列挙型の値）。</param>
+	/// <param name="type">切り替えるシーンを示す値（SceneType 型）。</param>
+	/// <param name="transition">使用する遷移効果（TransitionType）。省略時は TransitionType::None。</param>
+	/// <param name="duraiton">遷移の継続時間（秒）。既定値は 1.0f。</param>
 	void ChangeScene(SceneType type);
 
 	/// <summary>
@@ -25279,10 +25855,30 @@ public:/// ===シーン処理=== ///
 	/// </summary>
 	void SceneObservation();
 
+	/// <summary>
+	/// 指定したトランジションでフェードインを開始
+	/// </summary>
+	/// <param name="type">フェードインに使用するトランジションの種類。TransitionType 型で指定します。</param>
+	/// <param name="duration">フェードインにかける時間（秒単位）。</param>
+	void StartFadeIn(TransitionType type, const float duration);
+
+	/// <summary>
+	/// 指定した継続時間でフェードアウトを開始
+	/// </summary>
+	/// <param name="type">フェードインに使用するトランジションの種類。TransitionType 型で指定します。</param>
+	/// <param name="duration">フェードアウトの継続時間（秒単位）。</param>
+	void StartFadeOut(TransitionType type, const float duration);
+
 public: /// ===Getter=== ///
 
 	// 選択されたレベル番号の取得
 	int GetSelectedLevel() const;
+
+	// トランジションが完了したか
+	bool GetTransitionFinished() const;
+	// フェードの状態を取得
+	FadeState GetFadeState() const;
+
 
 public: /// ===Setter=== ///
 
@@ -25296,12 +25892,23 @@ private:
 	// シーンファクトリー
 	AbstractSceneFactory* sceneFactory_ = nullptr;
 
+	// シーントランジションマネージャ
+	std::unique_ptr<SceneTransitionManager> sceneTransitionManager_;
+
 	// 現在のシーン
 	SceneType currentSceneType_ = SceneType::Title; // 初期のシーン
 	std::unique_ptr<IScene> currentScene_; // 現在のシーン
 
 	// 選択されたレベル番号を保持する
 	int selectLevel_ = 1;
+
+private: 
+
+	/// <summary>
+	/// 指定した持続時間でシーンを初期化
+	/// </summary>
+	/// <param name="duration">初期化処理にかける時間（秒）。シーンの設定や遷移の持続時間を指定します。</param>
+	void SceneInit();
 };
 
 
@@ -30810,6 +31417,7 @@ File Path: Project/application/Game/Animation/GameOverAnimation.cpp
 ============================================================
 #include "GameOverAnimation.h"
 #include "application/Game/Camera/GameCamera.h"
+#include "Engine/System/Service/GraphicsResourceGetter.h"
 #include <cmath>
 
 // 定数定義
@@ -30850,7 +31458,8 @@ void GameOverAnimation::Initialize(GameCamera* camera) {
     blackSprite_ = std::make_unique<Sprite>();
     blackSprite_->Initialize("White"); // 1x1の白テクスチャ
     blackSprite_->SetPosition({ 640.0f, 360.0f });
-    blackSprite_->SetSize({ 1280.0f, 720.0f }); // 画面全体
+    GraphicsResourceGetter::GetWindowWidth();
+    blackSprite_->SetSize({ static_cast<float>(GraphicsResourceGetter::GetWindowWidth()), static_cast<float>(GraphicsResourceGetter::GetWindowHeight()) }); // 画面全体
     blackSprite_->SetAnchorPoint({ 0.5f, 0.5f });
     blackSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 0.0f }); // 黒、初期は透明
 
@@ -36966,232 +37575,6 @@ public: /// ===OnCollision=== ///
 
 
 ============================================================
-File Path: Project/application/Game/Transition/SceneTransition.cpp
-============================================================
-#include "SceneTransition.h"
-#include <algorithm>
-// Service
-#include "Engine/System/Service/OffScreenService.h"
-// Math
-#include "Math/EasingMath.h"
-
-///-------------------------------------------/// 
-/// デストラクタ
-///-------------------------------------------///
-SceneTransition::~SceneTransition() {
-	if (sprite_) {
-		sprite_.reset();
-	}
-}
-
-///-------------------------------------------/// 
-/// 
-///-------------------------------------------///
-void SceneTransition::StartFadeIn(float duration) {
-	
-	// Sprite
-	sprite_ = std::make_unique<Sprite>();
-	sprite_->Initialize("White");
-	sprite_->SetSize({ 1280.0f, 720.0f });
-	sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 黒で初期化
-	sprite_->Update();
-
-	isPlaying_ = true;
-	isFinished_ = false;
-	currentTime_ = 0.0f;
-	duration_ = duration;
-	currentState_ = FadeState::FadeIn;
-}
-
-///-------------------------------------------/// 
-/// 
-///-------------------------------------------///
-void SceneTransition::StartFadeOut(float duration) {
-	// エフェクトタイプの設定
-	//OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
-
-	// デフォルトパラメータの設定
-	data_.progress = 0.0f;
-	data_.impactX = 0.5f;
-	data_.impactY = 0.5f;
-	data_.crackDensity = 15.0f;
-	data_.dispersion = 1.2f;
-	data_.rotation = 1.5f;
-	data_.fadeOut = 0.5f;  // フェードアウトを有効に
-
-	// 新しいランダムパターンを生成
-	data_.randomSeed = static_cast<float>(rand() % 10000) / 10.0f;
-
-	isPlaying_ = true;
-	isFinished_ = false;
-	currentTime_ = 0.0f;
-	duration_ = duration;
-	currentState_ = FadeState::FadeOut;
-}
-
-///-------------------------------------------/// 
-/// 更新
-///-------------------------------------------///
-void SceneTransition::FadeOutUpdate() {
-	if (!isPlaying_ || isFinished_) {
-		return;
-	}
-
-	currentTime_ += 1.0f / 60.0f;
-
-	// 進行度を計算（0.0 ~ 1.0）
-	float normalizedTime = (std::min)(currentTime_ / duration_, 1.0f);
-
-	// イージング適用（最初は速く、後でゆっくり）
-	float easedTime = Easing::EaseOutCubic(normalizedTime);
-
-	if (data_.progress < 0.5f) {
-		// 各フェーズでの動きを調整
-		if (normalizedTime < 0.5f) {
-			// Phase 1: ひび割れが広がる（0.0 ~ 0.15秒）
-			data_.crackDensity = 15.0f;
-			data_.progress = easedTime * 0.3f;
-		} else {
-			// Phase 3: 破片が飛散して消える（0.5 ~ 1.0秒）
-			data_.crackDensity = 15.0f;
-			data_.dispersion = 4.0f;
-			float phaseTime = (normalizedTime - 0.5f) / 0.5f;
-			data_.progress = 0.25f + Easing::EaseOutCubic(phaseTime) * 0.3f;
-		}
-	} else {
-		// エフェクト終了判定
-		isPlaying_ = false;
-		isFinished_ = true;
-		currentState_ = FadeState::Finished;
-		data_.progress = 1.0f;
-	}
-
-	// 設定
-	OffScreenService::SetShatterGlassData(data_);
-}
-
-///-------------------------------------------/// 
-/// 更新
-///-------------------------------------------///
-void SceneTransition::FadeInUpdate() {
-	if (!isPlaying_ || isFinished_) {
-		return;
-	}
-
-	// スプライトの色（アルファ値のみ更新）
-	Vector4 color = sprite_->GetColor();
-	color.w += 0.01f; // アルファ値を更新
-	
-
-	// 透明度が1.0に到達したら終了
-	if (color.w >= 1.0f) {
-		isPlaying_ = false;
-		isFinished_ = true;
-		currentState_ = FadeState::Finished;
-	}
-
-	sprite_->SetColor(color);
-	sprite_->Update();
-}
-
-///-------------------------------------------/// 
-/// 描画
-///-------------------------------------------///
-void SceneTransition::Draw() {
-	if (sprite_) {
-		sprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
-	}
-}
-
-///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-bool SceneTransition::IsFading() const { return isPlaying_; }
-bool SceneTransition::IsFinished() const { return isFinished_; }
-FadeState SceneTransition::GetState() const { return currentState_; }
-
-
-============================================================
-File Path: Project/application/Game/Transition/SceneTransition.h
-============================================================
-#pragma once
-#include "Engine/Graphics/OffScreen/Effect/ShatterGlassEffect.h"
-#include "application/Drawing/2d/Sprite.h"
-
-enum class FadeState {
-    None,
-    FadeIn,   
-    FadeOut,  
-    Finished
-};
-
-///=====================================================/// 
-/// SceneTransition
-///=====================================================///
-class SceneTransition {
-public: 
-
-    SceneTransition() = default;
-    ~SceneTransition();
-
-    /// <summary>
-    /// フェードイン開始処理
-    /// </summary>
-    /// <param name="duration">フェードインにかかる時間（秒）。省略時は1.2秒が使用されます。</param>
-    void StartFadeIn(float duration = 1.2f);
-
-    /// <summary>
-    /// フェードアウト開始処理
-    /// </summary>
-    /// <param name="duration">フェードアウトの継続時間（秒）。省略した場合の既定値は1.0秒です。</param>
-    void StartFadeOut(float duration = 1.0f);  // 通常→真っ暗
-
-    /// <summary>
-    /// フェードインの更新処理
-    /// </summary>
-    void FadeInUpdate();
-
-    /// <summary>
-    /// フェードアウトの更新処理
-    /// </summary>
-    void FadeOutUpdate();
-
-    /// <summary>
-    /// 描画処理
-    /// </summary>
-    void Draw();
-
-public: /// ===Getter=== ///
-
-    // フェード中か
-    bool IsFading() const;
-
-    // 完了したか
-    bool IsFinished() const;
-
-    // 現在の状態
-    FadeState GetState() const;
-
-private: 
-
-    // Sprite
-	std::unique_ptr<Sprite> sprite_;
-
-    // Data
-    ShatterGlassData data_;
-
-    // アニメーション制御
-    bool isPlaying_ = false;
-    bool isFinished_ = false;
-    float currentTime_ = 0.0f;
-    float duration_ = 1.2f; // エフェクトの総時間（秒）
-
-    FadeState currentState_ = FadeState::None;
-};
-
-
-
-============================================================
 File Path: Project/application/Game/UI/Title/TitleUI.cpp
 ============================================================
 #include "TitleUI.h"
@@ -37430,8 +37813,6 @@ GameScene::~GameScene() {
 	enemyManager_.reset();
 	// Ground
 	stage_.reset();
-	// Transitionのリセット
-	transiton_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -37449,11 +37830,6 @@ void GameScene::Initialize() {
 	ParticleService::LoadParticleDefinition("Game.json");
 	ParticleService::LoadParticleDefinition("WeaponAttack.json");
 	ParticleService::LoadParticleDefinition("nakagawa.json");
-
-	/// ===Transition=== ///
-	transiton_ = std::make_unique<SceneTransition>();
-	fadeInDuration_ = 2.0f;
-	transiton_->StartFadeOut(fadeInDuration_); // フェードイン開始
 
 	/// ===Camera=== ///
 	camera_ = std::make_shared<GameCamera>();
@@ -37493,7 +37869,9 @@ void GameScene::Initialize() {
 
 	// 初期フェーズをFadeInに設定
 	currentPhase_ = GamePhase::FadeIn;
-	transiton_->StartFadeOut(fadeInDuration_); // フェードイン開始
+	/// ===Transition=== ///
+	float fadeOutDuration = 2.0f;
+	sceneManager_->StartFadeOut(TransitionType::ShatterGlass, fadeOutDuration); // フェードイン開始
 }
 
 ///-------------------------------------------/// 
@@ -37592,9 +37970,6 @@ void GameScene::Draw() {
 ///-------------------------------------------///
 void GameScene::UpdateFadeIn() {
 
-	// FadeIn更新
-	transiton_->FadeOutUpdate();
-
 	// アニメーション時のEnemy更新
 	enemyManager_->UpdateAnimation();
 
@@ -37602,7 +37977,7 @@ void GameScene::UpdateFadeIn() {
 	player_->UpdateAnimation();
 
 	// FadeIn完了でStartAnimationフェーズへ
-	if (transiton_->GetState() == FadeState::Finished) {
+	if (sceneManager_->GetFadeState() == FadeState::Finished) {
 		OffScreenService::SetOffScreenType(OffScreenType::CopyImage);
 		currentPhase_ = GamePhase::StartAnimation;
 	}
@@ -37737,8 +38112,6 @@ File Path: Project/application/Scene/GameScene.h
 #include "application/Game/Animation/StartAnimation.h"
 #include "application/Game/Animation/GameOverAnimation.h"
 #include "application/Game/Animation/GameClearAnimation.h"
-// Transition
-#include "application/Game/Transition/SceneTransition.h"
 
 /// ===GameSceneのフェーズ=== ///
 enum class GamePhase {
@@ -37779,8 +38152,6 @@ private:/// ===メンバ変数=== ///
 	/// </summary>
 
 	/// ===Classの宣言=== /// 
-	// Transition
-	std::unique_ptr<SceneTransition> transiton_;
 	// Camera
 	std::shared_ptr<GameCamera> camera_;
 	// Player
@@ -37808,13 +38179,6 @@ private:/// ===メンバ変数=== ///
 
 	/// ===フェーズ管理=== ///
 	GamePhase currentPhase_ = GamePhase::FadeIn;
-
-	/// ===FadeIn用=== ///
-	float fadeInDuration_ = 1.0f;
-
-	/// ===FadeOut用=== ///
-	float fadeOutTimer_ = 0.0f;
-	float fadeOutDuration_ = 1.0f;
 
 private: /// ===メンバ関数=== ///
 
@@ -37964,8 +38328,6 @@ File Path: Project/application/Scene/TitleScene.cpp
 TitleScene::~TitleScene() {
 	// ISceneのデストラクタ
 	IScene::~IScene();
-	// Transitionのリセット
-	transiton_.reset();
 	// スプライトのリセット
 	bgSprite_.reset();
 	bgKiriSprite_.reset();
@@ -37988,9 +38350,6 @@ void TitleScene::Initialize() {
 	// ウィンドウサイズの取得
 	float windowWidth = static_cast<float>(GraphicsResourceGetter::GetWindowWidth());
 	float windowHeight = static_cast<float>(GraphicsResourceGetter::GetWindowHeight());
-
-	/// ===Transition=== ///
-	transiton_ = std::make_unique<SceneTransition>();
 
 	/// ===スプライトの初期化=== ///
 	// 背景スプライト
@@ -38102,9 +38461,6 @@ void TitleScene::Update() {
 	ImGui::Text("Transition Timer: %.2f", transitionTimer_);
 	ImGui::End();
 #endif // USE_IMGUI
-	
-	/// ===フェードアウトの更新=== ///
-	transiton_->FadeInUpdate();
 
 	/// ===スプライトの更新=== ///
 	bgSprite_->Update();
@@ -38154,13 +38510,10 @@ void TitleScene::Update() {
 		}
 
 		/// ===シーンの切り替え=== ///
-		if (transiton_->GetState() == FadeState::Finished) {
-			// OffScreenEffectの設定
-			OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
+		if (sceneManager_->GetFadeState() == FadeState::Finished) {
 			// ゲームシーンへ遷移
 			sceneManager_->ChangeScene(SceneType::Game);
 		}
-
 	}
 
 	/// ===ISceneの更新=== ///
@@ -38208,9 +38561,6 @@ void TitleScene::Draw() {
 		dimSprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
 		optionMenuSprite_->Draw(GroundType::Front);
 	}
-
-	// トランジション描画
-	transiton_->Draw();
 #pragma endregion
 }
 
@@ -38255,9 +38605,12 @@ void TitleScene::UpdateMenuSelection() {
 /// メニュー決定処理
 ///-------------------------------------------///
 void TitleScene::ConfirmSelection() {
+	// フェードイン時間
+	float fadeInDuration = 1.0f;
+
 	switch (currentSelection_) {
 	case MenuSelection::Start:
-		transiton_->StartFadeIn(1.0f);
+		sceneManager_->StartFadeIn(TransitionType::ShatterGlass, fadeInDuration);
 		break;
 	case MenuSelection::Option:
 		// オプション画面を開く
@@ -38403,9 +38756,7 @@ File Path: Project/application/Scene/TitleScene.h
 #include "Engine/Scene/IScene.h"
 #include "application/Drawing/2d/Sprite.h"
 #include "application/Drawing/3d/Object3d.h"
-
-// Transition
-#include "application/Game/Transition/SceneTransition.h"
+// C++
 #include <memory>
 #include <array>
 
@@ -38444,9 +38795,6 @@ private:/// ===メンバ変数=== ///
 	/// <summary>
 	/// シーン用
 	/// </summary>
-
-	/// ===SceneTransition=== ///
-	std::unique_ptr<SceneTransition> transiton_;
 
 	/// ===スプライト=== ///
 	std::unique_ptr<Sprite> bgSprite_;         // 背景
