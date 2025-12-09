@@ -4,9 +4,7 @@
 #include "Engine/Scene/IScene.h"
 #include "application/Drawing/2d/Sprite.h"
 #include "application/Drawing/3d/Object3d.h"
-
-// Transition
-#include "application/Game/Transition/SceneTransition.h"
+// C++
 #include <memory>
 #include <array>
 
@@ -45,9 +43,6 @@ private:/// ===メンバ変数=== ///
 	/// <summary>
 	/// シーン用
 	/// </summary>
-
-	/// ===SceneTransition=== ///
-	std::unique_ptr<SceneTransition> transiton_;
 
 	/// ===スプライト=== ///
 	std::unique_ptr<Sprite> bgSprite_;         // 背景

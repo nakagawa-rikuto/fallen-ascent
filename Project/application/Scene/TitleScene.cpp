@@ -15,8 +15,6 @@
 TitleScene::~TitleScene() {
 	// ISceneのデストラクタ
 	IScene::~IScene();
-	// Transitionのリセット
-	transiton_.reset();
 	// スプライトのリセット
 	bgSprite_.reset();
 	bgKiriSprite_.reset();
@@ -39,9 +37,6 @@ void TitleScene::Initialize() {
 	// ウィンドウサイズの取得
 	float windowWidth = static_cast<float>(GraphicsResourceGetter::GetWindowWidth());
 	float windowHeight = static_cast<float>(GraphicsResourceGetter::GetWindowHeight());
-
-	/// ===Transition=== ///
-	transiton_ = std::make_unique<SceneTransition>();
 
 	/// ===スプライトの初期化=== ///
 	// 背景スプライト
@@ -153,9 +148,6 @@ void TitleScene::Update() {
 	ImGui::Text("Transition Timer: %.2f", transitionTimer_);
 	ImGui::End();
 #endif // USE_IMGUI
-	
-	/// ===フェードアウトの更新=== ///
-	transiton_->FadeInUpdate();
 
 	/// ===スプライトの更新=== ///
 	bgSprite_->Update();
@@ -205,13 +197,10 @@ void TitleScene::Update() {
 		}
 
 		/// ===シーンの切り替え=== ///
-		if (transiton_->GetState() == FadeState::Finished) {
-			// OffScreenEffectの設定
-			OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
+		if (sceneManager_->GetFadeState() == FadeState::Finished) {
 			// ゲームシーンへ遷移
 			sceneManager_->ChangeScene(SceneType::Game);
 		}
-
 	}
 
 	/// ===ISceneの更新=== ///
@@ -259,9 +248,6 @@ void TitleScene::Draw() {
 		dimSprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
 		optionMenuSprite_->Draw(GroundType::Front);
 	}
-
-	// トランジション描画
-	transiton_->Draw();
 #pragma endregion
 }
 
@@ -306,9 +292,12 @@ void TitleScene::UpdateMenuSelection() {
 /// メニュー決定処理
 ///-------------------------------------------///
 void TitleScene::ConfirmSelection() {
+	// フェードイン時間
+	float fadeInDuration = 1.0f;
+
 	switch (currentSelection_) {
 	case MenuSelection::Start:
-		transiton_->StartFadeIn(1.0f);
+		sceneManager_->StartFadeIn(TransitionType::ShatterGlass, fadeInDuration);
 		break;
 	case MenuSelection::Option:
 		// オプション画面を開く

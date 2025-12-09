@@ -1,6 +1,8 @@
 #include "SceneManager.h"
 // c++
 #include <cassert>
+// SceneTransitionManager
+#include "Engine/Scene/Transition/SceneTransitionManager.h"
 // 各シーン
 #include "application/Scene/TitleScene.h"
 #include "application/Scene/SelectScene.h"
@@ -14,23 +16,44 @@
 ///-------------------------------------------///
 SceneManager::~SceneManager() {
 	currentScene_.reset();
+	sceneTransitionManager_.reset();
 }
+
+///-------------------------------------------/// 
+/// Setter
+///-------------------------------------------///
+void SceneManager::SetSelectedLevel(int level) { selectLevel_ = level; }
+void SceneManager::SetSceneFactory(AbstractSceneFactory* sceneFactory) { sceneFactory_ = sceneFactory; }
+
+///-------------------------------------------/// 
+/// Getter
+///-------------------------------------------///
+// 選択されたレベル番号の取得
+int SceneManager::GetSelectedLevel() const { return selectLevel_; }
+// トランジション完了の取得
+bool SceneManager::GetTransitionFinished() const { return sceneTransitionManager_->IsFinished(); }
+// フェード状態の取得
+FadeState SceneManager::GetFadeState() const { return sceneTransitionManager_->GetState(); }
 
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void SceneManager::Initialize() {
-	// シーンの確認
-	if (currentScene_) {
-		// 現在のシーンの初期化
-		currentScene_->Initialize();
-	}
+void SceneManager::Initialize(AbstractSceneFactory* sceneFactor) {
+	// シーンファクトリーのセット
+	SetSceneFactory(sceneFactor);
+
+	// シーントランジションマネージャの生成
+	sceneTransitionManager_ = std::make_unique<SceneTransitionManager>();
+	sceneTransitionManager_->Initialize();
 }
 
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
 void SceneManager::Update() {
+	// シーントランジションマネージャの更新
+	sceneTransitionManager_->Update();
+
 	// シーンの確認
 	if (currentScene_) {
 		// 現在のシーンの更新
@@ -51,6 +74,9 @@ void SceneManager::Draw() {
 		// 現在のシーンの描画
 		currentScene_->Draw();
 	}
+
+	// シーントランジションマネージャの描画
+	sceneTransitionManager_->Draw();
 }
 
 ///-------------------------------------------/// 
@@ -66,7 +92,7 @@ void SceneManager::ChangeScene(SceneType type) {
 	if (currentScene_) {
 		currentScene_->SetSceneManager(this);
 	}
-	Initialize();
+	SceneInit();
 }
 
 ///-------------------------------------------/// 
@@ -116,12 +142,27 @@ void SceneManager::SceneObservation() {
 }
 
 ///-------------------------------------------/// 
-/// Setter
+/// フェードイン開始
 ///-------------------------------------------///
-void SceneManager::SetSelectedLevel(int level) { selectLevel_ = level; }
-void SceneManager::SetSceneFactory(AbstractSceneFactory* sceneFactory) { sceneFactory_ = sceneFactory; }
+void SceneManager::StartFadeIn(TransitionType type, const float duration) {
+	sceneTransitionManager_->StartFadeIn(type, duration);
+}
 
 ///-------------------------------------------/// 
-/// Getter
+/// フェードアウト開始
 ///-------------------------------------------///
-int SceneManager::GetSelectedLevel() const { return selectLevel_; }
+void SceneManager::StartFadeOut(TransitionType type, const float duration) {
+	sceneTransitionManager_->StartFadeOut(type, duration);
+}
+
+///-------------------------------------------/// 
+/// シーン初期化
+///-------------------------------------------///
+void SceneManager::SceneInit() {
+	// シーンの確認
+	if (currentScene_) {
+		// 現在のシーンの初期化
+		currentScene_->Initialize();
+	}
+}
+

@@ -32,8 +32,6 @@ GameScene::~GameScene() {
 	enemyManager_.reset();
 	// Ground
 	stage_.reset();
-	// Transitionのリセット
-	transiton_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -51,11 +49,6 @@ void GameScene::Initialize() {
 	ParticleService::LoadParticleDefinition("Game.json");
 	ParticleService::LoadParticleDefinition("WeaponAttack.json");
 	ParticleService::LoadParticleDefinition("nakagawa.json");
-
-	/// ===Transition=== ///
-	transiton_ = std::make_unique<SceneTransition>();
-	fadeInDuration_ = 2.0f;
-	transiton_->StartFadeOut(fadeInDuration_); // フェードイン開始
 
 	/// ===Camera=== ///
 	camera_ = std::make_shared<GameCamera>();
@@ -95,7 +88,9 @@ void GameScene::Initialize() {
 
 	// 初期フェーズをFadeInに設定
 	currentPhase_ = GamePhase::FadeIn;
-	transiton_->StartFadeOut(fadeInDuration_); // フェードイン開始
+	/// ===Transition=== ///
+	float fadeOutDuration = 2.0f;
+	sceneManager_->StartFadeOut(TransitionType::ShatterGlass, fadeOutDuration); // フェードイン開始
 }
 
 ///-------------------------------------------/// 
@@ -194,9 +189,6 @@ void GameScene::Draw() {
 ///-------------------------------------------///
 void GameScene::UpdateFadeIn() {
 
-	// FadeIn更新
-	transiton_->FadeOutUpdate();
-
 	// アニメーション時のEnemy更新
 	enemyManager_->UpdateAnimation();
 
@@ -204,7 +196,7 @@ void GameScene::UpdateFadeIn() {
 	player_->UpdateAnimation();
 
 	// FadeIn完了でStartAnimationフェーズへ
-	if (transiton_->GetState() == FadeState::Finished) {
+	if (sceneManager_->GetFadeState() == FadeState::Finished) {
 		OffScreenService::SetOffScreenType(OffScreenType::CopyImage);
 		currentPhase_ = GamePhase::StartAnimation;
 	}

@@ -1,4 +1,4 @@
-#include "SceneTransition.h"
+#include "ShatterGlassTransition.h"
 #include <algorithm>
 // Service
 #include "Engine/System/Service/OffScreenService.h"
@@ -9,17 +9,16 @@
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
-SceneTransition::~SceneTransition() {
+ShatterGlassTransition::~ShatterGlassTransition() {
 	if (sprite_) {
 		sprite_.reset();
 	}
 }
 
 ///-------------------------------------------/// 
-/// 
+/// フェードイン開始処理
 ///-------------------------------------------///
-void SceneTransition::StartFadeIn(float duration) {
-	
+void ShatterGlassTransition::StartFadeIn(float duration) {
 	// Sprite
 	sprite_ = std::make_unique<Sprite>();
 	sprite_->Initialize("White");
@@ -27,19 +26,20 @@ void SceneTransition::StartFadeIn(float duration) {
 	sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 黒で初期化
 	sprite_->Update();
 
-	isPlaying_ = true;
-	isFinished_ = false;
-	currentTime_ = 0.0f;
-	duration_ = duration;
-	currentState_ = FadeState::FadeIn;
+	// フェードイン開始
+	SceneTransitionBase::StartFadeIn(duration);
 }
 
 ///-------------------------------------------/// 
-/// 
+/// フェードアウト開始処理
 ///-------------------------------------------///
-void SceneTransition::StartFadeOut(float duration) {
+void ShatterGlassTransition::StartFadeOut(float duration) {
 	// エフェクトタイプの設定
-	//OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
+	OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
+	// Spriteの色をリセット
+	if (sprite_) {
+		sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 白で初期化
+	}
 
 	// デフォルトパラメータの設定
 	data_.progress = 0.0f;
@@ -53,25 +53,44 @@ void SceneTransition::StartFadeOut(float duration) {
 	// 新しいランダムパターンを生成
 	data_.randomSeed = static_cast<float>(rand() % 10000) / 10.0f;
 
-	isPlaying_ = true;
-	isFinished_ = false;
-	currentTime_ = 0.0f;
-	duration_ = duration;
-	currentState_ = FadeState::FadeOut;
+	// フェードアウト開始
+	SceneTransitionBase::StartFadeOut(duration);
 }
 
 ///-------------------------------------------/// 
-/// 更新
+/// 描画
 ///-------------------------------------------///
-void SceneTransition::FadeOutUpdate() {
-	if (!isPlaying_ || isFinished_) {
-		return;
+void ShatterGlassTransition::Draw() {
+	if (sprite_) {
+		sprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
+	}
+}
+
+///-------------------------------------------/// 
+/// フェードイン固有の更新処理
+///-------------------------------------------///
+void ShatterGlassTransition::OnFadeInUpdate() {
+	// スプライトの色（アルファ値のみ更新）
+	Vector4 color = sprite_->GetColor();
+	color.w += 0.01f; // アルファ値を更新
+
+	// 透明度が1.0に到達したら終了
+	if (color.w >= 1.0f) {
+		animation_.isPlaying = false;
+		animation_.isFinished = true;
+		currentState_ = FadeState::Finished;
 	}
 
-	currentTime_ += 1.0f / 60.0f;
+	sprite_->SetColor(color);
+	sprite_->Update();
+}
 
+///-------------------------------------------/// 
+/// フェードアウト固有の更新処理
+///-------------------------------------------///
+void ShatterGlassTransition::OnFadeOutUpdate() {
 	// 進行度を計算（0.0 ~ 1.0）
-	float normalizedTime = (std::min)(currentTime_ / duration_, 1.0f);
+	float normalizedTime = (std::min)(animation_.currentTime / animation_.duration, 1.0f);
 
 	// イージング適用（最初は速く、後でゆっくり）
 	float easedTime = Easing::EaseOutCubic(normalizedTime);
@@ -91,52 +110,13 @@ void SceneTransition::FadeOutUpdate() {
 		}
 	} else {
 		// エフェクト終了判定
-		isPlaying_ = false;
-		isFinished_ = true;
+		animation_.isPlaying = false;
+		animation_.isFinished = true;
 		currentState_ = FadeState::Finished;
 		data_.progress = 1.0f;
 	}
 
 	// 設定
 	OffScreenService::SetShatterGlassData(data_);
-}
-
-///-------------------------------------------/// 
-/// 更新
-///-------------------------------------------///
-void SceneTransition::FadeInUpdate() {
-	if (!isPlaying_ || isFinished_) {
-		return;
-	}
-
-	// スプライトの色（アルファ値のみ更新）
-	Vector4 color = sprite_->GetColor();
-	color.w += 0.01f; // アルファ値を更新
-	
-
-	// 透明度が1.0に到達したら終了
-	if (color.w >= 1.0f) {
-		isPlaying_ = false;
-		isFinished_ = true;
-		currentState_ = FadeState::Finished;
-	}
-
-	sprite_->SetColor(color);
 	sprite_->Update();
 }
-
-///-------------------------------------------/// 
-/// 描画
-///-------------------------------------------///
-void SceneTransition::Draw() {
-	if (sprite_) {
-		sprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
-	}
-}
-
-///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-bool SceneTransition::IsFading() const { return isPlaying_; }
-bool SceneTransition::IsFinished() const { return isFinished_; }
-FadeState SceneTransition::GetState() const { return currentState_; }
