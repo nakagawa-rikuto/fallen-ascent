@@ -1,5 +1,6 @@
 #include "GameOverAnimation.h"
 #include "application/Game/Camera/GameCamera.h"
+#include "Engine/System/Service/GraphicsResourceGetter.h"
 #include <cmath>
 
 // 定数定義
@@ -40,7 +41,8 @@ void GameOverAnimation::Initialize(GameCamera* camera) {
     blackSprite_ = std::make_unique<Sprite>();
     blackSprite_->Initialize("White"); // 1x1の白テクスチャ
     blackSprite_->SetPosition({ 640.0f, 360.0f });
-    blackSprite_->SetSize({ 1280.0f, 720.0f }); // 画面全体
+    GraphicsResourceGetter::GetWindowWidth();
+    blackSprite_->SetSize({ static_cast<float>(GraphicsResourceGetter::GetWindowWidth()), static_cast<float>(GraphicsResourceGetter::GetWindowHeight()) }); // 画面全体
     blackSprite_->SetAnchorPoint({ 0.5f, 0.5f });
     blackSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 0.0f }); // 黒、初期は透明
 

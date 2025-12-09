@@ -28,20 +28,19 @@ void MyGame::Initialize(const wchar_t* title) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	/// ===読み込み処理=== ///
-	// スレッドの生成
-	std::thread loadingThread([this] {
-		LoadAudio();
-		LoadTexture();
-		LoadModel();
-		LoadAnimation();
-	});
-
-	// 終了を待機
-	loadingThread.join();
+	// 各読み込み処理用のスレッドを生成
+	LoadTexture();
+	std::vector<std::thread> loadingThreads;
+	loadingThreads.emplace_back([this] { LoadAudio(); });
+	loadingThreads.emplace_back([this] { LoadModel(); });
+	loadingThreads.emplace_back([this] { LoadAnimation(); });
+	// すべてのスレッドの終了を待機
+	for (auto& thread : loadingThreads) {
+		thread.join();
+	}
 
 	// 処理時間を計測（end）
 	auto end = std::chrono::high_resolution_clock::now();
-
 	// 経過時間をミリ秒単位で出力
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 	Log("time: " + std::to_string(duration.count()) + " ms\n");
@@ -51,8 +50,8 @@ void MyGame::Initialize(const wchar_t* title) {
 	sceneFactory_ = std::make_unique<SceneFactory>();
 	// シーンマネージャの初期化
 	sceneManager_ = std::make_unique<SceneManager>();
-	sceneManager_->SetSceneFactory(sceneFactory_.get());
-	sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
+	sceneManager_->Initialize(sceneFactory_.get());
+	sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
 }
  
 ///-------------------------------------------/// 
@@ -96,7 +95,6 @@ void MyGame::LoadAudio() {
 #pragma region Wave
 	Loader::LoadWave("fanfare", "fanfare.wav");
 #pragma endregion
-
 #pragma region MP3
 	Loader::LoadMP3("clear", "clear.mp3");
 #pragma endregion

@@ -128,7 +128,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\Base\BaseEnemy.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\ChargeState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\AttackState.cpp" />
-    <ClCompile Include="application\Game\Transition\SceneTransition.cpp" />
+    <ClCompile Include="Engine\Scene\Transition\ShatterGlassTransition.cpp" />
     <ClCompile Include="Engine\System\Service\ColliderService.cpp" />
     <ClCompile Include="Engine\Collider\AABBCollider.cpp" />
     <ClCompile Include="Engine\Graphics\3d\Model\AnimationModel.cpp" />
@@ -258,6 +258,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Base\UAV.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp" />
     <ClCompile Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.cpp" />
+    <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp" />
+    <ClCompile Include="Engine\Scene\Transition\SceneTransitionManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
@@ -280,7 +282,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\DataInfo\BlendModeData.h" />
     <ClInclude Include="Engine\DataInfo\LevelData.h" />
     <ClInclude Include="application\Game\Entity\Enemy\CloseRange\CloseRangeEnemy.h" />
-    <ClInclude Include="application\Game\Transition\SceneTransition.h" />
+    <ClInclude Include="Engine\Scene\Transition\ShatterGlassTransition.h" />
     <ClInclude Include="Engine\System\Service\ColliderService.h" />
     <ClInclude Include="Engine\Collider\AABBCollider.h" />
     <ClInclude Include="Engine\DataInfo\LightData.h" />
@@ -421,6 +423,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Base\UAV.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h" />
     <ClInclude Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.h" />
+    <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h" />
+    <ClInclude Include="Engine\Scene\Transition\SceneTransitionManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

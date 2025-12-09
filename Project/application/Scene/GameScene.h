@@ -12,8 +12,6 @@
 #include "application/Game/Animation/StartAnimation.h"
 #include "application/Game/Animation/GameOverAnimation.h"
 #include "application/Game/Animation/GameClearAnimation.h"
-// Transition
-#include "application/Game/Transition/SceneTransition.h"
 
 /// ===GameSceneのフェーズ=== ///
 enum class GamePhase {
@@ -54,8 +52,6 @@ private:/// ===メンバ変数=== ///
 	/// </summary>
 
 	/// ===Classの宣言=== /// 
-	// Transition
-	std::unique_ptr<SceneTransition> transiton_;
 	// Camera
 	std::shared_ptr<GameCamera> camera_;
 	// Player
@@ -83,13 +79,6 @@ private:/// ===メンバ変数=== ///
 
 	/// ===フェーズ管理=== ///
 	GamePhase currentPhase_ = GamePhase::FadeIn;
-
-	/// ===FadeIn用=== ///
-	float fadeInDuration_ = 1.0f;
-
-	/// ===FadeOut用=== ///
-	float fadeOutTimer_ = 0.0f;
-	float fadeOutDuration_ = 1.0f;
 
 private: /// ===メンバ関数=== ///
 
