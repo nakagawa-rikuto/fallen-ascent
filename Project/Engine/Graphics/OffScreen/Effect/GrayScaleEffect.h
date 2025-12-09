@@ -5,7 +5,7 @@
 ///=====================================================/// 
 /// GrayscaleEffect
 ///=====================================================///
-class GrayscaleEffect : RenderPass {
+class GrayscaleEffect : public RenderPass {
 public:
 	GrayscaleEffect() = default;
 	~GrayscaleEffect() = default;

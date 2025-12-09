@@ -5,7 +5,7 @@
 ///=====================================================/// 
 ///	BoxFilter5x5Effect
 ///=====================================================///
-class BoxFilter5x5Effect : RenderPass {
+class BoxFilter5x5Effect : public RenderPass {
 public:
 	BoxFilter5x5Effect() = default;
 	~BoxFilter5x5Effect() = default;

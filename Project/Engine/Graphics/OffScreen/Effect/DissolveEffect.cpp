@@ -11,7 +11,7 @@
 ///-------------------------------------------///
 void DissolveEffect::Initialize(ID3D12Device* device, std::shared_ptr<RenderTexture> RenderTexture) {
 	// RenderTextureを取得
-	renderTexture_ = RenderTexture;
+	outputTexture_ = RenderTexture;
 
 	// テクスチャ名を設定
 	textureKeyName_ = "noise0";
@@ -46,7 +46,7 @@ void DissolveEffect::Draw(ID3D12GraphicsCommandList* commandList) {
 	commandList->SetGraphicsRootConstantBufferView(2, buffer_->GetBuffer()->GetGPUVirtualAddress());
 
 	// Textureの設定
-	commandList->SetGraphicsRootDescriptorTable(0, renderTexture_->GetSRVHandle());
+	commandList->SetGraphicsRootDescriptorTable(0, inputTexture_->GetSRVHandle());
 	Render::SetGraphicsRootDescriptorTable(commandList, 1, textureKeyName_);
 
 	// 頂点3つを描画

@@ -17,7 +17,7 @@ struct RadiusBlurData {
 ///=====================================================/// 
 /// RadiusBlurEffect
 ///=====================================================///
-class RadiusBlurEffect : RenderPass {
+class RadiusBlurEffect : public RenderPass {
 public:
 	RadiusBlurEffect() = default;
 	~RadiusBlurEffect() = default;

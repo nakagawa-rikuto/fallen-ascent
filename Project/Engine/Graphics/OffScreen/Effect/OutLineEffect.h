@@ -5,7 +5,7 @@
 ///=====================================================/// 
 /// OutLineEffect
 ///=====================================================///
-class OutLineEffect : RenderPass {
+class OutLineEffect : public RenderPass {
 public:
 	OutLineEffect() = default;
 	~OutLineEffect() = default;

@@ -11,7 +11,7 @@
 ///-------------------------------------------///
 void RadiusBlurEffect::Initialize(ID3D12Device* device, std::shared_ptr<RenderTexture> RenderTexture) {
 	// RenderTextureを取得
-	renderTexture_ = RenderTexture;
+	outputTexture_ = RenderTexture;
 
 	// bufferの作成
 	buffer_ = std::make_unique<BufferBase>();
@@ -40,7 +40,7 @@ void RadiusBlurEffect::Draw(ID3D12GraphicsCommandList* commandList) {
 	// dataの設定
 	commandList->SetGraphicsRootConstantBufferView(1, buffer_->GetBuffer()->GetGPUVirtualAddress());
 
-	commandList->SetGraphicsRootDescriptorTable(0, renderTexture_->GetSRVHandle());
+	commandList->SetGraphicsRootDescriptorTable(0, inputTexture_->GetSRVHandle());
 	// 頂点3つを描画
 	commandList->DrawInstanced(3, 1, 0, 0);
 }

@@ -56,6 +56,13 @@ public:
 	/// <param name="commandList">後処理コマンドを記録するための ID3D12GraphicsCommandList へのポインター。</param>
 	void PostDraw(ID3D12GraphicsCommandList* commandList);
 
+	/// <summary>
+	/// effectTexture を SwapChain にコピー
+	/// </summary>
+	/// <param name="commandList">コマンドリスト</param>
+	/// <param name="swapChainRTV">SwapChain の RTV ハンドル</param>
+	void CopyToSwapChain(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE swapChainRTV);
+
 #ifdef USE_IMGUI
 	void DrawImGui();
 #endif
@@ -70,7 +77,8 @@ public: /// ===Getter=== ///
 	// SRVのインデックス番号の取得
 	uint32_t GetSRVHandleIndex() const;
 	// Resourceの取得
-	ID3D12Resource* GetBuffer() const;
+	ID3D12Resource* GetSceneBuffer() const;
+	ID3D12Resource* GetEffectBuffer() const;
 
 public: /// ===Getter=== ///
 	// コピーイメージエフェクトの取得
@@ -99,7 +107,8 @@ public: /// ===Setter=== ///
 	void SetType(OffScreenType type);
 
 private:
-	std::shared_ptr<RenderTexture> renderTexture_;
+	std::shared_ptr<RenderTexture> sceneTexture_;
+	std::shared_ptr<RenderTexture> effectTexture_;
 
 	// 各パス（あらかじめ生成済み）
 	std::shared_ptr<CopyImageEffect> copyImage_;

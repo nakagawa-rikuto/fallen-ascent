@@ -19,7 +19,8 @@ OffScreenRenderer::~OffScreenRenderer() {
 	outLine_.reset();
 	dissolve_.reset();
 	shatterGlass_.reset();
-	renderTexture_.reset();
+	sceneTexture_.reset();
+	effectTexture_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -30,54 +31,75 @@ void OffScreenRenderer::Initialize(
 	SRVManager* srv, RTVManager* rtv,
 	uint32_t width, uint32_t height, const Vector4& clearColor) {
 
-	// RenderTextureを初期化
-	renderTexture_ = std::make_shared<RenderTexture>();
-	renderTexture_->Initialize(srv, rtv, width, height, clearColor, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
-	renderTexture_->CreateRenderTexture(device);
+	// シーン描画用のRenderTextureを初期化
+	sceneTexture_ = std::make_shared<RenderTexture>();
+	sceneTexture_->Initialize(srv, rtv, width, height, clearColor, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
+	sceneTexture_->CreateRenderTexture(device);
+
+	// エフェクト適用後のRenderTextureを初期化
+	effectTexture_ = std::make_shared<RenderTexture>();
+	effectTexture_->Initialize(srv, rtv, width, height, clearColor, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
+	effectTexture_->CreateRenderTexture(device);
 
 	/// ===RenderPassの登録=== ///
 	// SceneRenderPass
 	copyImage_ = std::make_shared<CopyImageEffect>();
-	copyImage_->Initialize(device,renderTexture_);
+	copyImage_->Initialize(device,effectTexture_);
+	copyImage_->SetInputTexture(sceneTexture_);
 
 	// グレースケールレンダーパス
 	grayscale_ = std::make_shared<GrayscaleEffect>();
-	grayscale_->Initialize(device, renderTexture_);
+	grayscale_->Initialize(device, effectTexture_);
+	grayscale_->SetInputTexture(sceneTexture_);
 
 	// ビネットレンダーパス
 	vignette_ = std::make_shared<VignetteEffect>();
-	vignette_->Initialize(device, renderTexture_);
+	vignette_->Initialize(device, effectTexture_);
+	vignette_->SetInputTexture(sceneTexture_);
 
 	// Dissolveエフェクト
 	dissolve_ = std::make_shared<DissolveEffect>();
-	dissolve_->Initialize(device, renderTexture_);
+	dissolve_->Initialize(device, effectTexture_);
+	dissolve_->SetInputTexture(sceneTexture_);
 
 	// 3x3ボックスフィルタレンダーパス
 	boxFilter3x3_ = std::make_shared<BoxFilter3x3Effect>();
-	boxFilter3x3_->Initialize(device, renderTexture_);
+	boxFilter3x3_->Initialize(device, effectTexture_);
+	boxFilter3x3_->SetInputTexture(sceneTexture_);
 
 	// 5x5ボックスフィルタレンダーパス
 	boxFilter5x5_ = std::make_shared<BoxFilter5x5Effect>();
-	boxFilter5x5_->Initialize(device, renderTexture_);
+	boxFilter5x5_->Initialize(device, effectTexture_);
+	boxFilter5x5_->SetInputTexture(sceneTexture_);
 
 	// 半径ブラーエフェクト
 	radiusBlur_ = std::make_shared<RadiusBlurEffect>();
-	radiusBlur_->Initialize(device, renderTexture_);
+	radiusBlur_->Initialize(device, effectTexture_);
+	radiusBlur_->SetInputTexture(sceneTexture_);
 
 	// OutLineエフェクト
 	outLine_ = std::make_shared<OutLineEffect>();
-	outLine_->Initialize(device, renderTexture_);
+	outLine_->Initialize(device, effectTexture_);
+	outLine_->SetInputTexture(sceneTexture_);
 
 	// ShatterGlassエフェクト
 	shatterGlass_ = std::make_shared<ShatterGlassEffect>();
-	shatterGlass_->Initialize(device, renderTexture_);
+	shatterGlass_->Initialize(device, effectTexture_);
+	shatterGlass_->SetInputTexture(sceneTexture_);
 }
 
 ///-------------------------------------------/// 
 /// 描画前処理
 ///-------------------------------------------///
 void OffScreenRenderer::PreDraw(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle) {
-	switch (type_) {
+	
+	// シーン描画はsceneTexture_へ
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandel = sceneTexture_->GetRTVHandle();
+	commandList->OMSetRenderTargets(1, &rtvHandel, false, &dsvHandle);
+	// RenderTextureのクリア
+	sceneTexture_->Clear(commandList);
+	
+	/*switch (type_) {
 	case OffScreenType::CopyImage:
 		copyImage_->PreDraw(commandList, dsvHandle);
 		break;
@@ -105,13 +127,20 @@ void OffScreenRenderer::PreDraw(ID3D12GraphicsCommandList* commandList, D3D12_CP
 	case OffScreenType::ShatterGlass:
 		shatterGlass_->PreDraw(commandList, dsvHandle);
 		break;
-	}
+	}*/
 }
 
 ///-------------------------------------------/// 
 /// 描画処理
 ///-------------------------------------------///
 void OffScreenRenderer::Draw(ID3D12GraphicsCommandList* commandList) {
+	// effectTexture_ への描画先を設定
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = effectTexture_->GetRTVHandle();
+	commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
+
+	// effectTexture_ をクリア
+	effectTexture_->Clear(commandList);
+
 	switch (type_) {
 	case OffScreenType::CopyImage:
 		copyImage_->Draw(commandList);
@@ -148,6 +177,19 @@ void OffScreenRenderer::Draw(ID3D12GraphicsCommandList* commandList) {
 ///-------------------------------------------///
 void OffScreenRenderer::PostDraw(ID3D12GraphicsCommandList* commandList) {
 	commandList;
+}
+
+///-------------------------------------------/// 
+/// effectTexture を SwapChain にコピー
+///-------------------------------------------///
+void OffScreenRenderer::CopyToSwapChain(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE swapChainRTV) {
+	// SwapChain の RTV を描画先として設定
+	commandList->OMSetRenderTargets(1, &swapChainRTV, false, nullptr);
+
+	// CopyImage エフェクトを使用して effectTexture_ を SwapChain にコピー
+	Render::SetPSO(commandList, PipelineType::OffScreen, BlendMode::kBlendModeNone);
+	commandList->SetGraphicsRootDescriptorTable(0, effectTexture_->GetSRVHandle());
+	commandList->DrawInstanced(3, 1, 0, 0);
 }
 
 ///-------------------------------------------/// 
@@ -214,15 +256,16 @@ void OffScreenRenderer::DrawImGui() {
 /// Getter
 ///-------------------------------------------///
 // RTV
-D3D12_CPU_DESCRIPTOR_HANDLE OffScreenRenderer::GetResultRTV() const { return renderTexture_->GetRTVHandle(); }
+D3D12_CPU_DESCRIPTOR_HANDLE OffScreenRenderer::GetResultRTV() const { return effectTexture_->GetRTVHandle(); }
 // SRV
-D3D12_GPU_DESCRIPTOR_HANDLE OffScreenRenderer::GetResultSRV() const { return renderTexture_->GetSRVHandle(); }
+D3D12_GPU_DESCRIPTOR_HANDLE OffScreenRenderer::GetResultSRV() const { return effectTexture_->GetSRVHandle(); }
 // RTVIndex
-uint32_t OffScreenRenderer::GetRTVHandleIndex() const { return renderTexture_->GetRTVHandleIndex(); }
+uint32_t OffScreenRenderer::GetRTVHandleIndex() const { return effectTexture_->GetRTVHandleIndex(); }
 // SRVIndex
-uint32_t OffScreenRenderer::GetSRVHandleIndex() const { return renderTexture_->GetSRVHandleIndex(); }
+uint32_t OffScreenRenderer::GetSRVHandleIndex() const { return effectTexture_->GetSRVHandleIndex(); }
 // Reosurce
-ID3D12Resource* OffScreenRenderer::GetBuffer() const { return renderTexture_->GetBuffer(); }
+ID3D12Resource* OffScreenRenderer::GetSceneBuffer() const { return sceneTexture_->GetBuffer(); }
+ID3D12Resource* OffScreenRenderer::GetEffectBuffer() const { return effectTexture_->GetBuffer(); }
 
 /// ===Effect=== ///
 CopyImageEffect* OffScreenRenderer::GetCopyImage() { return copyImage_.get(); }
