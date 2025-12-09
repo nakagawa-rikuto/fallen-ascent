@@ -4267,19 +4267,19 @@ void DXCommon::Initialize(
 ///-------------------------------------------///
 /// ===RenderTexture=== ///
 void DXCommon::PreDrawRenderTexture(ID3D12Resource* resource) {
-
-	/* ///////////////////
-		　 バリアを張る
-	*/ ///////////////////
-	// TransitionBarrierの設定
-	// 今回のバリアはTransition
-	barrierRenderTexture_.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-
-	// Noneにしておく
-	barrierRenderTexture_.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-
-	// バリアを張る対象のリソース。現在のバックバッファに対して行う
+	// バリアの設定
 	barrierRenderTexture_.Transition.pResource = resource;
+	barrierRenderTexture_.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrierRenderTexture_.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrierRenderTexture_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+}
+/// ===EffectTexture=== ///
+void DXCommon::PreDrawEffectTexture(ID3D12Resource* resource) {
+	// バリアの設定
+	barrierEffectTexture_.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrierEffectTexture_.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrierEffectTexture_.Transition.pResource = resource;
+	barrierEffectTexture_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 }
 /// ===ImGui=== ///
 void DXCommon::PreDrawImGui(RTVManager* rtv) {
@@ -4329,15 +4329,31 @@ void DXCommon::BeginCommand() {
 ///-------------------------------------------/// 
 /// バリアの状態遷移
 ///-------------------------------------------///
+/// ===RenderTexture=== ///
 void DXCommon::TransitionRenderTarget() {
+	// リソースが正しく設定されているか確認
+	assert(barrierRenderTexture_.Transition.pResource != nullptr);
+
 	// 遷移前(現在)のResourceState
 	barrierRenderTexture_.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	// 遷移後のResourceState
 	barrierRenderTexture_.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	// Subresourceを明示的に設定
+	barrierRenderTexture_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	// TransitionBarrierを張る
 	commandList_->ResourceBarrier(1, &barrierRenderTexture_);
 }
-
+/// ===EffectTexture=== ///
+void DXCommon::TransitionEffectTexture() {
+	// 遷移前(現在)のResourceState
+	barrierEffectTexture_.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	// 遷移後のResourceState
+	barrierEffectTexture_.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	// Subresourceを明示的に設定
+	barrierEffectTexture_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	// TransitionBarrierを張る
+	commandList_->ResourceBarrier(1, &barrierEffectTexture_);
+}
 
 ///-------------------------------------------/// 
 /// 描画後処理
@@ -4349,20 +4365,31 @@ void DXCommon::PostDraw() {
 	// RenderTexture
 	barrierRenderTexture_.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 	barrierRenderTexture_.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrierRenderTexture_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+	// EffectTexture
+	barrierEffectTexture_.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	barrierEffectTexture_.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrierEffectTexture_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
 	// SwapChain
 	barrierSwapChain_.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrierSwapChain_.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+	barrierSwapChain_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
-	// TransitionBarrierを張る
-	commandList_->ResourceBarrier(1, &barrierRenderTexture_);
-	commandList_->ResourceBarrier(1, &barrierSwapChain_);
+	// 3つのバリアを一度に実行
+	D3D12_RESOURCE_BARRIER barriers[] = { 
+		barrierRenderTexture_, 
+		barrierEffectTexture_, 
+		barrierSwapChain_ 
+	};
+	commandList_->ResourceBarrier(3, barriers);
 
-	// コマンドリストの内容を確定させる。
-   // すべてのコマンドを積んでからCloseすること
+	// コマンドリストの内容を確定させる
 	hr = commandList_->Close();
 	assert(SUCCEEDED(hr));
 
-	// GPUコマンドリストの実行を行わせる
+	// GPUコマンドリストの実行
 	ID3D12CommandList* commandList[] = { commandList_.Get() };
 	commandQueue_->ExecuteCommandLists(1, commandList); // コマンドリストをキック
 
@@ -4832,8 +4859,21 @@ public:
 	/// <param name="resource">準備対象のレンダーテクスチャを表す ID3D12Resource へのポインタ。nullptr を渡さないことが想定されます。</param>
 	void PreDrawRenderTexture(ID3D12Resource* resource);
 
-	// 描画前処理(swapChain)
-	// <param name="rtv">レンダーターゲットビューを管理する RTVManager オブジェクトへのポインタ。</param>
+	/// <summary>
+	/// バリアの状態遷移
+	/// </summary>
+	void TransitionRenderTarget();
+
+	/// <summary>
+	/// EffectTextureへの描画前処理
+	/// </summary>
+	/// <param name="resource">準備対象のエフェクトテクスチャを表す ID3D12Resource へのポインタ。</param>
+	void PreDrawEffectTexture(ID3D12Resource* resource);
+
+	/// <summary>
+	/// EffectTextureのバリア状態遷移
+	/// </summary>
+	void TransitionEffectTexture();
 
 	/// <summary>
 	/// SwapChainへの描画前処理
@@ -4846,10 +4886,7 @@ public:
 	/// </summary>
 	void BeginCommand();
 
-	/// <summary>
-	/// バリアの状態遷移
-	/// </summary>
-	void TransitionRenderTarget();
+	
 
 	/// <summary>
 	/// 描画前処理
@@ -4941,6 +4978,7 @@ private: // メンバ変数
 
 	/// ===バリア=== ///
 	D3D12_RESOURCE_BARRIER barrierRenderTexture_{};
+	D3D12_RESOURCE_BARRIER barrierEffectTexture_{};
 	D3D12_RESOURCE_BARRIER barrierSwapChain_{};
 
 	/// ===FPS固定=== ///
@@ -5286,7 +5324,8 @@ void Mii::BeginFrame() {
 	ID3D12GraphicsCommandList* commandList = dXCommon_->GetCommandList();
 
 	// Barrierの設定
-	dXCommon_->PreDrawRenderTexture(offScreenRenderer_->GetBuffer());
+	dXCommon_->PreDrawRenderTexture(offScreenRenderer_->GetSceneBuffer());
+	dXCommon_->PreDrawEffectTexture(offScreenRenderer_->GetEffectBuffer());
 
 	// 描画先のRTVを設定する
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvManager_->GetCPUDescriptorHandle(0); // 通常DSVは1つ
@@ -5307,18 +5346,29 @@ void Mii::BeginFrame() {
 /// フレーム終了処理
 ///=====================================================///
 void Mii::EndFrame() {
-
-	// ImGuiの開始処理
-	//NOTE:ここはswapChainで設定
+	// ImGuiの描画準備
 	dXCommon_->PreDrawImGui(rtvManager_.get());
-	// バリアの状態遷移
+
+	// sceneTextureのバリアの状態遷移
 	dXCommon_->TransitionRenderTarget();
-	// OffScreen
+
+	// OffScreenエフェクトをSwapChainに描画
 	offScreenRenderer_->Draw(dXCommon_->GetCommandList());
-	// ImGuiの開始処理
+
+	// EffectTextureのバリア状態遷移
+	dXCommon_->TransitionEffectTexture();
+
+	// effectTexture_ を SwapChain にコピー
+	UINT backBufferIndex = dXCommon_->GetBackBufferIndex();
+	D3D12_CPU_DESCRIPTOR_HANDLE swapChainRTV = rtvManager_->GetCPUDescriptorHandle(backBufferIndex);
+	offScreenRenderer_->CopyToSwapChain(dXCommon_->GetCommandList(), swapChainRTV);
+
+	// ImGuiのUI描画
 	imGuiManager_->Draw();
-	// ImGuiの終了処理
+
+	// ImGuiの描画実行
 	imGuiManager_->End();
+
 	// DXCommonの描画後処理
 	dXCommon_->PostDraw();
 }
@@ -11790,7 +11840,7 @@ File Path: Project/Engine/Graphics/OffScreen/Effect/BoxFilter3x3Effect.cpp
 ///-------------------------------------------///
 void BoxFilter3x3Effect::Initialize(ID3D12Device* device, std::shared_ptr<RenderTexture> RenderTexture) {
 	// RenderTextureを取得
-	renderTexture_ = RenderTexture;
+	outputTexture_ = RenderTexture;
 
 	// Deviceの初期化
 	ID3D12Device* devicePtr = device;
@@ -11811,7 +11861,7 @@ void BoxFilter3x3Effect::Draw(ID3D12GraphicsCommandList* commandList) {
 	// コピーイメージ
 	Render::SetPSO(commandList, PipelineType::BoxFilter3x3, BlendMode::kBlendModeNone);
 
-	commandList->SetGraphicsRootDescriptorTable(0, renderTexture_->GetSRVHandle());
+	commandList->SetGraphicsRootDescriptorTable(0, inputTexture_->GetSRVHandle());
 	// 頂点3つを描画
 	commandList->DrawInstanced(3, 1, 0, 0);
 }
@@ -11833,7 +11883,7 @@ File Path: Project/Engine/Graphics/OffScreen/Effect/BoxFilter3x3Effect.h
 ///=====================================================/// 
 /// BoxFilter3x3Effect
 ///=====================================================///
-class BoxFilter3x3Effect : RenderPass {
+class BoxFilter3x3Effect : public RenderPass {
 public:
 	BoxFilter3x3Effect() = default;
 	~BoxFilter3x3Effect() = default;
@@ -11876,7 +11926,7 @@ File Path: Project/Engine/Graphics/OffScreen/Effect/BoxFilter5x5Effect.cpp
 ///-------------------------------------------///
 void BoxFilter5x5Effect::Initialize(ID3D12Device* device, std::shared_ptr<RenderTexture> RenderTexture) {
 	// RenderTextureを取得
-	renderTexture_ = RenderTexture;
+	outputTexture_ = RenderTexture;
 
 	// Deviceの初期化
 	ID3D12Device* devicePtr = device;
@@ -11897,7 +11947,7 @@ void BoxFilter5x5Effect::Draw(ID3D12GraphicsCommandList* commandList) {
 	// コピーイメージ
 	Render::SetPSO(commandList, PipelineType::BoxFilter5x5, BlendMode::kBlendModeNone);
 
-	commandList->SetGraphicsRootDescriptorTable(0, renderTexture_->GetSRVHandle());
+	commandList->SetGraphicsRootDescriptorTable(0, inputTexture_->GetSRVHandle());
 	// 頂点3つを描画
 	commandList->DrawInstanced(3, 1, 0, 0);
 }
@@ -11919,7 +11969,7 @@ File Path: Project/Engine/Graphics/OffScreen/Effect/BoxFilter5x5Effect.h
 ///=====================================================/// 
 ///	BoxFilter5x5Effect
 ///=====================================================///
-class BoxFilter5x5Effect : RenderPass {
+class BoxFilter5x5Effect : public RenderPass {
 public:
 	BoxFilter5x5Effect() = default;
 	~BoxFilter5x5Effect() = default;
@@ -11963,7 +12013,7 @@ File Path: Project/Engine/Graphics/OffScreen/Effect/CopyImageEffect.cpp
 ///-------------------------------------------///
 void CopyImageEffect::Initialize(ID3D12Device* device, std::shared_ptr<RenderTexture> RenderTexture) {
 	// RenderTextureを取得
-	renderTexture_ = RenderTexture;
+	outputTexture_ = RenderTexture;
 
 	// Deviceの初期化
 	ID3D12Device* devicePtr = device;
@@ -11984,7 +12034,7 @@ void CopyImageEffect::Draw(ID3D12GraphicsCommandList* commandList) {
 	// コピーイメージ
 	Render::SetPSO(commandList, PipelineType::OffScreen, BlendMode::kBlendModeNone);
 
-	commandList->SetGraphicsRootDescriptorTable(0, renderTexture_->GetSRVHandle());
+	commandList->SetGraphicsRootDescriptorTable(0, inputTexture_->GetSRVHandle());
 	// 頂点3つを描画
 	commandList->DrawInstanced(3, 1, 0, 0);
 }
@@ -12054,7 +12104,7 @@ File Path: Project/Engine/Graphics/OffScreen/Effect/DissolveEffect.cpp
 ///-------------------------------------------///
 void DissolveEffect::Initialize(ID3D12Device* device, std::shared_ptr<RenderTexture> RenderTexture) {
 	// RenderTextureを取得
-	renderTexture_ = RenderTexture;
+	outputTexture_ = RenderTexture;
 
 	// テクスチャ名を設定
 	textureKeyName_ = "noise0";
@@ -12089,7 +12139,7 @@ void DissolveEffect::Draw(ID3D12GraphicsCommandList* commandList) {
 	commandList->SetGraphicsRootConstantBufferView(2, buffer_->GetBuffer()->GetGPUVirtualAddress());
 
 	// Textureの設定
-	commandList->SetGraphicsRootDescriptorTable(0, renderTexture_->GetSRVHandle());
+	commandList->SetGraphicsRootDescriptorTable(0, inputTexture_->GetSRVHandle());
 	Render::SetGraphicsRootDescriptorTable(commandList, 1, textureKeyName_);
 
 	// 頂点3つを描画
@@ -12223,7 +12273,7 @@ File Path: Project/Engine/Graphics/OffScreen/Effect/GrayScaleEffect.cpp
 ///-------------------------------------------///
 void GrayscaleEffect::Initialize(ID3D12Device* device, std::shared_ptr<RenderTexture> RenderTexture) {
 	// RenderTextureを取得
-	renderTexture_ = RenderTexture;
+	outputTexture_ = RenderTexture;
 
 	// Deviceの初期化
 	ID3D12Device* devicePtr = device;
@@ -12244,7 +12294,7 @@ void GrayscaleEffect::Draw(ID3D12GraphicsCommandList* commandList) {
 	// コピーイメージ
 	Render::SetPSO(commandList, PipelineType::Grayscale, BlendMode::kBlendModeNone);
 
-	commandList->SetGraphicsRootDescriptorTable(0, renderTexture_->GetSRVHandle());
+	commandList->SetGraphicsRootDescriptorTable(0, inputTexture_->GetSRVHandle());
 	// 頂点3つを描画
 	commandList->DrawInstanced(3, 1, 0, 0);
 }
@@ -12266,7 +12316,7 @@ File Path: Project/Engine/Graphics/OffScreen/Effect/GrayScaleEffect.h
 ///=====================================================/// 
 /// GrayscaleEffect
 ///=====================================================///
-class GrayscaleEffect : RenderPass {
+class GrayscaleEffect : public RenderPass {
 public:
 	GrayscaleEffect() = default;
 	~GrayscaleEffect() = default;
@@ -12309,7 +12359,7 @@ File Path: Project/Engine/Graphics/OffScreen/Effect/OutLineEffect.cpp
 ///-------------------------------------------///
 void OutLineEffect::Initialize(ID3D12Device* device, std::shared_ptr<RenderTexture> RenderTexture) {
 	// RenderTextureを取得
-	renderTexture_ = RenderTexture;
+	outputTexture_ = RenderTexture;
 	// Deviceの初期化
 	ID3D12Device* devicePtr = device;
 	devicePtr;
@@ -12329,7 +12379,7 @@ void OutLineEffect::Draw(ID3D12GraphicsCommandList* commandList) {
 	// コピーイメージ
 	Render::SetPSO(commandList, PipelineType::OutLine, BlendMode::kBlendModeNone);
 
-	commandList->SetGraphicsRootDescriptorTable(0, renderTexture_->GetSRVHandle());
+	commandList->SetGraphicsRootDescriptorTable(0, inputTexture_->GetSRVHandle());
 	// 頂点3つを描画
 	commandList->DrawInstanced(3, 1, 0, 0);
 }
@@ -12351,7 +12401,7 @@ File Path: Project/Engine/Graphics/OffScreen/Effect/OutLineEffect.h
 ///=====================================================/// 
 /// OutLineEffect
 ///=====================================================///
-class OutLineEffect : RenderPass {
+class OutLineEffect : public RenderPass {
 public:
 	OutLineEffect() = default;
 	~OutLineEffect() = default;
@@ -12398,7 +12448,7 @@ File Path: Project/Engine/Graphics/OffScreen/Effect/RadiusBlurEffect.cpp
 ///-------------------------------------------///
 void RadiusBlurEffect::Initialize(ID3D12Device* device, std::shared_ptr<RenderTexture> RenderTexture) {
 	// RenderTextureを取得
-	renderTexture_ = RenderTexture;
+	outputTexture_ = RenderTexture;
 
 	// bufferの作成
 	buffer_ = std::make_unique<BufferBase>();
@@ -12427,7 +12477,7 @@ void RadiusBlurEffect::Draw(ID3D12GraphicsCommandList* commandList) {
 	// dataの設定
 	commandList->SetGraphicsRootConstantBufferView(1, buffer_->GetBuffer()->GetGPUVirtualAddress());
 
-	commandList->SetGraphicsRootDescriptorTable(0, renderTexture_->GetSRVHandle());
+	commandList->SetGraphicsRootDescriptorTable(0, inputTexture_->GetSRVHandle());
 	// 頂点3つを描画
 	commandList->DrawInstanced(3, 1, 0, 0);
 }
@@ -12477,7 +12527,7 @@ struct RadiusBlurData {
 ///=====================================================/// 
 /// RadiusBlurEffect
 ///=====================================================///
-class RadiusBlurEffect : RenderPass {
+class RadiusBlurEffect : public RenderPass {
 public:
 	RadiusBlurEffect() = default;
 	~RadiusBlurEffect() = default;
@@ -12537,7 +12587,7 @@ File Path: Project/Engine/Graphics/OffScreen/Effect/ShatterGlassEffect.cpp
 ///-------------------------------------------///
 void ShatterGlassEffect::Initialize(ID3D12Device* device, std::shared_ptr<RenderTexture> RenderTexture) {
 	// RenderTextureを取得
-	renderTexture_ = RenderTexture;
+	outputTexture_ = RenderTexture;
 
 	// テクスチャ名を設定
 	textureKeyName_ = "White";
@@ -12576,7 +12626,7 @@ void ShatterGlassEffect::Draw(ID3D12GraphicsCommandList* commandList) {
 	commandList->SetGraphicsRootConstantBufferView(2, buffer_->GetBuffer()->GetGPUVirtualAddress());
 
 	// テクスチャとパラメータをセット
-	commandList->SetGraphicsRootDescriptorTable(0, renderTexture_->GetSRVHandle());
+	commandList->SetGraphicsRootDescriptorTable(0, inputTexture_->GetSRVHandle());
 	Render::SetGraphicsRootDescriptorTable(commandList, 1, textureKeyName_);
 
 	// 頂点3つを描画（フルスクリーン三角形）
@@ -12734,7 +12784,7 @@ File Path: Project/Engine/Graphics/OffScreen/Effect/VignetteEffect.cpp
 ///-------------------------------------------///
 void VignetteEffect::Initialize(ID3D12Device* device, std::shared_ptr<RenderTexture> RenderTexture) {
 	// RenderTextureを取得
-	renderTexture_ = RenderTexture;
+	outputTexture_ = RenderTexture;
 
 	// bufferの作成
 	buffer_ = std::make_unique<BufferBase>();
@@ -12762,7 +12812,7 @@ void VignetteEffect::Draw(ID3D12GraphicsCommandList* commandList) {
 	// dataの設定
 	commandList->SetGraphicsRootConstantBufferView(1, buffer_->GetBuffer()->GetGPUVirtualAddress());
 
-	commandList->SetGraphicsRootDescriptorTable(0, renderTexture_->GetSRVHandle());
+	commandList->SetGraphicsRootDescriptorTable(0, inputTexture_->GetSRVHandle());
 	// 頂点3つを描画
 	commandList->DrawInstanced(3, 1, 0, 0);
 }
@@ -12808,7 +12858,7 @@ struct VignetteData {
 ///=====================================================/// 
 /// VignetteEffect
 ///=====================================================///
-class VignetteEffect : RenderPass {
+class VignetteEffect : public RenderPass {
 public:
 	VignetteEffect() = default;
 	~VignetteEffect() = default;
@@ -12876,7 +12926,8 @@ OffScreenRenderer::~OffScreenRenderer() {
 	outLine_.reset();
 	dissolve_.reset();
 	shatterGlass_.reset();
-	renderTexture_.reset();
+	sceneTexture_.reset();
+	effectTexture_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -12887,54 +12938,75 @@ void OffScreenRenderer::Initialize(
 	SRVManager* srv, RTVManager* rtv,
 	uint32_t width, uint32_t height, const Vector4& clearColor) {
 
-	// RenderTextureを初期化
-	renderTexture_ = std::make_shared<RenderTexture>();
-	renderTexture_->Initialize(srv, rtv, width, height, clearColor, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
-	renderTexture_->CreateRenderTexture(device);
+	// シーン描画用のRenderTextureを初期化
+	sceneTexture_ = std::make_shared<RenderTexture>();
+	sceneTexture_->Initialize(srv, rtv, width, height, clearColor, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
+	sceneTexture_->CreateRenderTexture(device);
+
+	// エフェクト適用後のRenderTextureを初期化
+	effectTexture_ = std::make_shared<RenderTexture>();
+	effectTexture_->Initialize(srv, rtv, width, height, clearColor, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
+	effectTexture_->CreateRenderTexture(device);
 
 	/// ===RenderPassの登録=== ///
 	// SceneRenderPass
 	copyImage_ = std::make_shared<CopyImageEffect>();
-	copyImage_->Initialize(device,renderTexture_);
+	copyImage_->Initialize(device,effectTexture_);
+	copyImage_->SetInputTexture(sceneTexture_);
 
 	// グレースケールレンダーパス
 	grayscale_ = std::make_shared<GrayscaleEffect>();
-	grayscale_->Initialize(device, renderTexture_);
+	grayscale_->Initialize(device, effectTexture_);
+	grayscale_->SetInputTexture(sceneTexture_);
 
 	// ビネットレンダーパス
 	vignette_ = std::make_shared<VignetteEffect>();
-	vignette_->Initialize(device, renderTexture_);
+	vignette_->Initialize(device, effectTexture_);
+	vignette_->SetInputTexture(sceneTexture_);
 
 	// Dissolveエフェクト
 	dissolve_ = std::make_shared<DissolveEffect>();
-	dissolve_->Initialize(device, renderTexture_);
+	dissolve_->Initialize(device, effectTexture_);
+	dissolve_->SetInputTexture(sceneTexture_);
 
 	// 3x3ボックスフィルタレンダーパス
 	boxFilter3x3_ = std::make_shared<BoxFilter3x3Effect>();
-	boxFilter3x3_->Initialize(device, renderTexture_);
+	boxFilter3x3_->Initialize(device, effectTexture_);
+	boxFilter3x3_->SetInputTexture(sceneTexture_);
 
 	// 5x5ボックスフィルタレンダーパス
 	boxFilter5x5_ = std::make_shared<BoxFilter5x5Effect>();
-	boxFilter5x5_->Initialize(device, renderTexture_);
+	boxFilter5x5_->Initialize(device, effectTexture_);
+	boxFilter5x5_->SetInputTexture(sceneTexture_);
 
 	// 半径ブラーエフェクト
 	radiusBlur_ = std::make_shared<RadiusBlurEffect>();
-	radiusBlur_->Initialize(device, renderTexture_);
+	radiusBlur_->Initialize(device, effectTexture_);
+	radiusBlur_->SetInputTexture(sceneTexture_);
 
 	// OutLineエフェクト
 	outLine_ = std::make_shared<OutLineEffect>();
-	outLine_->Initialize(device, renderTexture_);
+	outLine_->Initialize(device, effectTexture_);
+	outLine_->SetInputTexture(sceneTexture_);
 
 	// ShatterGlassエフェクト
 	shatterGlass_ = std::make_shared<ShatterGlassEffect>();
-	shatterGlass_->Initialize(device, renderTexture_);
+	shatterGlass_->Initialize(device, effectTexture_);
+	shatterGlass_->SetInputTexture(sceneTexture_);
 }
 
 ///-------------------------------------------/// 
 /// 描画前処理
 ///-------------------------------------------///
 void OffScreenRenderer::PreDraw(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle) {
-	switch (type_) {
+	
+	// シーン描画はsceneTexture_へ
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandel = sceneTexture_->GetRTVHandle();
+	commandList->OMSetRenderTargets(1, &rtvHandel, false, &dsvHandle);
+	// RenderTextureのクリア
+	sceneTexture_->Clear(commandList);
+	
+	/*switch (type_) {
 	case OffScreenType::CopyImage:
 		copyImage_->PreDraw(commandList, dsvHandle);
 		break;
@@ -12962,13 +13034,20 @@ void OffScreenRenderer::PreDraw(ID3D12GraphicsCommandList* commandList, D3D12_CP
 	case OffScreenType::ShatterGlass:
 		shatterGlass_->PreDraw(commandList, dsvHandle);
 		break;
-	}
+	}*/
 }
 
 ///-------------------------------------------/// 
 /// 描画処理
 ///-------------------------------------------///
 void OffScreenRenderer::Draw(ID3D12GraphicsCommandList* commandList) {
+	// effectTexture_ への描画先を設定
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = effectTexture_->GetRTVHandle();
+	commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
+
+	// effectTexture_ をクリア
+	effectTexture_->Clear(commandList);
+
 	switch (type_) {
 	case OffScreenType::CopyImage:
 		copyImage_->Draw(commandList);
@@ -13005,6 +13084,19 @@ void OffScreenRenderer::Draw(ID3D12GraphicsCommandList* commandList) {
 ///-------------------------------------------///
 void OffScreenRenderer::PostDraw(ID3D12GraphicsCommandList* commandList) {
 	commandList;
+}
+
+///-------------------------------------------/// 
+/// effectTexture を SwapChain にコピー
+///-------------------------------------------///
+void OffScreenRenderer::CopyToSwapChain(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE swapChainRTV) {
+	// SwapChain の RTV を描画先として設定
+	commandList->OMSetRenderTargets(1, &swapChainRTV, false, nullptr);
+
+	// CopyImage エフェクトを使用して effectTexture_ を SwapChain にコピー
+	Render::SetPSO(commandList, PipelineType::OffScreen, BlendMode::kBlendModeNone);
+	commandList->SetGraphicsRootDescriptorTable(0, effectTexture_->GetSRVHandle());
+	commandList->DrawInstanced(3, 1, 0, 0);
 }
 
 ///-------------------------------------------/// 
@@ -13071,15 +13163,16 @@ void OffScreenRenderer::DrawImGui() {
 /// Getter
 ///-------------------------------------------///
 // RTV
-D3D12_CPU_DESCRIPTOR_HANDLE OffScreenRenderer::GetResultRTV() const { return renderTexture_->GetRTVHandle(); }
+D3D12_CPU_DESCRIPTOR_HANDLE OffScreenRenderer::GetResultRTV() const { return effectTexture_->GetRTVHandle(); }
 // SRV
-D3D12_GPU_DESCRIPTOR_HANDLE OffScreenRenderer::GetResultSRV() const { return renderTexture_->GetSRVHandle(); }
+D3D12_GPU_DESCRIPTOR_HANDLE OffScreenRenderer::GetResultSRV() const { return effectTexture_->GetSRVHandle(); }
 // RTVIndex
-uint32_t OffScreenRenderer::GetRTVHandleIndex() const { return renderTexture_->GetRTVHandleIndex(); }
+uint32_t OffScreenRenderer::GetRTVHandleIndex() const { return effectTexture_->GetRTVHandleIndex(); }
 // SRVIndex
-uint32_t OffScreenRenderer::GetSRVHandleIndex() const { return renderTexture_->GetSRVHandleIndex(); }
+uint32_t OffScreenRenderer::GetSRVHandleIndex() const { return effectTexture_->GetSRVHandleIndex(); }
 // Reosurce
-ID3D12Resource* OffScreenRenderer::GetBuffer() const { return renderTexture_->GetBuffer(); }
+ID3D12Resource* OffScreenRenderer::GetSceneBuffer() const { return sceneTexture_->GetBuffer(); }
+ID3D12Resource* OffScreenRenderer::GetEffectBuffer() const { return effectTexture_->GetBuffer(); }
 
 /// ===Effect=== ///
 CopyImageEffect* OffScreenRenderer::GetCopyImage() { return copyImage_.get(); }
@@ -13163,6 +13256,13 @@ public:
 	/// <param name="commandList">後処理コマンドを記録するための ID3D12GraphicsCommandList へのポインター。</param>
 	void PostDraw(ID3D12GraphicsCommandList* commandList);
 
+	/// <summary>
+	/// effectTexture を SwapChain にコピー
+	/// </summary>
+	/// <param name="commandList">コマンドリスト</param>
+	/// <param name="swapChainRTV">SwapChain の RTV ハンドル</param>
+	void CopyToSwapChain(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE swapChainRTV);
+
 #ifdef USE_IMGUI
 	void DrawImGui();
 #endif
@@ -13177,7 +13277,8 @@ public: /// ===Getter=== ///
 	// SRVのインデックス番号の取得
 	uint32_t GetSRVHandleIndex() const;
 	// Resourceの取得
-	ID3D12Resource* GetBuffer() const;
+	ID3D12Resource* GetSceneBuffer() const;
+	ID3D12Resource* GetEffectBuffer() const;
 
 public: /// ===Getter=== ///
 	// コピーイメージエフェクトの取得
@@ -13206,7 +13307,8 @@ public: /// ===Setter=== ///
 	void SetType(OffScreenType type);
 
 private:
-	std::shared_ptr<RenderTexture> renderTexture_;
+	std::shared_ptr<RenderTexture> sceneTexture_;
+	std::shared_ptr<RenderTexture> effectTexture_;
 
 	// 各パス（あらかじめ生成済み）
 	std::shared_ptr<CopyImageEffect> copyImage_;
@@ -13235,12 +13337,18 @@ File Path: Project/Engine/Graphics/OffScreen/RenderPass.cpp
 ///-------------------------------------------///
 void RenderPass::PreDraw(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle) {
 
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandel = renderTexture_->GetRTVHandle();
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandel = outputTexture_->GetRTVHandle();
 	commandList->OMSetRenderTargets(1, &rtvHandel, false, &dsvHandle);
 
 	// RenderTextureのクリア
-	renderTexture_->Clear(commandList);
+	outputTexture_->Clear(commandList);
 }
+
+///-------------------------------------------/// 
+/// Setter
+///-------------------------------------------///
+void RenderPass::SetInputTexture(std::shared_ptr<RenderTexture> inputTexture) { inputTexture_ = inputTexture; }
+
 
 ============================================================
 File Path: Project/Engine/Graphics/OffScreen/RenderPass.h
@@ -13262,7 +13370,7 @@ public:
 	/// </summary>
 	/// <param name="device">初期化に使用する Direct3D 12 デバイスへのポインタ（ID3D12Device*）。</param>
 	/// <param name="RenderTexture">初期化対象のレンダーテクスチャを指す std::shared_ptr。レンダリング先や関連リソースを表します。</param>
-	virtual void Initialize(ID3D12Device* device, std::shared_ptr<RenderTexture> RenderTexture) = 0;
+	virtual void Initialize(ID3D12Device* device, std::shared_ptr<RenderTexture> outputTexture) = 0;
 
 	/// <summary>
 	/// 描画前処理
@@ -13282,8 +13390,17 @@ public:
 	/// </summary>
 	virtual void ImGuiInfo() = 0;
 
+public:
+
+	/// <summary>
+	/// 入力テクスチャを設定します。渡されたstd::shared_ptr<RenderTexture>を受け取り、内部の入力テクスチャを更新します。
+	/// </summary>
+	/// <param name="inputTexture">設定する入力テクスチャへのstd::shared_ptr<RenderTexture>。所有権は共有され、参照カウントが増加します。</param>
+	void SetInputTexture(std::shared_ptr<RenderTexture> inputTexture);
+
 protected:
-	std::shared_ptr<RenderTexture> renderTexture_;
+	std::shared_ptr<RenderTexture> inputTexture_;
+	std::shared_ptr<RenderTexture> outputTexture_;
 };
 
  
@@ -18720,7 +18837,7 @@ void MyGame::Initialize(const wchar_t* title) {
 	// シーンマネージャの初期化
 	sceneManager_ = std::make_unique<SceneManager>();
 	sceneManager_->Initialize(sceneFactory_.get());
-	sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
+	sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
 }
  
 ///-------------------------------------------/// 
@@ -19413,7 +19530,9 @@ void ShatterGlassTransition::OnFadeOutUpdate() {
 
 	// 設定
 	OffScreenService::SetShatterGlassData(data_);
-	sprite_->Update();
+	if (sprite_) {
+		sprite_->Update();
+	}
 }
 
 
