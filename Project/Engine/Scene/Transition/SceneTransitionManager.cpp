@@ -46,6 +46,13 @@ void SceneTransitionManager::Draw() {
 }
 
 ///-------------------------------------------/// 
+/// リセット
+///-------------------------------------------///
+void SceneTransitionManager::Reset() {
+	currentTransition_->Reset();
+}
+
+///-------------------------------------------/// 
 /// 遷移フェードインを開始
 ///-------------------------------------------///
 void SceneTransitionManager::StartFadeIn(TransitionType type, const float duration) {

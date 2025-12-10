@@ -6,7 +6,7 @@ enum class FadeState {
 	None,
 	FadeIn,
 	FadeOut,
-	Finished
+	Finished,
 };
 
 ///=====================================================/// 
@@ -47,18 +47,23 @@ public:
 public: /// ===Getter=== ///
 
 	// フェード中か
-	virtual bool IsFading() const;
+	bool IsFading() const;
 	// 完了したか
-	virtual bool IsFinished() const;
+	bool IsFinished() const;
 	// 現在の状態
-	virtual FadeState GetState() const;
+	FadeState GetState() const;
+
+public:
+	// リセット
+	void Reset();
 
 protected:
 
 	// アニメーション制御用構造体
 	struct TransitionData {
 		bool isPlaying = false;
-		bool isFinished = true;
+		bool isFinished = false;
+		bool isExecutable = true;
 		float currentTime = 0.0f;
 		float duration = 1.2f;  // エフェクトの総時間
 	};

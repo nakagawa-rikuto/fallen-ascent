@@ -146,7 +146,7 @@ void Player::Initialize() {
 	invicibleInfo_.isFlag = true;
 
 	// HPの設定
-	baseInfo_.HP = 5;
+	baseInfo_.HP = 1;
 
 	// 初期設定
 	ChangState(std::make_unique<RootState>());
@@ -160,6 +160,9 @@ void Player::Initialize() {
 /// 更新
 ///-------------------------------------------///
 void Player::Update() {
+	// 早期リターン
+	if (baseInfo_.isDead) return;
+
 	/// ===スティックの取得=== ///
 	StickState rightStick = InputService::GetRightStickState(0);
 	camera_->SetStick({ rightStick.x, rightStick.y });
@@ -230,26 +233,29 @@ void Player::OnCollision(Collider* collider) {
 		// 無敵状態でなければダメージを受ける
 		if (!invicibleInfo_.isFlag) {
 
-			//// ===ノックバック処理=== ///
-			//// 敵の位置を取得
-			//Vector3 enemyPos = collider->GetTransform().translate;
-			//// プレイヤーから敵への方向ベクトルを計算
-			//Vector3 knockbackDirection = transform_.translate - enemyPos;
-			//// Y軸は無視(水平方向のみノックバック)
-			//knockbackDirection.y = 0.0f;
-			//// 正規化
-			//if (knockbackDirection.x != 0.0f || knockbackDirection.z != 0.0f) {
-			//	knockbackDirection = Normalize(knockbackDirection);
-			//}
-			//// ノックバックの速度を設定(適切な値に調整してください)
-			//const float knockbackSpeed = 1.5f;
-			//baseInfo_.velocity = knockbackDirection * knockbackSpeed;
+			/// ===カメラのシェイク=== ///
+			camera_->StartShake(1.2f, 1.0f);
+
+			// ===ノックバック処理=== ///
+			// 敵の位置を取得
+			Vector3 enemyPos = collider->GetTransform().translate;
+			// プレイヤーから敵への方向ベクトルを計算
+			Vector3 knockbackDirection = transform_.translate - enemyPos;
+			// Y軸は無視(水平方向のみノックバック)
+			knockbackDirection.y = 0.0f;
+			// 正規化
+			if (knockbackDirection.x != 0.0f || knockbackDirection.z != 0.0f) {
+				knockbackDirection = Normalize(knockbackDirection);
+			}
+			// ノックバックの速度を設定(適切な値に調整してください)
+			const float knockbackSpeed = 1.5f;
+			baseInfo_.velocity = knockbackDirection * knockbackSpeed;
 
 			// Stateを Root に変更
 			ChangState(std::make_unique<RootState>());
 
 			// ダメージ処理
-			//baseInfo_.HP--;
+			baseInfo_.HP--;
 			// 無敵状態にする
 			SetInvicibleTime(0.5f);
 		}

@@ -106,8 +106,8 @@ void ParticleManager::RemoveParticleDefinition(const std::string& name) {
 	activeParticles_.erase(name);
 }
 void ParticleManager::RemoveAllParticles() {
-	activeParticles_.clear();
-	definitions_.clear();
+	//activeParticles_.clear();
+	//definitions_.clear();
 }
 
 

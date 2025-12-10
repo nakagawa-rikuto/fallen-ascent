@@ -189,6 +189,10 @@ void BaseEnemy::OnCollision(Collider* collider) {
 	/// ===GameCharacterの衝突=== ///
 	GameCharacter::OnCollision(collider);
 
+	if (baseInfo_.isDead) {
+		return;
+	}
+
 	// Weaponとの当たり判定
 	if (collider->GetColliderName() == ColliderName::PlayerWeapon) {
 		// クールタイム中でなければノックバック処理を実行
@@ -218,7 +222,7 @@ void BaseEnemy::OnCollision(Collider* collider) {
 				
 				// HPを減少
 				baseInfo_.HP--;
-				ParticleService::Emit("nakagawa", transform_.translate);
+				ParticleService::Emit("Game", transform_.translate);
 
 				// タイマーをセット
 				knockbackInfo_.hitColorTimer = knockbackInfo_.hitColorDuration;

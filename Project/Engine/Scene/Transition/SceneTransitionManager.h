@@ -57,6 +57,10 @@ public: /// ===Getter=== ///
 	// 現在の状態
 	FadeState GetState() const;
 
+public: /// ===Setter=== ///
+	// リセット
+	void Reset();
+
 private:
 
 	// 現在のトランジションタイプ

@@ -91,6 +91,7 @@ void SceneManager::ChangeScene(SceneType type) {
 	// 新しいシーンにSceneManagerをセット
 	if (currentScene_) {
 		currentScene_->SetSceneManager(this);
+		sceneTransitionManager_->Reset();
 	}
 	SceneInit();
 }

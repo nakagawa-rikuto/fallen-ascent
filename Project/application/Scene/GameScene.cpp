@@ -17,11 +17,11 @@
 ///-------------------------------------------///
 GameScene::~GameScene() {
 	// ISceneのデストラクタ
-	IScene::~IScene();
+	//IScene::~IScene();
 	// Colliderのリセット
 	ColliderService::Reset();
 	// Particleのリセット
-	ParticleService::RemoveAllParticles();
+	//ParticleService::RemoveAllParticles();
 	// StartAnimation
 	startAnimation_.reset();
 	// Camera
