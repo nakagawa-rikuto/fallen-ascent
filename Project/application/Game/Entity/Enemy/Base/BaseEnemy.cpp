@@ -76,6 +76,8 @@ void BaseEnemy::Initialize() {
 	knockbackInfo_.originalColor = color_;   // 元の色を保存
 	knockbackInfo_.isInCooldown = true;
 
+	disappearTimer_ = 3.0f;
+
 	// HP 
 	baseInfo_.HP = 2;
 
@@ -88,7 +90,7 @@ void BaseEnemy::Initialize() {
 ///-------------------------------------------///
 void BaseEnemy::Update() {
 	// 死亡している場合は更新しない
-	if (baseInfo_.isDead) return;
+	if (isTentativeDeath_) return;
 
 	/// ===Timerの更新=== ///
 	advanceTimer();
@@ -187,6 +189,10 @@ void BaseEnemy::OnCollision(Collider* collider) {
 	/// ===GameCharacterの衝突=== ///
 	GameCharacter::OnCollision(collider);
 
+	if (baseInfo_.isDead) {
+		return;
+	}
+
 	// Weaponとの当たり判定
 	if (collider->GetColliderName() == ColliderName::PlayerWeapon) {
 		// クールタイム中でなければノックバック処理を実行
@@ -213,13 +219,10 @@ void BaseEnemy::OnCollision(Collider* collider) {
 
 				// 色を赤に変更
 				color_ = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 赤色
-
-				// パーティクルを発生
 				
-				baseInfo_.HP--; // HPを減少
-				if (baseInfo_.HP <= 0) {
-					ParticleService::Emit("nakagawa", transform_.translate);
-				}
+				// HPを減少
+				baseInfo_.HP--;
+				ParticleService::Emit("Game", transform_.translate);
 
 				// タイマーをセット
 				knockbackInfo_.hitColorTimer = knockbackInfo_.hitColorDuration;
@@ -381,33 +384,44 @@ void BaseEnemy::UpdateRotationTowards(const Vector3& direction, float slerpT) {
 /// 時間を進める
 ///-------------------------------------------///
 void BaseEnemy::advanceTimer() {
-	// 移動タイマーを進める
-	moveInfo_.timer -= baseInfo_.deltaTime;
 
-	// 攻撃用のタイマーを進める
-	if (attackInfo_.timer > 0.0f) {
-		attackInfo_.timer -= baseInfo_.deltaTime;
-	}
-
-	// ノックバッククールタイムの更新
-	if (knockbackInfo_.isInCooldown) {
-		knockbackInfo_.cooldownTimer -= baseInfo_.deltaTime;
-
-		// クールタイムが終了したら解除
-		if (knockbackInfo_.cooldownTimer <= 0.0f) {
-			knockbackInfo_.isInCooldown = false;
-			knockbackInfo_.cooldownTimer = 0.0f;
+	if (baseInfo_.isDead) {
+		// 消えるまでの時間を進める
+		disappearTimer_ -= baseInfo_.deltaTime;
+		if (disappearTimer_ <= 0) {
+			ParticleService::Emit("nakagawa", transform_.translate);
+			isTentativeDeath_ = true;
 		}
-	}
+	} else {
 
-	// ヒット時の赤色表示タイマーの更新
-	if (knockbackInfo_.hitColorTimer > 0.0f) {
-		knockbackInfo_.hitColorTimer -= baseInfo_.deltaTime;
+		// 移動タイマーを進める
+		moveInfo_.timer -= baseInfo_.deltaTime;
 
-		// 赤色表示時間が終了したら元の色に戻す
-		if (knockbackInfo_.hitColorTimer <= 0.0f) {
-			color_ = knockbackInfo_.originalColor;
-			knockbackInfo_.hitColorTimer = 0.0f;
+		// 攻撃用のタイマーを進める
+		if (attackInfo_.timer > 0.0f) {
+			attackInfo_.timer -= baseInfo_.deltaTime;
+		}
+
+		// ノックバッククールタイムの更新
+		if (knockbackInfo_.isInCooldown) {
+			knockbackInfo_.cooldownTimer -= baseInfo_.deltaTime;
+
+			// クールタイムが終了したら解除
+			if (knockbackInfo_.cooldownTimer <= 0.0f) {
+				knockbackInfo_.isInCooldown = false;
+				knockbackInfo_.cooldownTimer = 0.0f;
+			}
+		}
+
+		// ヒット時の赤色表示タイマーの更新
+		if (knockbackInfo_.hitColorTimer > 0.0f) {
+			knockbackInfo_.hitColorTimer -= baseInfo_.deltaTime;
+
+			// 赤色表示時間が終了したら元の色に戻す
+			if (knockbackInfo_.hitColorTimer <= 0.0f) {
+				color_ = knockbackInfo_.originalColor;
+				knockbackInfo_.hitColorTimer = 0.0f;
+			}
 		}
 	}
 }

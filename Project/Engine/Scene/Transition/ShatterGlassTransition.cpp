@@ -10,6 +10,7 @@
 /// デストラクタ
 ///-------------------------------------------///
 ShatterGlassTransition::~ShatterGlassTransition() {
+	OffScreenService::SetOffScreenType(OffScreenType::CopyImage);
 	if (sprite_) {
 		sprite_.reset();
 	}
@@ -23,7 +24,7 @@ void ShatterGlassTransition::StartFadeIn(float duration) {
 	sprite_ = std::make_unique<Sprite>();
 	sprite_->Initialize("White");
 	sprite_->SetSize({ static_cast<float>(GraphicsResourceGetter::GetWindowWidth()), static_cast<float>(GraphicsResourceGetter::GetWindowHeight()) });
-	sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 黒で初期化
+	sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 透明で初期化
 	sprite_->Update();
 
 	// フェードイン開始
@@ -38,7 +39,7 @@ void ShatterGlassTransition::StartFadeOut(float duration) {
 	OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
 	// Spriteの色をリセット
 	if (sprite_) {
-		sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 白で初期化
+		sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 透明で初期化
 	}
 
 	// デフォルトパラメータの設定
@@ -78,7 +79,6 @@ void ShatterGlassTransition::OnFadeInUpdate() {
 	if (color.w >= 1.0f) {
 		animation_.isPlaying = false;
 		animation_.isFinished = true;
-		currentState_ = FadeState::Finished;
 	}
 
 	sprite_->SetColor(color);
@@ -109,11 +109,11 @@ void ShatterGlassTransition::OnFadeOutUpdate() {
 			data_.progress = 0.25f + Easing::EaseOutCubic(phaseTime) * 0.3f;
 		}
 	} else {
+		OffScreenService::SetOffScreenType(OffScreenType::CopyImage);
+		data_.progress = 1.0f;
 		// エフェクト終了判定
 		animation_.isPlaying = false;
 		animation_.isFinished = true;
-		currentState_ = FadeState::Finished;
-		data_.progress = 1.0f;
 	}
 
 	// 設定

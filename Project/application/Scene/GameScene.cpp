@@ -20,8 +20,6 @@ GameScene::~GameScene() {
 	IScene::~IScene();
 	// Colliderのリセット
 	ColliderService::Reset();
-	// Particleのリセット
-	ParticleService::RemoveAllParticles();
 	// StartAnimation
 	startAnimation_.reset();
 	// Camera
@@ -46,9 +44,20 @@ void GameScene::Initialize() {
 	Loader::LoadLevelJson("Level/EntityData.json");
 
 	// Particleの読み込み
-	ParticleService::LoadParticleDefinition("Game.json");
-	ParticleService::LoadParticleDefinition("WeaponAttack.json");
-	ParticleService::LoadParticleDefinition("nakagawa.json");
+	//ParticleService::LoadParticleDefinition("Game.json");
+	//ParticleService::LoadParticleDefinition("WeaponAttack.json");
+	//ParticleService::LoadParticleDefinition("nakagawa.json");
+
+	// パーティクル定義が既に存在するかチェックしてからロード
+	if (!ParticleService::HasDefinition("Game")) {
+		ParticleService::LoadParticleDefinition("Game.json");
+	}
+	if (!ParticleService::HasDefinition("WeaponAttack")) {
+		ParticleService::LoadParticleDefinition("WeaponAttack.json");
+	}
+	if (!ParticleService::HasDefinition("nakagawa")) {
+		ParticleService::LoadParticleDefinition("nakagawa.json");
+	}
 
 	/// ===Camera=== ///
 	camera_ = std::make_shared<GameCamera>();
@@ -196,7 +205,7 @@ void GameScene::UpdateFadeIn() {
 	player_->UpdateAnimation();
 
 	// FadeIn完了でStartAnimationフェーズへ
-	if (sceneManager_->GetFadeState() == FadeState::Finished) {
+	if (sceneManager_->GetTransitionFinished()) {
 		OffScreenService::SetOffScreenType(OffScreenType::CopyImage);
 		currentPhase_ = GamePhase::StartAnimation;
 	}

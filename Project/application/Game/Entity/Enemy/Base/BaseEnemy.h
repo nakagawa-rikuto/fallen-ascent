@@ -131,6 +131,8 @@ public: /// ===State用関数=== ///
 public: /// ===Getter=== ///
 	// AttackInfo
 	AttackInfo GetAttackInfo()const { return attackInfo_; };
+	// tentativeDeah
+	bool GetTentativeDeath() const { return isTentativeDeath_; };
 
 public: /// ===Setter=== ///
 	// Player
@@ -158,6 +160,10 @@ protected: /// ===変数の宣言=== ///
 private:
 	// ノックバック情報
 	KnockbackInfo knockbackInfo_;
+
+	// 消えるまでの時間
+	float disappearTimer_ = 2.0f;
+	bool isTentativeDeath_ = false;
 
 protected: /// ===関数の宣言=== ///
 
