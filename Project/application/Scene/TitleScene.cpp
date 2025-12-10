@@ -60,8 +60,8 @@ void TitleScene::Initialize() {
 	titleSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 
 	// 開始スプライト
-	spaceY_ = windowHeight / 16.0f; // メニュー項目間の垂直スペース
-	startY_ = windowHeight / 2.0f + windowHeight / 4.0f; // 開始項目のY位置
+	spaceY_ = windowHeight / 8.0f; // メニュー項目間の垂直スペース
+	startY_ = windowHeight / 2.0f + windowHeight / 16.0f; // 開始項目のY位置
 	startSprite_ = std::make_unique<Sprite>();
 	startSprite_->Initialize("Start");
 	startSprite_->SetPosition({ windowWidth / 2.0f, startY_ });
@@ -116,24 +116,6 @@ void TitleScene::Initialize() {
 	selectOverlay_->Update();
 	dimSprite_->Update();
 	optionMenuSprite_->Update();
-
-	/// ===3Dモデルの初期化=== ///
-	for (int i = 0; i < kModelCount; ++i) {
-		models_[i] = std::make_unique<Object3d>();
-		models_[i]->Init(ObjectType::Model, modelNames_[i]); // モデル名を使用
-
-		// 初期位置設定
-		if (i == currentModelIndex_) {
-			// 現在選択中のモデルは中央に配置
-			models_[i]->SetTranslate({ 0.0f, 0.0f, 50.0f });
-		} else {
-			// それ以外は画面外に配置
-			models_[i]->SetTranslate({ 100.0f, 0.0f, 50.0f });
-		}
-	}
-	models_[0]->SetColor({ 1.0f, 1.0f, 0.0f, 1.0f });
-	models_[1]->SetColor({ 1.0f, 0.0f, 1.0f, 1.0f });
-	models_[2]->SetColor({ 0.0f, 1.0f, 1.0f, 1.0f });
 }
 
 ///-------------------------------------------/// 
@@ -145,9 +127,6 @@ void TitleScene::Update() {
 	ImGui::Begin("TitleScene");
 	ImGui::Text("Current Selection: %d", static_cast<int>(currentSelection_));
 	ImGui::Text("Option Open: %s", isOptionOpen_ ? "true" : "false");
-	ImGui::Text("Current Model: %d", currentModelIndex_);
-	ImGui::Text("Transitioning: %s", isTransitioning_ ? "true" : "false");
-	ImGui::Text("Transition Timer: %.2f", transitionTimer_);
 	ImGui::End();
 #endif // USE_IMGUI
 
@@ -160,22 +139,6 @@ void TitleScene::Update() {
 	exitSprite_->Update();
 	selectOverlay_->Update();
 
-	/// ===モデルの更新=== ///
-	if (isTransitioning_) {
-		// トランジション中
-		UpdateModelTransition();
-	} else {
-		// 通常時：現在のモデルをゆっくり回転させる
-		Quaternion currentRotation = models_[currentModelIndex_]->GetWorldRotate();
-		Quaternion rotationDelta = Math::RotateY(0.03f);
-		models_[currentModelIndex_]->SetRotate(Multiply(rotationDelta, currentRotation));
-	}
-
-	// 全モデルの更新
-	for (int i = 0; i < kModelCount; ++i) {
-		models_[i]->Update();
-	}
-
 	if (isOptionOpen_) {
 		dimSprite_->Update();
 		optionMenuSprite_->Update();
@@ -187,11 +150,6 @@ void TitleScene::Update() {
 	} else {
 		/// ===メニュー選択の更新=== ///
 		UpdateMenuSelection();
-
-		/// ===モデル選択の更新=== ///
-		if (!isTransitioning_) {
-			UpdateModelSelection();
-		}
 
 		/// ===決定処理=== ///
 		if (InputService::TriggerButton(0, ControllerButtonType::A) || InputService::TriggerKey(DIK_SPACE)) {
@@ -222,14 +180,6 @@ void TitleScene::Draw() {
 #pragma endregion
 
 #pragma region モデル描画
-	// 3Dモデル（トランジション中は2つ描画）
-	if (isTransitioning_) {
-		models_[currentModelIndex_]->Draw(BlendMode::KBlendModeNormal);
-		models_[nextModelIndex_]->Draw(BlendMode::KBlendModeNormal);
-	} else {
-		models_[currentModelIndex_]->Draw(BlendMode::KBlendModeNormal);
-	}
-
 	/// ===ISceneの描画=== ///
 	IScene::Draw();
 #pragma endregion
@@ -341,97 +291,5 @@ void TitleScene::UpdateOptionMenu() {
 		isOptionOpen_ = false;
 	}
 
-	// ここにオプション画面の処理を追加
-}
-
-///-------------------------------------------/// 
-/// モデル選択の更新
-///-------------------------------------------///
-void TitleScene::UpdateModelSelection() {
-	// 十字キー右：次のモデルへ
-	if (InputService::TriggerButton(0, ControllerButtonType::DPadRIGHT) || InputService::TriggerKey(DIK_RIGHT)) {
-		nextModelIndex_ = (currentModelIndex_ + 1) % kModelCount;
-		transitionDirection_ = true; // 右方向
-		isTransitioning_ = true;
-		transitionTimer_ = 0.0f;
-
-		// 次のモデルを左側の画面外に配置
-		models_[nextModelIndex_]->SetTranslate({ -100.0f, 0.0f, 50.0f });
-	}
-
-	// 十字キー左：前のモデルへ
-	if (InputService::TriggerButton(0, ControllerButtonType::DPadLEFT) || InputService::TriggerKey(DIK_LEFT)) {
-		nextModelIndex_ = (currentModelIndex_ - 1 + kModelCount) % kModelCount;
-		transitionDirection_ = false; // 左方向
-		isTransitioning_ = true;
-		transitionTimer_ = 0.0f;
-
-		// 次のモデルを右側の画面外に配置
-		models_[nextModelIndex_]->SetTranslate({ 100.0f, 0.0f, 50.0f });
-	}
-}
-
-///-------------------------------------------/// 
-/// モデルトランジションの更新
-///-------------------------------------------///
-void TitleScene::UpdateModelTransition() {
-	// タイマー更新
-	transitionTimer_ += 1.0f / 60.0f; // 60FPS想定
-
-	// 進行度を計算（0.0～1.0）
-	float progress = transitionTimer_ / transitionDuration_;
-	if (progress >= 1.0f) {
-		progress = 1.0f;
-		isTransitioning_ = false;
-		currentModelIndex_ = nextModelIndex_;
-	}
-
-	// イージング適用
-	float easedProgress = Easing::EaseInOutCubic(progress);
-
-	// 位置を補間
-	if (transitionDirection_) {
-		// 右へ移動
-		// 現在のモデルは中央(0)から右(100)へ
-		Vector3 currentPos = {
-			easedProgress * 100.0f,
-			0.0f,
-			50.0f
-		};
-		models_[currentModelIndex_]->SetTranslate(currentPos);
-
-		// 次のモデルは左(-100)から中央(0)へ
-		Vector3 nextPos = {
-			-100.0f + easedProgress * 100.0f,
-			0.0f,
-			50.0f
-		};
-		models_[nextModelIndex_]->SetTranslate(nextPos);
-	} else {
-		// 左へ移動
-		// 現在のモデルは中央(0)から左(-100)へ
-		Vector3 currentPos = {
-			-easedProgress * 100.0f,
-			0.0f,
-			50.0f
-		};
-		models_[currentModelIndex_]->SetTranslate(currentPos);
-
-		// 次のモデルは右(100)から中央(0)へ
-		Vector3 nextPos = {
-			100.0f - easedProgress * 100.0f,
-			0.0f,
-			50.0f
-		};
-		models_[nextModelIndex_]->SetTranslate(nextPos);
-	}
-
-	// 両方のモデルを回転
-	Quaternion rotationDelta = Math::RotateY(0.03f);
-
-	Quaternion currentRotation = models_[currentModelIndex_]->GetWorldRotate();
-	models_[currentModelIndex_]->SetRotate(Multiply(rotationDelta, currentRotation));
-
-	Quaternion nextRotation = models_[nextModelIndex_]->GetWorldRotate();
-	models_[nextModelIndex_]->SetRotate(Multiply(rotationDelta, nextRotation));
+	/// ===ここにオプション画面の処理を追加=== ///
 }

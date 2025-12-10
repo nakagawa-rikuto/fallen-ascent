@@ -3,7 +3,6 @@
 // IScene
 #include "Engine/Scene/IScene.h"
 #include "application/Drawing/2d/Sprite.h"
-#include "application/Drawing/3d/Object3d.h"
 // C++
 #include <memory>
 #include <array>
@@ -55,17 +54,6 @@ private:/// ===メンバ変数=== ///
 	std::unique_ptr<Sprite> dimSprite_;        // 薄暗いオーバーレイ
 	std::unique_ptr<Sprite> optionMenuSprite_; // オプションメニュー
 
-	/// ===モデル=== ///
-	static constexpr int kModelCount = 3; // モデルの数
-	std::array<std::unique_ptr<Object3d>, kModelCount> models_; // 3Dモデル配列
-	std::array<std::string, kModelCount> modelNames_ = { "player", "player", "player" }; // モデル名
-
-	int currentModelIndex_ = 0;  // 現在表示中のモデルのインデックス
-	bool isTransitioning_ = false; // トランジション中かどうか
-	float transitionTimer_ = 0.0f; // トランジションタイマー
-	float transitionDuration_ = 0.5f; // トランジションの時間（秒）
-	int nextModelIndex_ = 0; // 次に表示するモデルのインデックス
-	bool transitionDirection_ = true; // true: 右へ, false: 左へ
 
 	/// ===ポイントの値=== ///
 	float startY_ = 0.0f;
@@ -99,14 +87,4 @@ private:/// ===プライベート関数=== ///
 	/// オプション画面の更新処理
 	/// </summary>
 	void UpdateOptionMenu();
-
-	/// <summary>
-	/// モデル選択の更新処理
-	/// </summary>
-	void UpdateModelSelection();
-
-	/// <summary>
-	/// モデルトランジションの更新処理
-	/// </summary>
-	void UpdateModelTransition();
 };

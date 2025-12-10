@@ -31,18 +31,22 @@ void GameOverAnimation::Initialize(GameCamera* camera) {
     gameOverSprite_ = std::make_unique<Sprite>();
     gameOverSprite_->Initialize("GameOvverAnimation");
 
+    // ウィンドウサイズの取得
+    float windowWidth = static_cast<float>(GraphicsResourceGetter::GetWindowWidth());
+    float windowHeight = static_cast<float>(GraphicsResourceGetter::GetWindowHeight());
+
     // スプライトの初期設定（画面中央）
-    gameOverSprite_->SetPosition({ 640.0f, 360.0f });
-    gameOverSprite_->SetSize({ 1380.0f, 820.0f }); // お好みのサイズに調整
+    gameOverSprite_->SetPosition({ windowWidth / 2.0f, windowHeight / 2.0f });
+    gameOverSprite_->SetSize({ windowWidth + 100.0f, windowHeight + 100.0f }); // お好みのサイズに調整
     gameOverSprite_->SetAnchorPoint({ 0.5f, 0.5f }); // 中心を基準点に
     gameOverSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 初期は透明
 
     // ブラックアウト用スプライトの初期化
     blackSprite_ = std::make_unique<Sprite>();
     blackSprite_->Initialize("White"); // 1x1の白テクスチャ
-    blackSprite_->SetPosition({ 640.0f, 360.0f });
+    blackSprite_->SetPosition({ windowWidth / 2.0f, windowHeight /2.0f });
     GraphicsResourceGetter::GetWindowWidth();
-    blackSprite_->SetSize({ static_cast<float>(GraphicsResourceGetter::GetWindowWidth()), static_cast<float>(GraphicsResourceGetter::GetWindowHeight()) }); // 画面全体
+    blackSprite_->SetSize({ windowWidth, windowHeight }); // 画面全体
     blackSprite_->SetAnchorPoint({ 0.5f, 0.5f });
     blackSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 0.0f }); // 黒、初期は透明
 
@@ -211,12 +215,6 @@ void GameOverAnimation::UpdateShakeSprite() {
     newPos.x += shakeOffset_.x;
     newPos.y += shakeOffset_.y;
     gameOverSprite_->SetPosition(newPos);
-
-    //// カメラもシェイクさせる（徐々に激しく）
-    //if (camera_ && static_cast<int>(phaseTimer_) % 20 == 0) {
-    //    float cameraShakeIntensity = 0.3f + progress * 1.0f;
-    //    camera_->StartShake(cameraShakeIntensity, 0.8f, 25.0f);
-    //}
 
     // ブラックアウト
     blackAlpha_ += FADE_OUT_SPEED;
