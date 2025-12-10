@@ -15,7 +15,6 @@ void SceneTransitionBase::StartFadeIn(float duration) {
 	// 設定
 	animation_.isPlaying = true;
 	animation_.isFinished = false;
-	animation_.isExecutable = false;
 	animation_.currentTime = 0.0f;
 	animation_.duration = duration;
 	currentState_ = FadeState::FadeIn;
@@ -29,7 +28,6 @@ void SceneTransitionBase::StartFadeOut(float duration) {
 	// 設定
 	animation_.isPlaying = true;
 	animation_.isFinished = false;
-	animation_.isExecutable = false;
 	animation_.currentTime = 0.0f;
 	animation_.duration = duration;
 	currentState_ = FadeState::FadeOut;
@@ -80,7 +78,6 @@ void SceneTransitionBase::Draw() {
 void SceneTransitionBase::Reset() {
 	animation_.isPlaying = false;
 	animation_.isFinished = false;
-	animation_.isExecutable = true;
 	animation_.currentTime = 0.0f;
 	animation_.duration = 1.2f;
 	currentState_ = FadeState::None;

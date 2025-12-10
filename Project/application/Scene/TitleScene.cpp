@@ -199,7 +199,7 @@ void TitleScene::Update() {
 		}
 
 		/// ===シーンの切り替え=== ///
-		if (sceneManager_->GetFadeState() == FadeState::Finished) {
+		if (sceneManager_->GetTransitionFinished()) {
 			// ゲームシーンへ遷移
 			sceneManager_->ChangeScene(SceneType::Game);
 		}

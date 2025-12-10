@@ -14,6 +14,7 @@ SceneTransitionManager::~SceneTransitionManager() {
 ///-------------------------------------------///
 bool SceneTransitionManager::IsFading() const {return currentTransition_->IsFading();}
 bool SceneTransitionManager::IsFinished() const {return currentTransition_->IsFinished();}
+TransitionType SceneTransitionManager::GetType() const { return currentType_; }
 FadeState SceneTransitionManager::GetState() const {return currentTransition_->GetState();}
 
 ///-------------------------------------------/// 
@@ -50,6 +51,17 @@ void SceneTransitionManager::Draw() {
 ///-------------------------------------------///
 void SceneTransitionManager::Reset() {
 	currentTransition_->Reset();
+}
+
+///-------------------------------------------/// 
+/// NewMake
+///-------------------------------------------///
+void SceneTransitionManager::NewMake() {
+	// 既存のトランジションを破棄
+	currentTransition_.reset();
+	// 新しく作成
+	currentType_ = TransitionType::None;
+	currentTransition_ = std::make_unique<SceneTransitionBase>();
 }
 
 ///-------------------------------------------/// 

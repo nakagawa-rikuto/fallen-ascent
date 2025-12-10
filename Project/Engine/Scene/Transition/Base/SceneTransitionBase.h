@@ -6,7 +6,6 @@ enum class FadeState {
 	None,
 	FadeIn,
 	FadeOut,
-	Finished,
 };
 
 ///=====================================================/// 
@@ -63,7 +62,6 @@ protected:
 	struct TransitionData {
 		bool isPlaying = false;
 		bool isFinished = false;
-		bool isExecutable = true;
 		float currentTime = 0.0f;
 		float duration = 1.2f;  // エフェクトの総時間
 	};

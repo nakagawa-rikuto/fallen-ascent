@@ -146,7 +146,7 @@ void Player::Initialize() {
 	invicibleInfo_.isFlag = true;
 
 	// HPの設定
-	baseInfo_.HP = 1;
+	baseInfo_.HP = 5;
 
 	// 初期設定
 	ChangState(std::make_unique<RootState>());

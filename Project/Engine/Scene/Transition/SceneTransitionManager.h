@@ -54,12 +54,16 @@ public: /// ===Getter=== ///
 	bool IsFading() const;
 	// 完了したか
 	bool IsFinished() const;
+	// 現在のタイプ
+	TransitionType GetType() const;
 	// 現在の状態
 	FadeState GetState() const;
 
 public: /// ===Setter=== ///
 	// リセット
 	void Reset();
+	// NewMake
+	void NewMake();
 
 private:
 
