@@ -43,11 +43,6 @@ void GameScene::Initialize() {
 	Loader::LoadLevelJson("Level/StageData.json");
 	Loader::LoadLevelJson("Level/EntityData.json");
 
-	// Particleの読み込み
-	//ParticleService::LoadParticleDefinition("Game.json");
-	//ParticleService::LoadParticleDefinition("WeaponAttack.json");
-	//ParticleService::LoadParticleDefinition("nakagawa.json");
-
 	// パーティクル定義が既に存在するかチェックしてからロード
 	if (!ParticleService::HasDefinition("Game")) {
 		ParticleService::LoadParticleDefinition("Game.json");
@@ -96,10 +91,10 @@ void GameScene::Initialize() {
 	gameClearAnimation_ = std::make_unique<GameClearAnimation>();
 
 	// 初期フェーズをFadeInに設定
-	currentPhase_ = GamePhase::FadeIn;
+	currentPhase_ = FadeState::FadeIn;
 	/// ===Transition=== ///
-	float fadeOutDuration = 2.0f;
-	sceneManager_->StartFadeOut(TransitionType::ShatterGlass, fadeOutDuration); // フェードイン開始
+	float fadeInDuration = 2.0f;
+	sceneManager_->StartFadeIn(TransitionType::ShatterGlass, fadeInDuration); // フェードイン開始
 }
 
 ///-------------------------------------------/// 
@@ -135,22 +130,22 @@ void GameScene::Update() {
 	/// ===フェーズ別更新=== ///
 	switch (currentPhase_) {
 	// フェードイン
-	case GamePhase::FadeIn:
+	case FadeState::FadeIn:
 		UpdateFadeIn();
 		break;
 	// 開始アニメーション
-	case GamePhase::StartAnimation:
+	case FadeState::StartAnimation:
 		UpdateStartAnimation();
 		break;
 	// ゲームプレイ
-	case GamePhase::Game:
+	case FadeState::Game:
 		UpdateGame();
 		break;
-	case GamePhase::GameOverAnimation:
+	case FadeState::GameOverAnimation:
 		UpdateGameOverAnimation();
 		break;
 	// フェードアウト
-	case GamePhase::GameClearAnimation:
+	case FadeState::GameClearAnimation:
 		UpdateGameClearAnimtaion();
 		break;
 	}
@@ -178,10 +173,10 @@ void GameScene::Draw() {
 	player_->Draw();
 
 	/// ===StartAnimation=== ///
-	if (currentPhase_ == GamePhase::StartAnimation) {
+	if (currentPhase_ == FadeState::StartAnimation) {
 		startAnimation_->Draw();
 	/// ===GameOverAnimation=== ///
-	} else if (currentPhase_ == GamePhase::GameOverAnimation) {
+	} else if (currentPhase_ == FadeState::GameOverAnimation) {
 		gameOverAnimation_->Draw();
 	}
 
@@ -207,7 +202,7 @@ void GameScene::UpdateFadeIn() {
 	// FadeIn完了でStartAnimationフェーズへ
 	if (sceneManager_->GetTransitionFinished()) {
 		OffScreenService::SetOffScreenType(OffScreenType::CopyImage);
-		currentPhase_ = GamePhase::StartAnimation;
+		currentPhase_ = FadeState::StartAnimation;
 	}
 }
 
@@ -228,7 +223,7 @@ void GameScene::UpdateStartAnimation() {
 	if (startAnimation_->IsCompleted()) {
 		// カメラターゲットをPlayerに設定
 		player_->SetCameraTargetPlayer(); // ぎこちなさが残る
-		currentPhase_ = GamePhase::Game;
+		currentPhase_ = FadeState::Game;
 	}
 }
 
@@ -246,12 +241,12 @@ void GameScene::UpdateGame() {
 	// Playerが死んだら
 	if (player_->GetIsDead() || InputService::TriggerKey(DIK_Q)) {
 		gameOverAnimation_->Initialize(camera_.get());
-		currentPhase_ = GamePhase::GameOverAnimation; // GameOverAnimationへ
+		currentPhase_ = FadeState::GameOverAnimation; // GameOverAnimationへ
 
 	// ゲームが終わったらFadeOutへ
 	} else if (enemyManager_->GetTotalEnemyCount() <= 0 || InputService::TriggerKey(DIK_W)) {
 		gameClearAnimation_->Initialize(player_.get(), camera_.get());
-		currentPhase_ = GamePhase::GameClearAnimation; // GameClearへ
+		currentPhase_ = FadeState::GameClearAnimation; // GameClearへ
 	}
 }
 

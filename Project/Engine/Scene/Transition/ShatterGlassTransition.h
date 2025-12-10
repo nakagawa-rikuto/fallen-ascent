@@ -17,13 +17,13 @@ public:
     /// フェードイン開始処理
     /// </summary>
     /// <param name="duration">フェードインにかかる時間（秒）。省略時は1.2秒が使用されます。</param>
-    void StartFadeIn(float duration = 1.2f) override;
+    void StartFadeIn(float duration = 1.0f) override;
 
     /// <summary>
     /// フェードアウト開始処理
     /// </summary>
     /// <param name="duration">フェードアウトの継続時間（秒）。省略した場合の既定値は1.0秒です。</param>
-    void StartFadeOut(float duration = 1.0f) override;  
+    void StartFadeOut(float duration = 1.2f) override;  
 
     /// <summary>
     /// 描画処理

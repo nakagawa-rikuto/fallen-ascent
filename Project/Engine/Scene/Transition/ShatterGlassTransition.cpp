@@ -20,21 +20,6 @@ ShatterGlassTransition::~ShatterGlassTransition() {
 /// フェードイン開始処理
 ///-------------------------------------------///
 void ShatterGlassTransition::StartFadeIn(float duration) {
-	// Sprite
-	sprite_ = std::make_unique<Sprite>();
-	sprite_->Initialize("White");
-	sprite_->SetSize({ static_cast<float>(GraphicsResourceGetter::GetWindowWidth()), static_cast<float>(GraphicsResourceGetter::GetWindowHeight()) });
-	sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 透明で初期化
-	sprite_->Update();
-
-	// フェードイン開始
-	SceneTransitionBase::StartFadeIn(duration);
-}
-
-///-------------------------------------------/// 
-/// フェードアウト開始処理
-///-------------------------------------------///
-void ShatterGlassTransition::StartFadeOut(float duration) {
 	// エフェクトタイプの設定
 	OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
 	// Spriteの色をリセット
@@ -55,6 +40,21 @@ void ShatterGlassTransition::StartFadeOut(float duration) {
 	data_.randomSeed = static_cast<float>(rand() % 10000) / 10.0f;
 
 	// フェードアウト開始
+	SceneTransitionBase::StartFadeIn(duration);
+}
+
+///-------------------------------------------/// 
+/// フェードアウト開始処理
+///-------------------------------------------///
+void ShatterGlassTransition::StartFadeOut(float duration) {
+	// Sprite
+	sprite_ = std::make_unique<Sprite>();
+	sprite_->Initialize("White");
+	sprite_->SetSize({ static_cast<float>(GraphicsResourceGetter::GetWindowWidth()), static_cast<float>(GraphicsResourceGetter::GetWindowHeight()) });
+	sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 透明で初期化
+	sprite_->Update();
+
+	// フェードイン開始
 	SceneTransitionBase::StartFadeOut(duration);
 }
 
@@ -71,24 +71,6 @@ void ShatterGlassTransition::Draw() {
 /// フェードイン固有の更新処理
 ///-------------------------------------------///
 void ShatterGlassTransition::OnFadeInUpdate() {
-	// スプライトの色（アルファ値のみ更新）
-	Vector4 color = sprite_->GetColor();
-	color.w += 0.01f; // アルファ値を更新
-
-	// 透明度が1.0に到達したら終了
-	if (color.w >= 1.0f) {
-		animation_.isPlaying = false;
-		animation_.isFinished = true;
-	}
-
-	sprite_->SetColor(color);
-	sprite_->Update();
-}
-
-///-------------------------------------------/// 
-/// フェードアウト固有の更新処理
-///-------------------------------------------///
-void ShatterGlassTransition::OnFadeOutUpdate() {
 	// 進行度を計算（0.0 ~ 1.0）
 	float normalizedTime = (std::min)(animation_.currentTime / animation_.duration, 1.0f);
 
@@ -121,4 +103,22 @@ void ShatterGlassTransition::OnFadeOutUpdate() {
 	if (sprite_) {
 		sprite_->Update();
 	}
+}
+
+///-------------------------------------------/// 
+/// フェードアウト固有の更新処理
+///-------------------------------------------///
+void ShatterGlassTransition::OnFadeOutUpdate() {
+	// スプライトの色（アルファ値のみ更新）
+	Vector4 color = sprite_->GetColor();
+	color.w += 0.01f; // アルファ値を更新
+
+	// 透明度が1.0に到達したら終了
+	if (color.w >= 1.0f) {
+		animation_.isPlaying = false;
+		animation_.isFinished = true;
+	}
+
+	sprite_->SetColor(color);
+	sprite_->Update();
 }

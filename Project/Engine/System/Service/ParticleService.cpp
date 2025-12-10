@@ -12,7 +12,7 @@
 ///-------------------------------------------///
 
 // JSONから定義を読み込み
-bool ParticleService::LoadParticleDefinition(const std::string& jsonPath) {
+void ParticleService::LoadParticleDefinition(const std::string& jsonPath) {
 	// ベースのディレクトリパス
 	const std::string& baseDirectiorPath = "./Resource/Json/Particles";
 	return ServiceLocator::GetParticleManager()->LoadParticleDefinition(baseDirectiorPath + "/" + jsonPath);
@@ -31,9 +31,8 @@ void ParticleService::RemoveParticleDefinition(const std::string& name) {
 ///-------------------------------------------/// 
 /// パーティクルの操作
 ///-------------------------------------------///
-
 // パーティクルを発生
-bool ParticleService::Emit(const std::string& name, const Vector3& translate) {
+void ParticleService::Emit(const std::string& name, const Vector3& translate) {
 	return ServiceLocator::GetParticleManager()->Emit(name, translate);
 }
 

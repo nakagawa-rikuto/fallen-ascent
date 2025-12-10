@@ -2,6 +2,7 @@
 #include "Engine/System/Service/CameraService.h"
 // c++
 #include <fstream>
+#include <cassert>
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -14,25 +15,34 @@ ParticleManager::~ParticleManager() {
 ///-------------------------------------------/// 
 /// パーティクル定義の追加（JSONから）
 ///-------------------------------------------///
-bool ParticleManager::LoadParticleDefinition(const std::string& jsonPath) {
+void ParticleManager::LoadParticleDefinition(const std::string& jsonPath) {
 	try {
+		// ファイルを開く
 		std::ifstream file(jsonPath);
+		// ファイルが開けなかった場合のエラーチェック
 		if (!file.is_open()) {
-			return false;
+			assert(false && "Failed to open particle definition file");
+			return;
 		}
 
+		// JSONをパース
 		nlohmann::json j;
 		file >> j;
 		file.close();
 
+		// JSONからParticleDefinitionを生成
 		ParticleDefinition def = ParticleDefinition::FromJson(j);
+		// すでに定義が存在していたらreturn
+		if (definitions_.find(def.name) != definitions_.end()) {
+			return;
+		}
+		// 定義を追加
 		definitions_[def.name] = def;
 
-		return true;
 	} catch (const std::exception& e) {
 		// エラーハンドリング（ログ出力など）
+		assert(false && "Failed to parse particle definition JSON");
 		e;
-		return false;
 	}
 }
 
@@ -46,11 +56,12 @@ void ParticleManager::AddParticleDefinition(const std::string& name, const Parti
 ///-------------------------------------------/// 
 /// 発生
 ///-------------------------------------------///
-bool ParticleManager::Emit(const std::string& name, const Vector3& translate) {
+void  ParticleManager::Emit(const std::string& name, const Vector3& translate) {
 	// 定義を検索
 	auto defIt = definitions_.find(name);
 	if (defIt == definitions_.end()) {
-		return false; // 定義が見つからない
+		assert(false && "Not definition");
+		return; // 定義が見つからない
 	}
 
 	// 新しいパーティクルグループを生成
@@ -58,7 +69,7 @@ bool ParticleManager::Emit(const std::string& name, const Vector3& translate) {
 	newParticle->Initialze(translate, defIt->second);
 	activeParticles_[name].push_back(std::move(newParticle));
 
-	return true;
+	return;
 }
 
 ///-------------------------------------------/// 
@@ -106,8 +117,8 @@ void ParticleManager::RemoveParticleDefinition(const std::string& name) {
 	activeParticles_.erase(name);
 }
 void ParticleManager::RemoveAllParticles() {
-	//activeParticles_.clear();
-	//definitions_.clear();
+	activeParticles_.clear();
+	definitions_.clear();
 }
 
 
