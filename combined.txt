@@ -12778,7 +12778,6 @@ File Path: Project/Engine/Graphics/OffScreen/Effect/VignetteEffect.cpp
 #include <imgui.h>
 #endif
 
-
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
@@ -12824,8 +12823,8 @@ void VignetteEffect::ImGuiInfo() {
 #ifdef USE_IMGUI
 	// ImGuiの描画
 	ImGui::Text("Vignette Effect");
-	ImGui::SliderFloat("Scale", &data_->scale, 0.0f, 1.0f);
-	ImGui::SliderFloat("Pawer", &data_->pawer, 0.0f, 1.0f);
+	ImGui::SliderFloat("Scale", &data_->scale, 0.1f, 100.0f);
+	ImGui::SliderFloat("Pawer", &data_->pawer, 0.0f, 50.0f);
 #endif // USE_IMGUI
 }
 
@@ -18837,7 +18836,7 @@ void MyGame::Initialize(const wchar_t* title) {
 	// シーンマネージャの初期化
 	sceneManager_ = std::make_unique<SceneManager>();
 	sceneManager_->Initialize(sceneFactory_.get());
-	sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
+	sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
 }
  
 ///-------------------------------------------/// 
@@ -19100,6 +19099,7 @@ void SceneTransitionBase::StartFadeIn(float duration) {
 /// フェードアウト開始処理
 ///-------------------------------------------///
 void SceneTransitionBase::StartFadeOut(float duration) {
+
 	// 設定
 	animation_.isPlaying = true;
 	animation_.isFinished = false;
@@ -19147,6 +19147,17 @@ void SceneTransitionBase::Draw() {
 	// 基底クラスでは何もしない
 }
 
+///-------------------------------------------/// 
+/// リセット
+///-------------------------------------------///
+void SceneTransitionBase::Reset() {
+	animation_.isPlaying = false;
+	animation_.isFinished = false;
+	animation_.currentTime = 0.0f;
+	animation_.duration = 1.2f;
+	currentState_ = FadeState::None;
+}
+
 
 ============================================================
 File Path: Project/Engine/Scene/Transition/Base/SceneTransitionBase.h
@@ -19159,7 +19170,6 @@ enum class FadeState {
 	None,
 	FadeIn,
 	FadeOut,
-	Finished
 };
 
 ///=====================================================/// 
@@ -19200,18 +19210,22 @@ public:
 public: /// ===Getter=== ///
 
 	// フェード中か
-	virtual bool IsFading() const;
+	bool IsFading() const;
 	// 完了したか
-	virtual bool IsFinished() const;
+	bool IsFinished() const;
 	// 現在の状態
-	virtual FadeState GetState() const;
+	FadeState GetState() const;
+
+public:
+	// リセット
+	void Reset();
 
 protected:
 
 	// アニメーション制御用構造体
 	struct TransitionData {
 		bool isPlaying = false;
-		bool isFinished = true;
+		bool isFinished = false;
 		float currentTime = 0.0f;
 		float duration = 1.2f;  // エフェクトの総時間
 	};
@@ -19254,6 +19268,7 @@ SceneTransitionManager::~SceneTransitionManager() {
 ///-------------------------------------------///
 bool SceneTransitionManager::IsFading() const {return currentTransition_->IsFading();}
 bool SceneTransitionManager::IsFinished() const {return currentTransition_->IsFinished();}
+TransitionType SceneTransitionManager::GetType() const { return currentType_; }
 FadeState SceneTransitionManager::GetState() const {return currentTransition_->GetState();}
 
 ///-------------------------------------------/// 
@@ -19283,6 +19298,24 @@ void SceneTransitionManager::Update() {
 void SceneTransitionManager::Draw() {
 	// 描画
 	currentTransition_->Draw();
+}
+
+///-------------------------------------------/// 
+/// リセット
+///-------------------------------------------///
+void SceneTransitionManager::Reset() {
+	currentTransition_->Reset();
+}
+
+///-------------------------------------------/// 
+/// NewMake
+///-------------------------------------------///
+void SceneTransitionManager::NewMake() {
+	// 既存のトランジションを破棄
+	currentTransition_.reset();
+	// 新しく作成
+	currentType_ = TransitionType::None;
+	currentTransition_ = std::make_unique<SceneTransitionBase>();
 }
 
 ///-------------------------------------------/// 
@@ -19385,8 +19418,16 @@ public: /// ===Getter=== ///
 	bool IsFading() const;
 	// 完了したか
 	bool IsFinished() const;
+	// 現在のタイプ
+	TransitionType GetType() const;
 	// 現在の状態
 	FadeState GetState() const;
+
+public: /// ===Setter=== ///
+	// リセット
+	void Reset();
+	// NewMake
+	void NewMake();
 
 private:
 
@@ -19422,6 +19463,7 @@ File Path: Project/Engine/Scene/Transition/ShatterGlassTransition.cpp
 /// デストラクタ
 ///-------------------------------------------///
 ShatterGlassTransition::~ShatterGlassTransition() {
+	OffScreenService::SetOffScreenType(OffScreenType::CopyImage);
 	if (sprite_) {
 		sprite_.reset();
 	}
@@ -19435,7 +19477,7 @@ void ShatterGlassTransition::StartFadeIn(float duration) {
 	sprite_ = std::make_unique<Sprite>();
 	sprite_->Initialize("White");
 	sprite_->SetSize({ static_cast<float>(GraphicsResourceGetter::GetWindowWidth()), static_cast<float>(GraphicsResourceGetter::GetWindowHeight()) });
-	sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 黒で初期化
+	sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 透明で初期化
 	sprite_->Update();
 
 	// フェードイン開始
@@ -19450,7 +19492,7 @@ void ShatterGlassTransition::StartFadeOut(float duration) {
 	OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
 	// Spriteの色をリセット
 	if (sprite_) {
-		sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 白で初期化
+		sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 透明で初期化
 	}
 
 	// デフォルトパラメータの設定
@@ -19490,7 +19532,6 @@ void ShatterGlassTransition::OnFadeInUpdate() {
 	if (color.w >= 1.0f) {
 		animation_.isPlaying = false;
 		animation_.isFinished = true;
-		currentState_ = FadeState::Finished;
 	}
 
 	sprite_->SetColor(color);
@@ -19521,11 +19562,11 @@ void ShatterGlassTransition::OnFadeOutUpdate() {
 			data_.progress = 0.25f + Easing::EaseOutCubic(phaseTime) * 0.3f;
 		}
 	} else {
+		OffScreenService::SetOffScreenType(OffScreenType::CopyImage);
+		data_.progress = 1.0f;
 		// エフェクト終了判定
 		animation_.isPlaying = false;
 		animation_.isFinished = true;
-		currentState_ = FadeState::Finished;
-		data_.progress = 1.0f;
 	}
 
 	// 設定
@@ -24658,8 +24699,8 @@ void ParticleManager::RemoveParticleDefinition(const std::string& name) {
 	activeParticles_.erase(name);
 }
 void ParticleManager::RemoveAllParticles() {
-	activeParticles_.clear();
-	definitions_.clear();
+	//activeParticles_.clear();
+	//definitions_.clear();
 }
 
 
@@ -25801,6 +25842,11 @@ void SceneManager::Initialize(AbstractSceneFactory* sceneFactor) {
 /// 更新
 ///-------------------------------------------///
 void SceneManager::Update() {
+	// フェードアウト完了後の新規作成
+	if (sceneTransitionManager_->GetState() == FadeState::FadeOut && sceneTransitionManager_->IsFinished()) {
+		sceneTransitionManager_->NewMake();
+	}
+
 	// シーントランジションマネージャの更新
 	sceneTransitionManager_->Update();
 
@@ -25841,6 +25887,7 @@ void SceneManager::ChangeScene(SceneType type) {
 	// 新しいシーンにSceneManagerをセット
 	if (currentScene_) {
 		currentScene_->SetSceneManager(this);
+		sceneTransitionManager_->Reset();
 	}
 	SceneInit();
 }
@@ -32573,6 +32620,8 @@ void BaseEnemy::Initialize() {
 	knockbackInfo_.originalColor = color_;   // 元の色を保存
 	knockbackInfo_.isInCooldown = true;
 
+	disappearTimer_ = 3.0f;
+
 	// HP 
 	baseInfo_.HP = 2;
 
@@ -32585,7 +32634,7 @@ void BaseEnemy::Initialize() {
 ///-------------------------------------------///
 void BaseEnemy::Update() {
 	// 死亡している場合は更新しない
-	if (baseInfo_.isDead) return;
+	if (isTentativeDeath_) return;
 
 	/// ===Timerの更新=== ///
 	advanceTimer();
@@ -32684,6 +32733,10 @@ void BaseEnemy::OnCollision(Collider* collider) {
 	/// ===GameCharacterの衝突=== ///
 	GameCharacter::OnCollision(collider);
 
+	if (baseInfo_.isDead) {
+		return;
+	}
+
 	// Weaponとの当たり判定
 	if (collider->GetColliderName() == ColliderName::PlayerWeapon) {
 		// クールタイム中でなければノックバック処理を実行
@@ -32710,13 +32763,10 @@ void BaseEnemy::OnCollision(Collider* collider) {
 
 				// 色を赤に変更
 				color_ = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 赤色
-
-				// パーティクルを発生
 				
-				baseInfo_.HP--; // HPを減少
-				if (baseInfo_.HP <= 0) {
-					ParticleService::Emit("nakagawa", transform_.translate);
-				}
+				// HPを減少
+				baseInfo_.HP--;
+				ParticleService::Emit("Game", transform_.translate);
 
 				// タイマーをセット
 				knockbackInfo_.hitColorTimer = knockbackInfo_.hitColorDuration;
@@ -32878,33 +32928,44 @@ void BaseEnemy::UpdateRotationTowards(const Vector3& direction, float slerpT) {
 /// 時間を進める
 ///-------------------------------------------///
 void BaseEnemy::advanceTimer() {
-	// 移動タイマーを進める
-	moveInfo_.timer -= baseInfo_.deltaTime;
 
-	// 攻撃用のタイマーを進める
-	if (attackInfo_.timer > 0.0f) {
-		attackInfo_.timer -= baseInfo_.deltaTime;
-	}
-
-	// ノックバッククールタイムの更新
-	if (knockbackInfo_.isInCooldown) {
-		knockbackInfo_.cooldownTimer -= baseInfo_.deltaTime;
-
-		// クールタイムが終了したら解除
-		if (knockbackInfo_.cooldownTimer <= 0.0f) {
-			knockbackInfo_.isInCooldown = false;
-			knockbackInfo_.cooldownTimer = 0.0f;
+	if (baseInfo_.isDead) {
+		// 消えるまでの時間を進める
+		disappearTimer_ -= baseInfo_.deltaTime;
+		if (disappearTimer_ <= 0) {
+			ParticleService::Emit("nakagawa", transform_.translate);
+			isTentativeDeath_ = true;
 		}
-	}
+	} else {
 
-	// ヒット時の赤色表示タイマーの更新
-	if (knockbackInfo_.hitColorTimer > 0.0f) {
-		knockbackInfo_.hitColorTimer -= baseInfo_.deltaTime;
+		// 移動タイマーを進める
+		moveInfo_.timer -= baseInfo_.deltaTime;
 
-		// 赤色表示時間が終了したら元の色に戻す
-		if (knockbackInfo_.hitColorTimer <= 0.0f) {
-			color_ = knockbackInfo_.originalColor;
-			knockbackInfo_.hitColorTimer = 0.0f;
+		// 攻撃用のタイマーを進める
+		if (attackInfo_.timer > 0.0f) {
+			attackInfo_.timer -= baseInfo_.deltaTime;
+		}
+
+		// ノックバッククールタイムの更新
+		if (knockbackInfo_.isInCooldown) {
+			knockbackInfo_.cooldownTimer -= baseInfo_.deltaTime;
+
+			// クールタイムが終了したら解除
+			if (knockbackInfo_.cooldownTimer <= 0.0f) {
+				knockbackInfo_.isInCooldown = false;
+				knockbackInfo_.cooldownTimer = 0.0f;
+			}
+		}
+
+		// ヒット時の赤色表示タイマーの更新
+		if (knockbackInfo_.hitColorTimer > 0.0f) {
+			knockbackInfo_.hitColorTimer -= baseInfo_.deltaTime;
+
+			// 赤色表示時間が終了したら元の色に戻す
+			if (knockbackInfo_.hitColorTimer <= 0.0f) {
+				color_ = knockbackInfo_.originalColor;
+				knockbackInfo_.hitColorTimer = 0.0f;
+			}
 		}
 	}
 }
@@ -33045,6 +33106,8 @@ public: /// ===State用関数=== ///
 public: /// ===Getter=== ///
 	// AttackInfo
 	AttackInfo GetAttackInfo()const { return attackInfo_; };
+	// tentativeDeah
+	bool GetTentativeDeath() const { return isTentativeDeath_; };
 
 public: /// ===Setter=== ///
 	// Player
@@ -33072,6 +33135,10 @@ protected: /// ===変数の宣言=== ///
 private:
 	// ノックバック情報
 	KnockbackInfo knockbackInfo_;
+
+	// 消えるまでの時間
+	float disappearTimer_ = 2.0f;
+	bool isTentativeDeath_ = false;
 
 protected: /// ===関数の宣言=== ///
 
@@ -33885,7 +33952,7 @@ void EnemyManager::Update() {
 	// 死亡した敵を削除
 	auto it = std::remove_if(enemies_.begin(), enemies_.end(),
 		[](const std::unique_ptr<BaseEnemy>& e) {
-			return !e || e->GetIsDead();
+			return !e || e->GetTentativeDeath();
 		});
 	enemies_.erase(it, enemies_.end());
 }
@@ -35300,6 +35367,9 @@ void Player::Initialize() {
 /// 更新
 ///-------------------------------------------///
 void Player::Update() {
+	// 早期リターン
+	if (baseInfo_.isDead) return;
+
 	/// ===スティックの取得=== ///
 	StickState rightStick = InputService::GetRightStickState(0);
 	camera_->SetStick({ rightStick.x, rightStick.y });
@@ -35370,26 +35440,29 @@ void Player::OnCollision(Collider* collider) {
 		// 無敵状態でなければダメージを受ける
 		if (!invicibleInfo_.isFlag) {
 
-			//// ===ノックバック処理=== ///
-			//// 敵の位置を取得
-			//Vector3 enemyPos = collider->GetTransform().translate;
-			//// プレイヤーから敵への方向ベクトルを計算
-			//Vector3 knockbackDirection = transform_.translate - enemyPos;
-			//// Y軸は無視(水平方向のみノックバック)
-			//knockbackDirection.y = 0.0f;
-			//// 正規化
-			//if (knockbackDirection.x != 0.0f || knockbackDirection.z != 0.0f) {
-			//	knockbackDirection = Normalize(knockbackDirection);
-			//}
-			//// ノックバックの速度を設定(適切な値に調整してください)
-			//const float knockbackSpeed = 1.5f;
-			//baseInfo_.velocity = knockbackDirection * knockbackSpeed;
+			/// ===カメラのシェイク=== ///
+			camera_->StartShake(1.2f, 1.0f);
+
+			// ===ノックバック処理=== ///
+			// 敵の位置を取得
+			Vector3 enemyPos = collider->GetTransform().translate;
+			// プレイヤーから敵への方向ベクトルを計算
+			Vector3 knockbackDirection = transform_.translate - enemyPos;
+			// Y軸は無視(水平方向のみノックバック)
+			knockbackDirection.y = 0.0f;
+			// 正規化
+			if (knockbackDirection.x != 0.0f || knockbackDirection.z != 0.0f) {
+				knockbackDirection = Normalize(knockbackDirection);
+			}
+			// ノックバックの速度を設定(適切な値に調整してください)
+			const float knockbackSpeed = 1.5f;
+			baseInfo_.velocity = knockbackDirection * knockbackSpeed;
 
 			// Stateを Root に変更
 			ChangState(std::make_unique<RootState>());
 
 			// ダメージ処理
-			//baseInfo_.HP--;
+			baseInfo_.HP--;
 			// 無敵状態にする
 			SetInvicibleTime(0.5f);
 		}
@@ -37920,8 +37993,6 @@ GameScene::~GameScene() {
 	IScene::~IScene();
 	// Colliderのリセット
 	ColliderService::Reset();
-	// Particleのリセット
-	ParticleService::RemoveAllParticles();
 	// StartAnimation
 	startAnimation_.reset();
 	// Camera
@@ -37946,9 +38017,20 @@ void GameScene::Initialize() {
 	Loader::LoadLevelJson("Level/EntityData.json");
 
 	// Particleの読み込み
-	ParticleService::LoadParticleDefinition("Game.json");
-	ParticleService::LoadParticleDefinition("WeaponAttack.json");
-	ParticleService::LoadParticleDefinition("nakagawa.json");
+	//ParticleService::LoadParticleDefinition("Game.json");
+	//ParticleService::LoadParticleDefinition("WeaponAttack.json");
+	//ParticleService::LoadParticleDefinition("nakagawa.json");
+
+	// パーティクル定義が既に存在するかチェックしてからロード
+	if (!ParticleService::HasDefinition("Game")) {
+		ParticleService::LoadParticleDefinition("Game.json");
+	}
+	if (!ParticleService::HasDefinition("WeaponAttack")) {
+		ParticleService::LoadParticleDefinition("WeaponAttack.json");
+	}
+	if (!ParticleService::HasDefinition("nakagawa")) {
+		ParticleService::LoadParticleDefinition("nakagawa.json");
+	}
 
 	/// ===Camera=== ///
 	camera_ = std::make_shared<GameCamera>();
@@ -38096,7 +38178,7 @@ void GameScene::UpdateFadeIn() {
 	player_->UpdateAnimation();
 
 	// FadeIn完了でStartAnimationフェーズへ
-	if (sceneManager_->GetFadeState() == FadeState::Finished) {
+	if (sceneManager_->GetTransitionFinished()) {
 		OffScreenService::SetOffScreenType(OffScreenType::CopyImage);
 		currentPhase_ = GamePhase::StartAnimation;
 	}
@@ -38486,15 +38568,17 @@ void TitleScene::Initialize() {
 	// タイトルスプライト
 	titleSprite_ = std::make_unique<Sprite>();
 	titleSprite_->Initialize("Title"); // テクスチャファイルパスは適宜変更
-	titleSprite_->SetPosition({ windowWidth / 2.0f, 150.0f });
+	titleSprite_->SetPosition({ windowWidth / 2.0f, windowHeight / 4.0f });
 	titleSprite_->SetSize({ 500.0f, 500.0f });
 	titleSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	titleSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 
 	// 開始スプライト
+	spaceY_ = windowHeight / 16.0f; // メニュー項目間の垂直スペース
+	startY_ = windowHeight / 2.0f + windowHeight / 4.0f; // 開始項目のY位置
 	startSprite_ = std::make_unique<Sprite>();
 	startSprite_->Initialize("Start");
-	startSprite_->SetPosition({ windowWidth / 2.0f, 460.0f });
+	startSprite_->SetPosition({ windowWidth / 2.0f, startY_ });
 	startSprite_->SetSize({ 200.0f, 50.0f });
 	startSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	startSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 選択中は黄色
@@ -38502,7 +38586,7 @@ void TitleScene::Initialize() {
 	// オプションスプライト
 	optionSprite_ = std::make_unique<Sprite>();
 	optionSprite_->Initialize("Option");
-	optionSprite_->SetPosition({ windowWidth / 2.0f, 530.0f });
+	optionSprite_->SetPosition({ windowWidth / 2.0f, startY_ + spaceY_ });
 	optionSprite_->SetSize({ 200.0f, 50.0f });
 	optionSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	optionSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 未選択は灰色
@@ -38510,7 +38594,7 @@ void TitleScene::Initialize() {
 	// 終了スプライト
 	exitSprite_ = std::make_unique<Sprite>();
 	exitSprite_->Initialize("Exit");
-	exitSprite_->SetPosition({ windowWidth / 2.0f, 600.0f });
+	exitSprite_->SetPosition({ windowWidth / 2.0f, startY_ + spaceY_ * 2.0f });
 	exitSprite_->SetSize({ 200.0f, 50.0f });
 	exitSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	exitSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f });
@@ -38518,7 +38602,7 @@ void TitleScene::Initialize() {
 	// 選択オーバーレイスプライト
 	selectOverlay_ = std::make_unique<Sprite>();
 	selectOverlay_->Initialize("OverLay"); // テクスチャファイルパスは適宜変更
-	selectOverlay_->SetPosition({ windowWidth / 2.0f, 460.0f }); // 初期位置は開始の位置
+	selectOverlay_->SetPosition({ windowWidth / 2.0f, startY_ }); // 初期位置は開始の位置
 	selectOverlay_->SetSize({ 400.0f, 80.0f }); // メニュー項目より少し大きめ
 	selectOverlay_->SetAnchorPoint({ 0.5f, 0.5f });
 	selectOverlay_->SetColor({ 0.8f, 0.8f, 0.8f, 0.8f }); // 半透明の黄色
@@ -38629,7 +38713,7 @@ void TitleScene::Update() {
 		}
 
 		/// ===シーンの切り替え=== ///
-		if (sceneManager_->GetFadeState() == FadeState::Finished) {
+		if (sceneManager_->GetTransitionFinished()) {
 			// ゲームシーンへ遷移
 			sceneManager_->ChangeScene(SceneType::Game);
 		}
@@ -38751,13 +38835,13 @@ void TitleScene::UpdateSelectOverlayPosition() {
 	// 選択中の項目の位置に応じてオーバーレイを移動
 	switch (currentSelection_) {
 	case MenuSelection::Start:
-		selectOverlay_->SetPosition({ windowWidth / 2.0f, 460.0f });
+		selectOverlay_->SetPosition({ windowWidth / 2.0f, startY_ });
 		break;
 	case MenuSelection::Option:
-		selectOverlay_->SetPosition({ windowWidth / 2.0f, 530.0f });
+		selectOverlay_->SetPosition({ windowWidth / 2.0f, startY_ + spaceY_ });
 		break;
 	case MenuSelection::Exit:
-		selectOverlay_->SetPosition({ windowWidth / 2.0f, 600.0f });
+		selectOverlay_->SetPosition({ windowWidth / 2.0f, startY_ + spaceY_ * 2.0f });
 		break;
 	}
 }
@@ -38937,6 +39021,10 @@ private:/// ===メンバ変数=== ///
 	float transitionDuration_ = 0.5f; // トランジションの時間（秒）
 	int nextModelIndex_ = 0; // 次に表示するモデルのインデックス
 	bool transitionDirection_ = true; // true: 右へ, false: 左へ
+
+	/// ===ポイントの値=== ///
+	float startY_ = 0.0f;
+	float spaceY_ = 0.0f;
 
 	/// ===メニュー選択=== ///
 	MenuSelection currentSelection_ = MenuSelection::Start; // 現在の選択
