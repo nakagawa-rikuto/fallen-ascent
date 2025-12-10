@@ -13,15 +13,6 @@
 #include "application/Game/Animation/GameOverAnimation.h"
 #include "application/Game/Animation/GameClearAnimation.h"
 
-/// ===GameSceneのフェーズ=== ///
-enum class GamePhase {
-	FadeIn,				// フェードイン
-	StartAnimation,		// 開始アニメーション
-	Game,				// ゲームプレイ中
-	GameOverAnimation,  // ゲームオーバー
-	GameClearAnimation  // フェードアウト
-};
-
 ///=====================================================/// 
 /// ゲームシーン
 ///=====================================================///
@@ -78,7 +69,15 @@ private:/// ===メンバ変数=== ///
 	CameraInfo cameraInfo_;
 
 	/// ===フェーズ管理=== ///
-	GamePhase currentPhase_ = GamePhase::FadeIn;
+	// ゲームの進行フェーズ
+	enum class FadeState {
+		FadeIn,				// フェードイン
+		StartAnimation,		// 開始アニメーション
+		Game,				// ゲームプレイ中
+		GameOverAnimation,  // ゲームオーバー
+		GameClearAnimation  // フェードアウト
+	};
+	FadeState currentPhase_ = FadeState::FadeIn;
 
 private: /// ===メンバ関数=== ///
 

@@ -109,6 +109,8 @@ void TitleScene::Initialize() {
 	optionMenuSprite_->SetColor({ 0.3f, 0.3f, 0.5f, 1.0f }); // 青みがかった色
 
 	// 初期化時の位置更新
+	bgSprite_->Update();
+	bgKiriSprite_->Update();
 	titleSprite_->Update();
 	startSprite_->Update();
 	optionSprite_->Update();
@@ -116,6 +118,9 @@ void TitleScene::Initialize() {
 	selectOverlay_->Update();
 	dimSprite_->Update();
 	optionMenuSprite_->Update();
+
+	/// ===Fadeの設定=== ///
+	currentFade_ = FadeState::Selecting; // デバッグ用にフェードインをスキップ
 }
 
 ///-------------------------------------------/// 
@@ -125,42 +130,23 @@ void TitleScene::Update() {
 	/// ===デバック用ImGui=== ///
 #ifdef USE_IMGUI
 	ImGui::Begin("TitleScene");
+	ImGui::Text("Fade State: %d", static_cast<int>(currentFade_));
 	ImGui::Text("Current Selection: %d", static_cast<int>(currentSelection_));
 	ImGui::Text("Option Open: %s", isOptionOpen_ ? "true" : "false");
 	ImGui::End();
 #endif // USE_IMGUI
 
-	/// ===スプライトの更新=== ///
-	bgSprite_->Update();
-	bgKiriSprite_->Update();
-	titleSprite_->Update();
-	startSprite_->Update();
-	optionSprite_->Update();
-	exitSprite_->Update();
-	selectOverlay_->Update();
-
-	if (isOptionOpen_) {
-		dimSprite_->Update();
-		optionMenuSprite_->Update();
-	}
-
-	/// ===オプション画面の処理=== ///
-	if (isOptionOpen_) {
-		UpdateOptionMenu();
-	} else {
-		/// ===メニュー選択の更新=== ///
-		UpdateMenuSelection();
-
-		/// ===決定処理=== ///
-		if (InputService::TriggerButton(0, ControllerButtonType::A) || InputService::TriggerKey(DIK_SPACE)) {
-			ConfirmSelection();
-		}
-
-		/// ===シーンの切り替え=== ///
-		if (sceneManager_->GetTransitionFinished()) {
-			// ゲームシーンへ遷移
-			sceneManager_->ChangeScene(SceneType::Game);
-		}
+	/// ===フェーズ別更新=== ///
+	switch (currentFade_) {
+	case TitleScene::FadeState::FadeIn:
+		UpdateFadeIn();
+		break;
+	case TitleScene::FadeState::Selecting:
+		UpdateSelecting();
+		break;
+	case TitleScene::FadeState::FadeOut:
+		UpdateFadeOut();
+		break;
 	}
 
 	/// ===ISceneの更新=== ///
@@ -201,6 +187,50 @@ void TitleScene::Draw() {
 		optionMenuSprite_->Draw(GroundType::Front);
 	}
 #pragma endregion
+}
+
+///-------------------------------------------/// 
+/// フェードインの更新
+///-------------------------------------------///
+void TitleScene::UpdateFadeIn() {
+	/// ===Fadeの変更=== ///
+	if (sceneManager_->GetTransitionFinished()) {
+		currentFade_ = FadeState::Selecting;
+	}
+}
+
+///-------------------------------------------/// 
+/// 選択状態の更新
+///-------------------------------------------///
+void TitleScene::UpdateSelecting() {
+
+	/// ===スプライトの更新=== ///
+	selectOverlay_->Update();
+
+	/// ===オプション画面の処理=== ///
+	if (isOptionOpen_) {
+		UpdateOptionMenu();
+	} else {
+		/// ===メニュー選択の更新=== ///
+		UpdateMenuSelection();
+
+		/// ===決定処理=== ///
+		if (InputService::TriggerButton(0, ControllerButtonType::A) || InputService::TriggerKey(DIK_SPACE)) {
+			ConfirmSelection();
+		}
+	}
+}
+
+///-------------------------------------------/// 
+/// フェードアウトの更新
+///-------------------------------------------///
+void TitleScene::UpdateFadeOut() {
+
+	/// ===シーンの切り替え=== ///
+	if (sceneManager_->GetTransitionFinished()) {
+		// ゲームシーンへ遷移
+		sceneManager_->ChangeScene(SceneType::Game);
+	}
 }
 
 ///-------------------------------------------/// 
@@ -249,7 +279,8 @@ void TitleScene::ConfirmSelection() {
 
 	switch (currentSelection_) {
 	case MenuSelection::Start:
-		sceneManager_->StartFadeIn(TransitionType::ShatterGlass, fadeInDuration);
+		sceneManager_->StartFadeOut(TransitionType::ShatterGlass, fadeInDuration);
+		currentFade_ = FadeState::FadeOut;
 		break;
 	case MenuSelection::Option:
 		// オプション画面を開く

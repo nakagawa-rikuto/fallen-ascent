@@ -52,7 +52,7 @@ void SceneManager::Initialize(AbstractSceneFactory* sceneFactor) {
 ///-------------------------------------------///
 void SceneManager::Update() {
 	// フェードアウト完了後の新規作成
-	if (sceneTransitionManager_->GetState() == FadeState::FadeOut && sceneTransitionManager_->IsFinished()) {
+	if (sceneTransitionManager_->GetState() == FadeState::FadeIn && sceneTransitionManager_->IsFinished()) {
 		sceneTransitionManager_->NewMake();
 	}
 

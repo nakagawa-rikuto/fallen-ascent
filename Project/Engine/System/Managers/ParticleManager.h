@@ -29,7 +29,7 @@ public:
 	/// </summary>
 	/// <param name="jsonPath">JSONファイルのパス</param>
 	/// <returns>読み込みに成功したかどうか</returns>
-	bool LoadParticleDefinition(const std::string& jsonPath);
+	void LoadParticleDefinition(const std::string& jsonPath);
 
 	/// <summary>
 	/// パーティクル定義の追加（直接指定）
@@ -44,7 +44,7 @@ public:
     /// <param name="name">発生させるパーティクルの名前</param>
     /// <param name="translate">発生させる場所</param>
     /// <returns>発生に成功したかどうか</returns>
-	bool Emit(const std::string& name, const Vector3& translate);
+	void Emit(const std::string& name, const Vector3& translate);
 
 	/// <summary>
 	/// パーティクル全体の更新処理
