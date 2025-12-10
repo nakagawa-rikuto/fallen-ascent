@@ -19473,21 +19473,6 @@ ShatterGlassTransition::~ShatterGlassTransition() {
 /// フェードイン開始処理
 ///-------------------------------------------///
 void ShatterGlassTransition::StartFadeIn(float duration) {
-	// Sprite
-	sprite_ = std::make_unique<Sprite>();
-	sprite_->Initialize("White");
-	sprite_->SetSize({ static_cast<float>(GraphicsResourceGetter::GetWindowWidth()), static_cast<float>(GraphicsResourceGetter::GetWindowHeight()) });
-	sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 透明で初期化
-	sprite_->Update();
-
-	// フェードイン開始
-	SceneTransitionBase::StartFadeIn(duration);
-}
-
-///-------------------------------------------/// 
-/// フェードアウト開始処理
-///-------------------------------------------///
-void ShatterGlassTransition::StartFadeOut(float duration) {
 	// エフェクトタイプの設定
 	OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
 	// Spriteの色をリセット
@@ -19508,6 +19493,21 @@ void ShatterGlassTransition::StartFadeOut(float duration) {
 	data_.randomSeed = static_cast<float>(rand() % 10000) / 10.0f;
 
 	// フェードアウト開始
+	SceneTransitionBase::StartFadeIn(duration);
+}
+
+///-------------------------------------------/// 
+/// フェードアウト開始処理
+///-------------------------------------------///
+void ShatterGlassTransition::StartFadeOut(float duration) {
+	// Sprite
+	sprite_ = std::make_unique<Sprite>();
+	sprite_->Initialize("White");
+	sprite_->SetSize({ static_cast<float>(GraphicsResourceGetter::GetWindowWidth()), static_cast<float>(GraphicsResourceGetter::GetWindowHeight()) });
+	sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 透明で初期化
+	sprite_->Update();
+
+	// フェードイン開始
 	SceneTransitionBase::StartFadeOut(duration);
 }
 
@@ -19524,24 +19524,6 @@ void ShatterGlassTransition::Draw() {
 /// フェードイン固有の更新処理
 ///-------------------------------------------///
 void ShatterGlassTransition::OnFadeInUpdate() {
-	// スプライトの色（アルファ値のみ更新）
-	Vector4 color = sprite_->GetColor();
-	color.w += 0.01f; // アルファ値を更新
-
-	// 透明度が1.0に到達したら終了
-	if (color.w >= 1.0f) {
-		animation_.isPlaying = false;
-		animation_.isFinished = true;
-	}
-
-	sprite_->SetColor(color);
-	sprite_->Update();
-}
-
-///-------------------------------------------/// 
-/// フェードアウト固有の更新処理
-///-------------------------------------------///
-void ShatterGlassTransition::OnFadeOutUpdate() {
 	// 進行度を計算（0.0 ~ 1.0）
 	float normalizedTime = (std::min)(animation_.currentTime / animation_.duration, 1.0f);
 
@@ -19576,6 +19558,24 @@ void ShatterGlassTransition::OnFadeOutUpdate() {
 	}
 }
 
+///-------------------------------------------/// 
+/// フェードアウト固有の更新処理
+///-------------------------------------------///
+void ShatterGlassTransition::OnFadeOutUpdate() {
+	// スプライトの色（アルファ値のみ更新）
+	Vector4 color = sprite_->GetColor();
+	color.w += 0.01f; // アルファ値を更新
+
+	// 透明度が1.0に到達したら終了
+	if (color.w >= 1.0f) {
+		animation_.isPlaying = false;
+		animation_.isFinished = true;
+	}
+
+	sprite_->SetColor(color);
+	sprite_->Update();
+}
+
 
 ============================================================
 File Path: Project/Engine/Scene/Transition/ShatterGlassTransition.h
@@ -19599,13 +19599,13 @@ public:
     /// フェードイン開始処理
     /// </summary>
     /// <param name="duration">フェードインにかかる時間（秒）。省略時は1.2秒が使用されます。</param>
-    void StartFadeIn(float duration = 1.2f) override;
+    void StartFadeIn(float duration = 1.0f) override;
 
     /// <summary>
     /// フェードアウト開始処理
     /// </summary>
     /// <param name="duration">フェードアウトの継続時間（秒）。省略した場合の既定値は1.0秒です。</param>
-    void StartFadeOut(float duration = 1.0f) override;  
+    void StartFadeOut(float duration = 1.2f) override;  
 
     /// <summary>
     /// 描画処理
@@ -24595,6 +24595,7 @@ File Path: Project/Engine/System/Managers/ParticleManager.cpp
 #include "Engine/System/Service/CameraService.h"
 // c++
 #include <fstream>
+#include <cassert>
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -24607,25 +24608,34 @@ ParticleManager::~ParticleManager() {
 ///-------------------------------------------/// 
 /// パーティクル定義の追加（JSONから）
 ///-------------------------------------------///
-bool ParticleManager::LoadParticleDefinition(const std::string& jsonPath) {
+void ParticleManager::LoadParticleDefinition(const std::string& jsonPath) {
 	try {
+		// ファイルを開く
 		std::ifstream file(jsonPath);
+		// ファイルが開けなかった場合のエラーチェック
 		if (!file.is_open()) {
-			return false;
+			assert(false && "Failed to open particle definition file");
+			return;
 		}
 
+		// JSONをパース
 		nlohmann::json j;
 		file >> j;
 		file.close();
 
+		// JSONからParticleDefinitionを生成
 		ParticleDefinition def = ParticleDefinition::FromJson(j);
+		// すでに定義が存在していたらreturn
+		if (definitions_.find(def.name) != definitions_.end()) {
+			return;
+		}
+		// 定義を追加
 		definitions_[def.name] = def;
 
-		return true;
 	} catch (const std::exception& e) {
 		// エラーハンドリング（ログ出力など）
+		assert(false && "Failed to parse particle definition JSON");
 		e;
-		return false;
 	}
 }
 
@@ -24639,11 +24649,12 @@ void ParticleManager::AddParticleDefinition(const std::string& name, const Parti
 ///-------------------------------------------/// 
 /// 発生
 ///-------------------------------------------///
-bool ParticleManager::Emit(const std::string& name, const Vector3& translate) {
+void  ParticleManager::Emit(const std::string& name, const Vector3& translate) {
 	// 定義を検索
 	auto defIt = definitions_.find(name);
 	if (defIt == definitions_.end()) {
-		return false; // 定義が見つからない
+		assert(false && "Not definition");
+		return; // 定義が見つからない
 	}
 
 	// 新しいパーティクルグループを生成
@@ -24651,7 +24662,7 @@ bool ParticleManager::Emit(const std::string& name, const Vector3& translate) {
 	newParticle->Initialze(translate, defIt->second);
 	activeParticles_[name].push_back(std::move(newParticle));
 
-	return true;
+	return;
 }
 
 ///-------------------------------------------/// 
@@ -24699,8 +24710,8 @@ void ParticleManager::RemoveParticleDefinition(const std::string& name) {
 	activeParticles_.erase(name);
 }
 void ParticleManager::RemoveAllParticles() {
-	//activeParticles_.clear();
-	//definitions_.clear();
+	activeParticles_.clear();
+	definitions_.clear();
 }
 
 
@@ -25010,7 +25021,7 @@ public:
 	/// </summary>
 	/// <param name="jsonPath">JSONファイルのパス</param>
 	/// <returns>読み込みに成功したかどうか</returns>
-	bool LoadParticleDefinition(const std::string& jsonPath);
+	void LoadParticleDefinition(const std::string& jsonPath);
 
 	/// <summary>
 	/// パーティクル定義の追加（直接指定）
@@ -25025,7 +25036,7 @@ public:
     /// <param name="name">発生させるパーティクルの名前</param>
     /// <param name="translate">発生させる場所</param>
     /// <returns>発生に成功したかどうか</returns>
-	bool Emit(const std::string& name, const Vector3& translate);
+	void Emit(const std::string& name, const Vector3& translate);
 
 	/// <summary>
 	/// パーティクル全体の更新処理
@@ -25843,7 +25854,7 @@ void SceneManager::Initialize(AbstractSceneFactory* sceneFactor) {
 ///-------------------------------------------///
 void SceneManager::Update() {
 	// フェードアウト完了後の新規作成
-	if (sceneTransitionManager_->GetState() == FadeState::FadeOut && sceneTransitionManager_->IsFinished()) {
+	if (sceneTransitionManager_->GetState() == FadeState::FadeIn && sceneTransitionManager_->IsFinished()) {
 		sceneTransitionManager_->NewMake();
 	}
 
@@ -27490,7 +27501,7 @@ File Path: Project/Engine/System/Service/ParticleService.cpp
 ///-------------------------------------------///
 
 // JSONから定義を読み込み
-bool ParticleService::LoadParticleDefinition(const std::string& jsonPath) {
+void ParticleService::LoadParticleDefinition(const std::string& jsonPath) {
 	// ベースのディレクトリパス
 	const std::string& baseDirectiorPath = "./Resource/Json/Particles";
 	return ServiceLocator::GetParticleManager()->LoadParticleDefinition(baseDirectiorPath + "/" + jsonPath);
@@ -27509,9 +27520,8 @@ void ParticleService::RemoveParticleDefinition(const std::string& name) {
 ///-------------------------------------------/// 
 /// パーティクルの操作
 ///-------------------------------------------///
-
 // パーティクルを発生
-bool ParticleService::Emit(const std::string& name, const Vector3& translate) {
+void ParticleService::Emit(const std::string& name, const Vector3& translate) {
 	return ServiceLocator::GetParticleManager()->Emit(name, translate);
 }
 
@@ -27608,7 +27618,7 @@ public:
     /// </summary>
     /// <param name="jsonPath">JSONファイルのパス</param>
     /// <returns>読み込みに成功したかどうか</returns>
-    static bool LoadParticleDefinition(const std::string& jsonPath);
+    static void LoadParticleDefinition(const std::string& jsonPath);
 
     /// <summary>
     /// パーティクル定義の追加（直接指定）
@@ -27623,7 +27633,7 @@ public:
     /// <param name="name">発生させるパーティクルの名前</param>
     /// <param name="translate">発生させる場所</param>
     /// <returns>発生に成功したかどうか</returns>
-    static bool Emit(const std::string& name, const Vector3& translate);
+    static void Emit(const std::string& name, const Vector3& translate);
 
     /// <summary>
     /// 指定した名前のアクティブなパーティクルをすべて停止
@@ -38014,11 +38024,6 @@ void GameScene::Initialize() {
 	Loader::LoadLevelJson("Level/StageData.json");
 	Loader::LoadLevelJson("Level/EntityData.json");
 
-	// Particleの読み込み
-	//ParticleService::LoadParticleDefinition("Game.json");
-	//ParticleService::LoadParticleDefinition("WeaponAttack.json");
-	//ParticleService::LoadParticleDefinition("nakagawa.json");
-
 	// パーティクル定義が既に存在するかチェックしてからロード
 	if (!ParticleService::HasDefinition("Game")) {
 		ParticleService::LoadParticleDefinition("Game.json");
@@ -38067,10 +38072,10 @@ void GameScene::Initialize() {
 	gameClearAnimation_ = std::make_unique<GameClearAnimation>();
 
 	// 初期フェーズをFadeInに設定
-	currentPhase_ = GamePhase::FadeIn;
+	currentPhase_ = FadeState::FadeIn;
 	/// ===Transition=== ///
-	float fadeOutDuration = 2.0f;
-	sceneManager_->StartFadeOut(TransitionType::ShatterGlass, fadeOutDuration); // フェードイン開始
+	float fadeInDuration = 2.0f;
+	sceneManager_->StartFadeIn(TransitionType::ShatterGlass, fadeInDuration); // フェードイン開始
 }
 
 ///-------------------------------------------/// 
@@ -38106,22 +38111,22 @@ void GameScene::Update() {
 	/// ===フェーズ別更新=== ///
 	switch (currentPhase_) {
 	// フェードイン
-	case GamePhase::FadeIn:
+	case FadeState::FadeIn:
 		UpdateFadeIn();
 		break;
 	// 開始アニメーション
-	case GamePhase::StartAnimation:
+	case FadeState::StartAnimation:
 		UpdateStartAnimation();
 		break;
 	// ゲームプレイ
-	case GamePhase::Game:
+	case FadeState::Game:
 		UpdateGame();
 		break;
-	case GamePhase::GameOverAnimation:
+	case FadeState::GameOverAnimation:
 		UpdateGameOverAnimation();
 		break;
 	// フェードアウト
-	case GamePhase::GameClearAnimation:
+	case FadeState::GameClearAnimation:
 		UpdateGameClearAnimtaion();
 		break;
 	}
@@ -38149,10 +38154,10 @@ void GameScene::Draw() {
 	player_->Draw();
 
 	/// ===StartAnimation=== ///
-	if (currentPhase_ == GamePhase::StartAnimation) {
+	if (currentPhase_ == FadeState::StartAnimation) {
 		startAnimation_->Draw();
 	/// ===GameOverAnimation=== ///
-	} else if (currentPhase_ == GamePhase::GameOverAnimation) {
+	} else if (currentPhase_ == FadeState::GameOverAnimation) {
 		gameOverAnimation_->Draw();
 	}
 
@@ -38178,7 +38183,7 @@ void GameScene::UpdateFadeIn() {
 	// FadeIn完了でStartAnimationフェーズへ
 	if (sceneManager_->GetTransitionFinished()) {
 		OffScreenService::SetOffScreenType(OffScreenType::CopyImage);
-		currentPhase_ = GamePhase::StartAnimation;
+		currentPhase_ = FadeState::StartAnimation;
 	}
 }
 
@@ -38199,7 +38204,7 @@ void GameScene::UpdateStartAnimation() {
 	if (startAnimation_->IsCompleted()) {
 		// カメラターゲットをPlayerに設定
 		player_->SetCameraTargetPlayer(); // ぎこちなさが残る
-		currentPhase_ = GamePhase::Game;
+		currentPhase_ = FadeState::Game;
 	}
 }
 
@@ -38217,12 +38222,12 @@ void GameScene::UpdateGame() {
 	// Playerが死んだら
 	if (player_->GetIsDead() || InputService::TriggerKey(DIK_Q)) {
 		gameOverAnimation_->Initialize(camera_.get());
-		currentPhase_ = GamePhase::GameOverAnimation; // GameOverAnimationへ
+		currentPhase_ = FadeState::GameOverAnimation; // GameOverAnimationへ
 
 	// ゲームが終わったらFadeOutへ
 	} else if (enemyManager_->GetTotalEnemyCount() <= 0 || InputService::TriggerKey(DIK_W)) {
 		gameClearAnimation_->Initialize(player_.get(), camera_.get());
-		currentPhase_ = GamePhase::GameClearAnimation; // GameClearへ
+		currentPhase_ = FadeState::GameClearAnimation; // GameClearへ
 	}
 }
 
@@ -38312,15 +38317,6 @@ File Path: Project/application/Scene/GameScene.h
 #include "application/Game/Animation/GameOverAnimation.h"
 #include "application/Game/Animation/GameClearAnimation.h"
 
-/// ===GameSceneのフェーズ=== ///
-enum class GamePhase {
-	FadeIn,				// フェードイン
-	StartAnimation,		// 開始アニメーション
-	Game,				// ゲームプレイ中
-	GameOverAnimation,  // ゲームオーバー
-	GameClearAnimation  // フェードアウト
-};
-
 ///=====================================================/// 
 /// ゲームシーン
 ///=====================================================///
@@ -38377,7 +38373,15 @@ private:/// ===メンバ変数=== ///
 	CameraInfo cameraInfo_;
 
 	/// ===フェーズ管理=== ///
-	GamePhase currentPhase_ = GamePhase::FadeIn;
+	// ゲームの進行フェーズ
+	enum class FadeState {
+		FadeIn,				// フェードイン
+		StartAnimation,		// 開始アニメーション
+		Game,				// ゲームプレイ中
+		GameOverAnimation,  // ゲームオーバー
+		GameClearAnimation  // フェードアウト
+	};
+	FadeState currentPhase_ = FadeState::FadeIn;
 
 private: /// ===メンバ関数=== ///
 
@@ -38621,6 +38625,8 @@ void TitleScene::Initialize() {
 	optionMenuSprite_->SetColor({ 0.3f, 0.3f, 0.5f, 1.0f }); // 青みがかった色
 
 	// 初期化時の位置更新
+	bgSprite_->Update();
+	bgKiriSprite_->Update();
 	titleSprite_->Update();
 	startSprite_->Update();
 	optionSprite_->Update();
@@ -38628,6 +38634,9 @@ void TitleScene::Initialize() {
 	selectOverlay_->Update();
 	dimSprite_->Update();
 	optionMenuSprite_->Update();
+
+	/// ===Fadeの設定=== ///
+	currentFade_ = FadeState::Selecting; // デバッグ用にフェードインをスキップ
 }
 
 ///-------------------------------------------/// 
@@ -38637,42 +38646,23 @@ void TitleScene::Update() {
 	/// ===デバック用ImGui=== ///
 #ifdef USE_IMGUI
 	ImGui::Begin("TitleScene");
+	ImGui::Text("Fade State: %d", static_cast<int>(currentFade_));
 	ImGui::Text("Current Selection: %d", static_cast<int>(currentSelection_));
 	ImGui::Text("Option Open: %s", isOptionOpen_ ? "true" : "false");
 	ImGui::End();
 #endif // USE_IMGUI
 
-	/// ===スプライトの更新=== ///
-	bgSprite_->Update();
-	bgKiriSprite_->Update();
-	titleSprite_->Update();
-	startSprite_->Update();
-	optionSprite_->Update();
-	exitSprite_->Update();
-	selectOverlay_->Update();
-
-	if (isOptionOpen_) {
-		dimSprite_->Update();
-		optionMenuSprite_->Update();
-	}
-
-	/// ===オプション画面の処理=== ///
-	if (isOptionOpen_) {
-		UpdateOptionMenu();
-	} else {
-		/// ===メニュー選択の更新=== ///
-		UpdateMenuSelection();
-
-		/// ===決定処理=== ///
-		if (InputService::TriggerButton(0, ControllerButtonType::A) || InputService::TriggerKey(DIK_SPACE)) {
-			ConfirmSelection();
-		}
-
-		/// ===シーンの切り替え=== ///
-		if (sceneManager_->GetTransitionFinished()) {
-			// ゲームシーンへ遷移
-			sceneManager_->ChangeScene(SceneType::Game);
-		}
+	/// ===フェーズ別更新=== ///
+	switch (currentFade_) {
+	case TitleScene::FadeState::FadeIn:
+		UpdateFadeIn();
+		break;
+	case TitleScene::FadeState::Selecting:
+		UpdateSelecting();
+		break;
+	case TitleScene::FadeState::FadeOut:
+		UpdateFadeOut();
+		break;
 	}
 
 	/// ===ISceneの更新=== ///
@@ -38713,6 +38703,50 @@ void TitleScene::Draw() {
 		optionMenuSprite_->Draw(GroundType::Front);
 	}
 #pragma endregion
+}
+
+///-------------------------------------------/// 
+/// フェードインの更新
+///-------------------------------------------///
+void TitleScene::UpdateFadeIn() {
+	/// ===Fadeの変更=== ///
+	if (sceneManager_->GetTransitionFinished()) {
+		currentFade_ = FadeState::Selecting;
+	}
+}
+
+///-------------------------------------------/// 
+/// 選択状態の更新
+///-------------------------------------------///
+void TitleScene::UpdateSelecting() {
+
+	/// ===スプライトの更新=== ///
+	selectOverlay_->Update();
+
+	/// ===オプション画面の処理=== ///
+	if (isOptionOpen_) {
+		UpdateOptionMenu();
+	} else {
+		/// ===メニュー選択の更新=== ///
+		UpdateMenuSelection();
+
+		/// ===決定処理=== ///
+		if (InputService::TriggerButton(0, ControllerButtonType::A) || InputService::TriggerKey(DIK_SPACE)) {
+			ConfirmSelection();
+		}
+	}
+}
+
+///-------------------------------------------/// 
+/// フェードアウトの更新
+///-------------------------------------------///
+void TitleScene::UpdateFadeOut() {
+
+	/// ===シーンの切り替え=== ///
+	if (sceneManager_->GetTransitionFinished()) {
+		// ゲームシーンへ遷移
+		sceneManager_->ChangeScene(SceneType::Game);
+	}
 }
 
 ///-------------------------------------------/// 
@@ -38761,7 +38795,8 @@ void TitleScene::ConfirmSelection() {
 
 	switch (currentSelection_) {
 	case MenuSelection::Start:
-		sceneManager_->StartFadeIn(TransitionType::ShatterGlass, fadeInDuration);
+		sceneManager_->StartFadeOut(TransitionType::ShatterGlass, fadeInDuration);
+		currentFade_ = FadeState::FadeOut;
 		break;
 	case MenuSelection::Option:
 		// オプション画面を開く
@@ -38818,13 +38853,6 @@ File Path: Project/application/Scene/TitleScene.h
 #include <memory>
 #include <array>
 
-// メニュー項目の列挙型
-enum class MenuSelection {
-	Start,    // 開始
-	Option,   // オプション
-	Exit      // 終了
-};
-
 ///=====================================================/// 
 /// タイトルシーン
 ///=====================================================///
@@ -38856,7 +38884,7 @@ private:/// ===メンバ変数=== ///
 
 	/// ===スプライト=== ///
 	std::unique_ptr<Sprite> bgSprite_;         // 背景
-	std::unique_ptr<Sprite> bgKiriSprite_;         // 背景
+	std::unique_ptr<Sprite> bgKiriSprite_;     // 背景
 	std::unique_ptr<Sprite> titleSprite_;      // タイトル
 	std::unique_ptr<Sprite> startSprite_;      // 開始
 	std::unique_ptr<Sprite> optionSprite_;     // オプション
@@ -38865,19 +38893,47 @@ private:/// ===メンバ変数=== ///
 	std::unique_ptr<Sprite> dimSprite_;        // 薄暗いオーバーレイ
 	std::unique_ptr<Sprite> optionMenuSprite_; // オプションメニュー
 
-
 	/// ===ポイントの値=== ///
 	float startY_ = 0.0f;
 	float spaceY_ = 0.0f;
 
+	/// ===Fade=== ///
+	enum class FadeState {
+		FadeIn,
+		Selecting,
+		FadeOut,
+	};
+	FadeState currentFade_ = FadeState::FadeIn;
+
 	/// ===メニュー選択=== ///
+	// メニュー項目の列挙型
+	enum class MenuSelection {
+		Start,    // 開始
+		Option,   // オプション
+		Exit      // 終了
+	};
 	MenuSelection currentSelection_ = MenuSelection::Start; // 現在の選択
-	bool isOptionOpen_ = false;                              // オプション画面が開いているか
+	bool isOptionOpen_ = false;      // オプション画面が開いているか
 
 	/// ===入力制御=== ///
 	bool canInput_ = true; // 入力可能フラグ（連続入力防止）
 
 private:/// ===プライベート関数=== ///
+
+	/// <summary>
+	/// フェードインの進行状態を更新します。
+	/// </summary>
+	void UpdateFadeIn();
+
+	/// <summary>
+	/// 選択状態を更新します。
+	/// </summary>
+	void UpdateSelecting();
+
+	/// <summary>
+	/// フェードアウトの状態を更新します。
+	/// </summary>
+	void UpdateFadeOut();
 
 	/// <summary>
 	/// メニューの選択状態の更新処理
