@@ -54,15 +54,17 @@ void TitleScene::Initialize() {
 	// タイトルスプライト
 	titleSprite_ = std::make_unique<Sprite>();
 	titleSprite_->Initialize("Title"); // テクスチャファイルパスは適宜変更
-	titleSprite_->SetPosition({ windowWidth / 2.0f, 150.0f });
+	titleSprite_->SetPosition({ windowWidth / 2.0f, windowHeight / 4.0f });
 	titleSprite_->SetSize({ 500.0f, 500.0f });
 	titleSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	titleSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 
 	// 開始スプライト
+	spaceY_ = windowHeight / 16.0f; // メニュー項目間の垂直スペース
+	startY_ = windowHeight / 2.0f + windowHeight / 4.0f; // 開始項目のY位置
 	startSprite_ = std::make_unique<Sprite>();
 	startSprite_->Initialize("Start");
-	startSprite_->SetPosition({ windowWidth / 2.0f, 460.0f });
+	startSprite_->SetPosition({ windowWidth / 2.0f, startY_ });
 	startSprite_->SetSize({ 200.0f, 50.0f });
 	startSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	startSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 選択中は黄色
@@ -70,7 +72,7 @@ void TitleScene::Initialize() {
 	// オプションスプライト
 	optionSprite_ = std::make_unique<Sprite>();
 	optionSprite_->Initialize("Option");
-	optionSprite_->SetPosition({ windowWidth / 2.0f, 530.0f });
+	optionSprite_->SetPosition({ windowWidth / 2.0f, startY_ + spaceY_ });
 	optionSprite_->SetSize({ 200.0f, 50.0f });
 	optionSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	optionSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 未選択は灰色
@@ -78,7 +80,7 @@ void TitleScene::Initialize() {
 	// 終了スプライト
 	exitSprite_ = std::make_unique<Sprite>();
 	exitSprite_->Initialize("Exit");
-	exitSprite_->SetPosition({ windowWidth / 2.0f, 600.0f });
+	exitSprite_->SetPosition({ windowWidth / 2.0f, startY_ + spaceY_ * 2.0f });
 	exitSprite_->SetSize({ 200.0f, 50.0f });
 	exitSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	exitSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f });
@@ -86,7 +88,7 @@ void TitleScene::Initialize() {
 	// 選択オーバーレイスプライト
 	selectOverlay_ = std::make_unique<Sprite>();
 	selectOverlay_->Initialize("OverLay"); // テクスチャファイルパスは適宜変更
-	selectOverlay_->SetPosition({ windowWidth / 2.0f, 460.0f }); // 初期位置は開始の位置
+	selectOverlay_->SetPosition({ windowWidth / 2.0f, startY_ }); // 初期位置は開始の位置
 	selectOverlay_->SetSize({ 400.0f, 80.0f }); // メニュー項目より少し大きめ
 	selectOverlay_->SetAnchorPoint({ 0.5f, 0.5f });
 	selectOverlay_->SetColor({ 0.8f, 0.8f, 0.8f, 0.8f }); // 半透明の黄色
@@ -319,13 +321,13 @@ void TitleScene::UpdateSelectOverlayPosition() {
 	// 選択中の項目の位置に応じてオーバーレイを移動
 	switch (currentSelection_) {
 	case MenuSelection::Start:
-		selectOverlay_->SetPosition({ windowWidth / 2.0f, 460.0f });
+		selectOverlay_->SetPosition({ windowWidth / 2.0f, startY_ });
 		break;
 	case MenuSelection::Option:
-		selectOverlay_->SetPosition({ windowWidth / 2.0f, 530.0f });
+		selectOverlay_->SetPosition({ windowWidth / 2.0f, startY_ + spaceY_ });
 		break;
 	case MenuSelection::Exit:
-		selectOverlay_->SetPosition({ windowWidth / 2.0f, 600.0f });
+		selectOverlay_->SetPosition({ windowWidth / 2.0f, startY_ + spaceY_ * 2.0f });
 		break;
 	}
 }

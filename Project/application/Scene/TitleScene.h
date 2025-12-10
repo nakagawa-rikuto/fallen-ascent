@@ -67,6 +67,10 @@ private:/// ===メンバ変数=== ///
 	int nextModelIndex_ = 0; // 次に表示するモデルのインデックス
 	bool transitionDirection_ = true; // true: 右へ, false: 左へ
 
+	/// ===ポイントの値=== ///
+	float startY_ = 0.0f;
+	float spaceY_ = 0.0f;
+
 	/// ===メニュー選択=== ///
 	MenuSelection currentSelection_ = MenuSelection::Start; // 現在の選択
 	bool isOptionOpen_ = false;                              // オプション画面が開いているか

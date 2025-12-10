@@ -7,7 +7,6 @@
 #include <imgui.h>
 #endif
 
-
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
@@ -53,8 +52,8 @@ void VignetteEffect::ImGuiInfo() {
 #ifdef USE_IMGUI
 	// ImGuiの描画
 	ImGui::Text("Vignette Effect");
-	ImGui::SliderFloat("Scale", &data_->scale, 0.0f, 1.0f);
-	ImGui::SliderFloat("Pawer", &data_->pawer, 0.0f, 1.0f);
+	ImGui::SliderFloat("Scale", &data_->scale, 0.1f, 100.0f);
+	ImGui::SliderFloat("Pawer", &data_->pawer, 0.0f, 50.0f);
 #endif // USE_IMGUI
 }
 
