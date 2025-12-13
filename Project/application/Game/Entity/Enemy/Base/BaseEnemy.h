@@ -23,32 +23,30 @@ class BaseEnemy : public GameCharacter<OBBCollider> {
 private: /// ===型定義=== ///
 	/// ===移動情報=== ///
 	struct MoveInfo {
-		float timer;	// タイマー
-		float speed;	// 移動速度
-		float range;	// 移動範囲
-		float interval;	// 移動間隔
-		float waitTime;	// 待機時間
+		float timer;		 // タイマー
+		float speed;		 // 移動速度
+		float range;		 // 移動範囲
+		float interval;		 // 移動間隔
+		float waitTime;		 // 待機時間
 
 		Vector3 rangeCenter; // 移動範囲の中心
 		Vector3 direction;	 // 移動方向
 
-		bool isWating;	// 待機フラグ
+		bool isWating;		 // 待機フラグ	
 	};
 
 	/// ===攻撃情報=== ///
 	struct AttackInfo {
-		float timer;	// タイマー
-		float range;	// 攻撃範囲(回転の情報から±)
-		float distance;	// 攻撃可能距離
-		float interval;	// 攻撃間隔
-		int32_t power;	// 待機時間
+		float timer;		// タイマー
+		float range;		// 攻撃範囲(回転の情報から±)
+		float distance;		// 攻撃可能距離
+		float interval;		// 攻撃間隔
+		int32_t power;		// 待機時間
 
 		Vector3 direction;  // 攻撃方向
 		Vector3 playerPos;  // プレイヤーの位置
 
-		bool isCollision; // 衝突フラグ
-
-		bool isAttack;	// 攻撃フラグ
+		bool isAttack;		// 攻撃フラグ
 	};
 
 	/// ===ノックバック情報=== ///
@@ -156,6 +154,12 @@ protected: /// ===変数の宣言=== ///
 
 	// ランダムシード
 	std::mt19937 randomEngine_;
+
+	// 回転完了フラグ
+	bool isRotationComplete_ = false;
+
+	// 衝突フラグ
+	bool isCollision_ = false;
 
 private:
 	// ノックバック情報

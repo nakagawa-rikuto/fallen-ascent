@@ -143,9 +143,11 @@ void LongRangeEnemy::Attack() {
 		UpdateRotationTowards(attackInfo_.direction, 0.2f);
 
 		// 少し待つ
-		if (attackInfo_.timer <= 0.0f) { // タイマーが0以下
+		if (isRotationComplete_) { // タイマーが0以下
 			// 攻撃開始
 			attackInfo_.isAttack = true;
+			// フラグをリセット
+			isRotationComplete_ = false;
 		}
 
 	} else { /// ===IsAttackがtrue=== ///

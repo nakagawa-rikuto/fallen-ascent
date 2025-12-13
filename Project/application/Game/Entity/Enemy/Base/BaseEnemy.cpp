@@ -126,25 +126,25 @@ void BaseEnemy::Draw(BlendMode mode) {
 void BaseEnemy::Information() {
 #ifdef USE_IMGUI
 	// MoveInfo
-	ImGui::Text("MoveInfo");
-	ImGui::DragFloat("MoveSpeed", &moveInfo_.speed, 0.1f);
-	ImGui::DragFloat("MoveRange", &moveInfo_.range, 0.1f);
-	ImGui::DragFloat("MoveInterval", &moveInfo_.interval, 0.1f);
-	ImGui::DragFloat("MoveWaitTime", &moveInfo_.waitTime, 0.1f);
+	ImGui::Text("移動情報");
+	ImGui::DragFloat("移動速度", &moveInfo_.speed, 0.1f);
+	ImGui::DragFloat("移動範囲", &moveInfo_.range, 0.1f);
+	ImGui::DragFloat("移動間隔", &moveInfo_.interval, 0.1f);
+	ImGui::DragFloat("待機時間", &moveInfo_.waitTime, 0.1f);
 
 	// AttackInfo
-	ImGui::Text("AttackInfo");
-	ImGui::DragFloat("AttackDistance", &attackInfo_.distance, 0.1f);
-	ImGui::DragFloat("AttackRange", &attackInfo_.range, 0.1f);
-	ImGui::DragFloat("AttackInterval", &attackInfo_.interval, 0.1f);
-	ImGui::DragInt("Power", &attackInfo_.power, 1);
+	ImGui::Text("攻撃情報");
+	ImGui::DragFloat("攻撃可能距離", &attackInfo_.distance, 0.1f);
+	ImGui::DragFloat("攻撃範囲", &attackInfo_.range, 0.1f);
+	ImGui::DragFloat("攻撃間隔", &attackInfo_.interval, 0.1f);
+	ImGui::DragInt("パワー", &attackInfo_.power, 1);
 
 	// KnockbackInfo
-	ImGui::Text("KnockbackInfo");
-	ImGui::DragFloat("CooldownDuration", &knockbackInfo_.cooldownDuration, 0.01f);
-	ImGui::DragFloat("KnockbackForce", &knockbackInfo_.knockbackForce, 0.1f);
-	ImGui::DragFloat("HitColorDuration", &knockbackInfo_.hitColorDuration, 0.01f);
-	ImGui::Checkbox("IsInCooldown", &knockbackInfo_.isInCooldown);
+	ImGui::Text("ノックバック情報");
+	ImGui::DragFloat("クールタイムの持続時間", &knockbackInfo_.cooldownDuration, 0.01f);
+	ImGui::DragFloat("ノックバックの強さ", &knockbackInfo_.knockbackForce, 0.1f);
+	ImGui::DragFloat("色変更時間", &knockbackInfo_.hitColorDuration, 0.01f);
+	ImGui::Checkbox("クール中かどうか", &knockbackInfo_.isInCooldown);
 #endif // USE_IMGUI
 }
 
@@ -184,11 +184,12 @@ void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 void BaseEnemy::OnCollision(Collider* collider) {
 
 	// 攻撃用のフラグを立てる
-	attackInfo_.isCollision = true;
+	isCollision_ = true;
 
 	/// ===GameCharacterの衝突=== ///
 	GameCharacter::OnCollision(collider);
 
+	// 早期リターン
 	if (baseInfo_.isDead) {
 		return;
 	}
@@ -197,7 +198,7 @@ void BaseEnemy::OnCollision(Collider* collider) {
 	if (collider->GetColliderName() == ColliderName::PlayerWeapon) {
 		// クールタイム中でなければノックバック処理を実行
 		if (!knockbackInfo_.isInCooldown) {
-			// 攻撃状態の時
+			// 通常攻撃の時
 			if (player_->GetStateFlag(actionType::kAttack)) {
 				// Stateを移動状態に変更
 				ChangeState(std::make_unique<EnemyMoveState>());
@@ -229,7 +230,7 @@ void BaseEnemy::OnCollision(Collider* collider) {
 				knockbackInfo_.cooldownTimer = knockbackInfo_.cooldownDuration;
 				knockbackInfo_.isInCooldown = true;
 
-			// チャージ状態の時
+			// チャージ攻撃の時
 			} else if (player_->GetStateFlag(actionType::kCharge)) {
 
 			}
@@ -255,29 +256,32 @@ void BaseEnemy::CommonMove() {
 	float distanceFromCenter = Length(toCenter);
 
 	/// ===移動処理=== ///
-	if (moveInfo_.isWating) { /// ===範囲外に出ていた場合=== ///
+	if (moveInfo_.isWating) { // 待機中だったら
 
-		baseInfo_.velocity = { 0.0f, 0.0f, 0.0f }; // 待機中は移動しない
+		// 待機中は移動しない
+		baseInfo_.velocity = { 0.0f, 0.0f, 0.0f }; 
 
 		// 向き方向に回転
 		UpdateRotationTowards(moveInfo_.direction, 0.1f);
 
-		if (moveInfo_.timer <= 0.0f) {
+		// 回転し終わったら
+		if (isRotationComplete_) { // ここできちんと回転し終わるまで動かさないようにする。
 			// ランダムな時間を設定
 			std::uniform_real_distribution<float> timeDist(1.0f, moveInfo_.interval);
 			moveInfo_.timer = timeDist(randomEngine_);
 
 			// 移動ベクトルを設定
 			baseInfo_.velocity = moveInfo_.direction * moveInfo_.speed;
-			moveInfo_.isWating = false; // 待機フラグを解除
+			moveInfo_.isWating = false;		// 待機フラグを解除
+			isRotationComplete_ = false;   // 回転完了フラグをリセット
 		}
 
-	} else if (distanceFromCenter > moveInfo_.range) { /// ===範囲外に出ていた場合=== ///
+	} else if (distanceFromCenter > moveInfo_.range) { // 範囲外に出た場合
 
 		// 方向の設定と待機処理の準備
 		PreparNextMove(toCenter);
 
-	} else if (moveInfo_.timer <= 0.0f && !moveInfo_.isWating) { /// ===範囲内かつタイマーが切れていた場合=== ///
+	} else if (moveInfo_.timer <= 0.0f && !moveInfo_.isWating) { // 範囲内でタイマーが0になったら
 
 		// ランダムな角度と距離を生成
 		std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * Math::Pi());
@@ -377,7 +381,16 @@ void BaseEnemy::UpdateRotationTowards(const Vector3& direction, float slerpT) {
 
 	// SLerp補間
 	Quaternion result = Math::SLerp(transform_.rotate, targetRotation, slerpT);
-	transform_.rotate = Normalize(result); // ★ 正規化でスケール崩れ防止
+	transform_.rotate = Normalize(result); // 正規化でスケール崩れ防止
+
+	// 回転が完了したかをチェック
+	Quaternion diff = transform_.rotate - targetRotation;
+	float rotationDiff = Math::Norm(diff);
+
+	// 回転差分が十分小さければ完了フラグを立てる
+	if (rotationDiff < 0.01f) {
+		isRotationComplete_ = true;
+	}
 }
 
 ///-------------------------------------------/// 
