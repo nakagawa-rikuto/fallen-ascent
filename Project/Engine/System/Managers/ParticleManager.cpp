@@ -157,8 +157,14 @@ void ParticleManager::SetParameter(const std::string& name, ParticleParameter pa
 		case ParticleParameter::Gravity:
 			defIt->second.physics.gravity = value;
 			break;
-		case ParticleParameter::ExplosionRadius:
-			defIt->second.physics.explosionRadius = value;
+		case ParticleParameter::ExplosionRadiusX:
+			defIt->second.physics.explosionRange.x = value;
+			break;
+		case ParticleParameter::ExplosionRadiusY:
+			defIt->second.physics.explosionRange.y = value;
+			break;
+		case ParticleParameter::ExplosionRadiusZ:
+			defIt->second.physics.explosionRange.z = value;
 			break;
 		case ParticleParameter::UpwardForce:
 			defIt->second.physics.upwardForce = value;

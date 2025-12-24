@@ -38,7 +38,7 @@ public:
     /// <summary>
     /// プレビュー描画処理（ゲーム画面に表示）
     /// </summary>
-    void DrawPreview(BlendMode mode = BlendMode::kBlendModeAdd);
+    void DrawPreview();
 
     /// <summary>
     /// エディターの表示/非表示切り替え
@@ -184,6 +184,7 @@ private:
     bool isPlaying_ = false;                              // 再生中フラグ
     bool autoReplay_ = true;                              // 自動リプレイ
     Vector3 previewPosition_ = { 0.0f, 0.0f, 0.0f };     // プレビュー位置
+	BlendMode previewBlendMode_ = BlendMode::kBlendModeAdd; // プレビューブレンドモード
 
     /// ===ファイル管理=== ///
     char filePathBuffer_[256] = "Assets/Particles/";     // ファイルパス入力バッファ

@@ -498,6 +498,10 @@
     <ClCompile Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.cpp" />
     <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp" />
     <ClCompile Include="Engine\Scene\Transition\SceneTransitionManager.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyAttackComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyPrePareAttackComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -959,6 +963,10 @@
     <ClInclude Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.h" />
     <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h" />
     <ClInclude Include="Engine\Scene\Transition\SceneTransitionManager.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyAttackComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyPrePareAttackComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

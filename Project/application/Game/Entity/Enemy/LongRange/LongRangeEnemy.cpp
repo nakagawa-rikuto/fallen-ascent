@@ -28,7 +28,6 @@ void LongRangeEnemy::InitGameScene(const Vector3& translate) {
 	Initialize();
 	// 位置の設定
 	transform_.translate = translate;
-	moveInfo_.rangeCenter = transform_.translate;
 	// BaseEnemyの初期化
 	BaseEnemy::Initialize();
 }
@@ -47,16 +46,6 @@ void LongRangeEnemy::Initialize() {
 	// GameCharacterの初期化
 	GameCharacter::Initialize();
 	name_ = ColliderName::Enemy;
-
-	/// ===MoveInfoの設定=== ///
-	moveInfo_.interval = 5.0f;
-	moveInfo_.timer = 1.0f;
-	moveInfo_.waitTime = 1.0f;
-	moveInfo_.range = 20.0f;
-	moveInfo_.speed = 0.05f;
-	moveInfo_.direction = { 0.0f, 0.0f, 0.0f };
-	moveInfo_.rangeCenter = { 0.0f, 0.0f, 0.0f };
-	moveInfo_.isWating = false;
 
 	/// ===AttackInfoの設定=== ///
 	attackInfo_.range = 3.0f;
@@ -143,7 +132,7 @@ void LongRangeEnemy::Attack() {
 		UpdateRotationTowards(attackInfo_.direction, 0.2f);
 
 		// 少し待つ
-		if (isRotationComplete_) { // タイマーが0以下
+		if (isRotationComplete_ && attackInfo_.timer <= 0.0f) { // タイマーが0以下
 			// 攻撃開始
 			attackInfo_.isAttack = true;
 			// フラグをリセット

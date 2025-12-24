@@ -51,10 +51,10 @@ struct ParticlePhysicsSettings {
 	Vector3 velocityMin = { -1.0f, 1.0f, -1.0f };      // 速度の最小値
 	Vector3 velocityMax = { 1.0f, 5.0f, 1.0f };        // 速度の最大値
 	Vector3 acceleration = { 0.0f, 0.0f, 0.0f };       // 加速度
-	float gravity = 0.0f;                               // 重力
-	float explosionRadius = 1.0f;                       // 爆発半径
+	float gravity = 0.0f;                              // 重力
+    Vector3 explosionRange = { 1.0f, 1.0f, 1.0f };     // 発生範囲（X、Y、Z軸）
 	float upwardForce = 0.0f;                          // 上方向の力
-	bool useRandomVelocity = true;                      // ランダム速度を使用
+	bool useRandomVelocity = true;                     // ランダム速度を使用
 };
 
 ///=====================================================/// 
@@ -66,9 +66,9 @@ struct ParticleAppearanceSettings {
 	Vector3 startScaleMin = { 1.0f, 1.0f, 1.0f };     // 開始スケール最小
 	Vector3 startScaleMax = { 1.0f, 1.0f, 1.0f };     // 開始スケール最大
 	Vector3 endScale = { 0.5f, 0.5f, 0.5f };          // 終了スケール
-	std::string texturePath = "";                      // テクスチャパス
-	bool useColorGradient = false;                     // 色のグラデーション使用
-	bool useScaleAnimation = false;                    // スケールアニメーション使用
+	std::string texturePath = "";                     // テクスチャパス
+	bool useColorGradient = false;                    // 色のグラデーション使用
+	bool useScaleAnimation = false;                   // スケールアニメーション使用
 };
 
 ///=====================================================/// 
@@ -77,8 +77,8 @@ struct ParticleAppearanceSettings {
 struct ParticleRotationSettings {
 	Vector3 rotationSpeedMin = { 0.0f, 0.0f, 0.0f };  // 回転速度最小
 	Vector3 rotationSpeedMax = { 0.0f, 0.0f, 0.0f };  // 回転速度最大
-	bool randomRotation = false;                       // ランダム回転を使用
-	bool enableRotation = false;                       // 回転を有効化
+	bool randomRotation = false;                      // ランダム回転を使用
+	bool enableRotation = false;                      // 回転を有効化
 };
 
 ///=====================================================/// 
@@ -114,7 +114,7 @@ struct ParticleMotionSettings {
     float velocityDamping = 0.95f;         // 速度減衰率(0.0~1.0)
 
     // ビルボード回転
-    bool enableBillboardRotation = true;   // ビルボード回転を有効化
+    bool enableBillboardRotation = false;   // ビルボード回転を有効化
     float billboardRotationSpeed = 3.0f;   // ビルボード回転速度
 };
 
@@ -133,8 +133,8 @@ struct ParticleEmissionPattern {
 
     Pattern pattern = Pattern::Sphere;
     float patternRadius = 0.25f;           // パターンの半径
-    float patternAngle = 45.0f;            // 円錐の角度(度)
-    int particlesPerEmit = 5;              // 1回の発生での粒子数
+    float patternAngle = 0.0f;            // 円錐の角度(度)
+    int particlesPerEmit = 5;             // 1回の発生での粒子数
 };
 
 ///=====================================================/// 

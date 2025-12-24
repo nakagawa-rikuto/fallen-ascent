@@ -43,16 +43,11 @@ void GameScene::Initialize() {
 	Loader::LoadLevelJson("Level/StageData.json");
 	Loader::LoadLevelJson("Level/EntityData.json");
 
-	// パーティクル定義が既に存在するかチェックしてからロード
-	if (!ParticleService::HasDefinition("Game")) {
-		ParticleService::LoadParticleDefinition("Game.json");
-	}
-	if (!ParticleService::HasDefinition("WeaponAttack")) {
-		ParticleService::LoadParticleDefinition("WeaponAttack.json");
-	}
-	if (!ParticleService::HasDefinition("nakagawa")) {
-		ParticleService::LoadParticleDefinition("nakagawa.json");
-	}
+	// パーティクルの読み込み
+	ParticleService::LoadParticleDefinition("Game.json");
+	ParticleService::LoadParticleDefinition("WeaponAttack.json");
+	ParticleService::LoadParticleDefinition("nakagawa.json");
+	ParticleService::LoadParticleDefinition("EnemyAttack.json");
 
 	/// ===Camera=== ///
 	camera_ = std::make_shared<GameCamera>();

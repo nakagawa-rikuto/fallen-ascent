@@ -20,20 +20,20 @@ ParticleData ParticleFactory::CreateParticle(
     // 回転の初期化
     particle.transform.rotate = { 0.0f, 0.0f, 0.0f };
 
-    // 位置の設定（爆発半径を考慮）
+    // 位置の設定（爆発範囲を考慮）
     Vector3 offset = { 0.0f, 0.0f, 0.0f };
-    if (definition.physics.explosionRadius > 0.0f) {
-        std::uniform_real_distribution<float> distAngle(0.0f, 2.0f * std::numbers::pi_v<float>);
-        std::uniform_real_distribution<float> distRadius(0.0f, definition.physics.explosionRadius);
+    if (definition.physics.explosionRange.x > 0.0f ||
+        definition.physics.explosionRange.y > 0.0f ||
+        definition.physics.explosionRange.z > 0.0f) {
 
-        float angle1 = distAngle(randomEngine);
-        float angle2 = distAngle(randomEngine);
-        float radius = distRadius(randomEngine);
+        std::uniform_real_distribution<float> distX(-definition.physics.explosionRange.x, definition.physics.explosionRange.x);
+        std::uniform_real_distribution<float> distY(-definition.physics.explosionRange.y, definition.physics.explosionRange.y);
+        std::uniform_real_distribution<float> distZ(-definition.physics.explosionRange.z, definition.physics.explosionRange.z);
 
         offset = {
-            radius * std::sin(angle1) * std::cos(angle2),
-            radius * std::sin(angle1) * std::sin(angle2),
-            radius * std::cos(angle1)
+            distX(randomEngine),
+            distY(randomEngine),
+            distZ(randomEngine)
         };
     }
     particle.transform.translate = position + offset;
@@ -156,9 +156,20 @@ Vector3 ParticleFactory::GenerateRandomVelocity(
         };
     } else {
         // 爆発方向に基づく速度
-        if (definition.physics.explosionRadius > 0.0f) {
-            velocity = Normalize(position) *
-                (definition.physics.velocityMax.x + definition.physics.velocityMax.y + definition.physics.velocityMax.z) / 3.0f;
+        float rangeSum = definition.physics.explosionRange.x +
+            definition.physics.explosionRange.y +
+            definition.physics.explosionRange.z;
+
+        if (rangeSum > 0.0f) {
+            // 正規化されたオフセット位置から放射状の速度を計算
+            Vector3 normalizedOffset = Normalize(position);
+
+            // 速度の最大値の平均を使用
+            float averageMaxVelocity = (definition.physics.velocityMax.x +
+                definition.physics.velocityMax.y +
+                definition.physics.velocityMax.z) / 3.0f;
+
+            velocity = normalizedOffset * averageMaxVelocity;
         } else {
             velocity = definition.physics.velocityMin;
         }

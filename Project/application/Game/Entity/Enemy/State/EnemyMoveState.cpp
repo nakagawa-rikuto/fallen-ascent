@@ -11,9 +11,11 @@
 void EnemyMoveState::Enter(BaseEnemy* enemy) {
 	enemy_ = enemy;
 	// 移動範囲の中心を設定
-	enemy_->CommonMoveInit();
+	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 動くまでの時間を設定
-	enemy_->SetTimer(StateType::Move, 0.5f);
+    enemy_->GetMovementComponent().SetTimer(0.5f);
+	// 移動範囲の中心を現在地に設定
+    enemy_->GetMovementComponent().SetRangeCenter(enemy_->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 
@@ -22,8 +24,29 @@ void EnemyMoveState::Enter(BaseEnemy* enemy) {
 void EnemyMoveState::Update(BaseEnemy * enemy) {
 	enemy_ = enemy;
 
-	// Moveの処理
-	enemy_->CommonMove();
+    // コンテキストの準備
+    EnemyMoveComponent::UpdateContext context{
+        .currentPosition = enemy_->GetTransform().translate,
+        .deltaTime = enemy_->GetDeltaTime(),
+        .isRotationComplete = enemy_->GetIsRotationComplete()
+    };
+
+    // 移動コンポーネントの更新
+    auto result = enemy_->GetMovementComponent().Update(context);
+
+    // 結果の適用
+    enemy_->SetVelocity(result.velocity);
+
+	// 回転の更新
+    if (result.needsRotation) {
+        auto& config = enemy_->GetMovementComponent().GetConfig();
+        enemy_->UpdateRotationTowards(result.targetDirection, config.rotationSpeed);
+    }
+
+	// 回転完了フラグのリセット
+    if (result.shouldResetRotationFlag) {
+        enemy_->SetIsRotationComplete(false);
+    }
 
 	/// ===Stateの変更=== ///
 	if (enemy_->CheckAttackable() && enemy_->GetAttackInfo().timer <= 0.0f && !enemy_->GetAttackInfo().isAttack) {

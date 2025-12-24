@@ -28,7 +28,6 @@ void CloseRangeEnemy::InitGameScene(const Vector3& translate) {
 	Initialize();
 	// 位置の設定
 	transform_.translate = translate;
-	moveInfo_.rangeCenter = transform_.translate;
 	// BaseEnemyの初期化
 	BaseEnemy::Initialize();
 }
@@ -47,16 +46,6 @@ void CloseRangeEnemy::Initialize() {
 	// GameCharacterの初期化
 	GameCharacter::Initialize();
 	name_ = ColliderName::Enemy;
-
-	/// ===MoveInfoの設定=== ///
-	moveInfo_.interval = 5.0f;
-	moveInfo_.timer = 1.0f;
-	moveInfo_.waitTime = 1.5f;
-	moveInfo_.range = 15.0f;
-	moveInfo_.speed = 0.05f;
-	moveInfo_.direction = { 0.0f, 0.0f, 0.0f };
-	moveInfo_.rangeCenter = { 0.0f, 0.0f, 0.0f };
-	moveInfo_.isWating = false;
 
 	/// ===AttackInfoの設定=== ///
 	attackInfo_.range = 4.0f;
@@ -127,7 +116,7 @@ void CloseRangeEnemy::Attack() {
 		UpdateRotationTowards(attackInfo_.direction, 0.2f);
 
 		// 少し待つ
-		if (isRotationComplete_) { // タイマーが0以下
+		if (isRotationComplete_ && attackInfo_.timer <= 0.0f) { // タイマーが0以下
 			// 移動ベクトルを設定
 			baseInfo_.velocity = attackInfo_.direction * chargeInfo_.moveSpeed;
 			// 攻撃開始
@@ -149,8 +138,6 @@ void CloseRangeEnemy::Attack() {
 			baseInfo_.velocity = { 0.0f, 0.0f, 0.0f }; 
 			// クールダウン再設定
 			attackInfo_.timer = attackInfo_.interval; 
-			// 移動範囲の中心を設定
-			moveInfo_.rangeCenter = attackInfo_.playerPos;
 			// 元の色に戻す (のちに削除)
 			color_ = { 1.0f, 0.0f, 1.0f, 1.0f }; 
 		}

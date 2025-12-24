@@ -51,7 +51,7 @@ void MyGame::Initialize(const wchar_t* title) {
 	// シーンマネージャの初期化
 	sceneManager_ = std::make_unique<SceneManager>();
 	sceneManager_->Initialize(sceneFactory_.get());
-	sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
+	sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
 }
  
 ///-------------------------------------------/// 
@@ -109,6 +109,10 @@ void MyGame::LoadTexture() {
 	Loader::LoadTexture("circle", "Particle/circle.png");
 	Loader::LoadTexture("circle2", "Particle/circle2.png");
 	Loader::LoadTexture("gradationLine", "Particle/gradationLine.png");
+	Loader::LoadTexture("Spark", "Particle/Spark.png");
+	Loader::LoadTexture("FlameEye", "Particle/FlameEye.png");
+	Loader::LoadTexture("Fire", "Particle/Fire.png");
+
 	// OffScreenで使用
 	Loader::LoadTexture("noise0", "OffScreen/noise0.png");
 	Loader::LoadTexture("noise1", "OffScreen/noise1.png");

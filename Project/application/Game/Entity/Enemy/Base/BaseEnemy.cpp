@@ -34,9 +34,6 @@ BaseEnemy::~BaseEnemy() {
 void BaseEnemy::SetTimer(StateType type, float time) {
 	// typeに応じてタイマーを設定
 	switch (type) {
-	case StateType::Move:
-		moveInfo_.timer = time;
-		break;
 	case StateType::Attack:
 		attackInfo_.timer = time;
 		break;
@@ -48,12 +45,17 @@ void BaseEnemy::SetTimer(StateType type, float time) {
 ///-------------------------------------------///
 void BaseEnemy::Initialize() {
 
-	// ランダムエンジンの初期化
-	std::seed_seq seed{
-		static_cast<uint32_t>(std::time(nullptr)),
-		static_cast<uint32_t>(reinterpret_cast<uintptr_t>(this)),
+	/// ===Componentの生成=== ///
+	moveComponent_ = std::make_unique<EnemyMoveComponent>();
+	// MoveComponentの初期化
+	EnemyMoveComponent::MoveConfig moveConfig{
+			.speed = 0.05f,
+			.range = 20.0f,
+			.interval = 5.0f,
+			.waitTime = 1.5f,
+			. rotationSpeed = 0.1f
 	};
-	randomEngine_.seed(seed);
+	moveComponent_->Initialize(transform_.translate, moveConfig);
 
 	// オブジェクトの色設定
 	color_ = { 1.0f, 0.0f, 1.0f, 1.0f };
@@ -126,11 +128,7 @@ void BaseEnemy::Draw(BlendMode mode) {
 void BaseEnemy::Information() {
 #ifdef USE_IMGUI
 	// MoveInfo
-	ImGui::Text("移動情報");
-	ImGui::DragFloat("移動速度", &moveInfo_.speed, 0.1f);
-	ImGui::DragFloat("移動範囲", &moveInfo_.range, 0.1f);
-	ImGui::DragFloat("移動間隔", &moveInfo_.interval, 0.1f);
-	ImGui::DragFloat("待機時間", &moveInfo_.waitTime, 0.1f);
+	moveComponent_->Information();
 
 	// AttackInfo
 	ImGui::Text("攻撃情報");
@@ -158,10 +156,10 @@ void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 	enemy->color_ = color_;
 
 	// ===== Move 系(設計値) ===== //
-	enemy->moveInfo_.speed = moveInfo_.speed;
-	enemy->moveInfo_.range = moveInfo_.range;
-	enemy->moveInfo_.interval = moveInfo_.interval;
-	enemy->moveInfo_.waitTime = moveInfo_.waitTime;
+	enemy->moveComponent_->SetSpeed(moveComponent_->GetConfig().speed);
+	enemy->moveComponent_->SetInterval(moveComponent_->GetConfig().interval);
+	enemy->moveComponent_->SetRange(moveComponent_->GetConfig().range);
+	enemy->moveComponent_->SetWaitTime(moveComponent_->GetConfig().waitTime);
 
 	// ===== Attack 系(設計値) ===== //
 	enemy->attackInfo_.distance = attackInfo_.distance;
@@ -220,7 +218,7 @@ void BaseEnemy::OnCollision(Collider* collider) {
 
 				// 色を赤に変更
 				color_ = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 赤色
-				
+
 				// HPを減少
 				baseInfo_.HP--;
 				ParticleService::Emit("Game", transform_.translate);
@@ -230,94 +228,12 @@ void BaseEnemy::OnCollision(Collider* collider) {
 				knockbackInfo_.cooldownTimer = knockbackInfo_.cooldownDuration;
 				knockbackInfo_.isInCooldown = true;
 
-			// チャージ攻撃の時
+				// チャージ攻撃の時
 			} else if (player_->GetStateFlag(actionType::kCharge)) {
 
 			}
 		}
 	}
-}
-
-///-------------------------------------------/// 
-/// 移動処理の開始処理
-///-------------------------------------------///
-void BaseEnemy::CommonMoveInit() {
-	// 速度をリセット
-	baseInfo_.velocity = { 0.0f, 0.0f, 0.0f };
-}
-
-///-------------------------------------------/// 
-/// 移動処理の共通部分
-///-------------------------------------------///
-void BaseEnemy::CommonMove() {
-	// 移動範囲の中心との方向ベクトルを計算(XZ平面)
-	Vector3 toCenter = moveInfo_.rangeCenter - transform_.translate;
-	// 中心からの距離を取得
-	float distanceFromCenter = Length(toCenter);
-
-	/// ===移動処理=== ///
-	if (moveInfo_.isWating) { // 待機中だったら
-
-		// 待機中は移動しない
-		baseInfo_.velocity = { 0.0f, 0.0f, 0.0f }; 
-
-		// 向き方向に回転
-		UpdateRotationTowards(moveInfo_.direction, 0.1f);
-
-		// 回転し終わったら
-		if (isRotationComplete_) { // ここできちんと回転し終わるまで動かさないようにする。
-			// ランダムな時間を設定
-			std::uniform_real_distribution<float> timeDist(1.0f, moveInfo_.interval);
-			moveInfo_.timer = timeDist(randomEngine_);
-
-			// 移動ベクトルを設定
-			baseInfo_.velocity = moveInfo_.direction * moveInfo_.speed;
-			moveInfo_.isWating = false;		// 待機フラグを解除
-			isRotationComplete_ = false;   // 回転完了フラグをリセット
-		}
-
-	} else if (distanceFromCenter > moveInfo_.range) { // 範囲外に出た場合
-
-		// 方向の設定と待機処理の準備
-		PreparNextMove(toCenter);
-
-	} else if (moveInfo_.timer <= 0.0f && !moveInfo_.isWating) { // 範囲内でタイマーが0になったら
-
-		// ランダムな角度と距離を生成
-		std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * Math::Pi());
-		std::uniform_real_distribution<float> distanceDist(0.0f, moveInfo_.range);
-		// ランダムな値の設定
-		float angle = angleDist(randomEngine_);
-		float distance = distanceDist(randomEngine_);
-
-		// 方向ベクトルを円から算出
-		Vector3 offset = {
-			std::cos(angle) * distance,
-			0.0f,
-			std::sin(angle) * distance
-		};
-
-		// 移動先の座標を計算
-		Vector3 target = moveInfo_.rangeCenter + offset;
-		target.y = transform_.translate.y;
-
-		// 方向の設定と待機処理の準備
-		PreparNextMove(target - transform_.translate);
-	}
-}
-
-///-------------------------------------------/// 
-/// // 方向の設定と待機時間の設定
-///-------------------------------------------///
-void BaseEnemy::PreparNextMove(const Vector3& vector) {
-	Vector3 dir = Normalize(vector);
-	dir.y = 0.0f; // Y成分を0にしてXZ平面での方向ベクトルを作成
-	moveInfo_.direction = Normalize(dir); // 方向を保存
-
-	// 待機時間を設定
-	moveInfo_.timer = moveInfo_.waitTime; // 待機時間を設定
-	// 待機フラグをtrueに設定
-	moveInfo_.isWating = true;
 }
 
 ///-------------------------------------------/// 
@@ -407,8 +323,6 @@ void BaseEnemy::advanceTimer() {
 		}
 	} else {
 
-		// 移動タイマーを進める
-		moveInfo_.timer -= baseInfo_.deltaTime;
 
 		// 攻撃用のタイマーを進める
 		if (attackInfo_.timer > 0.0f) {

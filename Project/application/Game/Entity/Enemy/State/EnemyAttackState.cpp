@@ -2,6 +2,8 @@
 // BaseEnemy
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
 #include "application/Game/Entity/Enemy/LongRange/LongRangeEnemy.h"
+// Service
+#include "Engine/System/Service/ParticleService.h"
 // State
 #include "EnemyMoveState.h"
 
@@ -21,6 +23,7 @@ void EnemyAttackState::Enter(BaseEnemy* enemy) {
 	if (auto* lr = dynamic_cast<LongRangeEnemy*>(enemy_)) {
 		lr->SetlastYaw();
 	}
+	//ParticleService::Emit("EnemyAttack", enemy->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 
@@ -37,6 +40,7 @@ void EnemyAttackState::Update(BaseEnemy * enemy) {
 	/// ===Stateの変更=== ///
 	// preフラグがtrueでisAttackがfalseの時
 	if (!enemy_->GetAttackInfo().isAttack && preIsAttack_) {
+		//ParticleService::StopParticle("EnemyAttack");
 		enemy_->ChangeState(std::make_unique<EnemyMoveState>());
 	}
 }

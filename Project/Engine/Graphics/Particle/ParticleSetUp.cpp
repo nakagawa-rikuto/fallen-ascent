@@ -21,6 +21,7 @@
 ParticleSetUp::ParticleSetUp() {}
 ParticleSetUp::~ParticleSetUp() { 
 	vertex_.reset();
+	index_.reset();
 	common_.reset();
 }
 
@@ -52,6 +53,7 @@ void ParticleSetUp::Initialze(const std::string& filename, const uint32_t kNumMa
 
 	/// ===生成=== ///
 	vertex_ = std::make_unique<VertexBuffer3D>();
+	index_ = std::make_unique<IndexBuffer3D>();
 	common_ = std::make_unique<ParticleCommon>();
 
 	/// ===vertex=== ///
@@ -64,6 +66,17 @@ void ParticleSetUp::Initialze(const std::string& filename, const uint32_t kNumMa
 	vertexBufferView_.BufferLocation = vertex_->GetBuffer()->GetGPUVirtualAddress();
 	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData3D) * modelData_.vertices.size());
 	vertexBufferView_.StrideInBytes = sizeof(VertexData3D);
+
+	/// ===index=== ///
+	index_->Create(device, sizeof(uint32_t) * modelData_.indices.size());
+	index_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&indexData_));
+	// メモリコピー
+	std::memcpy(indexData_, modelData_.indices.data(), sizeof(uint32_t) * modelData_.indices.size());
+	// view
+	indexBufferView_.BufferLocation = index_->GetBuffer()->GetGPUVirtualAddress();
+	indexBufferView_.SizeInBytes = UINT(sizeof(uint32_t) * modelData_.indices.size());
+	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
 	// タイプ次第でVertexBufferを変更する
 	if (type == shapeType::kCircle) {
 		// 円
@@ -101,6 +114,8 @@ void ParticleSetUp::Darw(const uint32_t instance, BlendMode mode) {
 	Render::SetPSO(commandList, PipelineType::Particle, mode);
 	// VertexBufferViewの設定
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
+	// IndexBufferViewの設定
+	commandList->IASetIndexBuffer(&indexBufferView_);
 	// materialの設定
 	common_->Bind(commandList);
 	// Instancingの設定
@@ -108,8 +123,7 @@ void ParticleSetUp::Darw(const uint32_t instance, BlendMode mode) {
 	// テクスチャの設定
 	Render::SetGraphicsRootDescriptorTable(commandList, 2, modelData_.material.textureFilePath);
 	// 描画（Drawコール）
-	commandList->DrawInstanced(UINT(modelData_.vertices.size()), instance, 0, 0);
-
+	commandList->DrawIndexedInstanced(UINT(modelData_.indices.size()), instance, 0, 0, 0);
 }
 
 ///-------------------------------------------/// 
@@ -163,8 +177,6 @@ void ParticleSetUp::SetVertexBufferCylinder() {
 
 		float u = static_cast<float>(index) / static_cast<float>(kCylinderDivide);
 		float uNext = static_cast<float>(index + 1) / static_cast<float>(kCylinderDivide);
-
-		//uint32_t base = index * 6;
 
 		vertexData_[0].position = { -sin * kTopRadius, kHeight, cos * kTopRadius, 1.0f };
 		vertexData_[0].texcoord = { u, 0.0f };
