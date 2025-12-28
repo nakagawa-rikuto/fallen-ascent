@@ -345,6 +345,9 @@
 └── └── └── └── └── ├── CloseRange/
 └── └── └── └── └── └── ├── CloseRangeEnemy.cpp
 └── └── └── └── └── └── └── CloseRangeEnemy.h
+└── └── └── └── └── ├── Component/
+└── └── └── └── └── └── ├── EnemyMoveComponent.cpp
+└── └── └── └── └── └── └── EnemyMoveComponent.h
 └── └── └── └── └── ├── LongRange/
 └── └── └── └── └── └── ├── LongRangeEnemeyBullet.cpp
 └── └── └── └── └── └── ├── LongRangeEnemeyBullet.h
@@ -360,7 +363,9 @@
 └── └── └── └── └──     ├── EnemyAttackState.cpp
 └── └── └── └── └──     ├── EnemyAttackState.h
 └── └── └── └── └──     ├── EnemyMoveState.cpp
-└── └── └── └── └──     └── EnemyMoveState.h
+└── └── └── └── └──     ├── EnemyMoveState.h
+└── └── └── └── └──     ├── EnemyPrePareAttackState.cpp
+└── └── └── └── └──     └── EnemyPrePareAttackState.h
 └── └── └── └── ├── GameCharacter/
 └── └── └── └── └── ├── GameCharacter.cpp
 └── └── └── └── └── ├── GameCharacter.h
@@ -535,8 +540,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\State\EnemyAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\State\EnemyMoveState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\Manager\EnemyManager.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp" />
     <ClCompile Include="application\Scene\GameScene.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSRootSignature.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.cpp" />
     <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp" />
@@ -687,7 +694,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyMoveState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Manager\EnemyManager.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.h" />
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.h" />
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
@@ -1552,6 +1561,8 @@ File Path: Project/DeathsDoor.vcxproj.filters
     <ClCompile Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.cpp" />
     <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp" />
     <ClCompile Include="Engine\Scene\Transition\SceneTransitionManager.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -2013,6 +2024,8 @@ File Path: Project/DeathsDoor.vcxproj.filters
     <ClInclude Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.h" />
     <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h" />
     <ClInclude Include="Engine\Scene\Transition\SceneTransitionManager.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -6776,10 +6789,10 @@ struct ParticlePhysicsSettings {
 	Vector3 velocityMin = { -1.0f, 1.0f, -1.0f };      // 速度の最小値
 	Vector3 velocityMax = { 1.0f, 5.0f, 1.0f };        // 速度の最大値
 	Vector3 acceleration = { 0.0f, 0.0f, 0.0f };       // 加速度
-	float gravity = 0.0f;                               // 重力
-	float explosionRadius = 1.0f;                       // 爆発半径
+	float gravity = 0.0f;                              // 重力
+    Vector3 explosionRange = { 1.0f, 1.0f, 1.0f };     // 発生範囲（X、Y、Z軸）
 	float upwardForce = 0.0f;                          // 上方向の力
-	bool useRandomVelocity = true;                      // ランダム速度を使用
+	bool useRandomVelocity = true;                     // ランダム速度を使用
 };
 
 ///=====================================================/// 
@@ -6791,9 +6804,9 @@ struct ParticleAppearanceSettings {
 	Vector3 startScaleMin = { 1.0f, 1.0f, 1.0f };     // 開始スケール最小
 	Vector3 startScaleMax = { 1.0f, 1.0f, 1.0f };     // 開始スケール最大
 	Vector3 endScale = { 0.5f, 0.5f, 0.5f };          // 終了スケール
-	std::string texturePath = "";                      // テクスチャパス
-	bool useColorGradient = false;                     // 色のグラデーション使用
-	bool useScaleAnimation = false;                    // スケールアニメーション使用
+	std::string texturePath = "";                     // テクスチャパス
+	bool useColorGradient = false;                    // 色のグラデーション使用
+	bool useScaleAnimation = false;                   // スケールアニメーション使用
 };
 
 ///=====================================================/// 
@@ -6802,8 +6815,8 @@ struct ParticleAppearanceSettings {
 struct ParticleRotationSettings {
 	Vector3 rotationSpeedMin = { 0.0f, 0.0f, 0.0f };  // 回転速度最小
 	Vector3 rotationSpeedMax = { 0.0f, 0.0f, 0.0f };  // 回転速度最大
-	bool randomRotation = false;                       // ランダム回転を使用
-	bool enableRotation = false;                       // 回転を有効化
+	bool randomRotation = false;                      // ランダム回転を使用
+	bool enableRotation = false;                      // 回転を有効化
 };
 
 ///=====================================================/// 
@@ -6839,7 +6852,7 @@ struct ParticleMotionSettings {
     float velocityDamping = 0.95f;         // 速度減衰率(0.0~1.0)
 
     // ビルボード回転
-    bool enableBillboardRotation = true;   // ビルボード回転を有効化
+    bool enableBillboardRotation = false;   // ビルボード回転を有効化
     float billboardRotationSpeed = 3.0f;   // ビルボード回転速度
 };
 
@@ -6858,8 +6871,8 @@ struct ParticleEmissionPattern {
 
     Pattern pattern = Pattern::Sphere;
     float patternRadius = 0.25f;           // パターンの半径
-    float patternAngle = 45.0f;            // 円錐の角度(度)
-    int particlesPerEmit = 5;              // 1回の発生での粒子数
+    float patternAngle = 0.0f;            // 円錐の角度(度)
+    int particlesPerEmit = 5;             // 1回の発生での粒子数
 };
 
 ///=====================================================/// 
@@ -13807,7 +13820,7 @@ nlohmann::json ParticleDefinition::ToJson() const {
 		{"velocityMax", Vector3ToJson(physics.velocityMax)},
 		{"acceleration", Vector3ToJson(physics.acceleration)},
 		{"gravity", physics.gravity},
-		{"explosionRadius", physics.explosionRadius},
+		{"explosionRange", Vector3ToJson(physics.explosionRange)},
 		{"upwardForce", physics.upwardForce},
 		{"useRandomVelocity", physics.useRandomVelocity}
 	};
@@ -13875,7 +13888,13 @@ ParticleDefinition ParticleDefinition::FromJson(const nlohmann::json& json) {
 		if (p.contains("velocityMax")) def.physics.velocityMax = JsonToVector3(p["velocityMax"]);
 		if (p.contains("acceleration")) def.physics.acceleration = JsonToVector3(p["acceleration"]);
 		if (p.contains("gravity")) def.physics.gravity = p["gravity"];
-		if (p.contains("explosionRadius")) def.physics.explosionRadius = p["explosionRadius"];
+		if (p.contains("explosionRange")) {
+			def.physics.explosionRange = JsonToVector3(p["explosionRange"]);
+		} else if (p.contains("explosionRadius")) {
+			// 古い形式（float）の場合は全軸に同じ値を設定
+			float radius = p["explosionRadius"];
+			def.physics.explosionRange = { radius, radius, radius };
+		}
 		if (p.contains("upwardForce")) def.physics.upwardForce = p["upwardForce"];
 		if (p.contains("useRandomVelocity")) def.physics.useRandomVelocity = p["useRandomVelocity"];
 	}
@@ -14218,20 +14237,20 @@ ParticleData ParticleFactory::CreateParticle(
     // 回転の初期化
     particle.transform.rotate = { 0.0f, 0.0f, 0.0f };
 
-    // 位置の設定（爆発半径を考慮）
+    // 位置の設定（爆発範囲を考慮）
     Vector3 offset = { 0.0f, 0.0f, 0.0f };
-    if (definition.physics.explosionRadius > 0.0f) {
-        std::uniform_real_distribution<float> distAngle(0.0f, 2.0f * std::numbers::pi_v<float>);
-        std::uniform_real_distribution<float> distRadius(0.0f, definition.physics.explosionRadius);
+    if (definition.physics.explosionRange.x > 0.0f ||
+        definition.physics.explosionRange.y > 0.0f ||
+        definition.physics.explosionRange.z > 0.0f) {
 
-        float angle1 = distAngle(randomEngine);
-        float angle2 = distAngle(randomEngine);
-        float radius = distRadius(randomEngine);
+        std::uniform_real_distribution<float> distX(-definition.physics.explosionRange.x, definition.physics.explosionRange.x);
+        std::uniform_real_distribution<float> distY(-definition.physics.explosionRange.y, definition.physics.explosionRange.y);
+        std::uniform_real_distribution<float> distZ(-definition.physics.explosionRange.z, definition.physics.explosionRange.z);
 
         offset = {
-            radius * std::sin(angle1) * std::cos(angle2),
-            radius * std::sin(angle1) * std::sin(angle2),
-            radius * std::cos(angle1)
+            distX(randomEngine),
+            distY(randomEngine),
+            distZ(randomEngine)
         };
     }
     particle.transform.translate = position + offset;
@@ -14354,9 +14373,20 @@ Vector3 ParticleFactory::GenerateRandomVelocity(
         };
     } else {
         // 爆発方向に基づく速度
-        if (definition.physics.explosionRadius > 0.0f) {
-            velocity = Normalize(position) *
-                (definition.physics.velocityMax.x + definition.physics.velocityMax.y + definition.physics.velocityMax.z) / 3.0f;
+        float rangeSum = definition.physics.explosionRange.x +
+            definition.physics.explosionRange.y +
+            definition.physics.explosionRange.z;
+
+        if (rangeSum > 0.0f) {
+            // 正規化されたオフセット位置から放射状の速度を計算
+            Vector3 normalizedOffset = Normalize(position);
+
+            // 速度の最大値の平均を使用
+            float averageMaxVelocity = (definition.physics.velocityMax.x +
+                definition.physics.velocityMax.y +
+                definition.physics.velocityMax.z) / 3.0f;
+
+            velocity = normalizedOffset * averageMaxVelocity;
         } else {
             velocity = definition.physics.velocityMin;
         }
@@ -14697,8 +14727,14 @@ void ParticleGroup::SetParameter(ParticleParameter param, float value) {
     case ParticleParameter::Gravity:
         definition_.physics.gravity = value;
         break;
-    case ParticleParameter::ExplosionRadius:
-        definition_.physics.explosionRadius = value;
+    case ParticleParameter::ExplosionRadiusX:
+        definition_.physics.explosionRange.x = value;
+        break;
+    case ParticleParameter::ExplosionRadiusY:
+        definition_.physics.explosionRange.y = value;
+        break;
+    case ParticleParameter::ExplosionRadiusZ:
+        definition_.physics.explosionRange.z = value;
         break;
     case ParticleParameter::UpwardForce:
         definition_.physics.upwardForce = value;
@@ -14858,7 +14894,7 @@ ParticleData ParticleGroup::MakeParticle(const Vector3& translate) {
     // 基本パーティクルを生成
     ParticleData particle = ParticleFactory::CreateParticle(definition_, randomEngine_, translate);
 
-    // 🆕 軌跡モードの場合、エミッタの回転を考慮
+    // 軌跡モードの場合、エミッタの回転を考慮
     if (definition_.advanced.isTrajectoryParticle) {
         // エミッタの回転をクォータニオンに変換
         Quaternion emitterQuat = Math::QuaternionFromVector(group_.transform.rotate);
@@ -14966,30 +15002,34 @@ void ParticleGroup::UpdateParticles() {
         // 基本更新（ParticleFactory使用）
         ParticleFactory::UpdateParticle(*it, definition_, kDeltaTime_, randomEngine_);
 
-        // 軌跡専用の追加処理
-        if (definition_.advanced.isTrajectoryParticle) {
-            float progress = it->currentTime / it->lifeTime;
+        // 進行度の計算
+        float progress = it->currentTime / it->lifeTime;
 
-            // エミッタ追従
-            if (definition_.advanced.motion.followEmitter) {
-                Vector3 followOffset = emitterDelta * definition_.advanced.motion.followStrength;
-                it->transform.translate += followOffset;
-            }
+        // エミッタ追従
+        if (definition_.advanced.motion.followEmitter) {
+            Vector3 followOffset = emitterDelta * definition_.advanced.motion.followStrength;
+            it->transform.translate += followOffset;
+        }
 
-            // 速度減衰
-            if (definition_.advanced.motion.velocityDamping < 1.0f) {
-                it->velocity = it->velocity * definition_.advanced.motion.velocityDamping;
-            }
+        // 速度減衰
+        if (definition_.advanced.motion.velocityDamping < 1.0f) {
+            it->velocity = it->velocity * definition_.advanced.motion.velocityDamping;
+        }
 
-            // 渦巻き運動
-            if (definition_.advanced.motion.enableSwirling) {
-                ApplySwirlMotion(*it, progress);
-            }
+        // 渦巻き運動
+        if (definition_.advanced.motion.enableSwirling) {
+            ApplySwirlMotion(*it, progress);
+        }
 
-            // 回転影響
-            if (definition_.advanced.motion.useRotationInfluence) {
-                ApplyRotationInfluence(*it, progress);
-            }
+        // 回転影響
+        if (definition_.advanced.motion.useRotationInfluence) {
+            ApplyRotationInfluence(*it, progress);
+        }
+
+        // ビルボード回転
+        if (definition_.advanced.motion.enableBillboardRotation) {
+            float rotationSpeed = definition_.advanced.motion.billboardRotationSpeed;
+			it->transform.rotate.z += rotationSpeed * kDeltaTime_;
         }
 
         // インスタンシング更新
@@ -15223,7 +15263,9 @@ std::string ParticleParameterUtils::ToString(ParticleParameter param) {
     switch (param) {
         // 物理パラメータ
     case ParticleParameter::Gravity:           return "gravity";
-    case ParticleParameter::ExplosionRadius:   return "explosionRadius";
+    case ParticleParameter::ExplosionRadiusX:  return "explosionRadiusX";
+    case ParticleParameter::ExplosionRadiusY:  return "explosionRadiusY";
+    case ParticleParameter::ExplosionRadiusZ:  return "explosionRadiusZ";
     case ParticleParameter::UpwardForce:       return "upwardForce";
     case ParticleParameter::AccelerationX:     return "accelerationX";
     case ParticleParameter::AccelerationY:     return "accelerationY";
@@ -15270,7 +15312,9 @@ bool ParticleParameterUtils::FromString(const std::string& str, ParticleParamete
     static const std::unordered_map<std::string, ParticleParameter> stringToEnum = {
         // 物理パラメータ
         {"gravity", ParticleParameter::Gravity},
-        {"explosionRadius", ParticleParameter::ExplosionRadius},
+        {"explosionRadiuX", ParticleParameter::ExplosionRadiusX},
+        {"explosionRadiuY", ParticleParameter::ExplosionRadiusY},
+        {"explosionRadiuZ", ParticleParameter::ExplosionRadiusZ},
         {"upwardForce", ParticleParameter::UpwardForce},
         {"accelerationX", ParticleParameter::AccelerationX},
         {"accelerationY", ParticleParameter::AccelerationY},
@@ -15322,7 +15366,9 @@ std::string ParticleParameterUtils::GetDescription(ParticleParameter param) {
     switch (param) {
         // 物理パラメータ
     case ParticleParameter::Gravity:           return "重力加速度";
-    case ParticleParameter::ExplosionRadius:   return "爆発半径";
+    case ParticleParameter::ExplosionRadiusX:  return "X軸の発生半径";
+    case ParticleParameter::ExplosionRadiusY:  return "Y軸の発生半径";
+    case ParticleParameter::ExplosionRadiusZ:  return "Z軸の発生半径";
     case ParticleParameter::UpwardForce:       return "上方向の初期加速";
     case ParticleParameter::AccelerationX:     return "X軸加速度";
     case ParticleParameter::AccelerationY:     return "Y軸加速度";
@@ -15374,8 +15420,10 @@ File Path: Project/Engine/Graphics/Particle/ParticleParameter.h
 ///=====================================================///
 enum class ParticleParameter {
     // 物理パラメータ
-    Gravity,                // 重力
-    ExplosionRadius,        // 爆発半径
+    Gravity,               // 重力
+    ExplosionRadiusX,      // 発生範囲
+    ExplosionRadiusY,      // 発生範囲
+    ExplosionRadiusZ,      // 発生範囲
     UpwardForce,           // 上方向の力
     AccelerationX,         // 加速度X
     AccelerationY,         // 加速度Y
@@ -15467,6 +15515,7 @@ File Path: Project/Engine/Graphics/Particle/ParticleSetUp.cpp
 ParticleSetUp::ParticleSetUp() {}
 ParticleSetUp::~ParticleSetUp() { 
 	vertex_.reset();
+	index_.reset();
 	common_.reset();
 }
 
@@ -15498,6 +15547,7 @@ void ParticleSetUp::Initialze(const std::string& filename, const uint32_t kNumMa
 
 	/// ===生成=== ///
 	vertex_ = std::make_unique<VertexBuffer3D>();
+	index_ = std::make_unique<IndexBuffer3D>();
 	common_ = std::make_unique<ParticleCommon>();
 
 	/// ===vertex=== ///
@@ -15510,6 +15560,17 @@ void ParticleSetUp::Initialze(const std::string& filename, const uint32_t kNumMa
 	vertexBufferView_.BufferLocation = vertex_->GetBuffer()->GetGPUVirtualAddress();
 	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData3D) * modelData_.vertices.size());
 	vertexBufferView_.StrideInBytes = sizeof(VertexData3D);
+
+	/// ===index=== ///
+	index_->Create(device, sizeof(uint32_t) * modelData_.indices.size());
+	index_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&indexData_));
+	// メモリコピー
+	std::memcpy(indexData_, modelData_.indices.data(), sizeof(uint32_t) * modelData_.indices.size());
+	// view
+	indexBufferView_.BufferLocation = index_->GetBuffer()->GetGPUVirtualAddress();
+	indexBufferView_.SizeInBytes = UINT(sizeof(uint32_t) * modelData_.indices.size());
+	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
 	// タイプ次第でVertexBufferを変更する
 	if (type == shapeType::kCircle) {
 		// 円
@@ -15547,6 +15608,8 @@ void ParticleSetUp::Darw(const uint32_t instance, BlendMode mode) {
 	Render::SetPSO(commandList, PipelineType::Particle, mode);
 	// VertexBufferViewの設定
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
+	// IndexBufferViewの設定
+	commandList->IASetIndexBuffer(&indexBufferView_);
 	// materialの設定
 	common_->Bind(commandList);
 	// Instancingの設定
@@ -15554,8 +15617,7 @@ void ParticleSetUp::Darw(const uint32_t instance, BlendMode mode) {
 	// テクスチャの設定
 	Render::SetGraphicsRootDescriptorTable(commandList, 2, modelData_.material.textureFilePath);
 	// 描画（Drawコール）
-	commandList->DrawInstanced(UINT(modelData_.vertices.size()), instance, 0, 0);
-
+	commandList->DrawIndexedInstanced(UINT(modelData_.indices.size()), instance, 0, 0, 0);
 }
 
 ///-------------------------------------------/// 
@@ -15610,8 +15672,6 @@ void ParticleSetUp::SetVertexBufferCylinder() {
 		float u = static_cast<float>(index) / static_cast<float>(kCylinderDivide);
 		float uNext = static_cast<float>(index + 1) / static_cast<float>(kCylinderDivide);
 
-		//uint32_t base = index * 6;
-
 		vertexData_[0].position = { -sin * kTopRadius, kHeight, cos * kTopRadius, 1.0f };
 		vertexData_[0].texcoord = { u, 0.0f };
 		vertexData_[0].normal = { -sin, 0.0f, cos };
@@ -15645,7 +15705,8 @@ File Path: Project/Engine/Graphics/Particle/ParticleSetUp.h
 #pragma once
 /// ===Icnlde=== ///
 // Buffer
-#include "Engine/Graphics/3d/base/VertexBuffer3D.h"
+#include "Engine/Graphics/3d/Base/VertexBuffer3D.h"
+#include "Engine/Graphics/3d/Base/IndexBuffer3D.h"
 #include "ParticleCommon.h"
 // Pipleine
 #include "Engine/DataInfo/PipelineStateObjectType.h"
@@ -15653,7 +15714,7 @@ File Path: Project/Engine/Graphics/Particle/ParticleSetUp.h
 #include <memory>
 
 /// ===前方宣言=== ///
-class Camera;
+class GameCamera;
 class SRVManager;
 
 ///=====================================================/// 
@@ -15701,13 +15762,16 @@ private:
 
 	/// ===バッファリソース=== ///
 	std::unique_ptr<VertexBuffer3D> vertex_;
+	std::unique_ptr<IndexBuffer3D> index_;
 	std::unique_ptr<ParticleCommon> common_;
 
 	/// ===バッファリソース内のデータを指すポインタ=== ///
 	VertexData3D* vertexData_ = nullptr;
+	uint32_t* indexData_ = nullptr;
 
 	/// ===バッファビュー=== ///
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+	D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
 	
 	/// ===モデルデータ=== ///
 	ModelData modelData_;
@@ -18836,7 +18900,7 @@ void MyGame::Initialize(const wchar_t* title) {
 	// シーンマネージャの初期化
 	sceneManager_ = std::make_unique<SceneManager>();
 	sceneManager_->Initialize(sceneFactory_.get());
-	sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
+	sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
 }
  
 ///-------------------------------------------/// 
@@ -18894,6 +18958,10 @@ void MyGame::LoadTexture() {
 	Loader::LoadTexture("circle", "Particle/circle.png");
 	Loader::LoadTexture("circle2", "Particle/circle2.png");
 	Loader::LoadTexture("gradationLine", "Particle/gradationLine.png");
+	Loader::LoadTexture("Spark", "Particle/Spark.png");
+	Loader::LoadTexture("FlameEye", "Particle/FlameEye.png");
+	Loader::LoadTexture("Fire", "Particle/Fire.png");
+
 	// OffScreenで使用
 	Loader::LoadTexture("noise0", "OffScreen/noise0.png");
 	Loader::LoadTexture("noise1", "OffScreen/noise1.png");
@@ -19812,11 +19880,10 @@ void ParticleEditor::Render() {
 ///-------------------------------------------/// 
 /// プレビュー描画
 ///-------------------------------------------///
-void ParticleEditor::DrawPreview(BlendMode mode) {
-    mode;
+void ParticleEditor::DrawPreview() {
 #ifdef USE_IMGUI
     if (isPlaying_ && previewParticle_) {
-        previewParticle_->Draw(mode);
+        previewParticle_->Draw(previewBlendMode_);
     }
 #endif // USE_IMGUI
 }
@@ -20160,15 +20227,6 @@ void ParticleEditor::RenderPhysicsSettings() {
     ImGui::TextDisabled("発生時にY軸速度に加算される値");
     ImGui::Spacing();
     ImGui::Separator();
-
-    /// ===発生範囲の設定=== ///
-    ImGui::Text("発生範囲");
-    if (ImGui::DragFloat("発生半径", &currentDefinition_.physics.explosionRadius, 0.1f, 0.0f, 20.0f)) {
-        if (previewParticle_) {
-            previewParticle_->SetParameter(ParticleParameter::ExplosionRadius, currentDefinition_.physics.explosionRadius);
-        }
-    }
-    ImGui::TextDisabled("発生位置からのランダム範囲");
 #endif // USE_IMGUI
 }
 
@@ -20208,49 +20266,6 @@ void ParticleEditor::RenderAppearanceSettings() {
     ImGui::Spacing();
     ImGui::Separator();
 
-    // ===カラーグラデーション設定=== ///
-    ImGui::SeparatorText("高度なカラー設定");
-    auto& colorGradient = currentDefinition_.advanced.colorGradient;
-    // カラーグラデーション使用
-    if (ImGui::Checkbox("カラーグラデーション使用", &colorGradient.useGradient)) {
-        if (previewParticle_) {
-            previewParticle_->SetDefinition(currentDefinition_);
-        }
-    }
-    // カラーグラデーションパラメータの設定
-    if (colorGradient.useGradient) {
-        ImGui::Indent();
-        // 主要色
-        if (ImGui::ColorEdit4("主要色", &colorGradient.primaryColor.x)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-        // セカンダリ色
-        if (ImGui::ColorEdit4("セカンダリ色", &colorGradient.secondaryColor.x)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-        // ブレンドカーブ
-        if (ImGui::DragFloat("ブレンドカーブ", &colorGradient.colorBlendCurve, 0.1f, 0.1f, 5.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-        ImGui::TextDisabled("1.0 = 線形, > 1.0 = 非線形");
-        // 色振動
-        if (ImGui::Checkbox("色を振動させる", &colorGradient.oscillateColor)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-
-        ImGui::Unindent();
-    }
-    ImGui::Spacing();
-    ImGui::Separator();
-
     /// ===スケール設定=== ///
     ImGui::Text("スケール設定");
     if (ImGui::Checkbox("スケールアニメーション", &currentDefinition_.appearance.useScaleAnimation)) {
@@ -20269,44 +20284,6 @@ void ParticleEditor::RenderAppearanceSettings() {
     }
     if (scaleChanged && previewParticle_) {
         previewParticle_->SetDefinition(currentDefinition_);
-    }
-    ImGui::Spacing();
-    ImGui::Separator();
-
-    // ===スケールアニメーション設定=== ///
-    ImGui::SeparatorText("高度なスケールアニメーション");
-    auto& scaleAnim = currentDefinition_.advanced.scaleAnimation;
-    // アニメーションタイプ選択
-    const char* animTypes[] = { "なし", "線形", "徐々に大きく", "徐々に小さく", "膨らんで縮む", "脈動" };
-    int currentAnimType = static_cast<int>(scaleAnim.type);
-    if (ImGui::Combo("アニメーションタイプ", &currentAnimType, animTypes, IM_ARRAYSIZE(animTypes))) {
-        scaleAnim.type = static_cast<ParticleScaleAnimation::AnimationType>(currentAnimType);
-        if (previewParticle_) {
-            previewParticle_->SetDefinition(currentDefinition_);
-        }
-    }
-    // アニメーションパラメータの設定
-    if (scaleAnim.type != ParticleScaleAnimation::AnimationType::None) {
-        ImGui::Indent();
-        // 開始スケール
-        if (ImGui::DragFloat("開始スケール", &scaleAnim.startScale, 0.01f, 0.0f, 10.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-        // 最大スケール
-        if (ImGui::DragFloat("最大スケール", &scaleAnim.maxScale, 0.01f, 0.0f, 10.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-        // 終了スケール
-        if (ImGui::DragFloat("終了スケール", &scaleAnim.endScale, 0.01f, 0.0f, 10.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-        ImGui::Unindent();
     }
     ImGui::Spacing();
     ImGui::Separator();
@@ -20417,6 +20394,21 @@ void ParticleEditor::RenderEmissionSettings() {
     ImGui::Spacing();
     ImGui::Separator();
 
+    /// ===発生範囲の設定=== ///
+    ImGui::Text("発生範囲");
+    bool rangeChanged = false;
+    rangeChanged |= ImGui::DragFloat("X軸範囲", &currentDefinition_.physics.explosionRange.x, 0.1f, 0.0f, 20.0f);
+    rangeChanged |= ImGui::DragFloat("Y軸範囲", &currentDefinition_.physics.explosionRange.y, 0.1f, 0.0f, 20.0f);
+    rangeChanged |= ImGui::DragFloat("Z軸範囲", &currentDefinition_.physics.explosionRange.z, 0.1f, 0.0f, 20.0f);
+    ImGui::TextDisabled("各軸方向の発生範囲（±指定値の範囲内）");
+
+    if (rangeChanged && previewParticle_) {
+        previewParticle_->SetDefinition(currentDefinition_);
+    }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+
     /// ===発生モード=== ///
     ImGui::Text("発生モード");
     if (ImGui::Checkbox("一度に大量", &currentDefinition_.emission.isBurst)) {
@@ -20463,46 +20455,9 @@ void ParticleEditor::RenderEmissionSettings() {
         ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%u 個ずつ発生", actualCount);
     }
 
-    // ===発生パターン設定=== ///
-    ImGui::SeparatorText("発生パターン");
-    const char* patterns[] = { "点", "球", "円錐", "軌跡", "リング", "バースト" };
-    int currentPattern = static_cast<int>(currentDefinition_.advanced.emissionPattern.pattern);
-    if (ImGui::Combo("発生パターン", &currentPattern, patterns, IM_ARRAYSIZE(patterns))) {
-        currentDefinition_.advanced.emissionPattern.pattern =
-            static_cast<ParticleEmissionPattern::Pattern>(currentPattern);
-        if (previewParticle_) {
-            previewParticle_->SetDefinition(currentDefinition_);
-        }
-    }
-    // パターンに応じたパラメータ
-    auto& pattern = currentDefinition_.advanced.emissionPattern;
-    // 半径設定
-    if (pattern.pattern != ParticleEmissionPattern::Pattern::Point) {
-        if (ImGui::DragFloat("パターン半径", &pattern.patternRadius, 0.01f, 0.0f, 10.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-    }
-    // 円錐角度設定
-    if (pattern.pattern == ParticleEmissionPattern::Pattern::Cone) {
-        if (ImGui::DragFloat("円錐角度", &pattern.patternAngle, 1.0f, 0.0f, 180.0f)) {
-            if (previewParticle_) {
-                previewParticle_->SetDefinition(currentDefinition_);
-            }
-        }
-        ImGui::TextDisabled("円錐の開き角度（度）");
-    }
-    // 発生粒子数設定
-    if (ImGui::DragInt("発生粒子数", &pattern.particlesPerEmit, 1, 1, 50)) {
-        if (previewParticle_) {
-            previewParticle_->SetDefinition(currentDefinition_);
-        }
-    }
     ImGui::TextDisabled("1回の発生で生成される粒子数");
     ImGui::Spacing();
     ImGui::Separator();
-
 #endif // USE_IMGUI
 }
 
@@ -20513,11 +20468,15 @@ void ParticleEditor::RenderAdvancedSettings() {
 #ifdef USE_IMGUI
     ImGui::SeparatorText("動作設定");
 
-    // ===軌跡パーティクルモード=== ///
-    ImGui::Text("パーティクルタイプ");
+    // ===軌跡パーティクル設定=== ///
+    ImGui::SeparatorText("軌跡パーティクル");
     if (ImGui::Checkbox("軌跡パーティクルモード", &currentDefinition_.advanced.isTrajectoryParticle)) {
         if (previewParticle_) {
             previewParticle_->SetDefinition(currentDefinition_);
+        }
+        // 軌跡モードをオフにした場合、プレビューモードも自動でオフ
+        if (!currentDefinition_.advanced.isTrajectoryParticle) {
+            trajectoryPreviewMode_ = false;
         }
     }
     ImGui::TextDisabled("攻撃の軌道などに使用する連続発生モード");
@@ -20525,6 +20484,7 @@ void ParticleEditor::RenderAdvancedSettings() {
     if (currentDefinition_.advanced.isTrajectoryParticle) {
         ImGui::Indent();
 
+        // 軌跡間隔設定
         if (ImGui::DragFloat("軌跡間隔 (秒)", &currentDefinition_.advanced.trailSpacing, 0.001f, 0.001f, 0.1f, "%.3f")) {
             if (previewParticle_) {
                 previewParticle_->SetDefinition(currentDefinition_);
@@ -20535,44 +20495,37 @@ void ParticleEditor::RenderAdvancedSettings() {
         ImGui::Checkbox("停止時にクリア", &currentDefinition_.advanced.clearOnStop);
         ImGui::TextDisabled("発生停止時に既存のパーティクルをクリア");
 
-        ImGui::Unindent();
-    }
-    ImGui::Spacing();
-    ImGui::Separator();
-
-    /// ===軌跡プレビューセクション=== ///
-    ImGui::SeparatorText("軌跡プレビュー");
-    if (ImGui::Checkbox("軌跡プレビューモード", &trajectoryPreviewMode_)) {
-        if (trajectoryPreviewMode_ && !currentDefinition_.advanced.isTrajectoryParticle) {
-            // 警告表示
-            trajectoryPreviewMode_ = false;
-        }
-    }
-    ImGui::TextDisabled("エミッタを自動で移動させて軌跡を確認");
-
-    if (trajectoryPreviewMode_) {
-        ImGui::Indent();
-
-        ImGui::Text("軌跡経路設定");
-        ImGui::DragFloat3("開始位置", &trajectoryStartPos_.x, 0.1f, -20.0f, 20.0f);
-        ImGui::DragFloat3("終了位置", &trajectoryEndPos_.x, 0.1f, -20.0f, 20.0f);
-        ImGui::DragFloat("移動速度", &trajectorySpeed_, 0.1f, 0.1f, 5.0f);
-        ImGui::DragFloat3("基本回転", &trajectoryRotation_.x, 0.1f, -6.28f, 6.28f);
-
         ImGui::Spacing();
+        ImGui::Separator();
 
-        // 進行状況表示
-        ImGui::ProgressBar(trajectoryProgress_, ImVec2(-1, 0));
-        ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f),
-            "進行度: %.1f%% | 位置: (%.1f, %.1f, %.1f)",
-            trajectoryProgress_ * 100.0f,
-            previewPosition_.x,
-            previewPosition_.y,
-            previewPosition_.z
-        );
+        // 軌跡プレビュー設定
+        ImGui::Text("プレビュー設定");
+        ImGui::Checkbox("軌跡プレビューモード", &trajectoryPreviewMode_);
+        ImGui::TextDisabled("エミッタを自動で移動させて軌跡を確認");
+
+        if (trajectoryPreviewMode_) {
+            ImGui::Spacing();
+            ImGui::Text("軌跡経路設定");
+            ImGui::DragFloat3("開始位置", &trajectoryStartPos_.x, 0.1f, -20.0f, 20.0f);
+            ImGui::DragFloat3("終了位置", &trajectoryEndPos_.x, 0.1f, -20.0f, 20.0f);
+            ImGui::DragFloat("移動速度", &trajectorySpeed_, 0.1f, 0.1f, 5.0f);
+            ImGui::DragFloat3("基本回転", &trajectoryRotation_.x, 0.1f, -6.28f, 6.28f);
+
+            ImGui::Spacing();
+
+            // 進行状況表示
+            ImGui::ProgressBar(trajectoryProgress_, ImVec2(-1, 0));
+            ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f),
+                "進行度: %.1f%% | 位置: (%.1f, %.1f, %.1f)",
+                trajectoryProgress_ * 100.0f,
+                previewPosition_.x,
+                previewPosition_.y,
+                previewPosition_.z
+            );
+        }
+
         ImGui::Unindent();
     }
-
     ImGui::Spacing();
     ImGui::Separator();
 
@@ -20716,6 +20669,24 @@ void ParticleEditor::RenderPreviewControls() {
 
     // 自動リプレイチェックボックス
     ImGui::Checkbox("自動リプレイ", &autoReplay_);
+    ImGui::Spacing();
+    ImGui::Separator();
+
+    // ブレンドモード選択
+    ImGui::Text("ブレンドモード");
+    const char* blendModes[] = {
+        "なし",
+        "通常",
+        "加算",
+        "減算",
+        "乗算",
+        "スクリーン"
+    };
+    int currentBlendMode = static_cast<int>(previewBlendMode_);
+    if (ImGui::Combo("##BlendMode", &currentBlendMode, blendModes, IM_ARRAYSIZE(blendModes))) {
+        previewBlendMode_ = static_cast<BlendMode>(currentBlendMode);
+    }
+    ImGui::TextDisabled("プレビュー描画時の合成モード");
 
     // プレビュー状態表示
     if (isPlaying_ && previewParticle_) {
@@ -20800,6 +20771,10 @@ void ParticleEditor::UpdateAvailableTextures() {
     availableTextures_.push_back("circle");
     availableTextures_.push_back("circle2");
     availableTextures_.push_back("gradationLine");
+    availableTextures_.push_back("Spark");
+    availableTextures_.push_back("FlameEye");
+    availableTextures_.push_back("Fire");
+
 #endif // USE_IMGUI   
 }
 
@@ -21019,7 +20994,7 @@ public:
     /// <summary>
     /// プレビュー描画処理（ゲーム画面に表示）
     /// </summary>
-    void DrawPreview(BlendMode mode = BlendMode::kBlendModeAdd);
+    void DrawPreview();
 
     /// <summary>
     /// エディターの表示/非表示切り替え
@@ -21165,6 +21140,7 @@ private:
     bool isPlaying_ = false;                              // 再生中フラグ
     bool autoReplay_ = true;                              // 自動リプレイ
     Vector3 previewPosition_ = { 0.0f, 0.0f, 0.0f };     // プレビュー位置
+	BlendMode previewBlendMode_ = BlendMode::kBlendModeAdd; // プレビューブレンドモード
 
     /// ===ファイル管理=== ///
     char filePathBuffer_[256] = "Assets/Particles/";     // ファイルパス入力バッファ
@@ -24750,8 +24726,14 @@ void ParticleManager::SetParameter(const std::string& name, ParticleParameter pa
 		case ParticleParameter::Gravity:
 			defIt->second.physics.gravity = value;
 			break;
-		case ParticleParameter::ExplosionRadius:
-			defIt->second.physics.explosionRadius = value;
+		case ParticleParameter::ExplosionRadiusX:
+			defIt->second.physics.explosionRange.x = value;
+			break;
+		case ParticleParameter::ExplosionRadiusY:
+			defIt->second.physics.explosionRange.y = value;
+			break;
+		case ParticleParameter::ExplosionRadiusZ:
+			defIt->second.physics.explosionRange.z = value;
 			break;
 		case ParticleParameter::UpwardForce:
 			defIt->second.physics.upwardForce = value;
@@ -32575,24 +32557,8 @@ File Path: Project/application/Game/Entity/Enemy/Base/BaseEnemy.cpp
 /// デストラクタ
 ///-------------------------------------------///
 BaseEnemy::~BaseEnemy() {
-	object3d_.reset();
 	ColliderService::RemoveCollider(this);
-}
-
-///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-// タイマー
-void BaseEnemy::SetTimer(StateType type, float time) {
-	// typeに応じてタイマーを設定
-	switch (type) {
-	case StateType::Move:
-		moveInfo_.timer = time;
-		break;
-	case StateType::Attack:
-		attackInfo_.timer = time;
-		break;
-	}
+	object3d_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -32600,12 +32566,17 @@ void BaseEnemy::SetTimer(StateType type, float time) {
 ///-------------------------------------------///
 void BaseEnemy::Initialize() {
 
-	// ランダムエンジンの初期化
-	std::seed_seq seed{
-		static_cast<uint32_t>(std::time(nullptr)),
-		static_cast<uint32_t>(reinterpret_cast<uintptr_t>(this)),
+	/// ===Componentの生成=== ///
+	moveComponent_ = std::make_unique<EnemyMoveComponent>();
+	// MoveComponentの初期化
+	EnemyMoveComponent::MoveConfig moveConfig{
+			.speed = 0.05f,
+			.range = 20.0f,
+			.interval = 5.0f,
+			.waitTime = 1.5f,
+			. rotationSpeed = 0.1f
 	};
-	randomEngine_.seed(seed);
+	moveComponent_->Initialize(transform_.translate, moveConfig);
 
 	// オブジェクトの色設定
 	color_ = { 1.0f, 0.0f, 1.0f, 1.0f };
@@ -32678,25 +32649,21 @@ void BaseEnemy::Draw(BlendMode mode) {
 void BaseEnemy::Information() {
 #ifdef USE_IMGUI
 	// MoveInfo
-	ImGui::Text("MoveInfo");
-	ImGui::DragFloat("MoveSpeed", &moveInfo_.speed, 0.1f);
-	ImGui::DragFloat("MoveRange", &moveInfo_.range, 0.1f);
-	ImGui::DragFloat("MoveInterval", &moveInfo_.interval, 0.1f);
-	ImGui::DragFloat("MoveWaitTime", &moveInfo_.waitTime, 0.1f);
+	moveComponent_->Information();
 
 	// AttackInfo
-	ImGui::Text("AttackInfo");
-	ImGui::DragFloat("AttackDistance", &attackInfo_.distance, 0.1f);
-	ImGui::DragFloat("AttackRange", &attackInfo_.range, 0.1f);
-	ImGui::DragFloat("AttackInterval", &attackInfo_.interval, 0.1f);
-	ImGui::DragInt("Power", &attackInfo_.power, 1);
+	ImGui::Text("攻撃情報");
+	ImGui::DragFloat("攻撃可能距離", &attackInfo_.distance, 0.1f);
+	ImGui::DragFloat("攻撃範囲", &attackInfo_.range, 0.1f);
+	ImGui::DragFloat("攻撃間隔", &attackInfo_.interval, 0.1f);
+	ImGui::DragInt("パワー", &attackInfo_.power, 1);
 
 	// KnockbackInfo
-	ImGui::Text("KnockbackInfo");
-	ImGui::DragFloat("CooldownDuration", &knockbackInfo_.cooldownDuration, 0.01f);
-	ImGui::DragFloat("KnockbackForce", &knockbackInfo_.knockbackForce, 0.1f);
-	ImGui::DragFloat("HitColorDuration", &knockbackInfo_.hitColorDuration, 0.01f);
-	ImGui::Checkbox("IsInCooldown", &knockbackInfo_.isInCooldown);
+	ImGui::Text("ノックバック情報");
+	ImGui::DragFloat("クールタイムの持続時間", &knockbackInfo_.cooldownDuration, 0.01f);
+	ImGui::DragFloat("ノックバックの強さ", &knockbackInfo_.knockbackForce, 0.1f);
+	ImGui::DragFloat("色変更時間", &knockbackInfo_.hitColorDuration, 0.01f);
+	ImGui::Checkbox("クール中かどうか", &knockbackInfo_.isInCooldown);
 #endif // USE_IMGUI
 }
 
@@ -32710,10 +32677,10 @@ void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 	enemy->color_ = color_;
 
 	// ===== Move 系(設計値) ===== //
-	enemy->moveInfo_.speed = moveInfo_.speed;
-	enemy->moveInfo_.range = moveInfo_.range;
-	enemy->moveInfo_.interval = moveInfo_.interval;
-	enemy->moveInfo_.waitTime = moveInfo_.waitTime;
+	enemy->moveComponent_->SetSpeed(moveComponent_->GetConfig().speed);
+	enemy->moveComponent_->SetInterval(moveComponent_->GetConfig().interval);
+	enemy->moveComponent_->SetRange(moveComponent_->GetConfig().range);
+	enemy->moveComponent_->SetWaitTime(moveComponent_->GetConfig().waitTime);
 
 	// ===== Attack 系(設計値) ===== //
 	enemy->attackInfo_.distance = attackInfo_.distance;
@@ -32736,11 +32703,12 @@ void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 void BaseEnemy::OnCollision(Collider* collider) {
 
 	// 攻撃用のフラグを立てる
-	attackInfo_.isCollision = true;
+	isCollision_ = true;
 
 	/// ===GameCharacterの衝突=== ///
 	GameCharacter::OnCollision(collider);
 
+	// 早期リターン
 	if (baseInfo_.isDead) {
 		return;
 	}
@@ -32749,7 +32717,7 @@ void BaseEnemy::OnCollision(Collider* collider) {
 	if (collider->GetColliderName() == ColliderName::PlayerWeapon) {
 		// クールタイム中でなければノックバック処理を実行
 		if (!knockbackInfo_.isInCooldown) {
-			// 攻撃状態の時
+			// 通常攻撃の時
 			if (player_->GetStateFlag(actionType::kAttack)) {
 				// Stateを移動状態に変更
 				ChangeState(std::make_unique<EnemyMoveState>());
@@ -32771,7 +32739,7 @@ void BaseEnemy::OnCollision(Collider* collider) {
 
 				// 色を赤に変更
 				color_ = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 赤色
-				
+
 				// HPを減少
 				baseInfo_.HP--;
 				ParticleService::Emit("Game", transform_.translate);
@@ -32781,91 +32749,12 @@ void BaseEnemy::OnCollision(Collider* collider) {
 				knockbackInfo_.cooldownTimer = knockbackInfo_.cooldownDuration;
 				knockbackInfo_.isInCooldown = true;
 
-			// チャージ状態の時
+				// チャージ攻撃の時
 			} else if (player_->GetStateFlag(actionType::kCharge)) {
 
 			}
 		}
 	}
-}
-
-///-------------------------------------------/// 
-/// 移動処理の開始処理
-///-------------------------------------------///
-void BaseEnemy::CommonMoveInit() {
-	// 速度をリセット
-	baseInfo_.velocity = { 0.0f, 0.0f, 0.0f };
-}
-
-///-------------------------------------------/// 
-/// 移動処理の共通部分
-///-------------------------------------------///
-void BaseEnemy::CommonMove() {
-	// 移動範囲の中心との方向ベクトルを計算(XZ平面)
-	Vector3 toCenter = moveInfo_.rangeCenter - transform_.translate;
-	// 中心からの距離を取得
-	float distanceFromCenter = Length(toCenter);
-
-	/// ===移動処理=== ///
-	if (moveInfo_.isWating) { /// ===範囲外に出ていた場合=== ///
-
-		baseInfo_.velocity = { 0.0f, 0.0f, 0.0f }; // 待機中は移動しない
-
-		// 向き方向に回転
-		UpdateRotationTowards(moveInfo_.direction, 0.1f);
-
-		if (moveInfo_.timer <= 0.0f) {
-			// ランダムな時間を設定
-			std::uniform_real_distribution<float> timeDist(1.0f, moveInfo_.interval);
-			moveInfo_.timer = timeDist(randomEngine_);
-
-			// 移動ベクトルを設定
-			baseInfo_.velocity = moveInfo_.direction * moveInfo_.speed;
-			moveInfo_.isWating = false; // 待機フラグを解除
-		}
-
-	} else if (distanceFromCenter > moveInfo_.range) { /// ===範囲外に出ていた場合=== ///
-
-		// 方向の設定と待機処理の準備
-		PreparNextMove(toCenter);
-
-	} else if (moveInfo_.timer <= 0.0f && !moveInfo_.isWating) { /// ===範囲内かつタイマーが切れていた場合=== ///
-
-		// ランダムな角度と距離を生成
-		std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * Math::Pi());
-		std::uniform_real_distribution<float> distanceDist(0.0f, moveInfo_.range);
-		// ランダムな値の設定
-		float angle = angleDist(randomEngine_);
-		float distance = distanceDist(randomEngine_);
-
-		// 方向ベクトルを円から算出
-		Vector3 offset = {
-			std::cos(angle) * distance,
-			0.0f,
-			std::sin(angle) * distance
-		};
-
-		// 移動先の座標を計算
-		Vector3 target = moveInfo_.rangeCenter + offset;
-		target.y = transform_.translate.y;
-
-		// 方向の設定と待機処理の準備
-		PreparNextMove(target - transform_.translate);
-	}
-}
-
-///-------------------------------------------/// 
-/// // 方向の設定と待機時間の設定
-///-------------------------------------------///
-void BaseEnemy::PreparNextMove(const Vector3& vector) {
-	Vector3 dir = Normalize(vector);
-	dir.y = 0.0f; // Y成分を0にしてXZ平面での方向ベクトルを作成
-	moveInfo_.direction = Normalize(dir); // 方向を保存
-
-	// 待機時間を設定
-	moveInfo_.timer = moveInfo_.waitTime; // 待機時間を設定
-	// 待機フラグをtrueに設定
-	moveInfo_.isWating = true;
 }
 
 ///-------------------------------------------/// 
@@ -32929,7 +32818,16 @@ void BaseEnemy::UpdateRotationTowards(const Vector3& direction, float slerpT) {
 
 	// SLerp補間
 	Quaternion result = Math::SLerp(transform_.rotate, targetRotation, slerpT);
-	transform_.rotate = Normalize(result); // ★ 正規化でスケール崩れ防止
+	transform_.rotate = Normalize(result); // 正規化でスケール崩れ防止
+
+	// 回転が完了したかをチェック
+	Quaternion diff = transform_.rotate - targetRotation;
+	float rotationDiff = Math::Norm(diff);
+
+	// 回転差分が十分小さければ完了フラグを立てる
+	if (rotationDiff < 0.01f) {
+		isRotationComplete_ = true;
+	}
 }
 
 ///-------------------------------------------/// 
@@ -32946,8 +32844,6 @@ void BaseEnemy::advanceTimer() {
 		}
 	} else {
 
-		// 移動タイマーを進める
-		moveInfo_.timer -= baseInfo_.deltaTime;
 
 		// 攻撃用のタイマーを進める
 		if (attackInfo_.timer > 0.0f) {
@@ -32983,10 +32879,13 @@ File Path: Project/application/Game/Entity/Enemy/Base/BaseEnemy.h
 ============================================================
 #pragma once
 /// ===Include=== ///
-// Collider
+// GameCharacter
 #include "application/Game/Entity/GameCharacter/GameCharacter.h"
 // State
 #include "application/Game/Entity/Enemy/State/Base/EnemyState.h"
+// Component
+#include "application/Game/Entity/Enemy/Component/EnemyMoveComponent.h"
+
 // c++
 #include <random>
 
@@ -32995,7 +32894,6 @@ class Player;
 
 /// ===StateType=== ///
 enum class StateType {
-	Move,
 	Attack
 };
 
@@ -33004,34 +32902,19 @@ enum class StateType {
 ///=====================================================///
 class BaseEnemy : public GameCharacter<OBBCollider> {
 private: /// ===型定義=== ///
-	/// ===移動情報=== ///
-	struct MoveInfo {
-		float timer;	// タイマー
-		float speed;	// 移動速度
-		float range;	// 移動範囲
-		float interval;	// 移動間隔
-		float waitTime;	// 待機時間
-
-		Vector3 rangeCenter; // 移動範囲の中心
-		Vector3 direction;	 // 移動方向
-
-		bool isWating;	// 待機フラグ
-	};
 
 	/// ===攻撃情報=== ///
 	struct AttackInfo {
-		float timer;	// タイマー
-		float range;	// 攻撃範囲(回転の情報から±)
-		float distance;	// 攻撃可能距離
-		float interval;	// 攻撃間隔
-		int32_t power;	// 待機時間
+		float timer;		// タイマー
+		float range;		// 攻撃範囲(回転の情報から±)
+		float distance;		// 攻撃可能距離
+		float interval;		// 攻撃間隔
+		int32_t power;		// 待機時間
 
 		Vector3 direction;  // 攻撃方向
 		Vector3 playerPos;  // プレイヤーの位置
 
-		bool isCollision; // 衝突フラグ
-
-		bool isAttack;	// 攻撃フラグ
+		bool isAttack;		// 攻撃フラグ
 	};
 
 	/// ===ノックバック情報=== ///
@@ -33077,9 +32960,14 @@ public:
 	virtual void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
 
 	/// <summary>
-	/// ImGui情報の表示
+	/// ImGui情報の表std示
 	/// </summary>
 	virtual void Information()override;
+
+	/// <summary>
+	/// 攻撃処理の初期化純粋仮想関数
+	/// </summary>
+	virtual void StartAttack() = 0;
 
 	/// <summary>
 	/// 攻撃処理の純粋仮想関数
@@ -33101,27 +32989,39 @@ public: /// ===衝突判定=== ///
 	void OnCollision(Collider* collider) override;
 
 public: /// ===State用関数=== ///
-	// 移動処理の開始処理
-	void CommonMoveInit();
-	// 移動処理の共通部分
-	void CommonMove();
 	// 攻撃可能かチェック
 	bool CheckAttackable();
 	// Stateの変更
 	//NOTE:newState = 次のステート
 	void ChangeState(std::unique_ptr<EnemyState> nextState);
 
+	/// <summary>
+	/// 回転の更新処理
+	/// </summary>
+	/// <param name="direction">回転目標の方向</param>
+	/// <param name="lerpT">回転完了までの時間</param>
+	void UpdateRotationTowards(const Vector3& direction, float lerpT);
+
 public: /// ===Getter=== ///
+	// Component
+	EnemyMoveComponent& GetMovementComponent() { return *moveComponent_; };
+	// Player
+	Player* GetPlayer() const { return player_; };
 	// AttackInfo
 	AttackInfo GetAttackInfo()const { return attackInfo_; };
 	// tentativeDeah
 	bool GetTentativeDeath() const { return isTentativeDeath_; };
+	// isRotationComplete
+	bool GetIsRotationComplete() const { return isRotationComplete_; };
 
 public: /// ===Setter=== ///
 	// Player
 	void SetPlayer(Player* player) { player_ = player; };
-	// Timer
-	void SetTimer(StateType type, float time);
+	// isRotationComplete
+	void SetIsRotationComplete(bool flag) { isRotationComplete_ = flag; };
+	// AttackDirection
+	void SetAttackDirection(const Vector3& dir) { attackInfo_.direction = dir; };
+	
 
 protected: /// ===変数の宣言=== ///
 
@@ -33131,14 +33031,17 @@ protected: /// ===変数の宣言=== ///
 	/// ===State=== ///
 	std::unique_ptr<EnemyState> currentState_;
 
-	// 移動情報
-	MoveInfo moveInfo_;
+	/// ===コンポーネント=== ///
+	std::unique_ptr<EnemyMoveComponent> moveComponent_;
 
 	// 攻撃情報
 	AttackInfo attackInfo_;
 
-	// ランダムシード
-	std::mt19937 randomEngine_;
+	// 回転完了フラグ
+	bool isRotationComplete_ = false;
+
+	// 衝突フラグ
+	bool isCollision_ = false;
 
 private:
 	// ノックバック情報
@@ -33150,12 +33053,7 @@ private:
 
 protected: /// ===関数の宣言=== ///
 
-	/// <summary>
-	/// 回転の更新処理
-	/// </summary>
-	/// <param name="direction">回転目標の方向</param>
-	/// <param name="lerpT">回転完了までの時間</param>
-	void UpdateRotationTowards(const Vector3& direction, float lerpT);
+	
 
 	/// <summary>
 	/// 派生側で型固有のチューニング値をコピーするための関数
@@ -33164,12 +33062,6 @@ protected: /// ===関数の宣言=== ///
 	virtual void CopyTypeTuningFromThisTo(BaseEnemy* enemy) const = 0;
 
 private:
-
-	/// <summary>
-	/// 方向の設定と待機時間の設定
-	/// </summary>
-	/// <param name="vector">設定する方向のベクトル</param>
-	void PreparNextMove(const Vector3& vector);
 
 	/// <summary>
 	/// タイマーを進める処理
@@ -33186,10 +33078,8 @@ File Path: Project/application/Game/Entity/Enemy/CloseRange/CloseRangeEnemy.cpp
 #include "application/Game/Entity/Player/Player.h"
 // Service
 #include "Engine/System/Service/ParticleService.h"
-#include "Engine/System/Service/ColliderService.h"
 // c++
 #include <cstdlib>
-#include <ctime>
 // ImGui
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -33198,10 +33088,7 @@ File Path: Project/application/Game/Entity/Enemy/CloseRange/CloseRangeEnemy.cpp
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
-CloseRangeEnemy::~CloseRangeEnemy() {
-	ColliderService::RemoveCollider(this);
-	object3d_.reset();
-}
+CloseRangeEnemy::~CloseRangeEnemy() {}
 
 ///-------------------------------------------/// 
 /// GameScene用初期化
@@ -33211,7 +33098,6 @@ void CloseRangeEnemy::InitGameScene(const Vector3& translate) {
 	Initialize();
 	// 位置の設定
 	transform_.translate = translate;
-	moveInfo_.rangeCenter = transform_.translate;
 	// BaseEnemyの初期化
 	BaseEnemy::Initialize();
 }
@@ -33231,16 +33117,6 @@ void CloseRangeEnemy::Initialize() {
 	GameCharacter::Initialize();
 	name_ = ColliderName::Enemy;
 
-	/// ===MoveInfoの設定=== ///
-	moveInfo_.interval = 5.0f;
-	moveInfo_.timer = 1.0f;
-	moveInfo_.waitTime = 1.5f;
-	moveInfo_.range = 15.0f;
-	moveInfo_.speed = 0.05f;
-	moveInfo_.direction = { 0.0f, 0.0f, 0.0f };
-	moveInfo_.rangeCenter = { 0.0f, 0.0f, 0.0f };
-	moveInfo_.isWating = false;
-
 	/// ===AttackInfoの設定=== ///
 	attackInfo_.range = 4.0f;
 	attackInfo_.distance = 15.0f;
@@ -33252,14 +33128,12 @@ void CloseRangeEnemy::Initialize() {
 
 	/// ===ChargeInfo=== ///
 	chargeInfo_.moveSpeed = 0.9f;
-	chargeInfo_.stopTime = 1.0f;
 }
 
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
 void CloseRangeEnemy::Update() {
-
 	// BaseEnemyの更新
 	BaseEnemy::Update();
 }
@@ -33268,6 +33142,7 @@ void CloseRangeEnemy::Update() {
 /// 描画
 ///-------------------------------------------///
 void CloseRangeEnemy::Draw(BlendMode mode) {
+	// BaseEnemyの描画
 	BaseEnemy::Draw(mode);
 }
 
@@ -33276,11 +33151,10 @@ void CloseRangeEnemy::Draw(BlendMode mode) {
 ///-------------------------------------------///
 void CloseRangeEnemy::Information() {
 #ifdef USE_IMGUI
-	ImGui::Begin("CloseRangeEnemy");
+	ImGui::Begin("近距離攻撃のEnemy");
 	BaseEnemy::Information();
-	ImGui::Text("ChargeInfo");
-	ImGui::DragFloat("moveSpeed", &chargeInfo_.moveSpeed, 0.1f);
-	ImGui::DragFloat("StopTime", &chargeInfo_.stopTime, 0.1f);
+	ImGui::Text("突進情報");
+	ImGui::DragFloat("移動速度", &chargeInfo_.moveSpeed, 0.1f);
 	ImGui::End();
 #endif // USE_IMGUI
 }
@@ -33294,47 +33168,38 @@ void CloseRangeEnemy::OnCollision(Collider* collider) {
 }
 
 ///-------------------------------------------/// 
+/// 攻撃処理の初期化
+///-------------------------------------------///
+void CloseRangeEnemy::StartAttack() {
+	// 攻撃開始
+	attackInfo_.isAttack = true;
+	// ターゲットの位置を保存
+	attackInfo_.playerPos = player_->GetTransform().translate;
+	// 攻撃時間の設定
+	attackInfo_.timer = 1.0f;
+	// 移動ベクトルを設定
+	baseInfo_.velocity = attackInfo_.direction * chargeInfo_.moveSpeed;
+}
+
+///-------------------------------------------/// 
 /// 攻撃処理
 ///-------------------------------------------///
 void CloseRangeEnemy::Attack() {
 	// 早期リターン
 	if (!player_) return;
 
-	if (!attackInfo_.isAttack) { /// ===IsAttackがfalse=== ///
-		// プレイヤー位置を取得
-		attackInfo_.playerPos = player_->GetTransform().translate;
+	// プレイヤーとの差を計算
+	Vector3 toTarget = attackInfo_.playerPos - transform_.translate;
+	float length = Length(toTarget);
 
-		// プレイヤー位置への方向ベクトル
-		Vector3 dir = attackInfo_.playerPos - transform_.translate;
-		attackInfo_.direction = Normalize(dir); // 方向を保存
-
-		// directionの方向に回転
-		UpdateRotationTowards(attackInfo_.direction, 0.2f);
-
-		// 少し待つ
-		if (attackInfo_.timer <= 0.0f) { // タイマーが0以下
-			// 移動ベクトルを設定
-			baseInfo_.velocity = attackInfo_.direction * chargeInfo_.moveSpeed;
-
-			// 攻撃開始
-			attackInfo_.isAttack = true;
-		}
-
-	} else { /// ===IsAttackがtrue=== ///
-
-		// プレイヤーとの差を計算
-		Vector3 toTarget = attackInfo_.playerPos - transform_.translate;
-
-		// 攻撃終了判定
-		if (Length(toTarget) < 0.5f) { // 到達判定s
-			attackInfo_.isAttack = false; // 攻撃終了フラグをfalseに
-			baseInfo_.velocity = { 0.0f, 0.0f, 0.0f }; // 移動ベクトルをリセット
-			attackInfo_.timer = attackInfo_.interval; // クールダウン再設定
-			// 移動範囲の中心を設定
-			moveInfo_.rangeCenter = attackInfo_.playerPos;
-
-			color_ = { 1.0f, 0.0f, 1.0f, 1.0f }; // 元の色に戻す（任意）
-		}
+	// 攻撃終了判定
+	if (length < 0.5f) { // 到達判定
+		// 攻撃終了フラグをfalse
+		attackInfo_.isAttack = false;
+		// 移動ベクトルをリセット
+		baseInfo_.velocity = { 0.0f, 0.0f, 0.0f };
+		// クールダウン再設定
+		attackInfo_.timer = attackInfo_.interval;
 	}
 }
 
@@ -33344,7 +33209,6 @@ void CloseRangeEnemy::Attack() {
 void CloseRangeEnemy::CopyTypeTuningFromThisTo(BaseEnemy* dst) const {
 	if (auto* d = dynamic_cast<CloseRangeEnemy*>(dst)) {
 		d->chargeInfo_.moveSpeed = this->chargeInfo_.moveSpeed;
-		d->chargeInfo_.stopTime = this->chargeInfo_.stopTime;
 	}
 }
 
@@ -33392,6 +33256,11 @@ public:
 	void Information()override;
 
 	/// <summary>
+	/// 攻撃処理の初期化
+	/// </summary>
+	void StartAttack()override;
+
+	/// <summary>
 	/// 攻撃処理
 	/// </summary>
 	void Attack()override;
@@ -33408,7 +33277,6 @@ private: /// ===変数=== ///
 	/// ===突進情報=== ///
 	struct ChargeInfo {
 		float moveSpeed;
-		float stopTime;
 	};
 	ChargeInfo chargeInfo_;
 
@@ -33420,6 +33288,279 @@ protected:
 	/// <param name="dst"></param>
 	void CopyTypeTuningFromThisTo(BaseEnemy* dst) const override;
 };
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/Component/EnemyMoveComponent.cpp
+============================================================
+#include "EnemyMoveComponent.h"
+#include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
+#include <cassert>
+
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
+
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void EnemyMoveComponent::Initialize(const Vector3& center, const MoveConfig& config) {
+	// ランダムエンジンの初期化
+	std::seed_seq seed{
+		static_cast<uint32_t>(std::time(nullptr)),
+		static_cast<uint32_t>(reinterpret_cast<uintptr_t>(this)),
+	};
+	randomEngine_.seed(seed);
+
+	// 設定の初期化
+	config_ = config;
+
+	// 状態の初期化
+	state_.timer = 1.0f;
+	state_.rangeCenter = center;
+	state_.direction = { 0.0f, 0.0f, 0.0f };
+	state_.isWaiting = false;
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+EnemyMoveComponent::UpdateResult EnemyMoveComponent::Update(const UpdateContext& context) {
+
+	UpdateResult result{};
+
+	/// ===タイマー=== ///
+	if (state_.timer > 0.0f) {
+		state_.timer -= context.deltaTime;
+	}
+
+	/// ===計算=== ///
+	// 移動範囲の中心との方向ベクトルを計算
+	Vector3 toCenter = state_.rangeCenter - context.currentPosition;
+	// 中心からの距離を取得
+	float distanceFromCenter = Length(toCenter);
+
+	// 移動ベクトルを設定
+	result.velocity = state_.direction * config_.speed;
+
+	/// ===移動処理=== ///
+	if (state_.isWaiting) { // 待機中だったら
+		// 移動しない
+		result.velocity = { 0.0f, 0.0f, 0.0f };
+
+		// 方向を回転
+		if (!context.isRotationComplete) {
+			result.targetDirection = state_.direction;
+			result.needsRotation = true;
+		}
+		
+		// 回転し終わったら
+		if (context.isRotationComplete && state_.timer <= 0.0f) {
+			// ランダムな時間を設定
+			std::uniform_real_distribution<float> timeDist(1.0f, config_.interval);
+			state_.timer = timeDist(randomEngine_);
+
+			// 移動ベクトルを設定
+			result.velocity = state_.direction * config_.speed;
+			// 待機フラグを解除
+			state_.isWaiting = false;
+			// 回転完了フラグをリセット
+			result.shouldResetRotationFlag = true;
+			result.needsRotation = false;
+		}
+
+	} else if (distanceFromCenter > config_.range) { // 範囲外に出た場合
+		// 方向の設定と待機処理の準備
+		PreparNextMove(toCenter);
+		result.velocity = { 0.0f, 0.0f, 0.0f };
+
+	} else if (state_.timer <= 0.0f && !state_.isWaiting) {
+		// ランダムな角度と距離を生成
+		std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * Math::Pi());
+		std::uniform_real_distribution<float> distanceDist(0.0f, config_.range);
+		// ランダムな値の設定
+		float angle = angleDist(randomEngine_);
+		float distance = distanceDist(randomEngine_);
+
+		// 方向ベクトルを円から算出
+		Vector3 offset = {
+			std::cos(angle) * distance,
+			0.0f,
+			std::sin(angle) * distance
+		};
+
+		// 移動先の座標を計算
+		Vector3 target = state_.rangeCenter + offset;
+		target.y = context.currentPosition.y;
+
+		// 方向の設定と待機処理の準備
+		PreparNextMove(target - context.currentPosition);
+		result.velocity = { 0.0f, 0.0f, 0.0f };
+	}
+
+	return result;
+}
+
+///-------------------------------------------/// 
+/// ImGui情報の表示
+///-------------------------------------------///
+void EnemyMoveComponent::Information() {
+#ifdef USE_IMGUI
+	if (ImGui::TreeNode("移動情報")) {
+		ImGui::DragFloat("移動速度", &config_.speed, 0.01f, 0.0f, 10.0f);
+		ImGui::DragFloat("移動範囲", &config_.range, 0.1f, 0.1f, 100.0f);
+		ImGui::DragFloat("移動間隔", &config_.interval, 0.1f, 0.1f, 10.0f);
+		ImGui::DragFloat("待機時間", &config_.waitTime, 0.01f, 0.0f, 5.0f);
+		ImGui::DragFloat("回転速度", &config_.rotationSpeed, 0.01f, 0.01f, 1.0f);
+
+		ImGui::Separator();
+		ImGui::Text("状態");
+		ImGui::Text("タイマー:  %.2f", state_.timer);
+		ImGui::Text("待機中: %s", state_.isWaiting ? "Yes" : "No");
+
+		ImGui::TreePop();
+	}
+#endif // USE_IMGUI
+}
+
+///-------------------------------------------/// 
+/// 設定の適用
+///-------------------------------------------///
+void EnemyMoveComponent::ApplyConfig(const MoveConfig& newconfig) {
+#ifdef _DEBUG
+	if (newconfig.speed < 0.0f || newconfig.range <= 0.0f) {
+		// デバッグビルドでのみエラー
+		assert(false && "Invalid MoveConfig");
+	}
+#endif
+	config_ = newconfig;
+}
+
+///-------------------------------------------/// 
+/// 方向の設定と待機時間の設定
+///-------------------------------------------///
+void EnemyMoveComponent::PreparNextMove(const Vector3& vector) {
+	Vector3 dir = Normalize(vector);
+	dir.y = 0.0f; // Y成分を0にしてXZ平面での方向ベクトルを作成
+	state_.direction = Normalize(dir); // 方向を保存
+
+	// 待機時間を設定
+	state_.timer = config_.waitTime; // 待機時間を設定
+	// 待機フラグを立てる
+	state_.isWaiting = true;
+}
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/Component/EnemyMoveComponent.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Math/Vector3.h"
+#include <random>
+
+///=====================================================/// 
+/// EnemyMoveComponent
+///=====================================================///
+class EnemyMoveComponent {
+private:
+	/// ===状態の構造体=== ///
+	struct MoveState {
+		float timer = 0.0f;		 // タイマー
+		Vector3 rangeCenter; // 移動範囲の中心
+		Vector3 direction;	 // 移動方向
+		bool isWaiting = false;		 // 待機フラグ	
+	};
+public:
+	/// ===設定パラメータの構造体=== ///
+	struct MoveConfig {
+		float speed = 0.05f;		// 移動速度
+		float range = 20.0f;	    // 移動範囲
+		float interval = 5.0f;	    // 移動間隔
+		float waitTime = 1.5f;	    // 待機時間
+		float rotationSpeed = 0.1f; // 回転速度
+	};
+
+	/// ===更新用コンテキスト=== ///
+	struct UpdateContext {
+		Vector3 currentPosition; // 現在の位置
+		float deltaTime;         // デルタタイム
+		bool isRotationComplete; // 回転完了フラグ
+	};
+
+	/// ===更新結果=== ///
+	struct UpdateResult {
+		Vector3 velocity;		       // 移動ベクトル
+		Vector3 targetDirection;	   // 目標方向
+		bool needsRotation;			   // 回転が必要かどうか
+		bool shouldResetRotationFlag; // 回転完了フラグをリセットする必要があるか
+	};
+
+public:
+
+	EnemyMoveComponent() = default;
+	~EnemyMoveComponent() = default;
+
+	// コピー・ムーブは明示的に制御
+	EnemyMoveComponent(const EnemyMoveComponent&) = delete;
+	EnemyMoveComponent& operator=(const EnemyMoveComponent&) = delete;
+
+	/// <summary>
+	/// 指定した敵オブジェクトを初期化し、中心位置を設定します。
+	/// </summary>
+	/// <param name="center">初期化に使用する中心位置を示す Vector3 の const 参照。</param>
+	void Initialize(const Vector3& center, const MoveConfig& config = MoveConfig{});
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	UpdateResult Update(const UpdateContext& context);
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
+	void Information();
+
+public: /// ===Getter=== ///
+
+	// MoveConfig
+	const MoveConfig& GetConfig() const { return config_; }
+	// MoveState
+	const MoveState& GetState() const { return state_; }
+
+public: /// ===Setter=== ///
+
+	// MoveConfig
+	void SetSpeed(float speed) { config_.speed = speed; }
+	void SetRange(float range) { config_.range = range; }
+	void SetInterval(float interval) { config_.interval = interval; }
+	void SetWaitTime(float waitTime) { config_.waitTime = waitTime; }
+	void SetRotationSpeed(float rotationSpeed) { config_.rotationSpeed = rotationSpeed; }
+	void ApplyConfig(const MoveConfig& newconfig);
+	// timer
+	void SetTimer(float timer) { state_.timer = timer; }
+	void SetRangeCenter(const Vector3& center) { state_.rangeCenter = center; }
+	
+
+private:
+
+	/// ===情報=== ///
+	MoveConfig config_;
+	MoveState state_;
+
+	// ランダムシード
+	std::mt19937 randomEngine_;
+
+private:
+
+	/// <summary>
+	/// 方向の設定と待機時間の設定
+	/// </summary>
+	/// <param name="vector">設定する方向のベクトル</param>
+	void PreparNextMove(const Vector3& vector);
+};
+
 
 
 ============================================================
@@ -33639,13 +33780,9 @@ File Path: Project/application/Game/Entity/Enemy/LongRange/LongRangeEnemy.cpp
 /// デストラクタ
 ///-------------------------------------------///
 LongRangeEnemy::~LongRangeEnemy() {
-	object3d_.reset();
+	// Bulletのクリア
+	bulletInfo_.bullets_.clear();
 }
-
-///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-void LongRangeEnemy::SetlastYaw() { lastYaw_ = transform_.rotate.y; }
 
 ///-------------------------------------------/// 
 /// GameScene用初期化
@@ -33655,7 +33792,6 @@ void LongRangeEnemy::InitGameScene(const Vector3& translate) {
 	Initialize();
 	// 位置の設定
 	transform_.translate = translate;
-	moveInfo_.rangeCenter = transform_.translate;
 	// BaseEnemyの初期化
 	BaseEnemy::Initialize();
 }
@@ -33674,16 +33810,6 @@ void LongRangeEnemy::Initialize() {
 	// GameCharacterの初期化
 	GameCharacter::Initialize();
 	name_ = ColliderName::Enemy;
-
-	/// ===MoveInfoの設定=== ///
-	moveInfo_.interval = 5.0f;
-	moveInfo_.timer = 1.0f;
-	moveInfo_.waitTime = 1.0f;
-	moveInfo_.range = 20.0f;
-	moveInfo_.speed = 0.05f;
-	moveInfo_.direction = { 0.0f, 0.0f, 0.0f };
-	moveInfo_.rangeCenter = { 0.0f, 0.0f, 0.0f };
-	moveInfo_.isWating = false;
 
 	/// ===AttackInfoの設定=== ///
 	attackInfo_.range = 3.0f;
@@ -33752,41 +33878,35 @@ void LongRangeEnemy::OnCollision(Collider* collider) {
 }
 
 ///-------------------------------------------/// 
+/// 攻撃処理の初期化
+///-------------------------------------------///
+void LongRangeEnemy::StartAttack() {
+	// 攻撃開始
+	attackInfo_.isAttack = true;
+	// ターゲットの位置を保存
+	attackInfo_.playerPos = player_->GetTransform().translate;
+	// 攻撃時間の設定
+	attackInfo_.timer = 1.0f;
+	// 回転差分を揃える
+	lastYaw_ = transform_.rotate.y;
+}
+
+///-------------------------------------------/// 
 /// 攻撃処理
 ///-------------------------------------------///
 void LongRangeEnemy::Attack() {
 	// 早期リターン
 	if (!player_) return;
 
-	if (!attackInfo_.isAttack) { /// ===IsAttackがfalse=== ///
-		// プレイヤー位置を取得
-		attackInfo_.playerPos = player_->GetTransform().translate;
+	// 弾の生成
+	auto bullet = std::make_unique<LongRangeEnemeyBullet>();
+	bullet->Create(transform_.translate, attackInfo_.direction);
+	bulletInfo_.bullets_.push_back(std::move(bullet));
 
-		// プレイヤー位置への方向ベクトル
-		Vector3 dir = attackInfo_.playerPos - transform_.translate;
-		attackInfo_.direction = Normalize(dir); // 方向を保存
-
-		// 攻撃時はやや速めに回転
-		UpdateRotationTowards(attackInfo_.direction, 0.2f);
-
-		// 少し待つ
-		if (attackInfo_.timer <= 0.0f) { // タイマーが0以下
-			// 攻撃開始
-			attackInfo_.isAttack = true;
-		}
-
-	} else { /// ===IsAttackがtrue=== ///
-
-		// 弾の生成
-		auto bullet = std::make_unique<LongRangeEnemeyBullet>();
-		bullet->Create(transform_.translate, attackInfo_.direction);
-		bulletInfo_.bullets_.push_back(std::move(bullet));
-		// フラグをfalse
-		attackInfo_.isAttack = false;
-		attackInfo_.timer = attackInfo_.interval; // クールダウン再設定
-
-		color_ = { 1.0f, 0.0f, 1.0f, 1.0f }; // 元の色に戻す（任意）
-	}
+	// フラグをfalse
+	attackInfo_.isAttack = false;
+	// クールダウン再設定
+	attackInfo_.timer = attackInfo_.interval; 
 }
 
 ///-------------------------------------------/// 
@@ -33846,6 +33966,11 @@ public:
 	void Information()override;
 
 	/// <summary>
+	/// 攻撃処理の初期化
+	/// </summary>
+	void StartAttack()override;
+
+	/// <summary>
 	/// 攻撃処理
 	/// </summary>
 	void Attack()override;
@@ -33856,10 +33981,6 @@ public: /// ===衝突判定=== ///
 	/// </summary>
 	/// <param name="collider">衝突した相手の Collider へのポインター。衝突相手の情報を取得するために使用します。</param>
 	void OnCollision(Collider* collider) override;
-
-public: /// ===Setter=== ///
-	// 前フレームのYawを設定
-	void SetlastYaw();
 
 private: /// ===変数=== ///
 
@@ -34364,6 +34485,8 @@ File Path: Project/application/Game/Entity/Enemy/State/EnemyAttackState.cpp
 // BaseEnemy
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
 #include "application/Game/Entity/Enemy/LongRange/LongRangeEnemy.h"
+// Service
+#include "Engine/System/Service/ParticleService.h"
 // State
 #include "EnemyMoveState.h"
 
@@ -34375,14 +34498,10 @@ void EnemyAttackState::Enter(BaseEnemy* enemy) {
 	enemy_ = enemy;
 	// 移動量を初期化
 	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
-	// 攻撃タイマーを設定
-	enemy_->SetTimer(StateType::Attack, 1.0f);
 	// 色の設定
 	enemy_->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f });
-	// 回転差分を揃える
-	if (auto* lr = dynamic_cast<LongRangeEnemy*>(enemy_)) {
-		lr->SetlastYaw();
-	}
+	// 攻撃開始処理
+	enemy_->StartAttack();
 }
 
 ///-------------------------------------------/// 
@@ -34390,15 +34509,15 @@ void EnemyAttackState::Enter(BaseEnemy* enemy) {
 ///-------------------------------------------///
 void EnemyAttackState::Update(BaseEnemy * enemy) {
 	enemy_ = enemy;
-	// preフラグに入れる
-	preIsAttack_ = enemy_->GetAttackInfo().isAttack;
 
 	// Attackの処理
 	enemy_->Attack();
 
 	/// ===Stateの変更=== ///
-	// preフラグがtrueでisAttackがfalseの時
-	if (!enemy_->GetAttackInfo().isAttack && preIsAttack_) {
+	if (!enemy_->GetAttackInfo().isAttack) {
+		// 色の設定
+		enemy_->SetColor({ 1.0f, 0.0f, 1.0f, 1.0f }); // 元の色に戻す
+		// MoveStateに移行
 		enemy_->ChangeState(std::make_unique<EnemyMoveState>());
 	}
 }
@@ -34442,10 +34561,6 @@ public:
 	/// 終了処理
 	/// </summary>
 	void Finalize() override;
-
-private:
-
-	bool preIsAttack_ = false;
 };
 
 
@@ -34457,7 +34572,7 @@ File Path: Project/application/Game/Entity/Enemy/State/EnemyMoveState.cpp
 // BaseEnemy
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
 // State
-#include "EnemyAttackState.h"
+#include "EnemyPrePareAttackState.h"
 
 
 ///-------------------------------------------/// 
@@ -34466,9 +34581,11 @@ File Path: Project/application/Game/Entity/Enemy/State/EnemyMoveState.cpp
 void EnemyMoveState::Enter(BaseEnemy* enemy) {
 	enemy_ = enemy;
 	// 移動範囲の中心を設定
-	enemy_->CommonMoveInit();
+	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 動くまでの時間を設定
-	enemy_->SetTimer(StateType::Move, 0.5f);
+    enemy_->GetMovementComponent().SetTimer(0.5f);
+	// 移動範囲の中心を現在地に設定
+    enemy_->GetMovementComponent().SetRangeCenter(enemy_->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 
@@ -34477,13 +34594,34 @@ void EnemyMoveState::Enter(BaseEnemy* enemy) {
 void EnemyMoveState::Update(BaseEnemy * enemy) {
 	enemy_ = enemy;
 
-	// Moveの処理
-	enemy_->CommonMove();
+    // コンテキストの準備
+    EnemyMoveComponent::UpdateContext context{
+        .currentPosition = enemy_->GetTransform().translate,
+        .deltaTime = enemy_->GetDeltaTime(),
+        .isRotationComplete = enemy_->GetIsRotationComplete()
+    };
+
+    // 移動コンポーネントの更新
+    auto result = enemy_->GetMovementComponent().Update(context);
+
+    // 結果の適用
+    enemy_->SetVelocity(result.velocity);
+
+	// 回転の更新
+    if (result.needsRotation) {
+        auto& config = enemy_->GetMovementComponent().GetConfig();
+        enemy_->UpdateRotationTowards(result.targetDirection, config.rotationSpeed);
+    }
+
+	// 回転完了フラグのリセット
+    if (result.shouldResetRotationFlag) {
+        enemy_->SetIsRotationComplete(false);
+    }
 
 	/// ===Stateの変更=== ///
 	if (enemy_->CheckAttackable() && enemy_->GetAttackInfo().timer <= 0.0f && !enemy_->GetAttackInfo().isAttack) {
 		// Attackに
-		enemy_->ChangeState(std::make_unique<EnemyAttackState>());
+		enemy_->ChangeState(std::make_unique<EnemyPrePareAttackState>());
 	}
 }
 
@@ -34527,6 +34665,109 @@ public:
 	/// 終了処理
 	/// </summary>
 	void Finalize() override;
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/State/EnemyPrePareAttackState.cpp
+============================================================
+#include "EnemyPrePareAttackState.h"
+// BaseEnemy
+#include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
+// State
+#include "EnemyAttackState.h"
+
+///-------------------------------------------/// 
+/// ステートに入った時に呼ばれる処理
+///-------------------------------------------///
+void EnemyPrePareAttackState::Enter(BaseEnemy* enemy) {
+	enemy_ = enemy;
+	// 移動量を初期化
+	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
+	// 色の設定
+	enemy_->SetColor({ 0.0f, 0.0f, 1.0f, 1.0f });
+	// 実行時間の設定
+	activeTimer_ = acticeTime;
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void EnemyPrePareAttackState::Update(BaseEnemy* enemy) {
+	enemy_ = enemy;
+
+	// タイマーの更新
+	activeTimer_ -= enemy_->GetDeltaTime();
+
+	// targetの位置を取得
+	Vector3 targetPos = enemy_->GetPlayer()->GetTransform().translate;
+
+	// プレイヤーの位置への方向ベクトルを計算
+	Vector3 dir = enemy_->GetPlayer()->GetTransform().translate - enemy_->GetTransform().translate;
+	Vector3 NormalDir = Normalize(dir); // 正規化
+
+	// 回転の更新
+	enemy_->UpdateRotationTowards(NormalDir, 0.2f);
+
+	// Stateの変更
+	if (enemy_->GetIsRotationComplete() && activeTimer_ <= 0.0f) {
+		// 回転完了フラグをリセット
+		enemy_->SetIsRotationComplete(false);
+		// 攻撃方向を設定
+		enemy_->SetAttackDirection(NormalDir);
+		// AttackStateに移行
+		enemy_->ChangeState(std::make_unique<EnemyAttackState>());
+	}
+}
+
+///-------------------------------------------/// 
+/// 終了処理
+///-------------------------------------------///
+void EnemyPrePareAttackState::Finalize() {
+	EnemyState::Finalize();
+}
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/State/EnemyPrePareAttackState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Base/EnemyState.h"
+
+///-------------------------------------------/// 
+/// PrePareAttackState
+///-------------------------------------------///
+class EnemyPrePareAttackState : public EnemyState {
+public:
+
+	~EnemyPrePareAttackState() override = default;
+
+	/// <summary>
+	/// ステートに入った時に呼ばれる処理
+	/// </summary>
+	/// <param name="enemy">処理対象の BaseEnemy オブジェクトへのポインタ。ステートへ入る対象となる敵を指す</param>
+	void Enter(BaseEnemy* enemy) override;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	/// <param name="enemy">更新対象の BaseEnemy 型オブジェクトへのポインタ。</param>
+	void Update(BaseEnemy* enemy) override;
+
+	/// <summary>
+	/// 終了処理
+	/// </summary>
+	void Finalize() override;
+
+private:
+	// アクティブタイマー
+	float activeTimer_ = 0.0f;
+	// アクティブ時間
+	float acticeTime = 1.0f;
 };
 
 
@@ -38024,16 +38265,11 @@ void GameScene::Initialize() {
 	Loader::LoadLevelJson("Level/StageData.json");
 	Loader::LoadLevelJson("Level/EntityData.json");
 
-	// パーティクル定義が既に存在するかチェックしてからロード
-	if (!ParticleService::HasDefinition("Game")) {
-		ParticleService::LoadParticleDefinition("Game.json");
-	}
-	if (!ParticleService::HasDefinition("WeaponAttack")) {
-		ParticleService::LoadParticleDefinition("WeaponAttack.json");
-	}
-	if (!ParticleService::HasDefinition("nakagawa")) {
-		ParticleService::LoadParticleDefinition("nakagawa.json");
-	}
+	// パーティクルの読み込み
+	ParticleService::LoadParticleDefinition("Game.json");
+	ParticleService::LoadParticleDefinition("WeaponAttack.json");
+	ParticleService::LoadParticleDefinition("nakagawa.json");
+	ParticleService::LoadParticleDefinition("EnemyAttack.json");
 
 	/// ===Camera=== ///
 	camera_ = std::make_shared<GameCamera>();
