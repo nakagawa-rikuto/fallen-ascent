@@ -119,7 +119,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Scene\GameScene.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyAttackComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyPrePareAttackComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\Component\Strategy\CloseRangeAttackStrategy.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSRootSignature.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.cpp" />
     <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp" />
@@ -155,6 +155,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Animation\GameOverAnimation.cpp" />
     <ClCompile Include="application\Game\Object\GameStage.cpp" />
     <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\Component\Strategy\IAttackStrategy.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\Component\Strategy\LongRangeAttackStrategy.cpp" />
     <ClCompile Include="Math\EasingMath.cpp" />
     <ClCompile Include="Engine\System\Managers\AnimationManager.cpp" />
     <ClCompile Include="Engine\System\Service\AudioService.cpp" />
@@ -274,7 +276,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyAttackComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyPrePareAttackComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\Component\Strategy\CloseRangeAttackStrategy.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.h" />
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
@@ -316,6 +318,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Animation\GameOverAnimation.h" />
     <ClInclude Include="application\Game\Object\GameStage.h" />
     <ClInclude Include="application\Game\Animation\GameClearAnimation.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\Component\Strategy\IAttackStrategy.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\Component\Strategy\LongRangeAttackStrategy.h" />
     <ClInclude Include="Math\EasingMath.h" />
     <ClInclude Include="Engine\System\Managers\AnimationManager.h" />
     <ClInclude Include="Engine\DataInfo\AnimationData.h" />

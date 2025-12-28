@@ -1,8 +1,9 @@
 #pragma once
 /// ===Include=== ///
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
-#include "application/Game/Entity/Enemy/LongRange/LongRangeEnemeyBullet.h"
-#include <list>
+
+/// ===前方宣言=== ///
+class LongRangeAttackStrategy;
 
 ///=====================================================/// 
 /// 遠距離攻撃Enemy
@@ -39,11 +40,6 @@ public:
 	/// </summary>
 	void Information()override;
 
-	/// <summary>
-	/// 攻撃処理
-	/// </summary>
-	void Attack()override;
-
 public: /// ===衝突判定=== ///
 	/// <summary>
 	/// 衝突処理
@@ -51,24 +47,9 @@ public: /// ===衝突判定=== ///
 	/// <param name="collider">衝突した相手の Collider へのポインター。衝突相手の情報を取得するために使用します。</param>
 	void OnCollision(Collider* collider) override;
 
-public: /// ===Setter=== ///
-	// 前フレームのYawを設定
-	void SetlastYaw();
-
 private: /// ===変数=== ///
 
-	/// ===Bullet情報=== ///
-	struct BulletInfo {
-		std::list<std::unique_ptr<LongRangeEnemeyBullet>> bullets_;
-		float interval = 0.0f; // インターバル
-		float reloadTime = 3.0f; // リロード時間
-		bool isShot; // 発射フラグ
-		bool isHit; // ヒット時のフラグ
-	};
-	BulletInfo bulletInfo_;
-
-	// 前フレームのYawを保持
-	float lastYaw_;
+	LongRangeAttackStrategy* longRangeStrategy_ = nullptr;
 
 protected:
 	/// <summary>

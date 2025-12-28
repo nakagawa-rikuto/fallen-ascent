@@ -501,7 +501,9 @@
     <ClCompile Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyAttackComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyPrePareAttackComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\Component\Strategy\IAttackStrategy.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\Component\Strategy\CloseRangeAttackStrategy.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\Component\Strategy\LongRangeAttackStrategy.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -966,7 +968,9 @@
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyAttackComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyPrePareAttackComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\Component\Strategy\IAttackStrategy.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\Component\Strategy\CloseRangeAttackStrategy.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\Component\Strategy\LongRangeAttackStrategy.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

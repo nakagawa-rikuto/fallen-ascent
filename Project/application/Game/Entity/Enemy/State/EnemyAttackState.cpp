@@ -1,6 +1,7 @@
 #include "EnemyAttackState.h"
 // BaseEnemy
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
+#include "application/Game/Entity/Player/Player.h"
 #include "application/Game/Entity/Enemy/LongRange/LongRangeEnemy.h"
 // Service
 #include "Engine/System/Service/ParticleService.h"
@@ -15,15 +16,12 @@ void EnemyAttackState::Enter(BaseEnemy* enemy) {
 	enemy_ = enemy;
 	// 移動量を初期化
 	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
-	// 攻撃タイマーを設定
-	enemy_->SetTimer(StateType::Attack, 1.0f);
+	// 攻撃コンポーネントを開始
+	enemy_->GetAttackComponent().StartAttack();
 	// 色の設定
 	enemy_->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f });
-	// 回転差分を揃える
-	if (auto* lr = dynamic_cast<LongRangeEnemy*>(enemy_)) {
-		lr->SetlastYaw();
-	}
-	//ParticleService::Emit("EnemyAttack", enemy->GetTransform().translate);
+	// 
+	targetPos_ = enemy_->GetPlayer()->GetTransform().translate;
 }
 
 ///-------------------------------------------/// 
@@ -31,16 +29,29 @@ void EnemyAttackState::Enter(BaseEnemy* enemy) {
 ///-------------------------------------------///
 void EnemyAttackState::Update(BaseEnemy * enemy) {
 	enemy_ = enemy;
-	// preフラグに入れる
-	preIsAttack_ = enemy_->GetAttackInfo().isAttack;
 
-	// Attackの処理
-	enemy_->Attack();
+	/// ===攻撃コンポーネントの更新=== ///
+	Vector3 enemyPos = enemy_->GetTransform().translate;
+	float yaw = enemy_->GetTransform().rotate.y;
+	Vector3 direction = { std::sinf(yaw), 0.0f, std::cosf(yaw) };
 
-	/// ===Stateの変更=== ///
-	// preフラグがtrueでisAttackがfalseの時
-	if (!enemy_->GetAttackInfo().isAttack && preIsAttack_) {
-		//ParticleService::StopParticle("EnemyAttack");
+	EnemyAttackComponent::UpdateContext context{
+		.currentPosition = enemyPos,
+		.currentDirection = direction,
+		.targetPosition = targetPos_,
+		.deltaTime = enemy_->GetDeltaTime()
+	};
+
+	// 更新処理
+	auto result = enemy_->GetAttackComponent().Update(context);
+
+	// 移動ベクトルの適用
+	if (result.isAttacking) {
+		enemy_->SetVelocity(result.velocity);
+	}
+
+	if (result.isAttackComplete) {
+		enemy_->SetColor({ 1.0f, 0.0f, 1.0f, 1.0f });
 		enemy_->ChangeState(std::make_unique<EnemyMoveState>());
 	}
 }

@@ -1,5 +1,7 @@
 #pragma once
 /// ===Include=== ///
+#include "Math/Vector3.h"
+
 #include "Base/EnemyState.h"
 
 ///=====================================================/// 
@@ -28,7 +30,7 @@ public:
 	void Finalize() override;
 
 private:
-
-	bool preIsAttack_ = false;
+	// ターゲットの位置を保存する用
+	Vector3 targetPos_ = {0.0f, 0.0f, 0.0f};
 };
 

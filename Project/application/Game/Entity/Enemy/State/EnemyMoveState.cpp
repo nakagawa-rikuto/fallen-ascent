@@ -2,7 +2,7 @@
 // BaseEnemy
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
 // State
-#include "EnemyAttackState.h"
+#include "EnemyPrePareAttackState.h"
 
 
 ///-------------------------------------------/// 
@@ -49,9 +49,11 @@ void EnemyMoveState::Update(BaseEnemy * enemy) {
     }
 
 	/// ===Stateの変更=== ///
-	if (enemy_->CheckAttackable() && enemy_->GetAttackInfo().timer <= 0.0f && !enemy_->GetAttackInfo().isAttack) {
-		// Attackに
-		enemy_->ChangeState(std::make_unique<EnemyAttackState>());
+    auto& attackComponent = enemy_->GetAttackComponent();
+	// 攻撃可能ならAttackStateへ移行
+	if (enemy_->CheckAttackable() && attackComponent.GetCooldownTimer() <= 0.0f && !attackComponent.IsAttacking()) {
+		// 攻撃準備に
+		enemy_->ChangeState(std::make_unique<EnemyPrePareAttackState>());
 	}
 }
 

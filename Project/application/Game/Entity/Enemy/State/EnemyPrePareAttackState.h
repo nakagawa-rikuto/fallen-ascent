@@ -1,5 +1,6 @@
 #pragma once
 /// ===Include=== ///
+#include "Math/Vector3.h"
 #include "Base/EnemyState.h"
 
 ///-------------------------------------------/// 
@@ -26,5 +27,11 @@ public:
 	/// 終了処理
 	/// </summary>
 	void Finalize() override;
+
+private:
+	/// ===変数=== ///
+	float preparationTImer_ = 0.0f; // 準備タイマー
+	float preparationDuration_ = 1.0f; // 準備時間
+	Vector3 previousTargetPos_ = {0.0f, 0.0f, 0.0f}; // 前回のターゲット位置
 };
 

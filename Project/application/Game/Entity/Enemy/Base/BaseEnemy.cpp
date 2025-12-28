@@ -28,26 +28,15 @@ BaseEnemy::~BaseEnemy() {
 }
 
 ///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-// タイマー
-void BaseEnemy::SetTimer(StateType type, float time) {
-	// typeに応じてタイマーを設定
-	switch (type) {
-	case StateType::Attack:
-		attackInfo_.timer = time;
-		break;
-	}
-}
-
-///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
 void BaseEnemy::Initialize() {
 
 	/// ===Componentの生成=== ///
 	moveComponent_ = std::make_unique<EnemyMoveComponent>();
-	// MoveComponentの初期化
+	attackComponent_ = std::make_unique<EnemyAttackComponent>();
+
+	/// ===MoveComponentの初期化=== ///
 	EnemyMoveComponent::MoveConfig moveConfig{
 			.speed = 0.05f,
 			.range = 20.0f,
@@ -77,14 +66,11 @@ void BaseEnemy::Initialize() {
 	knockbackInfo_.hitColorTimer = 1.0f;
 	knockbackInfo_.originalColor = color_;   // 元の色を保存
 	knockbackInfo_.isInCooldown = true;
-
+	// 消滅タイマーの初期化
 	disappearTimer_ = 3.0f;
 
 	// HP 
 	baseInfo_.HP = 2;
-
-	// object3dの更新を一回行う
-	UpdateAnimation();
 }
 
 ///-------------------------------------------/// 
@@ -129,13 +115,8 @@ void BaseEnemy::Information() {
 #ifdef USE_IMGUI
 	// MoveInfo
 	moveComponent_->Information();
-
 	// AttackInfo
-	ImGui::Text("攻撃情報");
-	ImGui::DragFloat("攻撃可能距離", &attackInfo_.distance, 0.1f);
-	ImGui::DragFloat("攻撃範囲", &attackInfo_.range, 0.1f);
-	ImGui::DragFloat("攻撃間隔", &attackInfo_.interval, 0.1f);
-	ImGui::DragInt("パワー", &attackInfo_.power, 1);
+	attackComponent_->Information();
 
 	// KnockbackInfo
 	ImGui::Text("ノックバック情報");
@@ -162,10 +143,10 @@ void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 	enemy->moveComponent_->SetWaitTime(moveComponent_->GetConfig().waitTime);
 
 	// ===== Attack 系(設計値) ===== //
-	enemy->attackInfo_.distance = attackInfo_.distance;
-	enemy->attackInfo_.range = attackInfo_.range;
-	enemy->attackInfo_.interval = attackInfo_.interval;
-	enemy->attackInfo_.power = attackInfo_.power;
+	enemy->attackComponent_->SetRange(attackComponent_->GetConfig().range);
+	enemy->attackComponent_->SetDistance(attackComponent_->GetConfig().distance);
+	enemy->attackComponent_->SetInterval(attackComponent_->GetConfig().interval);
+	enemy->attackComponent_->SetPower(attackComponent_->GetConfig().power);
 
 	// ===== Knockback 系(設計値) ===== //
 	enemy->knockbackInfo_.cooldownDuration = knockbackInfo_.cooldownDuration;
@@ -254,13 +235,13 @@ bool BaseEnemy::CheckAttackable() {
 	float distance = Length(toPlayer);
 
 	// 距離判定
-	if (distance <= attackInfo_.distance) {
+	if (distance <= attackComponent_->GetConfig().distance) {
 		Vector3 dirToPlayer = Normalize(toPlayer);
 		float dot = Dot(forward, dirToPlayer);
 		float angleToPlayer = std::acos(dot); // ラジアン
 
 		// 角度が範囲内かチェック
-		if (angleToPlayer <= attackInfo_.range) {
+		if (angleToPlayer <= attackComponent_->GetConfig().range) {
 			return true;
 		} else {
 			return false;
@@ -310,6 +291,14 @@ void BaseEnemy::UpdateRotationTowards(const Vector3& direction, float slerpT) {
 }
 
 ///-------------------------------------------/// 
+/// 攻撃コンポーネントの初期化
+///-------------------------------------------///
+void BaseEnemy::InitializeAttackComponent(EnemyAttackComponent::AttackConfig config, std::unique_ptr<IAttackStrategy> strategy) {
+	// 攻撃コンポーネントの初期化
+	attackComponent_->Initialize(config, std::move(strategy));
+}
+
+///-------------------------------------------/// 
 /// 時間を進める
 ///-------------------------------------------///
 void BaseEnemy::advanceTimer() {
@@ -322,12 +311,6 @@ void BaseEnemy::advanceTimer() {
 			isTentativeDeath_ = true;
 		}
 	} else {
-
-
-		// 攻撃用のタイマーを進める
-		if (attackInfo_.timer > 0.0f) {
-			attackInfo_.timer -= baseInfo_.deltaTime;
-		}
 
 		// ノックバッククールタイムの更新
 		if (knockbackInfo_.isInCooldown) {

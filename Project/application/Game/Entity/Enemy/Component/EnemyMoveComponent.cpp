@@ -1,7 +1,9 @@
 #include "EnemyMoveComponent.h"
+// BaseEnemy
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
+// C++
 #include <cassert>
-
+// ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
 #endif // USE_IMGUI
