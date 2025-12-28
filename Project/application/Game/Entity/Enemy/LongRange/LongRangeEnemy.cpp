@@ -12,13 +12,9 @@
 /// デストラクタ
 ///-------------------------------------------///
 LongRangeEnemy::~LongRangeEnemy() {
-	object3d_.reset();
+	// Bulletのクリア
+	bulletInfo_.bullets_.clear();
 }
-
-///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-void LongRangeEnemy::SetlastYaw() { lastYaw_ = transform_.rotate.y; }
 
 ///-------------------------------------------/// 
 /// GameScene用初期化
@@ -28,7 +24,6 @@ void LongRangeEnemy::InitGameScene(const Vector3& translate) {
 	Initialize();
 	// 位置の設定
 	transform_.translate = translate;
-	moveInfo_.rangeCenter = transform_.translate;
 	// BaseEnemyの初期化
 	BaseEnemy::Initialize();
 }
@@ -47,16 +42,6 @@ void LongRangeEnemy::Initialize() {
 	// GameCharacterの初期化
 	GameCharacter::Initialize();
 	name_ = ColliderName::Enemy;
-
-	/// ===MoveInfoの設定=== ///
-	moveInfo_.interval = 5.0f;
-	moveInfo_.timer = 1.0f;
-	moveInfo_.waitTime = 1.0f;
-	moveInfo_.range = 20.0f;
-	moveInfo_.speed = 0.05f;
-	moveInfo_.direction = { 0.0f, 0.0f, 0.0f };
-	moveInfo_.rangeCenter = { 0.0f, 0.0f, 0.0f };
-	moveInfo_.isWating = false;
 
 	/// ===AttackInfoの設定=== ///
 	attackInfo_.range = 3.0f;
@@ -125,41 +110,35 @@ void LongRangeEnemy::OnCollision(Collider* collider) {
 }
 
 ///-------------------------------------------/// 
+/// 攻撃処理の初期化
+///-------------------------------------------///
+void LongRangeEnemy::StartAttack() {
+	// 攻撃開始
+	attackInfo_.isAttack = true;
+	// ターゲットの位置を保存
+	attackInfo_.playerPos = player_->GetTransform().translate;
+	// 攻撃時間の設定
+	attackInfo_.timer = 1.0f;
+	// 回転差分を揃える
+	lastYaw_ = transform_.rotate.y;
+}
+
+///-------------------------------------------/// 
 /// 攻撃処理
 ///-------------------------------------------///
 void LongRangeEnemy::Attack() {
 	// 早期リターン
 	if (!player_) return;
 
-	if (!attackInfo_.isAttack) { /// ===IsAttackがfalse=== ///
-		// プレイヤー位置を取得
-		attackInfo_.playerPos = player_->GetTransform().translate;
+	// 弾の生成
+	auto bullet = std::make_unique<LongRangeEnemeyBullet>();
+	bullet->Create(transform_.translate, attackInfo_.direction);
+	bulletInfo_.bullets_.push_back(std::move(bullet));
 
-		// プレイヤー位置への方向ベクトル
-		Vector3 dir = attackInfo_.playerPos - transform_.translate;
-		attackInfo_.direction = Normalize(dir); // 方向を保存
-
-		// 攻撃時はやや速めに回転
-		UpdateRotationTowards(attackInfo_.direction, 0.2f);
-
-		// 少し待つ
-		if (attackInfo_.timer <= 0.0f) { // タイマーが0以下
-			// 攻撃開始
-			attackInfo_.isAttack = true;
-		}
-
-	} else { /// ===IsAttackがtrue=== ///
-
-		// 弾の生成
-		auto bullet = std::make_unique<LongRangeEnemeyBullet>();
-		bullet->Create(transform_.translate, attackInfo_.direction);
-		bulletInfo_.bullets_.push_back(std::move(bullet));
-		// フラグをfalse
-		attackInfo_.isAttack = false;
-		attackInfo_.timer = attackInfo_.interval; // クールダウン再設定
-
-		color_ = { 1.0f, 0.0f, 1.0f, 1.0f }; // 元の色に戻す（任意）
-	}
+	// フラグをfalse
+	attackInfo_.isAttack = false;
+	// クールダウン再設定
+	attackInfo_.timer = attackInfo_.interval; 
 }
 
 ///-------------------------------------------/// 

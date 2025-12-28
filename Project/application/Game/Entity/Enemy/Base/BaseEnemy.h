@@ -1,9 +1,12 @@
 #pragma once
 /// ===Include=== ///
-// Collider
+// GameCharacter
 #include "application/Game/Entity/GameCharacter/GameCharacter.h"
 // State
 #include "application/Game/Entity/Enemy/State/Base/EnemyState.h"
+// Component
+#include "application/Game/Entity/Enemy/Component/EnemyMoveComponent.h"
+
 // c++
 #include <random>
 
@@ -12,7 +15,6 @@ class Player;
 
 /// ===StateType=== ///
 enum class StateType {
-	Move,
 	Attack
 };
 
@@ -21,34 +23,19 @@ enum class StateType {
 ///=====================================================///
 class BaseEnemy : public GameCharacter<OBBCollider> {
 private: /// ===型定義=== ///
-	/// ===移動情報=== ///
-	struct MoveInfo {
-		float timer;	// タイマー
-		float speed;	// 移動速度
-		float range;	// 移動範囲
-		float interval;	// 移動間隔
-		float waitTime;	// 待機時間
-
-		Vector3 rangeCenter; // 移動範囲の中心
-		Vector3 direction;	 // 移動方向
-
-		bool isWating;	// 待機フラグ
-	};
 
 	/// ===攻撃情報=== ///
 	struct AttackInfo {
-		float timer;	// タイマー
-		float range;	// 攻撃範囲(回転の情報から±)
-		float distance;	// 攻撃可能距離
-		float interval;	// 攻撃間隔
-		int32_t power;	// 待機時間
+		float timer;		// タイマー
+		float range;		// 攻撃範囲(回転の情報から±)
+		float distance;		// 攻撃可能距離
+		float interval;		// 攻撃間隔
+		int32_t power;		// 待機時間
 
 		Vector3 direction;  // 攻撃方向
 		Vector3 playerPos;  // プレイヤーの位置
 
-		bool isCollision; // 衝突フラグ
-
-		bool isAttack;	// 攻撃フラグ
+		bool isAttack;		// 攻撃フラグ
 	};
 
 	/// ===ノックバック情報=== ///
@@ -94,9 +81,14 @@ public:
 	virtual void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
 
 	/// <summary>
-	/// ImGui情報の表示
+	/// ImGui情報の表std示
 	/// </summary>
 	virtual void Information()override;
+
+	/// <summary>
+	/// 攻撃処理の初期化純粋仮想関数
+	/// </summary>
+	virtual void StartAttack() = 0;
 
 	/// <summary>
 	/// 攻撃処理の純粋仮想関数
@@ -118,27 +110,39 @@ public: /// ===衝突判定=== ///
 	void OnCollision(Collider* collider) override;
 
 public: /// ===State用関数=== ///
-	// 移動処理の開始処理
-	void CommonMoveInit();
-	// 移動処理の共通部分
-	void CommonMove();
 	// 攻撃可能かチェック
 	bool CheckAttackable();
 	// Stateの変更
 	//NOTE:newState = 次のステート
 	void ChangeState(std::unique_ptr<EnemyState> nextState);
 
+	/// <summary>
+	/// 回転の更新処理
+	/// </summary>
+	/// <param name="direction">回転目標の方向</param>
+	/// <param name="lerpT">回転完了までの時間</param>
+	void UpdateRotationTowards(const Vector3& direction, float lerpT);
+
 public: /// ===Getter=== ///
+	// Component
+	EnemyMoveComponent& GetMovementComponent() { return *moveComponent_; };
+	// Player
+	Player* GetPlayer() const { return player_; };
 	// AttackInfo
 	AttackInfo GetAttackInfo()const { return attackInfo_; };
 	// tentativeDeah
 	bool GetTentativeDeath() const { return isTentativeDeath_; };
+	// isRotationComplete
+	bool GetIsRotationComplete() const { return isRotationComplete_; };
 
 public: /// ===Setter=== ///
 	// Player
 	void SetPlayer(Player* player) { player_ = player; };
-	// Timer
-	void SetTimer(StateType type, float time);
+	// isRotationComplete
+	void SetIsRotationComplete(bool flag) { isRotationComplete_ = flag; };
+	// AttackDirection
+	void SetAttackDirection(const Vector3& dir) { attackInfo_.direction = dir; };
+	
 
 protected: /// ===変数の宣言=== ///
 
@@ -148,14 +152,17 @@ protected: /// ===変数の宣言=== ///
 	/// ===State=== ///
 	std::unique_ptr<EnemyState> currentState_;
 
-	// 移動情報
-	MoveInfo moveInfo_;
+	/// ===コンポーネント=== ///
+	std::unique_ptr<EnemyMoveComponent> moveComponent_;
 
 	// 攻撃情報
 	AttackInfo attackInfo_;
 
-	// ランダムシード
-	std::mt19937 randomEngine_;
+	// 回転完了フラグ
+	bool isRotationComplete_ = false;
+
+	// 衝突フラグ
+	bool isCollision_ = false;
 
 private:
 	// ノックバック情報
@@ -167,12 +174,7 @@ private:
 
 protected: /// ===関数の宣言=== ///
 
-	/// <summary>
-	/// 回転の更新処理
-	/// </summary>
-	/// <param name="direction">回転目標の方向</param>
-	/// <param name="lerpT">回転完了までの時間</param>
-	void UpdateRotationTowards(const Vector3& direction, float lerpT);
+	
 
 	/// <summary>
 	/// 派生側で型固有のチューニング値をコピーするための関数
@@ -181,12 +183,6 @@ protected: /// ===関数の宣言=== ///
 	virtual void CopyTypeTuningFromThisTo(BaseEnemy* enemy) const = 0;
 
 private:
-
-	/// <summary>
-	/// 方向の設定と待機時間の設定
-	/// </summary>
-	/// <param name="vector">設定する方向のベクトル</param>
-	void PreparNextMove(const Vector3& vector);
 
 	/// <summary>
 	/// タイマーを進める処理

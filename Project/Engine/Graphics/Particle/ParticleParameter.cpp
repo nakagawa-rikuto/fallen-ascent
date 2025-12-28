@@ -8,7 +8,9 @@ std::string ParticleParameterUtils::ToString(ParticleParameter param) {
     switch (param) {
         // 物理パラメータ
     case ParticleParameter::Gravity:           return "gravity";
-    case ParticleParameter::ExplosionRadius:   return "explosionRadius";
+    case ParticleParameter::ExplosionRadiusX:  return "explosionRadiusX";
+    case ParticleParameter::ExplosionRadiusY:  return "explosionRadiusY";
+    case ParticleParameter::ExplosionRadiusZ:  return "explosionRadiusZ";
     case ParticleParameter::UpwardForce:       return "upwardForce";
     case ParticleParameter::AccelerationX:     return "accelerationX";
     case ParticleParameter::AccelerationY:     return "accelerationY";
@@ -55,7 +57,9 @@ bool ParticleParameterUtils::FromString(const std::string& str, ParticleParamete
     static const std::unordered_map<std::string, ParticleParameter> stringToEnum = {
         // 物理パラメータ
         {"gravity", ParticleParameter::Gravity},
-        {"explosionRadius", ParticleParameter::ExplosionRadius},
+        {"explosionRadiuX", ParticleParameter::ExplosionRadiusX},
+        {"explosionRadiuY", ParticleParameter::ExplosionRadiusY},
+        {"explosionRadiuZ", ParticleParameter::ExplosionRadiusZ},
         {"upwardForce", ParticleParameter::UpwardForce},
         {"accelerationX", ParticleParameter::AccelerationX},
         {"accelerationY", ParticleParameter::AccelerationY},
@@ -107,7 +111,9 @@ std::string ParticleParameterUtils::GetDescription(ParticleParameter param) {
     switch (param) {
         // 物理パラメータ
     case ParticleParameter::Gravity:           return "重力加速度";
-    case ParticleParameter::ExplosionRadius:   return "爆発半径";
+    case ParticleParameter::ExplosionRadiusX:  return "X軸の発生半径";
+    case ParticleParameter::ExplosionRadiusY:  return "Y軸の発生半径";
+    case ParticleParameter::ExplosionRadiusZ:  return "Z軸の発生半径";
     case ParticleParameter::UpwardForce:       return "上方向の初期加速";
     case ParticleParameter::AccelerationX:     return "X軸加速度";
     case ParticleParameter::AccelerationY:     return "Y軸加速度";

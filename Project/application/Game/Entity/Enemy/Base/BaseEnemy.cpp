@@ -23,24 +23,8 @@
 /// デストラクタ
 ///-------------------------------------------///
 BaseEnemy::~BaseEnemy() {
-	object3d_.reset();
 	ColliderService::RemoveCollider(this);
-}
-
-///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-// タイマー
-void BaseEnemy::SetTimer(StateType type, float time) {
-	// typeに応じてタイマーを設定
-	switch (type) {
-	case StateType::Move:
-		moveInfo_.timer = time;
-		break;
-	case StateType::Attack:
-		attackInfo_.timer = time;
-		break;
-	}
+	object3d_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -48,12 +32,17 @@ void BaseEnemy::SetTimer(StateType type, float time) {
 ///-------------------------------------------///
 void BaseEnemy::Initialize() {
 
-	// ランダムエンジンの初期化
-	std::seed_seq seed{
-		static_cast<uint32_t>(std::time(nullptr)),
-		static_cast<uint32_t>(reinterpret_cast<uintptr_t>(this)),
+	/// ===Componentの生成=== ///
+	moveComponent_ = std::make_unique<EnemyMoveComponent>();
+	// MoveComponentの初期化
+	EnemyMoveComponent::MoveConfig moveConfig{
+			.speed = 0.05f,
+			.range = 20.0f,
+			.interval = 5.0f,
+			.waitTime = 1.5f,
+			. rotationSpeed = 0.1f
 	};
-	randomEngine_.seed(seed);
+	moveComponent_->Initialize(transform_.translate, moveConfig);
 
 	// オブジェクトの色設定
 	color_ = { 1.0f, 0.0f, 1.0f, 1.0f };
@@ -126,25 +115,21 @@ void BaseEnemy::Draw(BlendMode mode) {
 void BaseEnemy::Information() {
 #ifdef USE_IMGUI
 	// MoveInfo
-	ImGui::Text("MoveInfo");
-	ImGui::DragFloat("MoveSpeed", &moveInfo_.speed, 0.1f);
-	ImGui::DragFloat("MoveRange", &moveInfo_.range, 0.1f);
-	ImGui::DragFloat("MoveInterval", &moveInfo_.interval, 0.1f);
-	ImGui::DragFloat("MoveWaitTime", &moveInfo_.waitTime, 0.1f);
+	moveComponent_->Information();
 
 	// AttackInfo
-	ImGui::Text("AttackInfo");
-	ImGui::DragFloat("AttackDistance", &attackInfo_.distance, 0.1f);
-	ImGui::DragFloat("AttackRange", &attackInfo_.range, 0.1f);
-	ImGui::DragFloat("AttackInterval", &attackInfo_.interval, 0.1f);
-	ImGui::DragInt("Power", &attackInfo_.power, 1);
+	ImGui::Text("攻撃情報");
+	ImGui::DragFloat("攻撃可能距離", &attackInfo_.distance, 0.1f);
+	ImGui::DragFloat("攻撃範囲", &attackInfo_.range, 0.1f);
+	ImGui::DragFloat("攻撃間隔", &attackInfo_.interval, 0.1f);
+	ImGui::DragInt("パワー", &attackInfo_.power, 1);
 
 	// KnockbackInfo
-	ImGui::Text("KnockbackInfo");
-	ImGui::DragFloat("CooldownDuration", &knockbackInfo_.cooldownDuration, 0.01f);
-	ImGui::DragFloat("KnockbackForce", &knockbackInfo_.knockbackForce, 0.1f);
-	ImGui::DragFloat("HitColorDuration", &knockbackInfo_.hitColorDuration, 0.01f);
-	ImGui::Checkbox("IsInCooldown", &knockbackInfo_.isInCooldown);
+	ImGui::Text("ノックバック情報");
+	ImGui::DragFloat("クールタイムの持続時間", &knockbackInfo_.cooldownDuration, 0.01f);
+	ImGui::DragFloat("ノックバックの強さ", &knockbackInfo_.knockbackForce, 0.1f);
+	ImGui::DragFloat("色変更時間", &knockbackInfo_.hitColorDuration, 0.01f);
+	ImGui::Checkbox("クール中かどうか", &knockbackInfo_.isInCooldown);
 #endif // USE_IMGUI
 }
 
@@ -158,10 +143,10 @@ void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 	enemy->color_ = color_;
 
 	// ===== Move 系(設計値) ===== //
-	enemy->moveInfo_.speed = moveInfo_.speed;
-	enemy->moveInfo_.range = moveInfo_.range;
-	enemy->moveInfo_.interval = moveInfo_.interval;
-	enemy->moveInfo_.waitTime = moveInfo_.waitTime;
+	enemy->moveComponent_->SetSpeed(moveComponent_->GetConfig().speed);
+	enemy->moveComponent_->SetInterval(moveComponent_->GetConfig().interval);
+	enemy->moveComponent_->SetRange(moveComponent_->GetConfig().range);
+	enemy->moveComponent_->SetWaitTime(moveComponent_->GetConfig().waitTime);
 
 	// ===== Attack 系(設計値) ===== //
 	enemy->attackInfo_.distance = attackInfo_.distance;
@@ -184,11 +169,12 @@ void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 void BaseEnemy::OnCollision(Collider* collider) {
 
 	// 攻撃用のフラグを立てる
-	attackInfo_.isCollision = true;
+	isCollision_ = true;
 
 	/// ===GameCharacterの衝突=== ///
 	GameCharacter::OnCollision(collider);
 
+	// 早期リターン
 	if (baseInfo_.isDead) {
 		return;
 	}
@@ -197,7 +183,7 @@ void BaseEnemy::OnCollision(Collider* collider) {
 	if (collider->GetColliderName() == ColliderName::PlayerWeapon) {
 		// クールタイム中でなければノックバック処理を実行
 		if (!knockbackInfo_.isInCooldown) {
-			// 攻撃状態の時
+			// 通常攻撃の時
 			if (player_->GetStateFlag(actionType::kAttack)) {
 				// Stateを移動状態に変更
 				ChangeState(std::make_unique<EnemyMoveState>());
@@ -219,7 +205,7 @@ void BaseEnemy::OnCollision(Collider* collider) {
 
 				// 色を赤に変更
 				color_ = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 赤色
-				
+
 				// HPを減少
 				baseInfo_.HP--;
 				ParticleService::Emit("Game", transform_.translate);
@@ -229,91 +215,12 @@ void BaseEnemy::OnCollision(Collider* collider) {
 				knockbackInfo_.cooldownTimer = knockbackInfo_.cooldownDuration;
 				knockbackInfo_.isInCooldown = true;
 
-			// チャージ状態の時
+				// チャージ攻撃の時
 			} else if (player_->GetStateFlag(actionType::kCharge)) {
 
 			}
 		}
 	}
-}
-
-///-------------------------------------------/// 
-/// 移動処理の開始処理
-///-------------------------------------------///
-void BaseEnemy::CommonMoveInit() {
-	// 速度をリセット
-	baseInfo_.velocity = { 0.0f, 0.0f, 0.0f };
-}
-
-///-------------------------------------------/// 
-/// 移動処理の共通部分
-///-------------------------------------------///
-void BaseEnemy::CommonMove() {
-	// 移動範囲の中心との方向ベクトルを計算(XZ平面)
-	Vector3 toCenter = moveInfo_.rangeCenter - transform_.translate;
-	// 中心からの距離を取得
-	float distanceFromCenter = Length(toCenter);
-
-	/// ===移動処理=== ///
-	if (moveInfo_.isWating) { /// ===範囲外に出ていた場合=== ///
-
-		baseInfo_.velocity = { 0.0f, 0.0f, 0.0f }; // 待機中は移動しない
-
-		// 向き方向に回転
-		UpdateRotationTowards(moveInfo_.direction, 0.1f);
-
-		if (moveInfo_.timer <= 0.0f) {
-			// ランダムな時間を設定
-			std::uniform_real_distribution<float> timeDist(1.0f, moveInfo_.interval);
-			moveInfo_.timer = timeDist(randomEngine_);
-
-			// 移動ベクトルを設定
-			baseInfo_.velocity = moveInfo_.direction * moveInfo_.speed;
-			moveInfo_.isWating = false; // 待機フラグを解除
-		}
-
-	} else if (distanceFromCenter > moveInfo_.range) { /// ===範囲外に出ていた場合=== ///
-
-		// 方向の設定と待機処理の準備
-		PreparNextMove(toCenter);
-
-	} else if (moveInfo_.timer <= 0.0f && !moveInfo_.isWating) { /// ===範囲内かつタイマーが切れていた場合=== ///
-
-		// ランダムな角度と距離を生成
-		std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * Math::Pi());
-		std::uniform_real_distribution<float> distanceDist(0.0f, moveInfo_.range);
-		// ランダムな値の設定
-		float angle = angleDist(randomEngine_);
-		float distance = distanceDist(randomEngine_);
-
-		// 方向ベクトルを円から算出
-		Vector3 offset = {
-			std::cos(angle) * distance,
-			0.0f,
-			std::sin(angle) * distance
-		};
-
-		// 移動先の座標を計算
-		Vector3 target = moveInfo_.rangeCenter + offset;
-		target.y = transform_.translate.y;
-
-		// 方向の設定と待機処理の準備
-		PreparNextMove(target - transform_.translate);
-	}
-}
-
-///-------------------------------------------/// 
-/// // 方向の設定と待機時間の設定
-///-------------------------------------------///
-void BaseEnemy::PreparNextMove(const Vector3& vector) {
-	Vector3 dir = Normalize(vector);
-	dir.y = 0.0f; // Y成分を0にしてXZ平面での方向ベクトルを作成
-	moveInfo_.direction = Normalize(dir); // 方向を保存
-
-	// 待機時間を設定
-	moveInfo_.timer = moveInfo_.waitTime; // 待機時間を設定
-	// 待機フラグをtrueに設定
-	moveInfo_.isWating = true;
 }
 
 ///-------------------------------------------/// 
@@ -377,7 +284,16 @@ void BaseEnemy::UpdateRotationTowards(const Vector3& direction, float slerpT) {
 
 	// SLerp補間
 	Quaternion result = Math::SLerp(transform_.rotate, targetRotation, slerpT);
-	transform_.rotate = Normalize(result); // ★ 正規化でスケール崩れ防止
+	transform_.rotate = Normalize(result); // 正規化でスケール崩れ防止
+
+	// 回転が完了したかをチェック
+	Quaternion diff = transform_.rotate - targetRotation;
+	float rotationDiff = Math::Norm(diff);
+
+	// 回転差分が十分小さければ完了フラグを立てる
+	if (rotationDiff < 0.01f) {
+		isRotationComplete_ = true;
+	}
 }
 
 ///-------------------------------------------/// 
@@ -394,8 +310,6 @@ void BaseEnemy::advanceTimer() {
 		}
 	} else {
 
-		// 移動タイマーを進める
-		moveInfo_.timer -= baseInfo_.deltaTime;
 
 		// 攻撃用のタイマーを進める
 		if (attackInfo_.timer > 0.0f) {

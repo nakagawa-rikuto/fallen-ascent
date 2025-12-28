@@ -1,7 +1,8 @@
 #pragma once
 /// ===Icnlde=== ///
 // Buffer
-#include "Engine/Graphics/3d/base/VertexBuffer3D.h"
+#include "Engine/Graphics/3d/Base/VertexBuffer3D.h"
+#include "Engine/Graphics/3d/Base/IndexBuffer3D.h"
 #include "ParticleCommon.h"
 // Pipleine
 #include "Engine/DataInfo/PipelineStateObjectType.h"
@@ -9,7 +10,7 @@
 #include <memory>
 
 /// ===前方宣言=== ///
-class Camera;
+class GameCamera;
 class SRVManager;
 
 ///=====================================================/// 
@@ -57,13 +58,16 @@ private:
 
 	/// ===バッファリソース=== ///
 	std::unique_ptr<VertexBuffer3D> vertex_;
+	std::unique_ptr<IndexBuffer3D> index_;
 	std::unique_ptr<ParticleCommon> common_;
 
 	/// ===バッファリソース内のデータを指すポインタ=== ///
 	VertexData3D* vertexData_ = nullptr;
+	uint32_t* indexData_ = nullptr;
 
 	/// ===バッファビュー=== ///
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+	D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
 	
 	/// ===モデルデータ=== ///
 	ModelData modelData_;

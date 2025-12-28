@@ -56,8 +56,8 @@
 	"images":[
 		{
 			"mimeType":"image/png",
-			"name":"Particle",
-			"uri":"Particle.png"
+			"name":"Spark",
+			"uri":"Spark.png"
 		}
 	],
 	"accessors":[

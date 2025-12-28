@@ -18,7 +18,7 @@ nlohmann::json ParticleDefinition::ToJson() const {
 		{"velocityMax", Vector3ToJson(physics.velocityMax)},
 		{"acceleration", Vector3ToJson(physics.acceleration)},
 		{"gravity", physics.gravity},
-		{"explosionRadius", physics.explosionRadius},
+		{"explosionRange", Vector3ToJson(physics.explosionRange)},
 		{"upwardForce", physics.upwardForce},
 		{"useRandomVelocity", physics.useRandomVelocity}
 	};
@@ -86,7 +86,13 @@ ParticleDefinition ParticleDefinition::FromJson(const nlohmann::json& json) {
 		if (p.contains("velocityMax")) def.physics.velocityMax = JsonToVector3(p["velocityMax"]);
 		if (p.contains("acceleration")) def.physics.acceleration = JsonToVector3(p["acceleration"]);
 		if (p.contains("gravity")) def.physics.gravity = p["gravity"];
-		if (p.contains("explosionRadius")) def.physics.explosionRadius = p["explosionRadius"];
+		if (p.contains("explosionRange")) {
+			def.physics.explosionRange = JsonToVector3(p["explosionRange"]);
+		} else if (p.contains("explosionRadius")) {
+			// 古い形式（float）の場合は全軸に同じ値を設定
+			float radius = p["explosionRadius"];
+			def.physics.explosionRange = { radius, radius, radius };
+		}
 		if (p.contains("upwardForce")) def.physics.upwardForce = p["upwardForce"];
 		if (p.contains("useRandomVelocity")) def.physics.useRandomVelocity = p["useRandomVelocity"];
 	}

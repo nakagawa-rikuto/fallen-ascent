@@ -38,6 +38,11 @@ public:
 	void Information()override;
 
 	/// <summary>
+	/// 攻撃処理の初期化
+	/// </summary>
+	void StartAttack()override;
+
+	/// <summary>
 	/// 攻撃処理
 	/// </summary>
 	void Attack()override;
@@ -54,7 +59,6 @@ private: /// ===変数=== ///
 	/// ===突進情報=== ///
 	struct ChargeInfo {
 		float moveSpeed;
-		float stopTime;
 	};
 	ChargeInfo chargeInfo_;
 

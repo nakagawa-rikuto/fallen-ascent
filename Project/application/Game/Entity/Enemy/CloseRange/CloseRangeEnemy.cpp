@@ -3,10 +3,8 @@
 #include "application/Game/Entity/Player/Player.h"
 // Service
 #include "Engine/System/Service/ParticleService.h"
-#include "Engine/System/Service/ColliderService.h"
 // c++
 #include <cstdlib>
-#include <ctime>
 // ImGui
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -15,10 +13,7 @@
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
-CloseRangeEnemy::~CloseRangeEnemy() {
-	ColliderService::RemoveCollider(this);
-	object3d_.reset();
-}
+CloseRangeEnemy::~CloseRangeEnemy() {}
 
 ///-------------------------------------------/// 
 /// GameScene用初期化
@@ -28,7 +23,6 @@ void CloseRangeEnemy::InitGameScene(const Vector3& translate) {
 	Initialize();
 	// 位置の設定
 	transform_.translate = translate;
-	moveInfo_.rangeCenter = transform_.translate;
 	// BaseEnemyの初期化
 	BaseEnemy::Initialize();
 }
@@ -48,16 +42,6 @@ void CloseRangeEnemy::Initialize() {
 	GameCharacter::Initialize();
 	name_ = ColliderName::Enemy;
 
-	/// ===MoveInfoの設定=== ///
-	moveInfo_.interval = 5.0f;
-	moveInfo_.timer = 1.0f;
-	moveInfo_.waitTime = 1.5f;
-	moveInfo_.range = 15.0f;
-	moveInfo_.speed = 0.05f;
-	moveInfo_.direction = { 0.0f, 0.0f, 0.0f };
-	moveInfo_.rangeCenter = { 0.0f, 0.0f, 0.0f };
-	moveInfo_.isWating = false;
-
 	/// ===AttackInfoの設定=== ///
 	attackInfo_.range = 4.0f;
 	attackInfo_.distance = 15.0f;
@@ -69,14 +53,12 @@ void CloseRangeEnemy::Initialize() {
 
 	/// ===ChargeInfo=== ///
 	chargeInfo_.moveSpeed = 0.9f;
-	chargeInfo_.stopTime = 1.0f;
 }
 
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
 void CloseRangeEnemy::Update() {
-
 	// BaseEnemyの更新
 	BaseEnemy::Update();
 }
@@ -85,6 +67,7 @@ void CloseRangeEnemy::Update() {
 /// 描画
 ///-------------------------------------------///
 void CloseRangeEnemy::Draw(BlendMode mode) {
+	// BaseEnemyの描画
 	BaseEnemy::Draw(mode);
 }
 
@@ -93,11 +76,10 @@ void CloseRangeEnemy::Draw(BlendMode mode) {
 ///-------------------------------------------///
 void CloseRangeEnemy::Information() {
 #ifdef USE_IMGUI
-	ImGui::Begin("CloseRangeEnemy");
+	ImGui::Begin("近距離攻撃のEnemy");
 	BaseEnemy::Information();
-	ImGui::Text("ChargeInfo");
-	ImGui::DragFloat("moveSpeed", &chargeInfo_.moveSpeed, 0.1f);
-	ImGui::DragFloat("StopTime", &chargeInfo_.stopTime, 0.1f);
+	ImGui::Text("突進情報");
+	ImGui::DragFloat("移動速度", &chargeInfo_.moveSpeed, 0.1f);
 	ImGui::End();
 #endif // USE_IMGUI
 }
@@ -111,47 +93,38 @@ void CloseRangeEnemy::OnCollision(Collider* collider) {
 }
 
 ///-------------------------------------------/// 
+/// 攻撃処理の初期化
+///-------------------------------------------///
+void CloseRangeEnemy::StartAttack() {
+	// 攻撃開始
+	attackInfo_.isAttack = true;
+	// ターゲットの位置を保存
+	attackInfo_.playerPos = player_->GetTransform().translate;
+	// 攻撃時間の設定
+	attackInfo_.timer = 1.0f;
+	// 移動ベクトルを設定
+	baseInfo_.velocity = attackInfo_.direction * chargeInfo_.moveSpeed;
+}
+
+///-------------------------------------------/// 
 /// 攻撃処理
 ///-------------------------------------------///
 void CloseRangeEnemy::Attack() {
 	// 早期リターン
 	if (!player_) return;
 
-	if (!attackInfo_.isAttack) { /// ===IsAttackがfalse=== ///
-		// プレイヤー位置を取得
-		attackInfo_.playerPos = player_->GetTransform().translate;
+	// プレイヤーとの差を計算
+	Vector3 toTarget = attackInfo_.playerPos - transform_.translate;
+	float length = Length(toTarget);
 
-		// プレイヤー位置への方向ベクトル
-		Vector3 dir = attackInfo_.playerPos - transform_.translate;
-		attackInfo_.direction = Normalize(dir); // 方向を保存
-
-		// directionの方向に回転
-		UpdateRotationTowards(attackInfo_.direction, 0.2f);
-
-		// 少し待つ
-		if (attackInfo_.timer <= 0.0f) { // タイマーが0以下
-			// 移動ベクトルを設定
-			baseInfo_.velocity = attackInfo_.direction * chargeInfo_.moveSpeed;
-
-			// 攻撃開始
-			attackInfo_.isAttack = true;
-		}
-
-	} else { /// ===IsAttackがtrue=== ///
-
-		// プレイヤーとの差を計算
-		Vector3 toTarget = attackInfo_.playerPos - transform_.translate;
-
-		// 攻撃終了判定
-		if (Length(toTarget) < 0.5f) { // 到達判定s
-			attackInfo_.isAttack = false; // 攻撃終了フラグをfalseに
-			baseInfo_.velocity = { 0.0f, 0.0f, 0.0f }; // 移動ベクトルをリセット
-			attackInfo_.timer = attackInfo_.interval; // クールダウン再設定
-			// 移動範囲の中心を設定
-			moveInfo_.rangeCenter = attackInfo_.playerPos;
-
-			color_ = { 1.0f, 0.0f, 1.0f, 1.0f }; // 元の色に戻す（任意）
-		}
+	// 攻撃終了判定
+	if (length < 0.5f) { // 到達判定
+		// 攻撃終了フラグをfalse
+		attackInfo_.isAttack = false;
+		// 移動ベクトルをリセット
+		baseInfo_.velocity = { 0.0f, 0.0f, 0.0f };
+		// クールダウン再設定
+		attackInfo_.timer = attackInfo_.interval;
 	}
 }
 
@@ -161,6 +134,5 @@ void CloseRangeEnemy::Attack() {
 void CloseRangeEnemy::CopyTypeTuningFromThisTo(BaseEnemy* dst) const {
 	if (auto* d = dynamic_cast<CloseRangeEnemy*>(dst)) {
 		d->chargeInfo_.moveSpeed = this->chargeInfo_.moveSpeed;
-		d->chargeInfo_.stopTime = this->chargeInfo_.stopTime;
 	}
 }

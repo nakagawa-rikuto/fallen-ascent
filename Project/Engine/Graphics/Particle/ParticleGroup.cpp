@@ -132,8 +132,14 @@ void ParticleGroup::SetParameter(ParticleParameter param, float value) {
     case ParticleParameter::Gravity:
         definition_.physics.gravity = value;
         break;
-    case ParticleParameter::ExplosionRadius:
-        definition_.physics.explosionRadius = value;
+    case ParticleParameter::ExplosionRadiusX:
+        definition_.physics.explosionRange.x = value;
+        break;
+    case ParticleParameter::ExplosionRadiusY:
+        definition_.physics.explosionRange.y = value;
+        break;
+    case ParticleParameter::ExplosionRadiusZ:
+        definition_.physics.explosionRange.z = value;
         break;
     case ParticleParameter::UpwardForce:
         definition_.physics.upwardForce = value;
@@ -293,7 +299,7 @@ ParticleData ParticleGroup::MakeParticle(const Vector3& translate) {
     // 基本パーティクルを生成
     ParticleData particle = ParticleFactory::CreateParticle(definition_, randomEngine_, translate);
 
-    // 🆕 軌跡モードの場合、エミッタの回転を考慮
+    // 軌跡モードの場合、エミッタの回転を考慮
     if (definition_.advanced.isTrajectoryParticle) {
         // エミッタの回転をクォータニオンに変換
         Quaternion emitterQuat = Math::QuaternionFromVector(group_.transform.rotate);
@@ -401,30 +407,34 @@ void ParticleGroup::UpdateParticles() {
         // 基本更新（ParticleFactory使用）
         ParticleFactory::UpdateParticle(*it, definition_, kDeltaTime_, randomEngine_);
 
-        // 軌跡専用の追加処理
-        if (definition_.advanced.isTrajectoryParticle) {
-            float progress = it->currentTime / it->lifeTime;
+        // 進行度の計算
+        float progress = it->currentTime / it->lifeTime;
 
-            // エミッタ追従
-            if (definition_.advanced.motion.followEmitter) {
-                Vector3 followOffset = emitterDelta * definition_.advanced.motion.followStrength;
-                it->transform.translate += followOffset;
-            }
+        // エミッタ追従
+        if (definition_.advanced.motion.followEmitter) {
+            Vector3 followOffset = emitterDelta * definition_.advanced.motion.followStrength;
+            it->transform.translate += followOffset;
+        }
 
-            // 速度減衰
-            if (definition_.advanced.motion.velocityDamping < 1.0f) {
-                it->velocity = it->velocity * definition_.advanced.motion.velocityDamping;
-            }
+        // 速度減衰
+        if (definition_.advanced.motion.velocityDamping < 1.0f) {
+            it->velocity = it->velocity * definition_.advanced.motion.velocityDamping;
+        }
 
-            // 渦巻き運動
-            if (definition_.advanced.motion.enableSwirling) {
-                ApplySwirlMotion(*it, progress);
-            }
+        // 渦巻き運動
+        if (definition_.advanced.motion.enableSwirling) {
+            ApplySwirlMotion(*it, progress);
+        }
 
-            // 回転影響
-            if (definition_.advanced.motion.useRotationInfluence) {
-                ApplyRotationInfluence(*it, progress);
-            }
+        // 回転影響
+        if (definition_.advanced.motion.useRotationInfluence) {
+            ApplyRotationInfluence(*it, progress);
+        }
+
+        // ビルボード回転
+        if (definition_.advanced.motion.enableBillboardRotation) {
+            float rotationSpeed = definition_.advanced.motion.billboardRotationSpeed;
+			it->transform.rotate.z += rotationSpeed * kDeltaTime_;
         }
 
         // インスタンシング更新

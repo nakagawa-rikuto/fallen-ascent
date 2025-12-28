@@ -2,13 +2,13 @@
 /// ===Include=== ///
 #include "Base/EnemyState.h"
 
-///=====================================================/// 
-/// MoveState
-///=====================================================///
-class EnemyAttackState : public EnemyState {
+///-------------------------------------------/// 
+/// PrePareAttackState
+///-------------------------------------------///
+class EnemyPrePareAttackState : public EnemyState {
 public:
 
-	~EnemyAttackState() override = default;
+	~EnemyPrePareAttackState() override = default;
 
 	/// <summary>
 	/// ステートに入った時に呼ばれる処理
@@ -26,5 +26,11 @@ public:
 	/// 終了処理
 	/// </summary>
 	void Finalize() override;
+
+private:
+	// アクティブタイマー
+	float activeTimer_ = 0.0f;
+	// アクティブ時間
+	float acticeTime = 1.0f;
 };
 

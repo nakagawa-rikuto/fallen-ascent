@@ -40,6 +40,11 @@ public:
 	void Information()override;
 
 	/// <summary>
+	/// 攻撃処理の初期化
+	/// </summary>
+	void StartAttack()override;
+
+	/// <summary>
 	/// 攻撃処理
 	/// </summary>
 	void Attack()override;
@@ -50,10 +55,6 @@ public: /// ===衝突判定=== ///
 	/// </summary>
 	/// <param name="collider">衝突した相手の Collider へのポインター。衝突相手の情報を取得するために使用します。</param>
 	void OnCollision(Collider* collider) override;
-
-public: /// ===Setter=== ///
-	// 前フレームのYawを設定
-	void SetlastYaw();
 
 private: /// ===変数=== ///
 

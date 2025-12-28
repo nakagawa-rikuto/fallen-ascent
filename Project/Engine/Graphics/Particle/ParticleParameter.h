@@ -7,8 +7,10 @@
 ///=====================================================///
 enum class ParticleParameter {
     // 物理パラメータ
-    Gravity,                // 重力
-    ExplosionRadius,        // 爆発半径
+    Gravity,               // 重力
+    ExplosionRadiusX,      // 発生範囲
+    ExplosionRadiusY,      // 発生範囲
+    ExplosionRadiusZ,      // 発生範囲
     UpwardForce,           // 上方向の力
     AccelerationX,         // 加速度X
     AccelerationY,         // 加速度Y
