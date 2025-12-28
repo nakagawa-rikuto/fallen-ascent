@@ -68,9 +68,6 @@ private: /// ===変数=== ///
 	};
 	BulletInfo bulletInfo_;
 
-	// 前フレームのYawを保持
-	float lastYaw_;
-
 protected:
 	/// <summary>
 	/// 派生側で型固有のチューニング値をコピーするための関数

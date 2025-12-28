@@ -51,9 +51,6 @@ void LongRangeEnemy::Initialize() {
 	attackInfo_.power = 1;
 	attackInfo_.direction = { 0.0f, 0.0f, 0.0f };
 	attackInfo_.isAttack = false;
-
-	// 攻撃用の前フレームを初期化
-	lastYaw_ = transform_.rotate.y;
 }
 
 ///-------------------------------------------/// 
@@ -119,8 +116,6 @@ void LongRangeEnemy::StartAttack() {
 	attackInfo_.playerPos = player_->GetTransform().translate;
 	// 攻撃時間の設定
 	attackInfo_.timer = 1.0f;
-	// 回転差分を揃える
-	lastYaw_ = transform_.rotate.y;
 }
 
 ///-------------------------------------------/// 
