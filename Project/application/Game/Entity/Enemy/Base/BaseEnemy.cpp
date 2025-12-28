@@ -23,21 +23,8 @@
 /// デストラクタ
 ///-------------------------------------------///
 BaseEnemy::~BaseEnemy() {
-	object3d_.reset();
 	ColliderService::RemoveCollider(this);
-}
-
-///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-// タイマー
-void BaseEnemy::SetTimer(StateType type, float time) {
-	// typeに応じてタイマーを設定
-	switch (type) {
-	case StateType::Attack:
-		attackInfo_.timer = time;
-		break;
-	}
+	object3d_.reset();
 }
 
 ///-------------------------------------------/// 

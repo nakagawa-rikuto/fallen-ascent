@@ -15,15 +15,10 @@ void EnemyAttackState::Enter(BaseEnemy* enemy) {
 	enemy_ = enemy;
 	// 移動量を初期化
 	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
-	// 攻撃タイマーを設定
-	enemy_->SetTimer(StateType::Attack, 1.0f);
 	// 色の設定
 	enemy_->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f });
-	// 回転差分を揃える
-	if (auto* lr = dynamic_cast<LongRangeEnemy*>(enemy_)) {
-		lr->SetlastYaw();
-	}
-	//ParticleService::Emit("EnemyAttack", enemy->GetTransform().translate);
+	// 攻撃開始処理
+	enemy_->StartAttack();
 }
 
 ///-------------------------------------------/// 
@@ -31,16 +26,15 @@ void EnemyAttackState::Enter(BaseEnemy* enemy) {
 ///-------------------------------------------///
 void EnemyAttackState::Update(BaseEnemy * enemy) {
 	enemy_ = enemy;
-	// preフラグに入れる
-	preIsAttack_ = enemy_->GetAttackInfo().isAttack;
 
 	// Attackの処理
 	enemy_->Attack();
 
 	/// ===Stateの変更=== ///
-	// preフラグがtrueでisAttackがfalseの時
-	if (!enemy_->GetAttackInfo().isAttack && preIsAttack_) {
-		//ParticleService::StopParticle("EnemyAttack");
+	if (!enemy_->GetAttackInfo().isAttack) {
+		// 色の設定
+		enemy_->SetColor({ 1.0f, 0.0f, 1.0f, 1.0f }); // 元の色に戻す
+		// MoveStateに移行
 		enemy_->ChangeState(std::make_unique<EnemyMoveState>());
 	}
 }

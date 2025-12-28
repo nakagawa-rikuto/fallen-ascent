@@ -2,7 +2,7 @@
 // BaseEnemy
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
 // State
-#include "EnemyAttackState.h"
+#include "EnemyPrePareAttackState.h"
 
 
 ///-------------------------------------------/// 
@@ -51,7 +51,7 @@ void EnemyMoveState::Update(BaseEnemy * enemy) {
 	/// ===Stateの変更=== ///
 	if (enemy_->CheckAttackable() && enemy_->GetAttackInfo().timer <= 0.0f && !enemy_->GetAttackInfo().isAttack) {
 		// Attackに
-		enemy_->ChangeState(std::make_unique<EnemyAttackState>());
+		enemy_->ChangeState(std::make_unique<EnemyPrePareAttackState>());
 	}
 }
 

@@ -86,6 +86,11 @@ public:
 	virtual void Information()override;
 
 	/// <summary>
+	/// 攻撃処理の初期化純粋仮想関数
+	/// </summary>
+	virtual void StartAttack() = 0;
+
+	/// <summary>
 	/// 攻撃処理の純粋仮想関数
 	/// </summary>
 	virtual void Attack() = 0;
@@ -121,7 +126,8 @@ public: /// ===State用関数=== ///
 public: /// ===Getter=== ///
 	// Component
 	EnemyMoveComponent& GetMovementComponent() { return *moveComponent_; };
-
+	// Player
+	Player* GetPlayer() const { return player_; };
 	// AttackInfo
 	AttackInfo GetAttackInfo()const { return attackInfo_; };
 	// tentativeDeah
@@ -134,8 +140,8 @@ public: /// ===Setter=== ///
 	void SetPlayer(Player* player) { player_ = player; };
 	// isRotationComplete
 	void SetIsRotationComplete(bool flag) { isRotationComplete_ = flag; };
-	// Timer
-	void SetTimer(StateType type, float time);
+	// AttackDirection
+	void SetAttackDirection(const Vector3& dir) { attackInfo_.direction = dir; };
 	
 
 protected: /// ===変数の宣言=== ///

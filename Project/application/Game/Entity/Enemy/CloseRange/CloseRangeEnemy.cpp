@@ -3,10 +3,8 @@
 #include "application/Game/Entity/Player/Player.h"
 // Service
 #include "Engine/System/Service/ParticleService.h"
-#include "Engine/System/Service/ColliderService.h"
 // c++
 #include <cstdlib>
-#include <ctime>
 // ImGui
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -15,10 +13,7 @@
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
-CloseRangeEnemy::~CloseRangeEnemy() {
-	ColliderService::RemoveCollider(this);
-	object3d_.reset();
-}
+CloseRangeEnemy::~CloseRangeEnemy() {}
 
 ///-------------------------------------------/// 
 /// GameScene用初期化
@@ -98,49 +93,38 @@ void CloseRangeEnemy::OnCollision(Collider* collider) {
 }
 
 ///-------------------------------------------/// 
+/// 攻撃処理の初期化
+///-------------------------------------------///
+void CloseRangeEnemy::StartAttack() {
+	// 攻撃開始
+	attackInfo_.isAttack = true;
+	// ターゲットの位置を保存
+	attackInfo_.playerPos = player_->GetTransform().translate;
+	// 攻撃時間の設定
+	attackInfo_.timer = 1.0f;
+	// 移動ベクトルを設定
+	baseInfo_.velocity = attackInfo_.direction * chargeInfo_.moveSpeed;
+}
+
+///-------------------------------------------/// 
 /// 攻撃処理
 ///-------------------------------------------///
 void CloseRangeEnemy::Attack() {
 	// 早期リターン
 	if (!player_) return;
 
-	if (!attackInfo_.isAttack) { /// ===IsAttackがfalse=== ///
-		// プレイヤー位置を取得
-		attackInfo_.playerPos = player_->GetTransform().translate;
+	// プレイヤーとの差を計算
+	Vector3 toTarget = attackInfo_.playerPos - transform_.translate;
+	float length = Length(toTarget);
 
-		// プレイヤー位置への方向ベクトル
-		Vector3 dir = attackInfo_.playerPos - transform_.translate;
-		attackInfo_.direction = Normalize(dir); // 方向を保存
-
-		// directionの方向に回転
-		UpdateRotationTowards(attackInfo_.direction, 0.2f);
-
-		// 少し待つ
-		if (isRotationComplete_ && attackInfo_.timer <= 0.0f) { // タイマーが0以下
-			// 移動ベクトルを設定
-			baseInfo_.velocity = attackInfo_.direction * chargeInfo_.moveSpeed;
-			// 攻撃開始
-			attackInfo_.isAttack = true;
-			// 回転完了フラグをリセット
-			isRotationComplete_ = false; 
-		}
-
-	} else { /// ===IsAttackがtrue=== ///
-
-		// プレイヤーとの差を計算
-		Vector3 toTarget = attackInfo_.playerPos - transform_.translate;
-
-		// 攻撃終了判定
-		if (Length(toTarget) < 0.5f) { // 到達判定
-			// 攻撃終了フラグをfalse
-			attackInfo_.isAttack = false; 
-			// 移動ベクトルをリセット
-			baseInfo_.velocity = { 0.0f, 0.0f, 0.0f }; 
-			// クールダウン再設定
-			attackInfo_.timer = attackInfo_.interval; 
-			// 元の色に戻す (のちに削除)
-			color_ = { 1.0f, 0.0f, 1.0f, 1.0f }; 
-		}
+	// 攻撃終了判定
+	if (length < 0.5f) { // 到達判定
+		// 攻撃終了フラグをfalse
+		attackInfo_.isAttack = false;
+		// 移動ベクトルをリセット
+		baseInfo_.velocity = { 0.0f, 0.0f, 0.0f };
+		// クールダウン再設定
+		attackInfo_.timer = attackInfo_.interval;
 	}
 }
 

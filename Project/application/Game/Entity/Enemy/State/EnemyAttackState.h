@@ -26,9 +26,5 @@ public:
 	/// 終了処理
 	/// </summary>
 	void Finalize() override;
-
-private:
-
-	bool preIsAttack_ = false;
 };
 
