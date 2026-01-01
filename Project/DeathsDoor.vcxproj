@@ -262,6 +262,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.cpp" />
     <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp" />
     <ClCompile Include="Engine\Scene\Transition\SceneTransitionManager.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
@@ -429,6 +431,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.h" />
     <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h" />
     <ClInclude Include="Engine\Scene\Transition\SceneTransitionManager.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

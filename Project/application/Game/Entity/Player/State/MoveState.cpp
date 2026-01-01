@@ -21,9 +21,6 @@ void MoveState::Enter(Player* player, GameCamera* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
-
-	// 移動速度の設定
-	info_.speed = 0.4f;
 }
 
 ///-------------------------------------------/// 
@@ -38,26 +35,18 @@ void MoveState::Update(Player * player, GameCamera* camera) {
 	StickState leftStick = InputService::GetLeftStickState(0);
 
 	/// ===移動処理=== ///
-	info_.direction.x = leftStick.x;
-	info_.direction.z = leftStick.y;
+	PlayerMoveComponent::UpdateContext context{
+		.inputDirection = { leftStick.x, 0.0f, leftStick.y },
+		.currentPosition = player_->GetTransform().translate,
+		.currentRotation = player_->GetTransform().rotate,
+		.deltaTime = player_->GetDeltaTime()
+	};
+	// 更新
+	auto result = player_->GetMoveComponent()->Update(context);
 
-	/// ===Velocityに反映=== ///
-	player_->SetVelocity(info_.direction * info_.speed);
-
-	/// ===移動方向に沿って回転=== ///
-	// 方向が変更されたら
-	if (Length(info_.direction) > 0.01f) {
-		// 現在のYaw角(Y軸の回転)を取得
-		float currentYaw = Math::GetYAngle(player_->GetTransform().rotate);
-		// 入力方向から目標のYaw角を取得
-		float targetYaw = std::atan2(info_.direction.x, info_.direction.z);
-		// 差分を [-π, π] に正規化
-		float diff = Math::NormalizeAngle(targetYaw - currentYaw);
-		// イージング補間（短い方向へ回転）
-		float easedYaw = currentYaw + diff * (player_->GetDeltaTime() * 10.0f);
-		// Quaternionに再変換
-		player_->SetRotate(Math::MakeRotateAxisAngle({ 0, 1, 0 }, easedYaw));
-	}
+	// 結果を反映
+	player_->SetVelocity(result.velocity);
+	player_->SetRotate(result.targetRotation);
 
 	/// ===Stateの変更=== ///
 	// 攻撃ボタンが押されたら攻撃状態へ
@@ -75,9 +64,9 @@ void MoveState::Update(Player * player, GameCamera* camera) {
 	// Aボタンが押されたら回避状態へ
 	} else if (InputService::TriggerButton(0, ControllerButtonType::A)) {
 		// 回避の準備ができていれば
-		if (player_->GetpreparationFlag(actionType::kAvoidance)) {
+		if (player_->GetAvoidanceComponent()->GetState().isPreparation) {
 			// パーティクル発生
-			player_->ChangState(std::make_unique<AvoidanceState>(Normalize(info_.direction)));
+			player_->ChangState(std::make_unique<AvoidanceState>(Normalize(player_->GetMoveComponent()->GetCurrentDirection())));
 		}
 	// 移動が無ければ通常状態へ
 	} else if (std::abs(leftStick.x) < 0.1f && std::abs(leftStick.y) < 0.1f) {

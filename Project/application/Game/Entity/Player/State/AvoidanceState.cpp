@@ -7,7 +7,7 @@
 ///-------------------------------------------/// 
 /// コンストラクタ
 ///-------------------------------------------///
-AvoidanceState::AvoidanceState(const Vector3& direction) {info_.direction = direction;}
+AvoidanceState::AvoidanceState(const Vector3& direction) { direction_ = direction;}
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
@@ -17,11 +17,8 @@ void AvoidanceState::Enter(Player * player, GameCamera* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	// 回避情報の初期化
-	info_.acceleration = 0.1f;
-	player_->SetTimer(actionType::kAvoidance, info_.activeTime);
-	player_->SetStateFlag(actionType::kAvoidance, true);
-	player_->SetpreparationFlag(actionType::kAvoidance, false);
+	// 回避処理を開始
+	player_->GetAvoidanceComponent()->StartAvoidance();
 }
 
 ///-------------------------------------------/// 
@@ -32,23 +29,21 @@ void AvoidanceState::Update(Player * player, GameCamera* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	// 無敵時間の変更
-	player_->SetInvicibleTime(info_.invincibleTime);
-	// 加速度の減少
-	info_.acceleration -= player_->GetDeltaTime() * info_.activeTime;
-	// 速度の設定
-	info_.speed = 0.4f * info_.acceleration;
+	/// ===回避処理=== ///
+	PlayerAvoidanceComponent::UpdateContext context{
+		.inputDirection = direction_,
+		.deltaTime = player_->GetDeltaTime()
+	};
+	// 更新
+	auto result = player_->GetAvoidanceComponent()->Update(context);
 
-	// Velocityに反映
-	Vector3 velocity = player_->GetVelocity();
-	velocity.x += info_.direction.x * info_.speed;
-	velocity.z += info_.direction.z * info_.speed;
-	player_->SetVelocity(velocity);
+	// 結果を反映
+	player_->SetVelocity(result.velocity);
 
 	/// ===タイマーが時間を超えたら=== ///
-	if (player_->GetTimer(actionType::kAvoidance) <= 0.0f) {
-		player_->SetTimer(actionType::kAvoidance, info_.cooltime); // クールタイムのリセット
-		player_->SetStateFlag(actionType::kAvoidance, false);
+	if (player_->GetAvoidanceComponent()->GetState().timer <= 0.0f) {
+		// 状態をリセット
+		player_->GetAvoidanceComponent()->ResetState();
 		// Stateの変更
 		player_->ChangState(std::make_unique<RootState>());
 	}
@@ -58,5 +53,5 @@ void AvoidanceState::Update(Player * player, GameCamera* camera) {
 /// 終了時に呼び出す
 ///-------------------------------------------///
 void AvoidanceState::Finalize() {
-
+	PlayerState::Finalize();	
 }

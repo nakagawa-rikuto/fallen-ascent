@@ -32,16 +32,7 @@ public:
 	void Finalize() override;
 
 private:
-
-	/// ===回避情報=== ///
-	struct AvoidanceInfo {
-		float speed = 0.0f;			  // 回避時の移動速度
-		float activeTime = 0.3f;      // 回避の有効時間
-		float cooltime = 1.0f;		  // 回避のクールタイム
-		float invincibleTime = 0.01f;  // 回避時の無敵時間
-		float acceleration = 0.0f;    // 回避の加速度
-		Vector3 direction = { 0.0f, 0.0f, 0.0f };
-	};
-	AvoidanceInfo info_;
+	/// ===回避方向=== ///
+	Vector3 direction_; // 回避方向
 };
 

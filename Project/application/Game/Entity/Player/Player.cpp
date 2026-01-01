@@ -9,11 +9,9 @@
 #include "Engine/System/Service/ColliderService.h"
 // Math
 #include "Math/sMath.h"
-
 // ImGui
 #ifdef USE_IMGUI
 #include "imgui.h"
-#include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
 #endif // USE_IMGUI
 
 ///-------------------------------------------/// 
@@ -27,24 +25,19 @@ Player::~Player() {
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
-// Weapon
-PlayerWeapon* Player::GetWeapon() const { return weapon_.get(); }
 // フラグ
 bool Player::GetStateFlag(actionType type) const {
 	// タイプで分岐
-	if (type == actionType::kAvoidance) {
-		return avoidanceInfo_.isFlag;
-	} else if (type == actionType::kCharge) {
+	if (type == actionType::kCharge) {
 		return chargeInfo_.isFlag;
 	} else {
 		return attackInfo_.isFlag;
 	}
 }
+// 準備フラグ
 bool Player::GetpreparationFlag(actionType type) const {
 	// タイプで分岐
-	if (type == actionType::kAvoidance) {
-		return avoidanceInfo_.isPreparation;
-	} else if (type == actionType::kCharge) {
+	if (type == actionType::kCharge) {
 		return chargeInfo_.isPreparation;
 	} else {
 		return attackInfo_.isPreparation;
@@ -53,9 +46,7 @@ bool Player::GetpreparationFlag(actionType type) const {
 // タイマー
 float Player::GetTimer(actionType type) {
 	// タイプで分岐
-	if (type == actionType::kAvoidance) {
-		return avoidanceInfo_.timer;
-	} else if (type == actionType::kCharge) {
+	if (type == actionType::kCharge) {
 		return chargeInfo_.timer;
 	} else {
 		return attackInfo_.timer;
@@ -71,9 +62,6 @@ void Player::SetCameraTargetPlayer() { camera_->SetTarget(&transform_.translate,
 void Player::SetStateFlag(actionType type, bool falg) {
 	// タイプで分岐
 	switch (type) {
-	case actionType::kAvoidance:
-		avoidanceInfo_.isFlag = falg;
-		break;
 	case actionType::kCharge:
 		chargeInfo_.isFlag = falg;
 		break;
@@ -86,9 +74,6 @@ void Player::SetStateFlag(actionType type, bool falg) {
 void Player::SetpreparationFlag(actionType type, bool falg) {
 	// タイプで分岐
 	switch (type) {
-	case actionType::kAvoidance:
-		avoidanceInfo_.isPreparation = falg;
-		break;
 	case actionType::kCharge:
 		chargeInfo_.isPreparation = falg;
 		break;
@@ -101,9 +86,6 @@ void Player::SetpreparationFlag(actionType type, bool falg) {
 void Player::SetTimer(actionType type, const float& timer) {
 	// タイプで分岐
 	switch (type) {
-	case actionType::kAvoidance:
-		avoidanceInfo_.timer = timer;
-		break;
 	case actionType::kCharge:
 		chargeInfo_.timer = timer;
 		break;
@@ -113,7 +95,7 @@ void Player::SetTimer(actionType type, const float& timer) {
 	}
 }
 // 無敵時間の設定
-void Player::SetInvicibleTime(const float& time) { 
+void Player::SetInvicibleTime(const float& time) {
 	invicibleInfo_.time = time;
 	invicibleInfo_.timer = invicibleInfo_.time;
 }
@@ -140,7 +122,29 @@ void Player::Initialize() {
 	weapon_ = std::make_unique<PlayerWeapon>();
 	weapon_->Initialize();
 	weapon_->SetUpParent(this);
-	
+
+	/// ===Component=== ///
+	// Componentの生成
+	moveComponent_ = std::make_unique<PlayerMoveComponent>();
+	avoidanceComponent_ = std::make_unique<PlayerAvoidanceComponent>();
+
+	// MoveComponentの初期化
+	PlayerMoveComponent::MoveConfig moveConfig{
+		.speed = 0.4f,
+		.rotationSpeed = 10.0f,
+		.deceleration = 0.75f
+	};
+	moveComponent_->Initialize(moveConfig);
+
+	// AvoidanceComponentの初期化
+	PlayerAvoidanceComponent::AvoidanceConfig avoidanceConfig{
+		.speed = 15.0f,
+		.activeTime = 0.3f,
+		.coolTime = 1.0f,
+		.invincibleTime = 0.01f
+	};
+	avoidanceComponent_->Initialize(avoidanceConfig);
+
 	// 無敵情報の設定
 	SetInvicibleTime(1.0f);
 	invicibleInfo_.isFlag = true;
@@ -211,10 +215,11 @@ void Player::Draw(BlendMode mode) {
 void Player::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("Player");
-	GameCharacter::Information();
+	GameCharacter::Information();   // 親クラスの情報表示
+	moveComponent_->Information();  // 移動コンポーネントの情報表示
 	ImGui::DragFloat("無敵時間", &invicibleInfo_.timer, 0.01f);
+	weapon_->Information();         // Weaponの情報表示
 	ImGui::End();
-	weapon_->Information();
 #endif // USE_IMGUI
 }
 
@@ -284,12 +289,8 @@ void Player::advanceTimer() {
 		chargeInfo_.isPreparation = true;
 	}
 
-	// 回避用タイマーを進める
-	if (avoidanceInfo_.timer > 0.0f) {
-		avoidanceInfo_.timer -= baseInfo_.deltaTime;
-	} else {
-		avoidanceInfo_.isPreparation = true;
-	}
+	// 回避タイマーの更新
+	avoidanceComponent_->UpdateTimer(baseInfo_.deltaTime);
 
 	// 攻撃用タイマーを進める
 	if (attackInfo_.timer > 0.0f) {

@@ -30,14 +30,5 @@ public:
 	/// ステートの終了処理
 	/// </summary>
 	void Finalize() override;
-
-private:
-
-	/// ===移動情報=== ///
-	struct MoveInfo {
-		float speed = 0.5f;
-		Vector3 direction = { 0.0f, 0.0f, 0.0f };
-	};
-	MoveInfo info_;
 };
 
