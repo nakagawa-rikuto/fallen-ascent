@@ -2,6 +2,9 @@
 /// ===Include=== ///
 // GameCharacter
 #include "application/Game/Entity/GameCharacter/GameCharacter.h"
+// Component
+#include "Component/PlayerMoveComponent.h"
+#include "Component/PlayerAvoidanceComponent.h"
 // State
 #include "State/Base/PlayerState.h"
 // Weapon
@@ -12,7 +15,6 @@ class Enemy;
 
 /// ===StateType=== ///
 enum class actionType {
-	kAvoidance,   // 回避状態
 	kCharge,      // 突進状態
 	kAttack       // 攻撃状態
 };
@@ -62,7 +64,11 @@ public: /// ===衝突判定=== ///
 public: /// ===Getter=== ///
 
 	// Weapon
-	PlayerWeapon* GetWeapon() const;
+	PlayerWeapon* GetWeapon() const { return weapon_.get(); };
+
+	// Component
+	PlayerMoveComponent* GetMoveComponent() const { return moveComponent_.get(); };
+	PlayerAvoidanceComponent* GetAvoidanceComponent() const { return avoidanceComponent_.get(); };
 
 	// フラグ
 	bool GetStateFlag(actionType type) const;
@@ -105,6 +111,10 @@ private: /// ===変数の宣言=== ///
 	/// ===Weapon=== ///
 	std::unique_ptr<PlayerWeapon> weapon_;
 
+	/// ===Component=== ///
+	std::unique_ptr<PlayerMoveComponent> moveComponent_;
+	std::unique_ptr<PlayerAvoidanceComponent> avoidanceComponent_;
+
 	/// ===State=== ///
 	std::unique_ptr<PlayerState> currentState_;
 
@@ -124,14 +134,6 @@ private: /// ===変数の宣言=== ///
 	};
 	ChargeInfo chargeInfo_;
 
-	/// ===回避情報=== ///
-	struct AvoidanceInfo {
-		float timer = 0.0f;         // 回避のタイマー
-		bool isPreparation = false; // 回避の準備フラグ
-		bool isFlag = false;        // 回避のフラグ
-	};
-	AvoidanceInfo avoidanceInfo_;
-
 	/// ===攻撃情報=== ///
 	struct AttackInfo {
 		float timer = 0.0f;         // 攻撃のタイマー
@@ -139,13 +141,6 @@ private: /// ===変数の宣言=== ///
 		bool isFlag = false;        // 攻撃のフラグ
 	};
 	AttackInfo attackInfo_;
-
-	/// ===移動情報=== ///
-	struct MoveInfo {
-		float speed = 0.5f;               // 移動速度
-		Vector3 direction = { 0.0f, 0.0f, 0.0f };
-	};
-	MoveInfo moveInfo_;
 
 private:
 

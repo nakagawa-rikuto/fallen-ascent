@@ -500,6 +500,8 @@
     <ClCompile Include="Engine\Scene\Transition\SceneTransitionManager.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -963,6 +965,8 @@
     <ClInclude Include="Engine\Scene\Transition\SceneTransitionManager.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

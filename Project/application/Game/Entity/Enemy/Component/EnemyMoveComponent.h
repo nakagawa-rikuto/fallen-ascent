@@ -37,7 +37,7 @@ public:
 		Vector3 velocity;		       // 移動ベクトル
 		Vector3 targetDirection;	   // 目標方向
 		bool needsRotation;			   // 回転が必要かどうか
-		bool shouldResetRotationFlag; // 回転完了フラグをリセットする必要があるか
+		bool shouldResetRotationFlag;  // 回転完了フラグをリセットする必要があるか
 	};
 
 public:

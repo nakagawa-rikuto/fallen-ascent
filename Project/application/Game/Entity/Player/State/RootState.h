@@ -28,9 +28,5 @@ public:
 	/// ステートの終了処理
 	/// </summary>
 	void Finalize() override;
-
-private:
-	// 減速率
-	const float deceleration_ = 0.75f;
 };
 
