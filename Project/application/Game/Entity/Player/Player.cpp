@@ -132,7 +132,7 @@ void Player::Initialize() {
 	PlayerMoveComponent::MoveConfig moveConfig{
 		.speed = 0.4f,
 		.rotationSpeed = 10.0f,
-		.deceleration = 0.75f
+		.deceleration = 0.85f
 	};
 	moveComponent_->Initialize(moveConfig);
 
@@ -165,7 +165,10 @@ void Player::Initialize() {
 ///-------------------------------------------///
 void Player::Update() {
 	// 早期リターン
-	if (baseInfo_.isDead) return;
+	if (baseInfo_.isDead) {
+		ApplyDeceleration(0.7f);
+		UpdateAnimation();
+	}
 
 	/// ===スティックの取得=== ///
 	StickState rightStick = InputService::GetRightStickState(0);

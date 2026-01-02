@@ -33,30 +33,33 @@ void RootState::Update(Player * player, GameCamera* camera) {
 	/// ===減速処理(数値を下げるほどゆっくり止まる)=== ///
 	player_->ApplyDeceleration(player_->GetMoveComponent()->GetConfig().deceleration);
 
-	/// ===Stateの変更=== ///
-	// 攻撃ボタンが押されたら攻撃状態へ
-	if (InputService::TriggerButton(0, ControllerButtonType::X)) {
-		// 攻撃の準備ができていれば
-		if (player_->GetpreparationFlag(actionType::kAttack)) {
-			player_->ChangState(std::make_unique<AttackState>());
+	/// ===死亡していなければ=== ///
+	if (!player_->GetIsDead()) {
+		/// ===Stateの変更=== ///
+		// 攻撃ボタンが押されたら攻撃状態へ
+		if (InputService::TriggerButton(0, ControllerButtonType::X)) {
+			// 攻撃の準備ができていれば
+			if (player_->GetpreparationFlag(actionType::kAttack)) {
+				player_->ChangState(std::make_unique<AttackState>());
+			}
+			// RBボタンが押されたら進んでいる突進状態へ
+		} else if (InputService::TriggerButton(0, ControllerButtonType::RB)) {
+			// タイマーがクールタイムより高ければ、
+			if (player_->GetpreparationFlag(actionType::kCharge)) {
+				player_->ChangState(std::make_unique<ChargeState>());
+			}
+			// Aボタンが押されたら回避状態へ
+		} else if (InputService::TriggerButton(0, ControllerButtonType::A)) {
+			// 回避の準備ができていれば
+			if (player_->GetAvoidanceComponent()->GetState().isPreparation) {
+				// パーティクル発生
+				player_->ChangState(std::make_unique<AvoidanceState>(Normalize(player_->GetVelocity())));
+			}
+			// 移動が有れば
+		} else if (std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f) {
+			// Stateを移動状態へ
+			player_->ChangState(std::make_unique<MoveState>());
 		}
-	// RBボタンが押されたら進んでいる突進状態へ
-	} else if (InputService::TriggerButton(0, ControllerButtonType::RB)) {
-		// タイマーがクールタイムより高ければ、
-		if (player_->GetpreparationFlag(actionType::kCharge)) {
-			player_->ChangState(std::make_unique<ChargeState>());
-		}
-	// Aボタンが押されたら回避状態へ
-	} else if (InputService::TriggerButton(0, ControllerButtonType::A)) {
-		// 回避の準備ができていれば
-		if (player_->GetAvoidanceComponent()->GetState().isPreparation) {
-			// パーティクル発生
-			player_->ChangState(std::make_unique<AvoidanceState>(Normalize(player_->GetVelocity())));
-		}
-	// 移動が有れば
-	} else if (std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f) {
-		// Stateを移動状態へ
-		player_->ChangState(std::make_unique<MoveState>());
 	}
 }
 

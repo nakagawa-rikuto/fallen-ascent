@@ -253,7 +253,7 @@ void GameScene::UpdateGameOverAnimation() {
 	gameOverAnimation_->Update();
 
 	// アニメーション時のPlayer更新
-	player_->UpdateAnimation();
+	player_->Update();
 	// アニメーション時のEnemy更新
 	enemyManager_->UpdateAnimation();
 
