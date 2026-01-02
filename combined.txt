@@ -372,6 +372,11 @@
 └── └── └── └── └── ├── GameCharacterCollision.cpp
 └── └── └── └── └── └── GameCharacterCollision.h
 └── └── └── └── └── Player/
+└── └── └── └──     ├── Component/
+└── └── └── └──     └── ├── PlayerAvoidanceComponent.cpp
+└── └── └── └──     └── ├── PlayerAvoidanceComponent.h
+└── └── └── └──     └── ├── PlayerMoveComponent.cpp
+└── └── └── └──     └── └── PlayerMoveComponent.h
 └── └── └── └──     ├── Player.cpp
 └── └── └── └──     ├── Player.h
 └── └── └── └──     ├── State/
@@ -688,6 +693,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.cpp" />
     <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp" />
     <ClCompile Include="Engine\Scene\Transition\SceneTransitionManager.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
@@ -855,6 +862,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.h" />
     <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h" />
     <ClInclude Include="Engine\Scene\Transition\SceneTransitionManager.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -1563,6 +1572,8 @@ File Path: Project/DeathsDoor.vcxproj.filters
     <ClCompile Include="Engine\Scene\Transition\SceneTransitionManager.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -2026,6 +2037,8 @@ File Path: Project/DeathsDoor.vcxproj.filters
     <ClInclude Include="Engine\Scene\Transition\SceneTransitionManager.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -33494,7 +33507,7 @@ public:
 		Vector3 velocity;		       // 移動ベクトル
 		Vector3 targetDirection;	   // 目標方向
 		bool needsRotation;			   // 回転が必要かどうか
-		bool shouldResetRotationFlag; // 回転完了フラグをリセットする必要があるか
+		bool shouldResetRotationFlag;  // 回転完了フラグをリセットする必要があるか
 	};
 
 public:
@@ -35444,6 +35457,354 @@ private:
 };
 
 ============================================================
+File Path: Project/application/Game/Entity/Player/Component/PlayerAvoidanceComponent.cpp
+============================================================
+#include "PlayerAvoidanceComponent.h"
+// Math
+#include "Math/sMath.h"
+// C++
+#include <cassert>
+// ImGui
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void PlayerAvoidanceComponent::Initialize(const AvoidanceConfig& config) {
+	// 設定の初期化
+	config_ = config;
+
+	// 初期化
+	acceleration_ = 0.1f;
+	direction_ = { 0.0f, 0.0f, 0.0f };
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+PlayerAvoidanceComponent::UpdateResult PlayerAvoidanceComponent::Update(const UpdateContext& context) {
+	
+	UpdateResult result{};
+
+	// 加速度の減少
+	acceleration_ -= context.deltaTime * config_.activeTime;
+	// 速度の設定
+	float speed = config_.speed * acceleration_;
+
+	/// ===Velocityに反映=== ///
+	result.velocity.x += context.inputDirection.x * speed;
+	result.velocity.z += context.inputDirection.z * speed;
+
+	return result;
+}
+
+///-------------------------------------------/// 
+/// タイマーの更新処理
+///-------------------------------------------///
+void PlayerAvoidanceComponent::UpdateTimer(const float deltaTime) {
+	if (state_.timer > 0.0f) {
+		state_.timer -= deltaTime;
+	} else {
+		state_.isPreparation = true;
+	}
+}
+
+///-------------------------------------------/// 
+/// ImGui情報の表示
+///-------------------------------------------///
+void PlayerAvoidanceComponent::Information() {
+#ifdef USE_IMGUI
+	if (ImGui::TreeNode("回避情報")) {
+		ImGui::DragFloat("回避速度", &config_.speed, 0.01f);
+		ImGui::DragFloat("有効時間", &config_.activeTime, 0.01f);
+		ImGui::DragFloat("クールタイム", &config_.coolTime, 0.01f);
+		ImGui::DragFloat("無敵時間", &config_.invincibleTime, 0.01f);
+		ImGui::Separator();
+		ImGui::TreePop();
+	}
+#endif // USE_IMGUI
+}
+
+///-------------------------------------------/// 
+/// 回避処理の開始
+///-------------------------------------------///
+void PlayerAvoidanceComponent::StartAvoidance() {
+	// 状態の初期化
+	acceleration_ = 0.1f;
+	state_.timer = config_.activeTime;
+	state_.isActive = true;
+}
+
+///-------------------------------------------/// 
+/// 状態のリセット
+///-------------------------------------------///
+void PlayerAvoidanceComponent::ResetState() {
+	state_.isActive = false;
+	state_.timer = config_.coolTime;
+	state_.isPreparation = false;
+}
+
+
+============================================================
+File Path: Project/application/Game/Entity/Player/Component/PlayerAvoidanceComponent.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Math/Vector3.h"
+
+///=====================================================/// 
+/// PlayerAvoidanceComponent（回避）
+///=====================================================///
+class PlayerAvoidanceComponent {
+private:
+	/// ===状態の構造体=== ///
+	struct AvoidanceState {
+		float timer = 0.0f;	 // タイマー
+		bool isActive = false;      // 回避中フラグ
+		bool isPreparation = false; // 準備フラグ
+	};
+public:
+	/// ===回避設定パラメータの構造体=== ///
+	struct AvoidanceConfig {
+		float speed = 0.4f;           // 回避速度
+		float activeTime = 0.3f;     // 回避の有効時間
+		float coolTime = 1.0f;       // 回避のクールタイム
+		float invincibleTime = 0.01f; // 回避時の無敵時間
+	};
+
+	/// ===更新用コンテキスト=== ///
+	struct UpdateContext {
+		Vector3 inputDirection; // 入力方向
+		float deltaTime;        // デルタタイム
+	};
+
+	/// ===更新結果=== ///
+	struct UpdateResult {
+		Vector3 velocity; // 回避ベクトル
+	};
+
+public:
+
+	PlayerAvoidanceComponent() = default;
+	~PlayerAvoidanceComponent() = default;
+
+	// コピー・ムーブは明示的に制御
+	PlayerAvoidanceComponent(const PlayerAvoidanceComponent&) = delete;
+	PlayerAvoidanceComponent& operator=(const PlayerAvoidanceComponent&) = delete;
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="config">初期化に使用する設定を const 参照で受け取る。省略した場合は AvoidanceConfig{} による既定設定が使用される。</param>
+	void Initialize(const AvoidanceConfig& config = AvoidanceConfig{});
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	/// <param name="context">更新用コンテキストを示す UpdateContext の const 参照。</param>
+	/// <returns>更新結果を含む UpdateResult 構造体。</returns>
+	UpdateResult Update(const UpdateContext& context);
+
+	/// <summary>
+	///タイマーの更新処理
+	/// </summary>
+	/// <param name="deltaTime">前回の更新からの経過時間（秒単位）</param>
+	void UpdateTimer(const float deltaTime);
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
+	void Information();
+
+	/// <summary>
+	/// 回避処理の開始
+	/// </summary>
+	void StartAvoidance();
+
+	/// <summary>
+	/// 状態のリセット
+	/// </summary>
+	void ResetState();
+
+public: /// ===Getter=== ///
+
+	// AvoidanceConfig
+	const AvoidanceConfig& GetConfig() const { return config_; }
+	// AvoidanceState
+	const AvoidanceState& GetState() const { return state_; }
+
+public: /// ===Setter=== ///
+	
+
+private:
+
+	/// ===情報=== ///
+	AvoidanceConfig config_;
+	AvoidanceState state_;
+
+	// 加速度
+	float acceleration_ = 0.0f;
+	// 方向
+	Vector3 direction_{ 0.0f, 0.0f, 0.0f };
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Player/Component/PlayerMoveComponent.cpp
+============================================================
+#include "PlayerMoveComponent.h"
+// Math
+#include "Math/sMath.h"
+// C++
+#include <cassert>
+// ImGui
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void PlayerMoveComponent::Initialize(const MoveConfig& config) {
+	// 設定の初期化
+	config_ = config;
+
+	// 現在の移動方向の初期化
+	currentDirection_ = { 0.0f, 0.0f, 0.0f };
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+PlayerMoveComponent::UpdateResult PlayerMoveComponent::Update(const UpdateContext & context) {
+	
+	UpdateResult result{};
+
+	/// ===値の取得=== ///
+	currentDirection_ = context.inputDirection;
+
+	/// ===Velocityに反映=== ///
+	result.velocity = currentDirection_ * config_.speed;
+
+	/// ===移動方向に沿って回転=== ///
+	// 方向が変更されたら
+	if (Length(currentDirection_) > 0.01f) {
+		// 現在のYaw角(Y軸の回転)を取得
+		float currentYaw = Math::GetYAngle(context.currentRotation);
+		// 入力方向から目標のYaw角を取得
+		float targetYaw = std::atan2(currentDirection_.x, currentDirection_.z);
+		// 差分を [-π, π] に正規化 
+		float diff = Math::NormalizeAngle(targetYaw - currentYaw);
+		// イージング補間（短い方向へ回転）
+		float easedYaw = currentYaw + diff * (context.deltaTime * 10.0f);
+		// Quaternionに再変換
+		result.targetRotation = Math::MakeRotateAxisAngle({ 0, 1, 0 }, easedYaw);
+	}
+
+	return result;
+}
+
+///-------------------------------------------/// 
+/// ImGui情報の表示
+///-------------------------------------------///
+void PlayerMoveComponent::Information() {
+#ifdef USE_IMGUI
+	if (ImGui::TreeNode("移動情報")) {
+		ImGui::DragFloat("移動速度", &config_.speed, 0.01f);
+		ImGui::DragFloat("回転速度", &config_.rotationSpeed, 0.01f);
+		ImGui::DragFloat("減速率", &config_.deceleration, 0.01f, 0.0f, 1.0f);
+
+		ImGui::Separator();
+		ImGui::Text("現在の移動方向");
+		ImGui::Text("X: %.2f", currentDirection_.x);
+		ImGui::Text("Y: %.2f", currentDirection_.y);
+		ImGui::Text("Z: %.2f", currentDirection_.z);
+		ImGui::TreePop();
+	}
+#endif // USE_IMGUI
+}
+
+============================================================
+File Path: Project/application/Game/Entity/Player/Component/PlayerMoveComponent.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Math/Vector3.h"
+#include "Math/Quaternion.h"
+
+///=====================================================/// 
+/// PlayerMoveComponent（移動）
+///=====================================================///
+class PlayerMoveComponent {
+public:
+	/// ===移動設定パラメータの構造体=== ///
+	struct MoveConfig {
+		float speed = 0.5f;			 // 移動速度
+		float rotationSpeed = 0.15f; // 回転速度
+		float deceleration = 0.95f;   // 減速率
+	};
+
+	/// ===更新用コンテキスト=== ///
+	struct UpdateContext {
+		Vector3 inputDirection;		// 入力方向
+		Vector3 currentPosition;	// 現在の位置
+		Quaternion currentRotation; // 現在の回転
+		float deltaTime;			// デルタタイム
+	};
+
+	/// ===更新結果=== ///
+	struct UpdateResult {
+		Vector3 velocity;		    // 移動ベクトル
+		Quaternion targetRotation; // 目標回転
+	};
+
+public:
+
+	PlayerMoveComponent() = default;
+	~PlayerMoveComponent() = default;
+
+	// コピー・ムーブは明示的に制御
+	PlayerMoveComponent(const PlayerMoveComponent&) = delete;
+	PlayerMoveComponent& operator=(const PlayerMoveComponent&) = delete;
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="config">初期化に使用する設定を const 参照で受け取る。省略した場合は MoveConfig{} による既定設定が使用される。</param>
+	void Initialize(const MoveConfig& config = MoveConfig{});
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	/// <param name="context">更新用コンテキストを示す UpdateContext の const 参照。</param>
+	/// <returns>更新結果を含む UpdateResult 構造体。</returns>
+	UpdateResult Update(const UpdateContext& contex);
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
+	void Information();
+
+public: /// ===Getter=== ///
+	// MoveConfig
+	const MoveConfig& GetConfig() const { return config_; }
+	// CurrentDirection
+	const Vector3& GetCurrentDirection() const { return currentDirection_; }
+
+private:
+
+	/// ===情報=== ///
+	MoveConfig config_;
+	// 現在の移動方向
+	Vector3 currentDirection_ = { 0.0f, 0.0f, 0.0f };
+};
+
+
+
+============================================================
 File Path: Project/application/Game/Entity/Player/Player.cpp
 ============================================================
 #include "Player.h"
@@ -35457,11 +35818,9 @@ File Path: Project/application/Game/Entity/Player/Player.cpp
 #include "Engine/System/Service/ColliderService.h"
 // Math
 #include "Math/sMath.h"
-
 // ImGui
 #ifdef USE_IMGUI
 #include "imgui.h"
-#include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
 #endif // USE_IMGUI
 
 ///-------------------------------------------/// 
@@ -35475,24 +35834,19 @@ Player::~Player() {
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
-// Weapon
-PlayerWeapon* Player::GetWeapon() const { return weapon_.get(); }
 // フラグ
 bool Player::GetStateFlag(actionType type) const {
 	// タイプで分岐
-	if (type == actionType::kAvoidance) {
-		return avoidanceInfo_.isFlag;
-	} else if (type == actionType::kCharge) {
+	if (type == actionType::kCharge) {
 		return chargeInfo_.isFlag;
 	} else {
 		return attackInfo_.isFlag;
 	}
 }
+// 準備フラグ
 bool Player::GetpreparationFlag(actionType type) const {
 	// タイプで分岐
-	if (type == actionType::kAvoidance) {
-		return avoidanceInfo_.isPreparation;
-	} else if (type == actionType::kCharge) {
+	if (type == actionType::kCharge) {
 		return chargeInfo_.isPreparation;
 	} else {
 		return attackInfo_.isPreparation;
@@ -35501,9 +35855,7 @@ bool Player::GetpreparationFlag(actionType type) const {
 // タイマー
 float Player::GetTimer(actionType type) {
 	// タイプで分岐
-	if (type == actionType::kAvoidance) {
-		return avoidanceInfo_.timer;
-	} else if (type == actionType::kCharge) {
+	if (type == actionType::kCharge) {
 		return chargeInfo_.timer;
 	} else {
 		return attackInfo_.timer;
@@ -35519,9 +35871,6 @@ void Player::SetCameraTargetPlayer() { camera_->SetTarget(&transform_.translate,
 void Player::SetStateFlag(actionType type, bool falg) {
 	// タイプで分岐
 	switch (type) {
-	case actionType::kAvoidance:
-		avoidanceInfo_.isFlag = falg;
-		break;
 	case actionType::kCharge:
 		chargeInfo_.isFlag = falg;
 		break;
@@ -35534,9 +35883,6 @@ void Player::SetStateFlag(actionType type, bool falg) {
 void Player::SetpreparationFlag(actionType type, bool falg) {
 	// タイプで分岐
 	switch (type) {
-	case actionType::kAvoidance:
-		avoidanceInfo_.isPreparation = falg;
-		break;
 	case actionType::kCharge:
 		chargeInfo_.isPreparation = falg;
 		break;
@@ -35549,9 +35895,6 @@ void Player::SetpreparationFlag(actionType type, bool falg) {
 void Player::SetTimer(actionType type, const float& timer) {
 	// タイプで分岐
 	switch (type) {
-	case actionType::kAvoidance:
-		avoidanceInfo_.timer = timer;
-		break;
 	case actionType::kCharge:
 		chargeInfo_.timer = timer;
 		break;
@@ -35561,7 +35904,7 @@ void Player::SetTimer(actionType type, const float& timer) {
 	}
 }
 // 無敵時間の設定
-void Player::SetInvicibleTime(const float& time) { 
+void Player::SetInvicibleTime(const float& time) {
 	invicibleInfo_.time = time;
 	invicibleInfo_.timer = invicibleInfo_.time;
 }
@@ -35588,7 +35931,29 @@ void Player::Initialize() {
 	weapon_ = std::make_unique<PlayerWeapon>();
 	weapon_->Initialize();
 	weapon_->SetUpParent(this);
-	
+
+	/// ===Component=== ///
+	// Componentの生成
+	moveComponent_ = std::make_unique<PlayerMoveComponent>();
+	avoidanceComponent_ = std::make_unique<PlayerAvoidanceComponent>();
+
+	// MoveComponentの初期化
+	PlayerMoveComponent::MoveConfig moveConfig{
+		.speed = 0.4f,
+		.rotationSpeed = 10.0f,
+		.deceleration = 0.75f
+	};
+	moveComponent_->Initialize(moveConfig);
+
+	// AvoidanceComponentの初期化
+	PlayerAvoidanceComponent::AvoidanceConfig avoidanceConfig{
+		.speed = 15.0f,
+		.activeTime = 0.3f,
+		.coolTime = 1.0f,
+		.invincibleTime = 0.01f
+	};
+	avoidanceComponent_->Initialize(avoidanceConfig);
+
 	// 無敵情報の設定
 	SetInvicibleTime(1.0f);
 	invicibleInfo_.isFlag = true;
@@ -35659,10 +36024,11 @@ void Player::Draw(BlendMode mode) {
 void Player::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("Player");
-	GameCharacter::Information();
+	GameCharacter::Information();   // 親クラスの情報表示
+	moveComponent_->Information();  // 移動コンポーネントの情報表示
 	ImGui::DragFloat("無敵時間", &invicibleInfo_.timer, 0.01f);
+	weapon_->Information();         // Weaponの情報表示
 	ImGui::End();
-	weapon_->Information();
 #endif // USE_IMGUI
 }
 
@@ -35732,12 +36098,8 @@ void Player::advanceTimer() {
 		chargeInfo_.isPreparation = true;
 	}
 
-	// 回避用タイマーを進める
-	if (avoidanceInfo_.timer > 0.0f) {
-		avoidanceInfo_.timer -= baseInfo_.deltaTime;
-	} else {
-		avoidanceInfo_.isPreparation = true;
-	}
+	// 回避タイマーの更新
+	avoidanceComponent_->UpdateTimer(baseInfo_.deltaTime);
 
 	// 攻撃用タイマーを進める
 	if (attackInfo_.timer > 0.0f) {
@@ -35792,6 +36154,9 @@ File Path: Project/application/Game/Entity/Player/Player.h
 /// ===Include=== ///
 // GameCharacter
 #include "application/Game/Entity/GameCharacter/GameCharacter.h"
+// Component
+#include "Component/PlayerMoveComponent.h"
+#include "Component/PlayerAvoidanceComponent.h"
 // State
 #include "State/Base/PlayerState.h"
 // Weapon
@@ -35802,7 +36167,6 @@ class Enemy;
 
 /// ===StateType=== ///
 enum class actionType {
-	kAvoidance,   // 回避状態
 	kCharge,      // 突進状態
 	kAttack       // 攻撃状態
 };
@@ -35852,7 +36216,11 @@ public: /// ===衝突判定=== ///
 public: /// ===Getter=== ///
 
 	// Weapon
-	PlayerWeapon* GetWeapon() const;
+	PlayerWeapon* GetWeapon() const { return weapon_.get(); };
+
+	// Component
+	PlayerMoveComponent* GetMoveComponent() const { return moveComponent_.get(); };
+	PlayerAvoidanceComponent* GetAvoidanceComponent() const { return avoidanceComponent_.get(); };
 
 	// フラグ
 	bool GetStateFlag(actionType type) const;
@@ -35895,6 +36263,10 @@ private: /// ===変数の宣言=== ///
 	/// ===Weapon=== ///
 	std::unique_ptr<PlayerWeapon> weapon_;
 
+	/// ===Component=== ///
+	std::unique_ptr<PlayerMoveComponent> moveComponent_;
+	std::unique_ptr<PlayerAvoidanceComponent> avoidanceComponent_;
+
 	/// ===State=== ///
 	std::unique_ptr<PlayerState> currentState_;
 
@@ -35914,14 +36286,6 @@ private: /// ===変数の宣言=== ///
 	};
 	ChargeInfo chargeInfo_;
 
-	/// ===回避情報=== ///
-	struct AvoidanceInfo {
-		float timer = 0.0f;         // 回避のタイマー
-		bool isPreparation = false; // 回避の準備フラグ
-		bool isFlag = false;        // 回避のフラグ
-	};
-	AvoidanceInfo avoidanceInfo_;
-
 	/// ===攻撃情報=== ///
 	struct AttackInfo {
 		float timer = 0.0f;         // 攻撃のタイマー
@@ -35929,13 +36293,6 @@ private: /// ===変数の宣言=== ///
 		bool isFlag = false;        // 攻撃のフラグ
 	};
 	AttackInfo attackInfo_;
-
-	/// ===移動情報=== ///
-	struct MoveInfo {
-		float speed = 0.5f;               // 移動速度
-		Vector3 direction = { 0.0f, 0.0f, 0.0f };
-	};
-	MoveInfo moveInfo_;
 
 private:
 
@@ -36240,7 +36597,7 @@ File Path: Project/application/Game/Entity/Player/State/AvoidanceState.cpp
 ///-------------------------------------------/// 
 /// コンストラクタ
 ///-------------------------------------------///
-AvoidanceState::AvoidanceState(const Vector3& direction) {info_.direction = direction;}
+AvoidanceState::AvoidanceState(const Vector3& direction) { direction_ = direction;}
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
@@ -36250,11 +36607,8 @@ void AvoidanceState::Enter(Player * player, GameCamera* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	// 回避情報の初期化
-	info_.acceleration = 0.1f;
-	player_->SetTimer(actionType::kAvoidance, info_.activeTime);
-	player_->SetStateFlag(actionType::kAvoidance, true);
-	player_->SetpreparationFlag(actionType::kAvoidance, false);
+	// 回避処理を開始
+	player_->GetAvoidanceComponent()->StartAvoidance();
 }
 
 ///-------------------------------------------/// 
@@ -36265,23 +36619,21 @@ void AvoidanceState::Update(Player * player, GameCamera* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	// 無敵時間の変更
-	player_->SetInvicibleTime(info_.invincibleTime);
-	// 加速度の減少
-	info_.acceleration -= player_->GetDeltaTime() * info_.activeTime;
-	// 速度の設定
-	info_.speed = 0.4f * info_.acceleration;
+	/// ===回避処理=== ///
+	PlayerAvoidanceComponent::UpdateContext context{
+		.inputDirection = direction_,
+		.deltaTime = player_->GetDeltaTime()
+	};
+	// 更新
+	auto result = player_->GetAvoidanceComponent()->Update(context);
 
-	// Velocityに反映
-	Vector3 velocity = player_->GetVelocity();
-	velocity.x += info_.direction.x * info_.speed;
-	velocity.z += info_.direction.z * info_.speed;
-	player_->SetVelocity(velocity);
+	// 結果を反映
+	player_->SetVelocity(result.velocity);
 
 	/// ===タイマーが時間を超えたら=== ///
-	if (player_->GetTimer(actionType::kAvoidance) <= 0.0f) {
-		player_->SetTimer(actionType::kAvoidance, info_.cooltime); // クールタイムのリセット
-		player_->SetStateFlag(actionType::kAvoidance, false);
+	if (player_->GetAvoidanceComponent()->GetState().timer <= 0.0f) {
+		// 状態をリセット
+		player_->GetAvoidanceComponent()->ResetState();
 		// Stateの変更
 		player_->ChangState(std::make_unique<RootState>());
 	}
@@ -36291,7 +36643,7 @@ void AvoidanceState::Update(Player * player, GameCamera* camera) {
 /// 終了時に呼び出す
 ///-------------------------------------------///
 void AvoidanceState::Finalize() {
-
+	PlayerState::Finalize();	
 }
 
 
@@ -36332,17 +36684,8 @@ public:
 	void Finalize() override;
 
 private:
-
-	/// ===回避情報=== ///
-	struct AvoidanceInfo {
-		float speed = 0.0f;			  // 回避時の移動速度
-		float activeTime = 0.3f;      // 回避の有効時間
-		float cooltime = 1.0f;		  // 回避のクールタイム
-		float invincibleTime = 0.01f;  // 回避時の無敵時間
-		float acceleration = 0.0f;    // 回避の加速度
-		Vector3 direction = { 0.0f, 0.0f, 0.0f };
-	};
-	AvoidanceInfo info_;
+	/// ===回避方向=== ///
+	Vector3 direction_; // 回避方向
 };
 
 
@@ -36664,9 +37007,6 @@ void MoveState::Enter(Player* player, GameCamera* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
-
-	// 移動速度の設定
-	info_.speed = 0.4f;
 }
 
 ///-------------------------------------------/// 
@@ -36681,26 +37021,18 @@ void MoveState::Update(Player * player, GameCamera* camera) {
 	StickState leftStick = InputService::GetLeftStickState(0);
 
 	/// ===移動処理=== ///
-	info_.direction.x = leftStick.x;
-	info_.direction.z = leftStick.y;
+	PlayerMoveComponent::UpdateContext context{
+		.inputDirection = { leftStick.x, 0.0f, leftStick.y },
+		.currentPosition = player_->GetTransform().translate,
+		.currentRotation = player_->GetTransform().rotate,
+		.deltaTime = player_->GetDeltaTime()
+	};
+	// 更新
+	auto result = player_->GetMoveComponent()->Update(context);
 
-	/// ===Velocityに反映=== ///
-	player_->SetVelocity(info_.direction * info_.speed);
-
-	/// ===移動方向に沿って回転=== ///
-	// 方向が変更されたら
-	if (Length(info_.direction) > 0.01f) {
-		// 現在のYaw角(Y軸の回転)を取得
-		float currentYaw = Math::GetYAngle(player_->GetTransform().rotate);
-		// 入力方向から目標のYaw角を取得
-		float targetYaw = std::atan2(info_.direction.x, info_.direction.z);
-		// 差分を [-π, π] に正規化
-		float diff = Math::NormalizeAngle(targetYaw - currentYaw);
-		// イージング補間（短い方向へ回転）
-		float easedYaw = currentYaw + diff * (player_->GetDeltaTime() * 10.0f);
-		// Quaternionに再変換
-		player_->SetRotate(Math::MakeRotateAxisAngle({ 0, 1, 0 }, easedYaw));
-	}
+	// 結果を反映
+	player_->SetVelocity(result.velocity);
+	player_->SetRotate(result.targetRotation);
 
 	/// ===Stateの変更=== ///
 	// 攻撃ボタンが押されたら攻撃状態へ
@@ -36718,9 +37050,9 @@ void MoveState::Update(Player * player, GameCamera* camera) {
 	// Aボタンが押されたら回避状態へ
 	} else if (InputService::TriggerButton(0, ControllerButtonType::A)) {
 		// 回避の準備ができていれば
-		if (player_->GetpreparationFlag(actionType::kAvoidance)) {
+		if (player_->GetAvoidanceComponent()->GetState().isPreparation) {
 			// パーティクル発生
-			player_->ChangState(std::make_unique<AvoidanceState>(Normalize(info_.direction)));
+			player_->ChangState(std::make_unique<AvoidanceState>(Normalize(player_->GetMoveComponent()->GetCurrentDirection())));
 		}
 	// 移動が無ければ通常状態へ
 	} else if (std::abs(leftStick.x) < 0.1f && std::abs(leftStick.y) < 0.1f) {
@@ -36771,15 +37103,6 @@ public:
 	/// ステートの終了処理
 	/// </summary>
 	void Finalize() override;
-
-private:
-
-	/// ===移動情報=== ///
-	struct MoveInfo {
-		float speed = 0.5f;
-		Vector3 direction = { 0.0f, 0.0f, 0.0f };
-	};
-	MoveInfo info_;
 };
 
 
@@ -36820,7 +37143,7 @@ void RootState::Update(Player * player, GameCamera* camera) {
 	StickState leftStick = InputService::GetLeftStickState(0);
 
 	/// ===減速処理(数値を下げるほどゆっくり止まる)=== ///
-	player_->ApplyDeceleration(deceleration_);
+	player_->ApplyDeceleration(player_->GetMoveComponent()->GetConfig().deceleration);
 
 	/// ===Stateの変更=== ///
 	// 攻撃ボタンが押されたら攻撃状態へ
@@ -36838,7 +37161,7 @@ void RootState::Update(Player * player, GameCamera* camera) {
 	// Aボタンが押されたら回避状態へ
 	} else if (InputService::TriggerButton(0, ControllerButtonType::A)) {
 		// 回避の準備ができていれば
-		if (player_->GetpreparationFlag(actionType::kAvoidance)) {
+		if (player_->GetAvoidanceComponent()->GetState().isPreparation) {
 			// パーティクル発生
 			player_->ChangState(std::make_unique<AvoidanceState>(Normalize(player_->GetVelocity())));
 		}
@@ -36890,10 +37213,6 @@ public:
 	/// ステートの終了処理
 	/// </summary>
 	void Finalize() override;
-
-private:
-	// 減速率
-	const float deceleration_ = 0.75f;
 };
 
 
