@@ -266,6 +266,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="application\Editor\Data\AttackData.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyMoveState.h" />

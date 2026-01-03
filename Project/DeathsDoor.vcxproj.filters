@@ -967,6 +967,7 @@
     <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h" />
+    <ClInclude Include="application\Editor\Data\AttackData.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

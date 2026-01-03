@@ -46,6 +46,15 @@ public:
 	void CreateLine(const Vector3& start, const Vector3& end, const Vector4& color);
 
 	/// <summary>
+	/// ベジェ曲線の制御点を可視化（デバッグ用）
+	/// </summary>
+	/// <param name="controlPoints">制御点のリスト</param>
+	/// <param name="pointColor">制御点の色</param>
+	/// <param name="lineColor">制御点を結ぶ線の色</param>
+	/// <param name="pointSize">制御点のサイズ</param>
+	void DrawBezierControlPoints(const std::vector<BezierControlPointData>& controlPoints, const Vector4& pointColor = Vector4{ 1.0f, 1.0f, 0.0f, 1.0f }, const Vector4& lineColor = Vector4{ 0.5f, 0.5f, 0.5f, 1.0f }, float pointSize = 0.2f);
+
+	/// <summary>
 	/// オブジェクトまたは状態を既定の（初期）状態にリセットします。
 	/// </summary>
 	void Reset();

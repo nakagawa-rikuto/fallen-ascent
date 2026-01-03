@@ -67,5 +67,46 @@ public:
 	/// <param name="division">分割数</param>
 	/// <param name="color">線の色（RGBA）</param>
 	void DrawGridLines(const Vector3& start, const Vector3& end, const Vector3& offset, uint32_t division, const Vector4& color);
+
+	/// <summary>
+	/// 2次ベジェ曲線を描画（3つの制御点）
+	/// </summary>
+	/// <param name="p0">開始点</param>
+	/// <param name="p1">制御点</param>
+	/// <param name="p2">終了点</param>
+	/// <param name="color">線の色</param>
+	/// <param name="segments">曲線の分割数（滑らかさ）</param>
+	void CreateQuadraticBezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector4& color, int segments = 20);
+
+	/// <summary>
+	/// 3次ベジェ曲線を描画（4つの制御点）
+	/// </summary>
+	/// <param name="p0">開始点</param>
+	/// <param name="p1">制御点1</param>
+	/// <param name="p2">制御点2</param>
+	/// <param name="p3">終了点</param>
+	/// <param name="color">線の色</param>
+	/// <param name="segments">曲線の分割数（滑らかさ）</param>
+	void CreateCubicBezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector4& color, int segments = 20);
+
+	/// <summary>
+	/// 複数の制御点から滑らかな曲線を描画
+	/// </summary>
+	/// <param name="controlPoints">制御点のリスト</param>
+	/// <param name="color">線の色</param>
+	/// <param name="segments">各セグメントの分割数</param>
+	void CreateSmoothCurve(const std::vector<BezierControlPointData>& controlPoints, const Vector4& color, int segments = 20);
+
+private:
+
+	/// <summary>
+	/// 2次ベジェ曲線上の点を計算
+	/// </summary>
+	Vector3 CalculateQuadraticBezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, float t);
+
+	/// <summary>
+	/// 3次ベジェ曲線上の点を計算
+	/// </summary>
+	Vector3 CalculateCubicBezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t);
 };
 
