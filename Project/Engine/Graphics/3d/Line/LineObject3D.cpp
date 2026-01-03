@@ -104,6 +104,63 @@ void LineObject3D::Reset() {
 	lineIndex_ = 0;
 }
 
+
+///-------------------------------------------/// 
+/// Lineの作成
+///-------------------------------------------///
+void LineObject3D::CreateLine(const Vector3& start, const Vector3& end, const Vector4& color) {
+	
+	vertexData_[lineIndex_].position = start;
+	vertexData_[lineIndex_ + 1].position = end;
+
+	vertexData_[lineIndex_].color = color;
+	vertexData_[lineIndex_ + 1].color = color;
+
+	lineIndex_ += kLineVertexCount_;
+}
+
+
+
+///-------------------------------------------/// 
+/// ベジェ曲線の制御点を可視化
+///-------------------------------------------///
+void LineObject3D::DrawBezierControlPoints(const std::vector<BezierControlPointData>& controlPoints, const Vector4& pointColor, const Vector4& lineColor, float pointSize) {
+	if (controlPoints.empty()) {
+		return;
+	}
+
+	// 制御点同士を線で結ぶ
+	for (size_t i = 0; i < controlPoints.size() - 1; ++i) {
+		CreateLine(controlPoints[i].position, controlPoints[i + 1].position, lineColor);
+	}
+
+	// 各制御点に小さな十字を描画
+	for (const auto& point : controlPoints) {
+		Vector3 center = point.position;
+
+		// X軸方向の線
+		CreateLine(
+			Vector3{ center.x - pointSize, center.y, center.z },
+			Vector3{ center.x + pointSize, center.y, center.z },
+			pointColor
+		);
+
+		// Y軸方向の線
+		CreateLine(
+			Vector3{ center.x, center.y - pointSize, center.z },
+			Vector3{ center.x, center.y + pointSize, center.z },
+			pointColor
+		);
+
+		// Z軸方向の線
+		CreateLine(
+			Vector3{ center.x, center.y, center.z - pointSize },
+			Vector3{ center.x, center.y, center.z + pointSize },
+			pointColor
+		);
+	}
+}
+
 ///-------------------------------------------/// 
 /// 球の形状を計算
 ///-------------------------------------------///
@@ -139,18 +196,4 @@ void LineObject3D::SphereVertexData() {
 			spheres_.push_back(c);
 		}
 	}
-}
-
-///-------------------------------------------/// 
-/// Lineの作成
-///-------------------------------------------///
-void LineObject3D::CreateLine(const Vector3& start, const Vector3& end, const Vector4& color) {
-	
-	vertexData_[lineIndex_].position = start;
-	vertexData_[lineIndex_ + 1].position = end;
-
-	vertexData_[lineIndex_].color = color;
-	vertexData_[lineIndex_ + 1].color = color;
-
-	lineIndex_ += kLineVertexCount_;
 }

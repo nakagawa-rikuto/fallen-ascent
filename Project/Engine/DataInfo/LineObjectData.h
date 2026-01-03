@@ -12,3 +12,8 @@ struct LineVertexData3D {
 struct LineTransformMatrixData3D {
 	Matrix4x4 WVP;
 };
+
+struct BezierControlPointData {
+	Vector3 position;
+	float time;
+};

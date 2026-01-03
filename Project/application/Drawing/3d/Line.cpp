@@ -251,3 +251,118 @@ void Line::DrawGridLines(const Vector3 & start, const Vector3 & end, const Vecto
 		DrawLine(startPos, endPos, color);
 	}
 }
+
+
+///-------------------------------------------/// 
+/// 2次ベジェ曲線の作成
+///-------------------------------------------///
+void Line::CreateQuadraticBezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector4& color, int segments) {
+	// セグメント数が0以下の場合は早期リターン
+	if (segments <= 0) {
+		return;
+	}
+
+	// 前の点を保存
+	Vector3 previousPoint = p0;
+
+	// 曲線を分割して描画
+	for (int i = 1; i <= segments; ++i) {
+		float t = static_cast<float>(i) / static_cast<float>(segments);
+		Vector3 currentPoint = CalculateQuadraticBezier(p0, p1, p2, t);
+
+		// 前の点から現在の点まで線を引く
+		DrawLine(previousPoint, currentPoint, color);
+
+		// 次のループのために更新
+		previousPoint = currentPoint;
+	}
+}
+
+///-------------------------------------------/// 
+/// 3次ベジェ曲線の作成
+///-------------------------------------------///
+void Line::CreateCubicBezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector4& color, int segments) {
+	// セグメント数が0以下の場合は早期リターン
+	if (segments <= 0) {
+		return;
+	}
+
+	// 前の点を保存
+	Vector3 previousPoint = p0;
+
+	// 曲線を分割して描画
+	for (int i = 1; i <= segments; ++i) {
+		float t = static_cast<float>(i) / static_cast<float>(segments);
+		Vector3 currentPoint = CalculateCubicBezier(p0, p1, p2, p3, t);
+
+		// 前の点から現在の点まで線を引く
+		DrawLine(previousPoint, currentPoint, color);
+
+		// 次のループのために更新
+		previousPoint = currentPoint;
+	}
+}
+
+///-------------------------------------------/// 
+/// 滑らかな曲線の作成
+///-------------------------------------------///
+void Line::CreateSmoothCurve(const std::vector<BezierControlPointData>& controlPoints, const Vector4& color, int segments) {
+	// 制御点が2つ未満の場合は描画しない
+	if (controlPoints.size() < 2) {
+		return;
+	}
+
+	// 各セグメント間を補間して描画
+	for (size_t i = 0; i < controlPoints.size() - 1; ++i) {
+		const Vector3& p0 = controlPoints[i].position;
+		const Vector3& p1 = controlPoints[i + 1].position;
+
+		Vector3 previousPoint = p0;
+
+		// セグメントを分割して線を引く
+		for (int j = 1; j <= segments; ++j) {
+			float t = static_cast<float>(j) / static_cast<float>(segments);
+			Vector3 currentPoint = Math::Lerp(p0, p1, t);
+
+			DrawLine(previousPoint, currentPoint, color);
+
+			previousPoint = currentPoint;
+		}
+	}
+}
+
+///-------------------------------------------///  
+/// ベジェ曲線の計算
+///-------------------------------------------///
+Vector3 Line::CalculateQuadraticBezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, float t) {
+	float u = 1.0f - t;
+	float uu = u * u;
+	float tt = t * t;
+
+	// (1-t)^2 * P0 + 2(1-t) * t * P1 + t^2 * P2
+	Vector3 point;
+	point.x = uu * p0.x + 2.0f * u * t * p1.x + tt * p2.x;
+	point.y = uu * p0.y + 2.0f * u * t * p1.y + tt * p2.y;
+	point.z = uu * p0.z + 2.0f * u * t * p1.z + tt * p2.z;
+
+	return point;
+}
+
+///-------------------------------------------/// 
+/// ベジェ曲線の計算
+///-------------------------------------------///
+Vector3 Line::CalculateCubicBezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t) {
+	float u = 1.0f - t;
+	float uu = u * u;
+	float uuu = uu * u;
+	float tt = t * t;
+	float ttt = tt * t;
+
+	// (1-t)^3 * P0 + 3(1-t)^2 * t * P1 + 3(1-t) * t^2 * P2 + t^3 * P3
+	Vector3 point;
+	point.x = uuu * p0.x + 3.0f * uu * t * p1.x + 3.0f * u * tt * p2.x + ttt * p3.x;
+	point.y = uuu * p0.y + 3.0f * uu * t * p1.y + 3.0f * u * tt * p2.y + ttt * p3.y;
+	point.z = uuu * p0.z + 3.0f * uu * t * p1.z + 3.0f * u * tt * p2.z + ttt * p3.z;
+
+	return point;
+}
