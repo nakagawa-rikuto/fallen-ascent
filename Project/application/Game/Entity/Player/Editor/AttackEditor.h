@@ -73,6 +73,7 @@ private:
     static constexpr const char* kDefaultSavePath = "Resource/Json/Attacks";
     char filePathBuffer_[256];                    // ファイルパス入力バッファ
     std::vector<std::string> availablePresets_;   // 利用可能なプリセットリスト
+    std::unordered_map<int, std::string> attackFilePaths_; // 
 
     /// ===プレビュー=== ///
     bool isPlaying_ = false;                      // プレビュー再生中フラグ
@@ -98,6 +99,16 @@ private:
 private:
 
     /// ===ファイル操作=== ///
+
+    /// <summary>
+    /// 選択中の攻撃を上書き保存
+    /// </summary>
+    void SaveCurrent();
+
+    /// <summary>
+    /// 選択中の攻撃を名前を付けて保存
+    /// </summary>
+    void SaveCurrentAs();
 
     /// <summary>
     /// JSONファイルに保存

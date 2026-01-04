@@ -1,6 +1,8 @@
 #include "AttackEditorScene.h"
 // SceneManager
 #include "Engine/System/Managers/SceneManager.h"
+// ServiceLocator
+#include "Engine/System/Service/DeltaTimeSevice.h"
 // ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
@@ -50,7 +52,7 @@ void AttackEditorScene::Initialize() {
 void AttackEditorScene::Update() {
     /// ===エディターの更新=== ///
     if (attackEditor_) {
-        attackEditor_->Update(deltaTime_);
+        attackEditor_->Update(DeltaTimeSevice::GetDeltaTime());
     }
 
     /// ===プレビュー用プレイヤーの更新=== ///
@@ -161,7 +163,7 @@ void AttackEditorScene::RenderStatsWindow() {
     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
     ImGui::Text("フレーム時間: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
     ImGui::Separator();
-    ImGui::Text("デルタタイム: %.3f", deltaTime_);
+    ImGui::Text("デルタタイム: %.3f", DeltaTimeSevice::GetDeltaTime());
 
     ImGui::End();
 #endif

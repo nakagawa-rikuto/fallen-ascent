@@ -45,10 +45,7 @@ private:
     /// ===エディター設定=== ///
     bool showHelp_ = false;              // ヘルプ表示フラグ
     bool showStats_ = true;              // 統計情報表示フラグ
-    bool showGrid_ = true;               // グリッド表示フラグ
-
-    // デルタタイム
-	float deltaTime_ = 1.0f / 60.0f;    
+    bool showGrid_ = true;               // グリッド表示フラグ   
 
     /// ===カメラ=== ///
 	Vector3 cameraPosition_{ 0.0f, 10.0f, -50.0f };   // カメラ位置

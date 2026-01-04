@@ -1,13 +1,13 @@
 {
-    "activeDuration": 0.8700000047683716,
+    "activeDuration": 0.30000001192092896,
     "attackID": 0,
     "attackName": "Attack_0",
     "branchComboIDs": [],
     "cameraShakeDuration": 0.0,
     "cameraShakeIntensity": 0.0,
     "canComboToNext": true,
-    "comboWindowTime": 1.0,
-    "cooldownTime": 0.30000001192092896,
+    "comboWindowTime": 0.20000000298023224,
+    "cooldownTime": 0.05000000074505806,
     "curveSegments": 20,
     "description": "横なぎ",
     "endRotation": [

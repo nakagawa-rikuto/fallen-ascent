@@ -105,76 +105,24 @@ void AttackEditor::Render() {
 
         ImGui::Separator();
 
-        // 保存ボタン
-        if (ImGui::Button("この攻撃を保存", ImVec2(-1, 0))) {
-            // 保存前に名前をチェック
-            if (currentAttack.attackName.empty()) {
-                // エラーメッセージを表示
-                ImGui::OpenPopup("保存エラー");
-            } else {
-                std::string savePath = std::string(kDefaultSavePath) + currentAttack.attackName + ".json";
-                if (serializer_->SaveToJson(currentAttack, savePath)) {
-                    // 保存成功のメッセージ
-                    ImGui::OpenPopup("保存成功");
-                } else {
-                    // 保存失敗のメッセージ
-                    ImGui::OpenPopup("保存失敗");
-                }
-            }
+        // 保存ボタン群
+        if (ImGui::Button("上書き保存 (Ctrl+S)", ImVec2(-1, 0))) {
+            SaveCurrent();
         }
 
-        // 保存エラーのポップアップ
-        if (ImGui::BeginPopupModal("保存エラー", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("エラー:  攻撃名が入力されていません。");
+        if (ImGui::Button("名前を付けて保存", ImVec2(-1, 0))) {
+            SaveCurrentAs();
+        }
+
+        // ファイルパス表示
+        auto it = attackFilePaths_.find(currentAttack.attackID);
+        if (it != attackFilePaths_.end()) {
             ImGui::Separator();
-            ImGui::Text("攻撃を保存するには、「基本設定」タブで");
-            ImGui::Text("攻撃名を入力してください。");
-
-            ImGui::Spacing();
-            if (ImGui::Button("OK", ImVec2(120, 0))) {
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
-        }
-
-        // 保存成功のポップアップ
-        if (ImGui::BeginPopupModal("保存成功", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("保存が完了しました。");
-            ImGui::Text("ファイル: %s. json", currentAttack.attackName.c_str());
-
-            ImGui::Spacing();
-            if (ImGui::Button("OK", ImVec2(120, 0))) {
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
-        }
-
-        // 保存失敗のポップアップ
-        if (ImGui::BeginPopupModal("保存失敗", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("エラー: ファイルの保存に失敗しました。");
+            ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "保存先:");
+            ImGui::TextWrapped("%s", it->second.c_str());
+        } else {
             ImGui::Separator();
-            ImGui::Text("ファイルパスを確認してください。");
-
-            ImGui::Spacing();
-            if (ImGui::Button("OK", ImVec2(120, 0))) {
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
-        }
-
-        // 一括保存結果のポップアップ
-        if (ImGui::BeginPopupModal("一括保存結果", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("一括保存が完了しました。");
-            ImGui::Separator();
-
-            // ここに成功数と失敗数を表示するコードを追加
-            // （SaveAllAttacks()で管理）
-
-            ImGui::Spacing();
-            if (ImGui::Button("OK", ImVec2(120, 0))) {
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "未保存");
         }
 
     } else {
@@ -183,6 +131,83 @@ void AttackEditor::Render() {
     ImGui::EndChild();
 
     ImGui::End();
+
+    // ===ポップアップ群=== ///
+
+    // 保存エラー
+    if (ImGui::BeginPopupModal("保存エラー", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("エラー: 攻撃名が入力されていません。");
+        ImGui::Separator();
+        ImGui::Text("攻撃を保存するには、「基本設定」タブで");
+        ImGui::Text("攻撃名を入力してください。");
+
+        ImGui::Spacing();
+        if (ImGui::Button("OK", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
+    // 保存成功
+    if (ImGui::BeginPopupModal("保存成功", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        if (selectedAttackIndex_ >= 0 && selectedAttackIndex_ < static_cast<int>(attacks_.size())) {
+            AttackData& currentAttack = attacks_[selectedAttackIndex_];
+
+            ImGui::Text("保存が完了しました。");
+
+            auto it = attackFilePaths_.find(currentAttack.attackID);
+            if (it != attackFilePaths_.end()) {
+                ImGui::Separator();
+                ImGui::TextWrapped("ファイル:  %s", it->second.c_str());
+            }
+        }
+
+        ImGui::Spacing();
+        if (ImGui::Button("OK", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
+    // 保存失敗
+    if (ImGui::BeginPopupModal("保存失敗", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("エラー: ファイルの保存に失敗しました。");
+        ImGui::Separator();
+        ImGui::Text("ファイルパスを確認してください。");
+
+        ImGui::Spacing();
+        if (ImGui::Button("OK", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
+    // 上書き確認
+    if (ImGui::BeginPopupModal("上書き確認", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("ファイルが既に存在します。");
+        ImGui::Text("上書きしますか？");
+
+        ImGui::Spacing();
+        if (ImGui::Button("はい", ImVec2(120, 0))) {
+            if (selectedAttackIndex_ >= 0 && selectedAttackIndex_ < static_cast<int>(attacks_.size())) {
+                AttackData& currentAttack = attacks_[selectedAttackIndex_];
+                std::string savePath = std::string(kDefaultSavePath) + currentAttack.attackName + ".json";
+
+                if (serializer_->SaveToJson(currentAttack, savePath)) {
+                    attackFilePaths_[currentAttack.attackID] = savePath;
+                    ImGui::OpenPopup("保存成功");
+                } else {
+                    ImGui::OpenPopup("保存失敗");
+                }
+            }
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("いいえ", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
 
     // プレビューコントロールウィンドウ
     RenderPreviewControl();
@@ -247,9 +272,9 @@ void AttackEditor::SetVisible(bool visible) {
 }
 
 ///-------------------------------------------/// 
-/// JSONファイルに保存
+/// 選択中の攻撃を上書き保存
 ///-------------------------------------------///
-void AttackEditor::SaveToJson() {
+void AttackEditor::SaveCurrent() {
     if (selectedAttackIndex_ < 0 || selectedAttackIndex_ >= static_cast<int>(attacks_.size())) {
         return;
     }
@@ -258,19 +283,79 @@ void AttackEditor::SaveToJson() {
 
     // 名前チェック
     if (currentAttack.attackName.empty()) {
-        // 名前が空の場合は保存しない
+        ImGui::OpenPopup("保存エラー");
         return;
     }
 
-    std::string savePath = std::string(filePathBuffer_) + currentAttack.attackName + ".json";
-    serializer_->SaveToJson(currentAttack, savePath);
+    // ファイルパスを取得または生成
+    std::string savePath;
+
+    auto it = attackFilePaths_.find(currentAttack.attackID);
+    if (it != attackFilePaths_.end()) {
+        // 既存のファイルパスがあれば上書き
+        savePath = it->second;
+    } else {
+        // 新規の場合は新しいパスを生成
+        savePath = std::string(kDefaultSavePath) + currentAttack.attackName + ".json";
+        attackFilePaths_[currentAttack.attackID] = savePath;
+    }
+
+    // 保存実行
+    if (serializer_->SaveToJson(currentAttack, savePath)) {
+        ImGui::OpenPopup("保存成功");
+    } else {
+        ImGui::OpenPopup("保存失敗");
+    }
+}
+
+///-------------------------------------------/// 
+/// 選択中の攻撃を名前を付けて保存
+///-------------------------------------------///
+void AttackEditor::SaveCurrentAs() {
+    if (selectedAttackIndex_ < 0 || selectedAttackIndex_ >= static_cast<int>(attacks_.size())) {
+        return;
+    }
+
+    AttackData& currentAttack = attacks_[selectedAttackIndex_];
+
+    // 名前チェック
+    if (currentAttack.attackName.empty()) {
+        ImGui::OpenPopup("保存エラー");
+        return;
+    }
+
+    // 常に新しいファイル名で保存
+    std::string savePath = std::string(kDefaultSavePath) + currentAttack.attackName + ".json";
+
+    // ファイルが既に存在する場合は確認
+    if (std::filesystem::exists(savePath)) {
+        ImGui::OpenPopup("上書き確認");
+        return;
+    }
+
+    // 保存実行
+    if (serializer_->SaveToJson(currentAttack, savePath)) {
+        // 新しいパスを記録
+        attackFilePaths_[currentAttack.attackID] = savePath;
+        ImGui::OpenPopup("保存成功");
+    } else {
+        ImGui::OpenPopup("保存失敗");
+    }
+}
+
+
+///-------------------------------------------/// 
+/// JSONファイルに保存
+///-------------------------------------------///
+void AttackEditor::SaveToJson() {
+    SaveCurrent();
 }
 
 ///-------------------------------------------/// 
 /// JSONファイルから読み込み
 ///-------------------------------------------///
 void AttackEditor::LoadFromJson() {
-    // 実装:  ファイル選択ダイアログから読み込み
+
 }
 
 ///-------------------------------------------/// 
@@ -319,6 +404,7 @@ void AttackEditor::SaveAllAttacks() {
 ///-------------------------------------------///
 void AttackEditor::LoadAllAttacks() {
     attacks_.clear();
+    attackFilePaths_.clear();  // ← クリア
 
     if (!std::filesystem::exists(kDefaultSavePath)) {
         return;
@@ -327,8 +413,13 @@ void AttackEditor::LoadAllAttacks() {
     for (const auto& entry : std::filesystem::directory_iterator(kDefaultSavePath)) {
         if (entry.path().extension() == ".json") {
             AttackData data;
-            if (serializer_->LoadFromJson(data, entry.path().string())) {
+            std::string filepath = entry.path().string();
+
+            if (serializer_->LoadFromJson(data, filepath)) {
                 attacks_.push_back(data);
+
+                // ファイルパスを記録
+                attackFilePaths_[data.attackID] = filepath;
             }
         }
     }
@@ -367,30 +458,44 @@ void AttackEditor::RenderMenuBar() {
                 CreateNew();
             }
 
-            // 保存メニューは名前がある場合のみ有効
+            ImGui::Separator();
+
+            // 上書き保存
             bool canSave = (selectedAttackIndex_ >= 0 &&
                 selectedAttackIndex_ < static_cast<int>(attacks_.size()) &&
                 !attacks_[selectedAttackIndex_].attackName.empty());
 
-            if (ImGui::MenuItem("保存", "Ctrl+S", false, canSave)) {
-                SaveToJson();
+            if (ImGui::MenuItem("上書き保存", "Ctrl+S", false, canSave)) {
+                SaveCurrent();
             }
 
             if (!canSave && ImGui::IsItemHovered()) {
                 ImGui::SetTooltip("保存するには攻撃名を入力してください");
             }
 
+            // 名前を付けて保存
+            if (ImGui::MenuItem("名前を付けて保存", "Ctrl+Shift+S", false, canSave)) {
+                SaveCurrentAs();
+            }
+
+            ImGui::Separator();
+
             if (ImGui::MenuItem("全て保存")) {
                 SaveAllAttacks();
             }
-            if (ImGui::MenuItem("読み込み", "Ctrl+O")) {
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("開く", "Ctrl+O")) {
                 LoadFromJson();
             }
             if (ImGui::MenuItem("全て読み込み")) {
                 LoadAllAttacks();
             }
+
             ImGui::EndMenu();
         }
+
         if (ImGui::BeginMenu("編集")) {
             if (ImGui::MenuItem("削除", nullptr, false, selectedAttackIndex_ >= 0)) {
                 DeleteSelectedAttack();
@@ -400,6 +505,7 @@ void AttackEditor::RenderMenuBar() {
             }
             ImGui::EndMenu();
         }
+
         ImGui::EndMenuBar();
     }
 #endif
