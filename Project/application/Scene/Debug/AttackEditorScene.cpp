@@ -38,6 +38,10 @@ void AttackEditorScene::Initialize() {
 
     // エディターにプレビュー用プレイヤーとカメラを設定
     attackEditor_->SetPreviewPlayer(previewWeapon_.get());
+
+    // デフォルトカメラの位置を設定
+    defaultCamera_->SetTranslate(cameraPosition_);
+    defaultCamera_->SetRotate(cameraRotation_);
 }
 
 ///-------------------------------------------/// 
@@ -57,7 +61,9 @@ void AttackEditorScene::Update() {
     /// ===ImGui描画=== ///
 #ifdef USE_IMGUI
     RenderMenuBar();
+    /// ===デバッグ時のカメラ=== ///
     defaultCamera_->ImGuiUpdate();
+	defaultCamera_->DebugUpdate();
 
     // エディターメインウィンドウ
     attackEditor_->Render();

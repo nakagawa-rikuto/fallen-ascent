@@ -1,0 +1,74 @@
+{
+    "activeDuration": 0.800000011920929,
+    "attackID": 1,
+    "attackName": "Attack_1",
+    "branchComboIDs": [],
+    "cameraShakeDuration": 0.0,
+    "cameraShakeIntensity": 0.0,
+    "canComboToNext": true,
+    "comboWindowTime": 1.0,
+    "cooldownTime": 0.30000001192092896,
+    "curveSegments": 20,
+    "description": "横なぎ",
+    "endRotation": [
+        0.0,
+        -0.29552021622657776,
+        0.0,
+        0.9553365111351013
+    ],
+    "hitSoundName": "",
+    "moveSpeedMultiplier": 0.4000000059604645,
+    "nextComboID": 2,
+    "particleEffectName": "WeaponAttack",
+    "particleOffset": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "rootMotion": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "showTrajectory": true,
+    "startRotation": [
+        0.0,
+        0.3894183337688446,
+        0.0,
+        0.9210609793663025
+    ],
+    "swingSoundName": "",
+    "trajectoryColor": [
+        1.0,
+        0.0,
+        0.0
+    ],
+    "trajectoryPoints": [
+        {
+            "position": [
+                8.0,
+                0.0,
+                0.0
+            ],
+            "time": 0.0
+        },
+        {
+            "position": [
+                0.0,
+                0.0,
+                15.100000381469727
+            ],
+            "time": 0.6800000071525574
+        },
+        {
+            "position": [
+                -8.0,
+                0.0,
+                0.0
+            ],
+            "time": 1.0
+        }
+    ],
+    "useRotationCurve": true,
+    "weaponLength": 8.0
+}

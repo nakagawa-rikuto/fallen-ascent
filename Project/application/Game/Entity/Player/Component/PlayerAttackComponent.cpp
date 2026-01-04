@@ -12,33 +12,46 @@
 /// 初期化処理
 ///-------------------------------------------///
 void PlayerAttackComponent::Initialize() {
-
+    // コンボの読み込み
+    LoadAttackData(0, "Resource/Json/Attacks/Attack_0.json");
+    LoadAttackData(1, "Resource/Json/Attacks/Attack_1.json");
+    LoadAttackData(2, "Resource/Json/Attacks/Attack_2.json");
 }
 
 ///-------------------------------------------/// 
 /// 更新処理
 ///-------------------------------------------///
-void PlayerAttackComponent::Update() {
-    if (!state_.isActive) return;
+void PlayerAttackComponent::Update(const float deltaTime) {
+    // タイマーを更新
+    UpdateTimers(deltaTime);
 
-    // 攻撃時間が終了したかチェック
-    const AttackData* currentData = GetCurrentAttackData();
-    if (currentData && state_.timer >= currentData->activeDuration) {
-        state_.isActive = false;
-        state_.currentAttackID = -1;
+    // 攻撃中の処理
+    if (state_.isActive) {
+        // 攻撃時間が終了したかチェック
+        const AttackData* currentData = GetAttackData(state_.currentAttackID);
 
-        // コンボ受付開始
-        if (currentData->canComboToNext) {
-            state_.canCombo = true;
-            state_.comboTimer = 0.0f;
+        if (currentData && state_.timer >= currentData->activeDuration) {
+            state_.isActive = false;
+            state_.previousAttackID = state_.currentAttackID;  // ← 前の攻撃IDを保存
+            state_.currentAttackID = -1;
+
+            // コンボ受付開始
+            if (currentData->canComboToNext) {
+                state_.canCombo = true;
+                state_.comboTimer = 0.0f;
+            }
         }
     }
 
     // コンボ受付時間の管理
     if (state_.canCombo) {
-        if (currentData && state_.comboTimer >= currentData->comboWindowTime) {
+        // ★ 前の攻撃IDからデータを取得
+        const AttackData* previousData = GetAttackData(state_.previousAttackID);
+
+        if (previousData && state_.comboTimer >= previousData->comboWindowTime) {
             state_.canCombo = false;
-            state_.comboCount = 0;  // コンボリセット
+            state_.comboCount = 0;
+            state_.previousAttackID = -1;  // ← リセット
         }
     }
 }
@@ -50,13 +63,37 @@ void PlayerAttackComponent::Information() {
 #ifdef USE_IMGUI
     ImGui::SeparatorText("PlayerAttackComponent");
 
-    ImGui::Text("攻撃中:  %s", state_.isActive ? "true" : "false");
-    ImGui::Text("現在の攻撃ID:  %d", state_.currentAttackID);
-    ImGui::Text("コンボ可能:  %s", state_.canCombo ? "true" : "false");
+    ImGui::Text("攻撃中: %s", state_.isActive ? "true" : "false");
+    ImGui::Text("現在の攻撃ID: %d", state_.currentAttackID);
+    ImGui::Text("前の攻撃ID: %d", state_.previousAttackID);  // ← 追加
+    ImGui::Text("コンボ可能: %s", state_.canCombo ? "true" : "false");
     ImGui::Text("コンボ数: %d", state_.comboCount);
-    ImGui::Text("攻撃タイマー: %.2f", state_.timer);
-    ImGui::Text("コンボタイマー: %.2f", state_.comboTimer);
-    ImGui::Text("攻撃進行度: %.2f%%", GetAttackProgress() * 100.0f);
+    ImGui::Text("攻撃タイマー: %.3f", state_.timer);
+    ImGui::Text("コンボタイマー: %.3f", state_.comboTimer);
+    ImGui::Text("攻撃進行度: %. 1f%%", GetAttackProgress() * 100.0f);
+
+    // デバッグ情報
+    ImGui::Separator();
+
+    if (state_.isActive) {
+        const AttackData* currentData = GetAttackData(state_.currentAttackID);
+        if (currentData) {
+            ImGui::TextColored(ImVec4(0, 1, 0, 1), "現在の攻撃:  %s", currentData->attackName.c_str());
+            ImGui::Text("攻撃時間: %.2f秒", currentData->activeDuration);
+            ImGui::Text("終了まで: %. 2f秒", currentData->activeDuration - state_.timer);
+        }
+    }
+
+    if (state_.canCombo) {
+        const AttackData* previousData = GetAttackData(state_.previousAttackID);
+        if (previousData) {
+            ImGui::TextColored(ImVec4(1, 1, 0, 1), "コンボ受付中！");
+            ImGui::Text("前の攻撃:  %s", previousData->attackName.c_str());
+            ImGui::Text("次の攻撃ID: %d", previousData->nextComboID);
+            ImGui::Text("受付時間: %.2f秒", previousData->comboWindowTime);
+            ImGui::Text("残り時間: %.2f秒", previousData->comboWindowTime - state_.comboTimer);
+        }
+    }
 
     ImGui::Separator();
     ImGui::Text("登録されている攻撃数: %zu", attackDataMap_.size());
@@ -84,6 +121,8 @@ bool PlayerAttackComponent::StartAttack(int attackID, PlayerWeapon* weapon) {
     if (state_.isActive) {
         return false;
     }
+
+	CancelAttack(); // 状態をリセット
 
     // 攻撃データを取得
     auto it = attackDataMap_.find(attackID);
@@ -115,14 +154,14 @@ bool PlayerAttackComponent::TryCombo(PlayerWeapon* weapon) {
         return false;
     }
 
-    // 現在の攻撃データを取得
-    const AttackData* currentData = GetCurrentAttackData();
-    if (!currentData || !currentData->canComboToNext) {
+    // ★ 前の攻撃データを取得
+    const AttackData* previousData = GetAttackData(state_.previousAttackID);
+    if (!previousData || !previousData->canComboToNext) {
         return false;
     }
 
     // 次のコンボIDを取得
-    int nextAttackID = currentData->nextComboID;
+    int nextAttackID = previousData->nextComboID;
     if (nextAttackID < 0) {
         return false;
     }
@@ -141,6 +180,7 @@ void PlayerAttackComponent::CancelAttack() {
     state_.isActive = false;
     state_.canCombo = false;
     state_.currentAttackID = -1;
+    state_.previousAttackID = -1;  // ← リセット
     state_.comboCount = 0;
     state_.timer = 0.0f;
     state_.comboTimer = 0.0f;
@@ -184,18 +224,9 @@ void PlayerAttackComponent::ApplyAttackToWeapon(const AttackData& data, PlayerWe
         return;
     }
 
-    // ベジェ曲線の開始点と終了点を取得
-    Vector3 localStart = data.trajectoryPoints.front().position;
-    Vector3 localEnd = data.trajectoryPoints.back().position;
-
-    //// プレイヤーの回転を適用してワールド座標に変換
-    //Vector3 worldStart = basePosition + localStart;
-    //Vector3 worldEnd = basePosition + localEnd;
-
-    // 武器に攻撃を開始させる
+    // ベジェ曲線の制御点をそのまま渡す
     weapon->StartAttack(
-        localStart,
-        localEnd,
+        data.trajectoryPoints,     // ベジェ曲線の全制御点
         data.activeDuration,
         data.startRotation,
         data.endRotation

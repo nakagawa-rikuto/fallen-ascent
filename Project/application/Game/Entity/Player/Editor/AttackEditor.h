@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 /// ===前方宣言=== ///
 class PlayerWeapon;
@@ -69,7 +70,7 @@ private:
     int selectedAttackIndex_ = -1;                // 選択中の攻撃インデックス
 
     /// ===ファイル管理=== ///
-    static constexpr const char* kDefaultSavePath = "Data/Attacks/";
+    static constexpr const char* kDefaultSavePath = "Resource/Json/Attacks";
     char filePathBuffer_[256];                    // ファイルパス入力バッファ
     std::vector<std::string> availablePresets_;   // 利用可能なプリセットリスト
 
@@ -86,6 +87,13 @@ private:
     
     /// ===Serializer=== ///
 	std::unique_ptr<AttackDataSerializer> serializer_; // シリアライザ
+
+    /// ===回転編集用（オイラー角）=== ///  
+    struct RotationEditData {
+        Vector3 startEuler = { 0.0f, 0.0f, 0.0f };  // 開始回転（度数法）
+        Vector3 endEuler = { 0.0f, 0.0f, 0.0f };    // 終了回転（度数法）
+    };
+    std::unordered_map<int, RotationEditData> rotationEditMap_;  
 
 private:
 

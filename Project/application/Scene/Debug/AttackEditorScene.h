@@ -47,7 +47,12 @@ private:
     bool showStats_ = true;              // 統計情報表示フラグ
     bool showGrid_ = true;               // グリッド表示フラグ
 
-	float deltaTime_ = 1.0f / 60.0f;    // デルタタイム
+    // デルタタイム
+	float deltaTime_ = 1.0f / 60.0f;    
+
+    /// ===カメラ=== ///
+	Vector3 cameraPosition_{ 0.0f, 10.0f, -50.0f };   // カメラ位置
+	Quaternion cameraRotation_{ 0.0f, 0.0f, 0.0f, 1.0f }; // カメラ回転
 
 private:
 

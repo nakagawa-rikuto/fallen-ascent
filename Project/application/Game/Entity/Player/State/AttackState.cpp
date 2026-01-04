@@ -37,10 +37,10 @@ void AttackState::Update(Player* player, GameCamera* camera) {
 	player_->ApplyDeceleration(0.4f);
 
 	// 攻撃コンポーネントの更新
-	attackComp->Update();
+	attackComp->Update(player_->GetDeltaTime());
 
 	// 攻撃ボタンが押されたらコンボを試行
-	if (InputService::TriggerKey(DIK_SPACE)) {
+	if (InputService::TriggerButton(0, ControllerButtonType::X)) {
 		if (attackComp->CanCombo()) {
 			attackComp->TryCombo(player_->GetWeapon());
 		}

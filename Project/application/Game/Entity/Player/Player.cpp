@@ -200,6 +200,7 @@ void Player::OnCollision(Collider* collider) {
 			baseInfo_.velocity = knockbackDirection * knockbackSpeed;
 
 			// Stateを Root に変更
+			attackComponent_->CancelAttack(); // 攻撃キャンセル
 			ChangState(std::make_unique<RootState>());
 
 			// ダメージ処理
@@ -227,9 +228,6 @@ void Player::advanceTimer() {
 
 	// 回避タイマーの更新
 	avoidanceComponent_->UpdateTimer(baseInfo_.deltaTime);
-
-	// 攻撃タイマーの更新
-	attackComponent_->UpdateTimers(baseInfo_.deltaTime);
 }
 
 ///-------------------------------------------/// 

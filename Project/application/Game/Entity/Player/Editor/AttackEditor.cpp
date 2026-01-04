@@ -107,9 +107,76 @@ void AttackEditor::Render() {
 
         // 保存ボタン
         if (ImGui::Button("この攻撃を保存", ImVec2(-1, 0))) {
-            std::string savePath = std::string(kDefaultSavePath) + currentAttack.attackName + ".json";
-            serializer_->SaveToJson(currentAttack, savePath);
+            // 保存前に名前をチェック
+            if (currentAttack.attackName.empty()) {
+                // エラーメッセージを表示
+                ImGui::OpenPopup("保存エラー");
+            } else {
+                std::string savePath = std::string(kDefaultSavePath) + currentAttack.attackName + ".json";
+                if (serializer_->SaveToJson(currentAttack, savePath)) {
+                    // 保存成功のメッセージ
+                    ImGui::OpenPopup("保存成功");
+                } else {
+                    // 保存失敗のメッセージ
+                    ImGui::OpenPopup("保存失敗");
+                }
+            }
         }
+
+        // 保存エラーのポップアップ
+        if (ImGui::BeginPopupModal("保存エラー", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("エラー:  攻撃名が入力されていません。");
+            ImGui::Separator();
+            ImGui::Text("攻撃を保存するには、「基本設定」タブで");
+            ImGui::Text("攻撃名を入力してください。");
+
+            ImGui::Spacing();
+            if (ImGui::Button("OK", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+
+        // 保存成功のポップアップ
+        if (ImGui::BeginPopupModal("保存成功", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("保存が完了しました。");
+            ImGui::Text("ファイル: %s. json", currentAttack.attackName.c_str());
+
+            ImGui::Spacing();
+            if (ImGui::Button("OK", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+
+        // 保存失敗のポップアップ
+        if (ImGui::BeginPopupModal("保存失敗", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("エラー: ファイルの保存に失敗しました。");
+            ImGui::Separator();
+            ImGui::Text("ファイルパスを確認してください。");
+
+            ImGui::Spacing();
+            if (ImGui::Button("OK", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+
+        // 一括保存結果のポップアップ
+        if (ImGui::BeginPopupModal("一括保存結果", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("一括保存が完了しました。");
+            ImGui::Separator();
+
+            // ここに成功数と失敗数を表示するコードを追加
+            // （SaveAllAttacks()で管理）
+
+            ImGui::Spacing();
+            if (ImGui::Button("OK", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+
     } else {
         ImGui::Text("攻撃を選択してください");
     }
@@ -188,6 +255,13 @@ void AttackEditor::SaveToJson() {
     }
 
     AttackData& currentAttack = attacks_[selectedAttackIndex_];
+
+    // 名前チェック
+    if (currentAttack.attackName.empty()) {
+        // 名前が空の場合は保存しない
+        return;
+    }
+
     std::string savePath = std::string(filePathBuffer_) + currentAttack.attackName + ".json";
     serializer_->SaveToJson(currentAttack, savePath);
 }
@@ -214,10 +288,30 @@ void AttackEditor::CreateNew() {
 /// 全ての攻撃を保存
 ///-------------------------------------------///
 void AttackEditor::SaveAllAttacks() {
+    int successCount = 0;
+    int failCount = 0;
+
     for (const auto& attack : attacks_) {
+        // 名前が空の攻撃はスキップ
+        if (attack.attackName.empty()) {
+            failCount++;
+            continue;
+        }
+
         std::string savePath = std::string(kDefaultSavePath) + attack.attackName + ".json";
-        serializer_->SaveToJson(attack, savePath);
+        if (serializer_->SaveToJson(attack, savePath)) {
+            successCount++;
+        } else {
+            failCount++;
+        }
     }
+
+#ifdef USE_IMGUI
+    // 結果を表示
+    if (failCount > 0) {
+        ImGui::OpenPopup("一括保存結果");
+    }
+#endif
 }
 
 ///-------------------------------------------/// 
@@ -272,9 +366,20 @@ void AttackEditor::RenderMenuBar() {
             if (ImGui::MenuItem("新規作成", "Ctrl+N")) {
                 CreateNew();
             }
-            if (ImGui::MenuItem("保存", "Ctrl+S")) {
+
+            // 保存メニューは名前がある場合のみ有効
+            bool canSave = (selectedAttackIndex_ >= 0 &&
+                selectedAttackIndex_ < static_cast<int>(attacks_.size()) &&
+                !attacks_[selectedAttackIndex_].attackName.empty());
+
+            if (ImGui::MenuItem("保存", "Ctrl+S", false, canSave)) {
                 SaveToJson();
             }
+
+            if (!canSave && ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("保存するには攻撃名を入力してください");
+            }
+
             if (ImGui::MenuItem("全て保存")) {
                 SaveAllAttacks();
             }
@@ -332,8 +437,26 @@ void AttackEditor::RenderBasicSettings(AttackData& data) {
 
     char nameBuffer[256];
     strncpy_s(nameBuffer, data.attackName.c_str(), sizeof(nameBuffer));
+
+    // 名前が空の場合は警告色で表示
+    if (data.attackName.empty()) {
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.6f, 0.2f, 0.2f, 0.5f)); // 赤っぽい背景
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));    // 黄色いテキスト
+    }
+
     if (ImGui::InputText("攻撃名", nameBuffer, sizeof(nameBuffer))) {
         data.attackName = nameBuffer;
+    }
+
+    if (data.attackName.empty()) {
+        ImGui::PopStyleColor(2);
+
+        // ヘルプテキスト
+        ImGui::SameLine();
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "(*)");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("保存するには攻撃名が必要です");
+        }
     }
 
     char descBuffer[512];
@@ -400,9 +523,58 @@ void AttackEditor::RenderTrajectorySettings(AttackData& data) {
         data.trajectoryPoints.push_back(newPoint);
     }
 
-    ImGui::SeparatorText("回転設定");
-    ImGui::DragFloat4("開始回転 (Quaternion)", &data.startRotation.x, 0.01f);
-    ImGui::DragFloat4("終了回転 (Quaternion)", &data.endRotation.x, 0.01f);
+    // 編集用データを取得または初期化
+    if (rotationEditMap_.find(data.attackID) == rotationEditMap_.end()) {
+        // 初回：QuaternionからVector3に変換
+        RotationEditData editData;
+        editData.startEuler = Math::QuaternionToEuler(data.startRotation);
+        editData.endEuler = Math::QuaternionToEuler(data.endRotation);
+        rotationEditMap_[data.attackID] = editData;
+    }
+
+    RotationEditData& editData = rotationEditMap_[data.attackID];
+
+    // Vector3（度数法）で編集
+    ImGui::Text("開始回転 (度数法)");
+    if (ImGui::DragFloat3("StartEuler", &editData.startEuler.x, 0.5f, -360.0f, 360.0f)) {
+        // 編集されたらQuaternionに変換
+        data.startRotation = Math::QuaternionFromVector(editData.startEuler);
+    }
+
+    // 現在のQuaternion値も表示
+    ImGui::SameLine();
+    if (ImGui::TreeNode("StartQuaternion")) {
+        ImGui::Text("x: %.3f, y: %.3f", data.startRotation.x, data.startRotation.y);
+        ImGui::Text("z: %.3f, w: %. 3f", data.startRotation.z, data.startRotation.w);
+        ImGui::TreePop();
+    }
+
+    ImGui::Spacing();
+
+    ImGui::Text("終了回転 (度数法)");
+    if (ImGui::DragFloat3("EndEuler", &editData.endEuler.x, 0.5f, -360.0f, 360.0f)) {
+        // 編集されたらQuaternionに変換
+        data.endRotation = Math::QuaternionFromVector(editData.endEuler);
+    }
+
+    // 現在のQuaternion値も表示
+    ImGui::SameLine();
+    if (ImGui::TreeNode("EndQuaternion")) {
+        ImGui::Text("x:  %.3f, y: %.3f", data.endRotation.x, data.endRotation.y);
+        ImGui::Text("z: %.3f, w: %.3f", data.endRotation.z, data.endRotation.w);
+        ImGui::TreePop();
+    }
+
+    ImGui::Spacing();
+
+    // リセットボタン
+    if (ImGui::Button("回転をリセット")) {
+        editData.startEuler = { 0.0f, 0.0f, 0.0f };
+        editData.endEuler = { 0.0f, 0.0f, 0.0f };
+        data.startRotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
+        data.endRotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
+    }
+
     ImGui::Checkbox("回転もベジェ曲線で補間", &data.useRotationCurve);
 
     ImGui::SeparatorText("プレビュー");
@@ -455,7 +627,7 @@ void AttackEditor::RenderComboSettings(AttackData& data) {
 #ifdef USE_IMGUI
     ImGui::SeparatorText("コンボ連携");
 
-    ImGui::Checkbox("次のコンボに繋げる", &data.canComboToNext);
+    ImGui::Checkbox("次のコンボにつなげる", &data.canComboToNext);
 
     if (data.canComboToNext) {
         ImGui::InputInt("次のコンボID", &data.nextComboID);
@@ -465,7 +637,7 @@ void AttackEditor::RenderComboSettings(AttackData& data) {
 
         for (int i = 0; i < static_cast<int>(data.branchComboIDs.size()); ++i) {
             ImGui::PushID(i);
-            ImGui::InputInt("##branchID", &data.branchComboIDs[i]);
+            ImGui::InputInt("branchID", &data.branchComboIDs[i]);
             ImGui::SameLine();
             if (ImGui::Button("削除")) {
                 data.branchComboIDs.erase(data.branchComboIDs.begin() + i);
@@ -504,29 +676,44 @@ void AttackEditor::RenderPreviewControl() {
     ImGui::Checkbox("自動リプレイ", &autoReplay_);
 
     ImGui::SeparatorText("プレビュー設定");
-    ImGui::DragFloat3("武器位置", &previewWeaponPosition_.x, 0.1f);  // ← 変更
+    ImGui::DragFloat3("武器位置", &previewWeaponPosition_.x, 0.1f);
 
     // 実際の攻撃をプレビュー
-    if (ImGui::Button("攻撃プレビュー実行") && previewWeapon_) {
+    if (ImGui::Button("攻撃プレビュー実行", ImVec2(-1, 0)) && previewWeapon_) {
         if (selectedAttackIndex_ >= 0 && selectedAttackIndex_ < static_cast<int>(attacks_.size())) {
             AttackData& currentAttack = attacks_[selectedAttackIndex_];
 
-            // ベジェ曲線の開始点と終了点を取得
+            // ベジェ曲線の制御点が2点以上あるか確認
             if (currentAttack.trajectoryPoints.size() >= 2) {
-                Vector3 startPoint = previewWeaponPosition_ + currentAttack.trajectoryPoints.front().position;
-                Vector3 endPoint = previewWeaponPosition_ + currentAttack.trajectoryPoints.back().position;
 
-                // 武器に攻撃を実行させる
+                // 全ての制御点にオフセットを適用
+                std::vector<BezierControlPointData> worldPoints;
+                for (const auto& point : currentAttack.trajectoryPoints) {
+                    BezierControlPointData worldPoint;
+                    worldPoint.position = previewWeaponPosition_ + point.position;
+                    worldPoint.time = point.time;
+                    worldPoints.push_back(worldPoint);
+                }
+
+                // 武器に攻撃を実行させる（ベジェ曲線版）
                 previewWeapon_->StartAttack(
-                    startPoint,
-                    endPoint,
+                    worldPoints,                    // ← 全制御点を渡す
                     currentAttack.activeDuration,
                     currentAttack.startRotation,
                     currentAttack.endRotation
                 );
+
+                // プレビュー再生開始
+                PlayPreview();
             }
         }
     }
+
+    // ヘルプテキスト
+    ImGui::Separator();
+    ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "ヒント:");
+    ImGui::BulletText("「再生」で軌道のプレビュー表示");
+    ImGui::BulletText("「攻撃プレビュー実行」で実際の攻撃モーション");
 
     ImGui::End();
 #endif

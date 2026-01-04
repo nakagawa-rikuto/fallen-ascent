@@ -21,6 +21,7 @@ private:
 		bool isActive = false;      // 攻撃中フラグ
 		bool canCombo = false;      // コンボ可能フラグ
 		int currentAttackID = -1;   // 現在の攻撃ID
+		int previousAttackID = -1;  // ← 追加：前の攻撃ID（コンボ受付用）
 		int comboCount = 0;         // コンボカウント
 	};
 
@@ -41,18 +42,12 @@ public:
 	/// <summary>
 	/// 更新処理
 	/// </summary>
-	void Update();
+	void Update(const float deltaTime);
 
 	/// <summary>
 	/// ImGui情報の表示
 	/// </summary>
 	void Information();
-
-	/// <summary>
-	/// タイマーを更新します。
-	/// </summary>
-	/// <param name="deltaTime">前回の更新からの経過時間（秒）</param>
-	void UpdateTimers(const float deltaTime);
 
 	/// <summary>
 	/// 攻撃データをJSONから読み込み
@@ -109,6 +104,12 @@ private:
 	AttackState state_;
 
 private:
+
+	/// <summary>
+	/// タイマーを更新します。
+	/// </summary>
+	/// <param name="deltaTime">前回の更新からの経過時間（秒）</param>
+	void UpdateTimers(const float deltaTime);
 
 	/// <summary>
 	/// 武器に攻撃軌道を設定
