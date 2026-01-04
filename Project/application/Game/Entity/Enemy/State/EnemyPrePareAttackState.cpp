@@ -28,12 +28,10 @@ void EnemyPrePareAttackState::Update(BaseEnemy* enemy) {
 	// タイマーの更新
 	activeTimer_ -= enemy_->GetDeltaTime();
 
-	// targetの位置を取得
-	Vector3 targetPos = enemy_->GetPlayer()->GetTransform().translate;
-
 	// プレイヤーの位置への方向ベクトルを計算
-	Vector3 dir = enemy_->GetPlayer()->GetTransform().translate - enemy_->GetTransform().translate;
+	Vector3 dir = enemy_->GetTransform().translate - enemy_->GetPlayer()->GetTransform().translate;
 	Vector3 NormalDir = Normalize(dir); // 正規化
+	NormalDir = NormalDir * -1.0f; // 反転
 
 	// 回転の更新
 	enemy_->UpdateRotationTowards(NormalDir, 0.2f);
