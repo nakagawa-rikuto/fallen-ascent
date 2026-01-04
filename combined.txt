@@ -36923,6 +36923,7 @@ void AttackEditor::SetVisible(bool visible) {
 /// 選択中の攻撃を上書き保存
 ///-------------------------------------------///
 void AttackEditor::SaveCurrent() {
+#ifdef USE_IMGUI
     if (selectedAttackIndex_ < 0 || selectedAttackIndex_ >= static_cast<int>(attacks_.size())) {
         return;
     }
@@ -36954,12 +36955,14 @@ void AttackEditor::SaveCurrent() {
     } else {
         ImGui::OpenPopup("保存失敗");
     }
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
 /// 選択中の攻撃を名前を付けて保存
 ///-------------------------------------------///
 void AttackEditor::SaveCurrentAs() {
+#ifdef USE_IMGUI
     if (selectedAttackIndex_ < 0 || selectedAttackIndex_ >= static_cast<int>(attacks_.size())) {
         return;
     }
@@ -36989,6 +36992,7 @@ void AttackEditor::SaveCurrentAs() {
     } else {
         ImGui::OpenPopup("保存失敗");
     }
+#endif // USE_IMGUI
 }
 
 
