@@ -45,6 +45,9 @@ PlayerMoveComponent::UpdateResult PlayerMoveComponent::Update(const UpdateContex
 		float easedYaw = currentYaw + diff * (context.deltaTime * 10.0f);
 		// Quaternionに再変換
 		result.targetRotation = Math::MakeRotateAxisAngle({ 0, 1, 0 }, easedYaw);
+	} else {
+		// 入力がない場合は現在の回転を維持
+		result.targetRotation = context.currentRotation;
 	}
 
 	return result;
