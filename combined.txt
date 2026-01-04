@@ -326,9 +326,6 @@
 └── └── └──     ├── Line.h
 └── └── └──     ├── Object3d.cpp
 └── └── └──     └── Object3d.h
-└── └── ├── Editor/
-└── └── └── └── Data/
-└── └── └──     └── AttackData.h
 └── └── ├── Game/
 └── └── └── ├── Animation/
 └── └── └── └── ├── GameClearAnimation.cpp
@@ -376,10 +373,19 @@
 └── └── └── └── └── └── GameCharacterCollision.h
 └── └── └── └── └── Player/
 └── └── └── └──     ├── Component/
+└── └── └── └──     └── ├── PlayerAttackComponent.cpp
+└── └── └── └──     └── ├── PlayerAttackComponent.h
 └── └── └── └──     └── ├── PlayerAvoidanceComponent.cpp
 └── └── └── └──     └── ├── PlayerAvoidanceComponent.h
 └── └── └── └──     └── ├── PlayerMoveComponent.cpp
 └── └── └── └──     └── └── PlayerMoveComponent.h
+└── └── └── └──     ├── Editor/
+└── └── └── └──     └── ├── AttackDataSerializer.cpp
+└── └── └── └──     └── ├── AttackDataSerializer.h
+└── └── └── └──     └── ├── AttackEditor.cpp
+└── └── └── └──     └── ├── AttackEditor.h
+└── └── └── └──     └── └── Data/
+└── └── └── └──     └──     └── AttackData.h
 └── └── └── └──     ├── Player.cpp
 └── └── └── └──     ├── Player.h
 └── └── └── └──     ├── State/
@@ -390,8 +396,6 @@
 └── └── └── └──     └── ├── Base/
 └── └── └── └──     └── └── ├── PlayerState.cpp
 └── └── └── └──     └── └── └── PlayerState.h
-└── └── └── └──     └── ├── ChargeState.cpp
-└── └── └── └──     └── ├── ChargeState.h
 └── └── └── └──     └── ├── MoveState.cpp
 └── └── └── └──     └── ├── MoveState.h
 └── └── └── └──     └── ├── RootState.cpp
@@ -417,6 +421,9 @@
 └── └── └── Scene/
 └── └──     ├── ClearScene.cpp
 └── └──     ├── ClearScene.h
+└── └──     ├── Debug/
+└── └──     └── ├── AttackEditorScene.cpp
+└── └──     └── └── AttackEditorScene.h
 └── └──     ├── GameOverScene.cpp
 └── └──     ├── GameOverScene.h
 └── └──     ├── GameScene.cpp
@@ -552,6 +559,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp" />
     <ClCompile Include="application\Scene\GameScene.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.cpp" />
+    <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Editor\AttackDataSerializer.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Editor\AttackEditor.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSRootSignature.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.cpp" />
     <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp" />
@@ -562,7 +572,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\BoxFilter5x5Effect.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\CloseRange\CloseRangeEnemy.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\Base\BaseEnemy.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\State\ChargeState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\AttackState.cpp" />
     <ClCompile Include="Engine\Scene\Transition\ShatterGlassTransition.cpp" />
     <ClCompile Include="Engine\System\Service\ColliderService.cpp" />
@@ -698,9 +707,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Scene\Transition\SceneTransitionManager.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\Editor\Data\AttackData.h" />
+    <ClInclude Include="application\Game\Entity\Player\Editor\Data\AttackData.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyMoveState.h" />
@@ -708,6 +718,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.h" />
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.h" />
+    <ClInclude Include="application\Scene\Debug\AttackEditorScene.h" />
+    <ClInclude Include="application\Game\Entity\Player\Editor\AttackDataSerializer.h" />
+    <ClInclude Include="application\Game\Entity\Player\Editor\AttackEditor.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.h" />
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
@@ -719,7 +732,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\BoxFilter5x5Effect.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Base\BaseEnemy.h" />
     <ClInclude Include="application\Game\Entity\Player\State\AttackState.h" />
-    <ClInclude Include="application\Game\Entity\Player\State\ChargeState.h" />
     <ClInclude Include="Engine\DataInfo\BlendModeData.h" />
     <ClInclude Include="Engine\DataInfo\LevelData.h" />
     <ClInclude Include="application\Game\Entity\Enemy\CloseRange\CloseRangeEnemy.h" />
@@ -868,6 +880,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Scene\Transition\SceneTransitionManager.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -1202,9 +1215,6 @@ File Path: Project/DeathsDoor.vcxproj.filters
       <Filter>application\Game\Entity\Player\State\Base</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Player\State\AvoidanceState.cpp">
-      <Filter>application\Game\Entity\Player\State</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Game\Entity\Player\State\ChargeState.cpp">
       <Filter>application\Game\Entity\Player\State</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Player\State\MoveState.cpp">
@@ -1578,6 +1588,10 @@ File Path: Project/DeathsDoor.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp" />
+    <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Editor\AttackEditor.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Editor\AttackDataSerializer.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -1623,9 +1637,6 @@ File Path: Project/DeathsDoor.vcxproj.filters
       <Filter>application\Game\Entity\Player\State\Base</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Player\State\AvoidanceState.h">
-      <Filter>application\Game\Entity\Player\State</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\Player\State\ChargeState.h">
       <Filter>application\Game\Entity\Player\State</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Player\State\MoveState.h">
@@ -2043,7 +2054,11 @@ File Path: Project/DeathsDoor.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h" />
-    <ClInclude Include="application\Editor\Data\AttackData.h" />
+    <ClInclude Include="application\Game\Entity\Player\Editor\Data\AttackData.h" />
+    <ClInclude Include="application\Scene\Debug\AttackEditorScene.h" />
+    <ClInclude Include="application\Game\Entity\Player\Editor\AttackEditor.h" />
+    <ClInclude Include="application\Game\Entity\Player\Editor\AttackDataSerializer.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -7068,6 +7083,7 @@ enum class SceneType {
 	Clear,
 	GameOver,
 	ParticleEditor,
+	AttackEditor,
 };
 
 ============================================================
@@ -19162,6 +19178,7 @@ File Path: Project/Engine/Scene/SceneFactory.cpp
 #include "application/Scene/ClearScene.h"
 #include "application/Scene/GameOverScene.h"
 #include "Engine/Scene/Debug/ParticleEditorScene.h"
+#include "application/Scene/Debug/AttackEditorScene.h"
 
 ///-------------------------------------------/// 
 /// シーン生成
@@ -19186,6 +19203,9 @@ std::unique_ptr<IScene> SceneFactory::CreateScene(SceneType type) {
 	} else if (type == SceneType::ParticleEditor) {
 		// 粒子エディターシーン
 		return std::make_unique<ParticleEditorScene>();
+	} else if (type == SceneType::AttackEditor) {
+		// 攻撃エディターシーン
+		return std::make_unique<AttackEditorScene>();
 	}
 	return nullptr;
 }
@@ -25869,6 +25889,7 @@ File Path: Project/Engine/System/Managers/SceneManager.cpp
 #include "application/Scene/ClearScene.h"
 #include "application/Scene/GameOverScene.h"
 #include "Engine/Scene/Debug/ParticleEditorScene.h"
+#include "application/Scene/Debug/AttackEditorScene.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -25999,6 +26020,10 @@ void SceneManager::SceneObservation() {
 		/// 粒子エディターシーン
 		if (ImGui::Selectable("ParticleEditor", currentSceneType_ == SceneType::ParticleEditor)) {
 			ChangeScene(SceneType::ParticleEditor);
+		}
+		// アタックエディターシーン
+		if (ImGui::Selectable("AttackEditor", currentSceneType_ == SceneType::AttackEditor)) {
+			ChangeScene(SceneType::AttackEditor);
 		}
 		ImGui::EndCombo();
 	}
@@ -31073,6 +31098,7 @@ File Path: Project/application/Drawing/3d/Line.h
 #include "Engine/DataInfo/ColliderData.h"
 #include "Engine/DataInfo/LineObjectData.h"
 // C++
+#include <vector>
 #include <cstdint>
 
 ///=====================================================/// 
@@ -31511,19 +31537,6 @@ private: /// ===Variables(変数)=== ///
 	ObjectType type_ = ObjectType::Model;
 };
 
-
-
-============================================================
-File Path: Project/application/Editor/Data/AttackData.h
-============================================================
-#pragma once
-/// ===Include=== ///
-// Math
-#include "Math/Vector3.h"
-#include "Math/Quaternion.h"
-// C++
-#include <vector>
-#include <string>
 
 
 ============================================================
@@ -32961,7 +32974,7 @@ void BaseEnemy::OnCollision(Collider* collider) {
 		// クールタイム中でなければノックバック処理を実行
 		if (!knockbackInfo_.isInCooldown) {
 			// 通常攻撃の時
-			if (player_->GetStateFlag(actionType::kAttack)) {
+			if (player_->GetAttackComponent()->IsAttacking()) {
 				// Stateを移動状態に変更
 				ChangeState(std::make_unique<EnemyMoveState>());
 
@@ -32991,10 +33004,6 @@ void BaseEnemy::OnCollision(Collider* collider) {
 				knockbackInfo_.hitColorTimer = knockbackInfo_.hitColorDuration;
 				knockbackInfo_.cooldownTimer = knockbackInfo_.cooldownDuration;
 				knockbackInfo_.isInCooldown = true;
-
-				// チャージ攻撃の時
-			} else if (player_->GetStateFlag(actionType::kCharge)) {
-
 			}
 		}
 	}
@@ -35687,6 +35696,353 @@ private:
 };
 
 ============================================================
+File Path: Project/application/Game/Entity/Player/Component/PlayerAttackComponent.cpp
+============================================================
+#include "PlayerAttackComponent.h"
+// PlayerWeapon
+#include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
+#include "application/Game/Entity/Player/Editor/AttackDataSerializer.h"
+// ImGui
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
+
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void PlayerAttackComponent::Initialize() {
+
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void PlayerAttackComponent::Update() {
+    if (!state_.isActive) return;
+
+    // 攻撃時間が終了したかチェック
+    const AttackData* currentData = GetCurrentAttackData();
+    if (currentData && state_.timer >= currentData->activeDuration) {
+        state_.isActive = false;
+        state_.currentAttackID = -1;
+
+        // コンボ受付開始
+        if (currentData->canComboToNext) {
+            state_.canCombo = true;
+            state_.comboTimer = 0.0f;
+        }
+    }
+
+    // コンボ受付時間の管理
+    if (state_.canCombo) {
+        if (currentData && state_.comboTimer >= currentData->comboWindowTime) {
+            state_.canCombo = false;
+            state_.comboCount = 0;  // コンボリセット
+        }
+    }
+}
+
+///-------------------------------------------/// 
+/// ImGui情報の表示
+///-------------------------------------------///
+void PlayerAttackComponent::Information() {
+#ifdef USE_IMGUI
+    ImGui::SeparatorText("PlayerAttackComponent");
+
+    ImGui::Text("攻撃中:  %s", state_.isActive ? "true" : "false");
+    ImGui::Text("現在の攻撃ID:  %d", state_.currentAttackID);
+    ImGui::Text("コンボ可能:  %s", state_.canCombo ? "true" : "false");
+    ImGui::Text("コンボ数: %d", state_.comboCount);
+    ImGui::Text("攻撃タイマー: %.2f", state_.timer);
+    ImGui::Text("コンボタイマー: %.2f", state_.comboTimer);
+    ImGui::Text("攻撃進行度: %.2f%%", GetAttackProgress() * 100.0f);
+
+    ImGui::Separator();
+    ImGui::Text("登録されている攻撃数: %zu", attackDataMap_.size());
+#endif
+}
+
+///-------------------------------------------/// 
+/// 攻撃データをJsonから読み込み
+///-------------------------------------------///
+bool PlayerAttackComponent::LoadAttackData(int attackID, const std::string& filepath) {
+    AttackData data;
+    if (AttackDataSerializer::LoadFromJson(data, filepath)) {
+        data.attackID = attackID;  // IDを確実に設定
+        attackDataMap_[attackID] = data;
+        return true;
+    }
+    return false;
+}
+
+///-------------------------------------------/// 
+/// 攻撃を開始
+///-------------------------------------------///
+bool PlayerAttackComponent::StartAttack(int attackID, PlayerWeapon* weapon) {
+    // 既に攻撃中の場合は失敗
+    if (state_.isActive) {
+        return false;
+    }
+
+    // 攻撃データを取得
+    auto it = attackDataMap_.find(attackID);
+    if (it == attackDataMap_.end()) {
+        return false;
+    }
+
+    const AttackData& attackData = it->second;
+
+    // 武器に攻撃を適用
+    ApplyAttackToWeapon(attackData, weapon);
+
+    // 状態を更新
+    state_.isActive = true;
+    state_.currentAttackID = attackID;
+    state_.timer = 0.0f;
+    state_.canCombo = false;
+    state_.comboCount = 0;
+
+    return true;
+}
+
+///-------------------------------------------/// 
+/// コンボ攻撃を試行
+///-------------------------------------------///
+bool PlayerAttackComponent::TryCombo(PlayerWeapon* weapon) {
+    // コンボ可能状態でない場合は失敗
+    if (!state_.canCombo) {
+        return false;
+    }
+
+    // 現在の攻撃データを取得
+    const AttackData* currentData = GetCurrentAttackData();
+    if (!currentData || !currentData->canComboToNext) {
+        return false;
+    }
+
+    // 次のコンボIDを取得
+    int nextAttackID = currentData->nextComboID;
+    if (nextAttackID < 0) {
+        return false;
+    }
+
+    // 次の攻撃を開始
+    state_.canCombo = false;
+    state_.comboCount++;
+
+    return StartAttack(nextAttackID, weapon);
+}
+
+///-------------------------------------------/// 
+/// 攻撃をキャンセル
+///-------------------------------------------///
+void PlayerAttackComponent::CancelAttack() {
+    state_.isActive = false;
+    state_.canCombo = false;
+    state_.currentAttackID = -1;
+    state_.comboCount = 0;
+    state_.timer = 0.0f;
+    state_.comboTimer = 0.0f;
+}
+
+///-------------------------------------------/// 
+/// 現在の攻撃データを取得
+///-------------------------------------------///
+const AttackData* PlayerAttackComponent::GetCurrentAttackData() const {
+    return GetAttackData(state_.currentAttackID);
+}
+
+///-------------------------------------------/// 
+/// 攻撃データをIDで取得
+///-------------------------------------------///
+const AttackData* PlayerAttackComponent::GetAttackData(int attackID) const {
+    auto it = attackDataMap_.find(attackID);
+    if (it != attackDataMap_.end()) {
+        return &it->second;
+    }
+    return nullptr;
+}
+
+///-------------------------------------------/// 
+/// 現在の攻撃進行度を取得
+///-------------------------------------------///
+float PlayerAttackComponent::GetAttackProgress() const {
+    const AttackData* data = GetCurrentAttackData();
+    if (!data || !state_.isActive) {
+        return 0.0f;
+    }
+
+    return (std::min)(state_.timer / data->activeDuration, 1.0f);
+}
+
+///-------------------------------------------/// 
+/// 武器に攻撃軌道を設定
+///-------------------------------------------///
+void PlayerAttackComponent::ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon) {
+    if (!weapon || data.trajectoryPoints.size() < 2) {
+        return;
+    }
+
+    // ベジェ曲線の開始点と終了点を取得
+    Vector3 localStart = data.trajectoryPoints.front().position;
+    Vector3 localEnd = data.trajectoryPoints.back().position;
+
+    //// プレイヤーの回転を適用してワールド座標に変換
+    //Vector3 worldStart = basePosition + localStart;
+    //Vector3 worldEnd = basePosition + localEnd;
+
+    // 武器に攻撃を開始させる
+    weapon->StartAttack(
+        localStart,
+        localEnd,
+        data.activeDuration,
+        data.startRotation,
+        data.endRotation
+    );
+}
+
+///-------------------------------------------/// 
+/// タイマーの更新
+///-------------------------------------------///
+void PlayerAttackComponent::UpdateTimers(float deltaTime) {
+    if (state_.isActive) {
+        state_.timer += deltaTime;
+    }
+
+    if (state_.canCombo) {
+        state_.comboTimer += deltaTime;
+    }
+}
+
+============================================================
+File Path: Project/application/Game/Entity/Player/Component/PlayerAttackComponent.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "application/Game/Entity/Player/Editor/Data/AttackData.h"
+// C++
+#include <memory>
+#include <unordered_map>
+#include <string>
+
+/// ===前方宣言=== ///
+class PlayerWeapon;
+
+///-------------------------------------------/// 
+/// PlayerAttackComponent
+///-------------------------------------------///
+class PlayerAttackComponent {
+private:
+	/// ===攻撃状態の構造体=== ///
+	struct AttackState {
+		float timer = 0.0f;         // 攻撃タイマー
+		float comboTimer = 0.0f;    // コンボタイマー
+		bool isActive = false;      // 攻撃中フラグ
+		bool canCombo = false;      // コンボ可能フラグ
+		int currentAttackID = -1;   // 現在の攻撃ID
+		int comboCount = 0;         // コンボカウント
+	};
+
+public:
+
+	PlayerAttackComponent() = default;
+	~PlayerAttackComponent() = default;
+
+	// コピー・ムーブは明示的に制御
+	PlayerAttackComponent(const PlayerAttackComponent&) = delete;
+	PlayerAttackComponent& operator=(const PlayerAttackComponent&) = delete;
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	void Initialize();
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update();
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
+	void Information();
+
+	/// <summary>
+	/// タイマーを更新します。
+	/// </summary>
+	/// <param name="deltaTime">前回の更新からの経過時間（秒）</param>
+	void UpdateTimers(const float deltaTime);
+
+	/// <summary>
+	/// 攻撃データをJSONから読み込み
+	/// </summary>
+	/// <param name="attackID">攻撃ID</param>
+	/// <param name="filepath">JSONファイルパス</param>
+	/// <returns>読み込み成功したらtrue</returns>
+	bool LoadAttackData(int attackID, const std::string& filepath);
+
+	/// <summary>
+	/// 攻撃を開始
+	/// </summary>
+	/// <param name="attackID">実行する攻撃ID</param>
+	/// <param name="weapon">使用する武器</param>
+	/// <param name="playerPosition">プレイヤーの位置</param>
+	/// <param name="playerRotation">プレイヤーの回転</param>
+	/// <returns>攻撃開始に成功したらtrue</returns>
+	bool StartAttack(int attackID, PlayerWeapon* weapon);
+
+	/// <summary>
+	/// コンボ攻撃を試行
+	/// </summary>
+	/// <param name="weapon">使用する武器</param>
+	/// <param name="playerPosition">プレイヤーの位置</param>
+	/// <param name="playerRotation">プレイヤーの回転</param>
+	/// <returns>コンボ成功したらtrue</returns>
+	bool TryCombo(PlayerWeapon* weapon);
+
+	/// <summary>
+	/// 攻撃をキャンセル
+	/// </summary>
+	void CancelAttack();
+
+public: /// ===Getter=== ///
+
+	// 現在の攻撃データを取得
+	const AttackData* GetCurrentAttackData() const;
+	// 攻撃データをIDで取得
+	const AttackData* GetAttackData(int attackID) const;
+	// 攻撃状態
+	const AttackState& GetState() const { return state_; }
+	// 攻撃中か
+	bool IsAttacking() const { return state_.isActive; }
+	// コンボ可能か
+	bool CanCombo() const { return state_.canCombo; }
+	// 現在の攻撃進行度
+	float GetAttackProgress() const;
+
+private:
+	// 攻撃データの管理
+	std::unordered_map<int, AttackData> attackDataMap_;
+
+	// 攻撃状態
+	AttackState state_;
+
+private:
+
+	/// <summary>
+	/// 武器に攻撃軌道を設定
+	/// </summary>
+	/// <param name="data">適用する攻撃情報を保持する参照。ダメージ値や攻撃種別、エフェクトなどを含みます。</param>
+	/// <param name="weapon">攻撃を受ける対象の武器オブジェクトを指すポインタ。</param>
+	/// <param name="basePosition">攻撃適用時の基準となる位置（ワールド座標）。</param>
+	/// <param name="baseRotation">攻撃適用時の基準となる回転（クォータニオン）。</param>
+	void ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon);
+};
+
+
+
+============================================================
 File Path: Project/application/Game/Entity/Player/Component/PlayerAvoidanceComponent.cpp
 ============================================================
 #include "PlayerAvoidanceComponent.h"
@@ -36035,6 +36391,1119 @@ private:
 
 
 ============================================================
+File Path: Project/application/Game/Entity/Player/Editor/AttackDataSerializer.cpp
+============================================================
+#include "AttackDataSerializer.h"
+#include <fstream>
+#include <json.hpp>
+
+using json = nlohmann::json;
+
+///-------------------------------------------/// 
+/// 攻撃データのJson保存・読み込み
+///-------------------------------------------///
+bool AttackDataSerializer::SaveToJson(const AttackData& data, const std::string& filepath) {
+    try {
+        json j;
+
+        // 基本情報
+        j["attackName"] = data.attackName;
+        j["description"] = data.description;
+        j["attackID"] = data.attackID;
+
+        // タイミング設定
+        j["activeDuration"] = data.activeDuration;
+        j["comboWindowTime"] = data.comboWindowTime;
+        j["cooldownTime"] = data.cooldownTime;
+
+        // 軌道設定
+        j["curveSegments"] = data.curveSegments;
+        j["weaponLength"] = data.weaponLength;
+
+        // ベジェ曲線の制御点
+        json trajectoryArray = json::array();
+        for (const auto& point : data.trajectoryPoints) {
+            json pointJson;
+            pointJson["position"] = { point.position.x, point.position.y, point.position.z };
+            pointJson["time"] = point.time;
+            trajectoryArray.push_back(pointJson);
+        }
+        j["trajectoryPoints"] = trajectoryArray;
+
+        // 回転設定
+        j["startRotation"] = { data.startRotation.x, data.startRotation.y, data.startRotation.z, data.startRotation.w };
+        j["endRotation"] = { data.endRotation.x, data.endRotation.y, data.endRotation.z, data.endRotation.w };
+        j["useRotationCurve"] = data.useRotationCurve;
+
+        // コンボ設定
+        j["canComboToNext"] = data.canComboToNext;
+        j["nextComboID"] = data.nextComboID;
+        j["branchComboIDs"] = data.branchComboIDs;
+
+        // エフェクト設定
+        j["particleEffectName"] = data.particleEffectName;
+        j["particleOffset"] = { data.particleOffset.x, data.particleOffset.y, data.particleOffset.z };
+        j["cameraShakeIntensity"] = data.cameraShakeIntensity;
+        j["cameraShakeDuration"] = data.cameraShakeDuration;
+
+        // サウンド設定
+        j["swingSoundName"] = data.swingSoundName;
+        j["hitSoundName"] = data.hitSoundName;
+
+        // プレイヤーの動き
+        j["moveSpeedMultiplier"] = data.moveSpeedMultiplier;
+        j["rootMotion"] = { data.rootMotion.x, data.rootMotion.y, data.rootMotion.z };
+
+        // デバッグ
+        j["showTrajectory"] = data.showTrajectory;
+        j["trajectoryColor"] = { data.trajectoryColor.x, data.trajectoryColor.y, data.trajectoryColor.z };
+
+        // ファイルに書き込み
+        std::ofstream file(filepath);
+        if (!file.is_open()) {
+            return false;
+        }
+        file << j.dump(4); // インデント4でフォーマット
+        file.close();
+
+        return true;
+
+    } catch (const std::exception&) {
+        return false;
+    }
+}
+
+///-------------------------------------------/// 
+/// JSONファイルから攻撃データを読み込み
+///-------------------------------------------///
+bool AttackDataSerializer::LoadFromJson(AttackData& data, const std::string& filepath) {
+    try {
+        std::ifstream file(filepath);
+        if (!file.is_open()) {
+            return false;
+        }
+
+        json j;
+        file >> j;
+        file.close();
+
+        // 基本情報
+        data.attackName = j.value("attackName", "Unknown");
+        data.description = j.value("description", "");
+        data.attackID = j.value("attackID", 0);
+
+        // タイミング設定
+        data.activeDuration = j.value("activeDuration", 0.4f);
+        data.comboWindowTime = j.value("comboWindowTime", 1.0f);
+        data.cooldownTime = j.value("cooldownTime", 0.3f);
+
+        // 軌道設定
+        data.curveSegments = j.value("curveSegments", 20);
+        data.weaponLength = j.value("weaponLength", 8.0f);
+
+        // ベジェ曲線の制御点
+        data.trajectoryPoints.clear();
+        if (j.contains("trajectoryPoints")) {
+            for (const auto& pointJson : j["trajectoryPoints"]) {
+                BezierControlPointData point;
+                point.position.x = pointJson["position"][0];
+                point.position.y = pointJson["position"][1];
+                point.position.z = pointJson["position"][2];
+                point.time = pointJson["time"];
+                data.trajectoryPoints.push_back(point);
+            }
+        }
+
+        // 回転設定
+        if (j.contains("startRotation")) {
+            data.startRotation.x = j["startRotation"][0];
+            data.startRotation.y = j["startRotation"][1];
+            data.startRotation.z = j["startRotation"][2];
+            data.startRotation.w = j["startRotation"][3];
+        }
+        if (j.contains("endRotation")) {
+            data.endRotation.x = j["endRotation"][0];
+            data.endRotation.y = j["endRotation"][1];
+            data.endRotation.z = j["endRotation"][2];
+            data.endRotation.w = j["endRotation"][3];
+        }
+        data.useRotationCurve = j.value("useRotationCurve", false);
+
+        // コンボ設定
+        data.canComboToNext = j.value("canComboToNext", false);
+        data.nextComboID = j.value("nextComboID", -1);
+        if (j.contains("branchComboIDs")) {
+            data.branchComboIDs = j["branchComboIDs"].get<std::vector<int>>();
+        }
+
+        // エフェクト設定
+        data.particleEffectName = j.value("particleEffectName", "");
+        if (j.contains("particleOffset")) {
+            data.particleOffset.x = j["particleOffset"][0];
+            data.particleOffset.y = j["particleOffset"][1];
+            data.particleOffset.z = j["particleOffset"][2];
+        }
+        data.cameraShakeIntensity = j.value("cameraShakeIntensity", 0.0f);
+        data.cameraShakeDuration = j.value("cameraShakeDuration", 0.0f);
+
+        // サウンド設定
+        data.swingSoundName = j.value("swingSoundName", "");
+        data.hitSoundName = j.value("hitSoundName", "");
+
+        // プレイヤーの動き
+        data.moveSpeedMultiplier = j.value("moveSpeedMultiplier", 0.4f);
+        if (j.contains("rootMotion")) {
+            data.rootMotion.x = j["rootMotion"][0];
+            data.rootMotion.y = j["rootMotion"][1];
+            data.rootMotion.z = j["rootMotion"][2];
+        }
+
+        // デバッグ
+        data.showTrajectory = j.value("showTrajectory", true);
+        if (j.contains("trajectoryColor")) {
+            data.trajectoryColor.x = j["trajectoryColor"][0];
+            data.trajectoryColor.y = j["trajectoryColor"][1];
+            data.trajectoryColor.z = j["trajectoryColor"][2];
+        }
+
+        return true;
+
+    } catch (const std::exception&) {
+        return false;
+    }
+}
+
+
+============================================================
+File Path: Project/application/Game/Entity/Player/Editor/AttackDataSerializer.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Data/AttackData.h"
+#include <string>
+
+///=====================================================/// 
+/// 攻撃データのJson保存・読み込みクラス
+///=====================================================///
+class AttackDataSerializer {
+public:
+
+    /// <summary>
+    /// 攻撃データをJSONファイルに保存
+    /// </summary>
+    /// <param name="data">保存する攻撃データへの const 参照</param>
+    /// <param name="filepath">保存先のファイルパス</param>
+    /// <returns>保存に成功したら true、失敗したら false</returns>
+	static bool SaveToJson(const AttackData& data, const std::string& filepath);
+
+    /// <summary>
+    /// JSONファイルから攻撃データを読み込み
+    /// </summary>
+    /// <param name="data">読み込んだデータを格納する AttackData への参照</param>
+    /// <param name="filepath">読み込み元のファイルパス</param>
+    /// <returns>読み込みに成功したら true、失敗したら false</returns>
+    static bool LoadFromJson(AttackData& data, const std::string& filepath);
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Player/Editor/AttackEditor.cpp
+============================================================
+#include "AttackEditor.h"
+// PlayerWeapon
+#include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
+// Service
+#include "Engine/System/Service/ServiceLocator.h"
+// Line
+#include "Engine/Graphics/3d/Line/LineObject3D.h"
+// ImGui
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif
+
+#include <filesystem>
+
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+AttackEditor::~AttackEditor() {
+    line_.reset();
+}
+
+///-------------------------------------------/// 
+/// 初期化
+///-------------------------------------------///
+void AttackEditor::Initialize() {
+    // Lineの初期化
+    line_ = std::make_unique<Line>();
+
+    // デフォルトのファイルパスを設定
+    strcpy_s(filePathBuffer_, kDefaultSavePath);
+
+    // 利用可能なプリセットを更新
+    UpdateAvailablePresets();
+
+    // デフォルトの攻撃データを作成
+    CreateNew();
+}
+
+///-------------------------------------------/// 
+/// 更新
+///-------------------------------------------///
+void AttackEditor::Update(const float deltaTime) {
+    if (!isVisible_) return;
+
+    // プレビューの更新
+    if (isPlaying_) {
+        UpdateTrajectoryPreview(deltaTime);
+    }
+}
+
+///-------------------------------------------/// 
+/// ImGui描画
+///-------------------------------------------///
+void AttackEditor::Render() {
+#ifdef USE_IMGUI
+    if (!isVisible_) return;
+
+    ImGui::Begin("プレイヤー攻撃エディター", &isVisible_, ImGuiWindowFlags_MenuBar);
+
+    // メニューバー
+    RenderMenuBar();
+
+    // 左側：攻撃リスト
+    ImGui::BeginChild("AttackList", ImVec2(250, 0), true);
+    RenderAttackList();
+    ImGui::EndChild();
+
+    ImGui::SameLine();
+
+    // 右側：編集パネル
+    ImGui::BeginChild("EditPanel", ImVec2(0, 0), true);
+    if (selectedAttackIndex_ >= 0 && selectedAttackIndex_ < static_cast<int>(attacks_.size())) {
+        AttackData& currentAttack = attacks_[selectedAttackIndex_];
+
+        // タブで分割
+        if (ImGui::BeginTabBar("AttackEditorTabs")) {
+
+            if (ImGui::BeginTabItem("基本設定")) {
+                RenderBasicSettings(currentAttack);
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("タイミング")) {
+                RenderTimingSettings(currentAttack);
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("軌道")) {
+                RenderTrajectorySettings(currentAttack);
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("エフェクト")) {
+                RenderEffectSettings(currentAttack);
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("コンボ")) {
+                RenderComboSettings(currentAttack);
+                ImGui::EndTabItem();
+            }
+
+            ImGui::EndTabBar();
+        }
+
+        ImGui::Separator();
+
+        // 保存ボタン
+        if (ImGui::Button("この攻撃を保存", ImVec2(-1, 0))) {
+            std::string savePath = std::string(kDefaultSavePath) + currentAttack.attackName + ".json";
+            serializer_->SaveToJson(currentAttack, savePath);
+        }
+    } else {
+        ImGui::Text("攻撃を選択してください");
+    }
+    ImGui::EndChild();
+
+    ImGui::End();
+
+    // プレビューコントロールウィンドウ
+    RenderPreviewControl();
+#endif
+}
+
+///-------------------------------------------/// 
+/// プレビュー描画
+///-------------------------------------------///
+void AttackEditor::DrawPreview() {
+    if (!isVisible_ || selectedAttackIndex_ < 0 || selectedAttackIndex_ >= static_cast<int>(attacks_.size())) {
+        return;
+    }
+
+    AttackData& currentAttack = attacks_[selectedAttackIndex_];
+
+    if (!currentAttack.showTrajectory) {
+        return;
+    }
+
+    // 武器位置を基準にワールド座標に変換
+    Vector3 weaponPos = previewWeaponPosition_;
+    std::vector<BezierControlPointData> worldPoints;
+
+    for (const auto& point : currentAttack.trajectoryPoints) {
+        BezierControlPointData worldPoint;
+        worldPoint.position = weaponPos + point.position;
+        worldPoint.time = point.time;
+        worldPoints.push_back(worldPoint);
+    }
+
+    // ベジェ曲線を描画
+    Vector4 trajectoryColor{ currentAttack.trajectoryColor.x, currentAttack.trajectoryColor.y, currentAttack.trajectoryColor.z, 1.0f };
+    line_->CreateSmoothCurve(worldPoints, trajectoryColor, currentAttack.curveSegments);
+
+    // 制御点を可視化
+    ServiceLocator::GetLineObject3D()->DrawBezierControlPoints(
+        worldPoints,
+        Vector4{ 1.0f, 1.0f, 0.0f, 1.0f },  // 黄色
+        Vector4{ 0.5f, 0.5f, 0.5f, 0.5f },  // 半透明グレー
+        0.3f
+    );
+
+    // プレビュー用武器の描画（オプション）
+    if (previewWeapon_ && isPlaying_) {
+        previewWeapon_->Draw(BlendMode::KBlendModeNormal);
+    }
+}
+
+///-------------------------------------------/// 
+/// 表示/非表示切り替え
+///-------------------------------------------///
+void AttackEditor::ToggleVisibility() {
+    isVisible_ = !isVisible_;
+}
+
+///-------------------------------------------/// 
+/// 表示状態を設定
+///-------------------------------------------///
+void AttackEditor::SetVisible(bool visible) {
+    isVisible_ = visible;
+}
+
+///-------------------------------------------/// 
+/// JSONファイルに保存
+///-------------------------------------------///
+void AttackEditor::SaveToJson() {
+    if (selectedAttackIndex_ < 0 || selectedAttackIndex_ >= static_cast<int>(attacks_.size())) {
+        return;
+    }
+
+    AttackData& currentAttack = attacks_[selectedAttackIndex_];
+    std::string savePath = std::string(filePathBuffer_) + currentAttack.attackName + ".json";
+    serializer_->SaveToJson(currentAttack, savePath);
+}
+
+///-------------------------------------------/// 
+/// JSONファイルから読み込み
+///-------------------------------------------///
+void AttackEditor::LoadFromJson() {
+    // 実装:  ファイル選択ダイアログから読み込み
+}
+
+///-------------------------------------------/// 
+/// 新規作成
+///-------------------------------------------///
+void AttackEditor::CreateNew() {
+    AttackData newAttack;
+    newAttack.attackName = "NewAttack_" + std::to_string(static_cast<int>(attacks_.size()));
+    newAttack.attackID = static_cast<int>(attacks_.size());
+    attacks_.push_back(newAttack);
+    selectedAttackIndex_ = static_cast<int>(attacks_.size()) - 1;
+}
+
+///-------------------------------------------/// 
+/// 全ての攻撃を保存
+///-------------------------------------------///
+void AttackEditor::SaveAllAttacks() {
+    for (const auto& attack : attacks_) {
+        std::string savePath = std::string(kDefaultSavePath) + attack.attackName + ".json";
+        serializer_->SaveToJson(attack, savePath);
+    }
+}
+
+///-------------------------------------------/// 
+/// プリセットフォルダから全JSONを読み込み
+///-------------------------------------------///
+void AttackEditor::LoadAllAttacks() {
+    attacks_.clear();
+
+    if (!std::filesystem::exists(kDefaultSavePath)) {
+        return;
+    }
+
+    for (const auto& entry : std::filesystem::directory_iterator(kDefaultSavePath)) {
+        if (entry.path().extension() == ".json") {
+            AttackData data;
+            if (serializer_->LoadFromJson(data, entry.path().string())) {
+                attacks_.push_back(data);
+            }
+        }
+    }
+}
+
+///-------------------------------------------/// 
+/// プレビュー再生開始
+///-------------------------------------------///
+void AttackEditor::PlayPreview() {
+    isPlaying_ = true;
+    previewTimer_ = 0.0f;
+}
+
+///-------------------------------------------/// 
+/// プレビュー停止
+///-------------------------------------------///
+void AttackEditor::StopPreview() {
+    isPlaying_ = false;
+}
+
+///-------------------------------------------/// 
+/// プレビューリセット
+///-------------------------------------------///
+void AttackEditor::ResetPreview() {
+    previewTimer_ = 0.0f;
+}
+
+///-------------------------------------------/// 
+/// メニューバーの描画
+///-------------------------------------------///
+void AttackEditor::RenderMenuBar() {
+#ifdef USE_IMGUI
+    if (ImGui::BeginMenuBar()) {
+        if (ImGui::BeginMenu("ファイル")) {
+            if (ImGui::MenuItem("新規作成", "Ctrl+N")) {
+                CreateNew();
+            }
+            if (ImGui::MenuItem("保存", "Ctrl+S")) {
+                SaveToJson();
+            }
+            if (ImGui::MenuItem("全て保存")) {
+                SaveAllAttacks();
+            }
+            if (ImGui::MenuItem("読み込み", "Ctrl+O")) {
+                LoadFromJson();
+            }
+            if (ImGui::MenuItem("全て読み込み")) {
+                LoadAllAttacks();
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("編集")) {
+            if (ImGui::MenuItem("削除", nullptr, false, selectedAttackIndex_ >= 0)) {
+                DeleteSelectedAttack();
+            }
+            if (ImGui::MenuItem("複製", nullptr, false, selectedAttackIndex_ >= 0)) {
+                DuplicateSelectedAttack();
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
+#endif
+}
+
+///-------------------------------------------/// 
+/// 攻撃リストの描画
+///-------------------------------------------///
+void AttackEditor::RenderAttackList() {
+#ifdef USE_IMGUI
+    ImGui::Text("攻撃リスト");
+    ImGui::Separator();
+
+    for (int i = 0; i < static_cast<int>(attacks_.size()); ++i) {
+        bool isSelected = (selectedAttackIndex_ == i);
+        if (ImGui::Selectable(attacks_[i].attackName.c_str(), isSelected)) {
+            selectedAttackIndex_ = i;
+        }
+    }
+
+    ImGui::Separator();
+    if (ImGui::Button("+ 新規追加", ImVec2(-1, 0))) {
+        CreateNew();
+    }
+#endif
+}
+
+///-------------------------------------------/// 
+/// 基本設定UIの描画
+///-------------------------------------------///
+void AttackEditor::RenderBasicSettings(AttackData& data) {
+#ifdef USE_IMGUI
+    ImGui::SeparatorText("基本情報");
+
+    char nameBuffer[256];
+    strncpy_s(nameBuffer, data.attackName.c_str(), sizeof(nameBuffer));
+    if (ImGui::InputText("攻撃名", nameBuffer, sizeof(nameBuffer))) {
+        data.attackName = nameBuffer;
+    }
+
+    char descBuffer[512];
+    strncpy_s(descBuffer, data.description.c_str(), sizeof(descBuffer));
+    if (ImGui::InputTextMultiline("説明", descBuffer, sizeof(descBuffer), ImVec2(-1, 60))) {
+        data.description = descBuffer;
+    }
+
+    ImGui::InputInt("攻撃ID", &data.attackID);
+
+    ImGui::SeparatorText("プレイヤーの動き");
+    ImGui::SliderFloat("移動速度倍率", &data.moveSpeedMultiplier, 0.0f, 1.0f, "%.2f");
+    ImGui::DragFloat3("ルートモーション", &data.rootMotion.x, 0.1f);
+#endif
+}
+
+///-------------------------------------------/// 
+/// タイミング設定UIの描画
+///-------------------------------------------///
+void AttackEditor::RenderTimingSettings(AttackData& data) {
+#ifdef USE_IMGUI
+    ImGui::SeparatorText("タイミング設定");
+    ImGui::DragFloat("攻撃時間 (秒)", &data.activeDuration, 0.01f, 0.01f, 10.0f, "%.2f");
+    ImGui::DragFloat("コンボ受付時間 (秒)", &data.comboWindowTime, 0.01f, 0.0f, 5.0f, "%.2f");
+    ImGui::DragFloat("クールダウン (秒)", &data.cooldownTime, 0.01f, 0.0f, 5.0f, "%.2f");
+#endif
+}
+
+///-------------------------------------------/// 
+/// 軌道設定UIの描画
+///-------------------------------------------///
+void AttackEditor::RenderTrajectorySettings(AttackData& data) {
+#ifdef USE_IMGUI
+    ImGui::SeparatorText("ベジェ曲線の制御点");
+
+    ImGui::DragFloat("武器の距離", &data.weaponLength, 0.1f, 1.0f, 50.0f);
+    ImGui::DragInt("曲線の分割数", &data.curveSegments, 1, 5, 100);
+
+    // 制御点リスト
+    for (int i = 0; i < static_cast<int>(data.trajectoryPoints.size()); ++i) {
+        ImGui::PushID(i);
+
+        ImGui::Text("制御点 %d", i);
+        ImGui::DragFloat3("位置", &data.trajectoryPoints[i].position.x, 0.1f);
+        ImGui::SliderFloat("時間", &data.trajectoryPoints[i].time, 0.0f, 1.0f, "%.2f");
+
+        ImGui::SameLine();
+        if (ImGui::Button("削除") && data.trajectoryPoints.size() > 2) {
+            data.trajectoryPoints.erase(data.trajectoryPoints.begin() + i);
+            ImGui::PopID();
+            break;
+        }
+
+        ImGui::Separator();
+        ImGui::PopID();
+    }
+
+    if (ImGui::Button("+ 制御点を追加")) {
+        BezierControlPointData newPoint;
+        newPoint.position = Vector3{ 0.0f, 0.0f, 0.0f };
+        newPoint.time = 0.5f;
+        data.trajectoryPoints.push_back(newPoint);
+    }
+
+    ImGui::SeparatorText("回転設定");
+    ImGui::DragFloat4("開始回転 (Quaternion)", &data.startRotation.x, 0.01f);
+    ImGui::DragFloat4("終了回転 (Quaternion)", &data.endRotation.x, 0.01f);
+    ImGui::Checkbox("回転もベジェ曲線で補間", &data.useRotationCurve);
+
+    ImGui::SeparatorText("プレビュー");
+    ImGui::Checkbox("軌道を表示", &data.showTrajectory);
+    ImGui::ColorEdit3("軌道の色", &data.trajectoryColor.x);
+#endif
+}
+
+///-------------------------------------------/// 
+/// エフェクト設定UIの描画
+///-------------------------------------------///
+void AttackEditor::RenderEffectSettings(AttackData& data) {
+#ifdef USE_IMGUI
+    ImGui::SeparatorText("パーティクルエフェクト");
+
+    char particleBuffer[256];
+    strncpy_s(particleBuffer, data.particleEffectName.c_str(), sizeof(particleBuffer));
+    if (ImGui::InputText("エフェクト名", particleBuffer, sizeof(particleBuffer))) {
+        data.particleEffectName = particleBuffer;
+    }
+
+    ImGui::DragFloat3("エフェクトオフセット", &data.particleOffset.x, 0.1f);
+
+    ImGui::SeparatorText("カメラシェイク");
+    ImGui::DragFloat("シェイク強度", &data.cameraShakeIntensity, 0.01f, 0.0f, 10.0f);
+    ImGui::DragFloat("シェイク時間", &data.cameraShakeDuration, 0.01f, 0.0f, 5.0f);
+
+    ImGui::SeparatorText("サウンド");
+
+    char swingBuffer[256];
+    strncpy_s(swingBuffer, data.swingSoundName.c_str(), sizeof(swingBuffer));
+    if (ImGui::InputText("振りサウンド", swingBuffer, sizeof(swingBuffer))) {
+        data.swingSoundName = swingBuffer;
+    }
+
+    char hitBuffer[256];
+    strncpy_s(hitBuffer, data.hitSoundName.c_str(), sizeof(hitBuffer));
+    if (ImGui::InputText("ヒットサウンド", hitBuffer, sizeof(hitBuffer))) {
+        data.hitSoundName = hitBuffer;
+    }
+#endif
+}
+
+///-------------------------------------------/// 
+/// コンボ設定UIの描画
+///-------------------------------------------///
+void AttackEditor::RenderComboSettings(AttackData& data) {
+#ifdef USE_IMGUI
+    ImGui::SeparatorText("コンボ連携");
+
+    ImGui::Checkbox("次のコンボに繋げる", &data.canComboToNext);
+
+    if (data.canComboToNext) {
+        ImGui::InputInt("次のコンボID", &data.nextComboID);
+
+        ImGui::SeparatorText("分岐コンボ");
+        ImGui::Text("分岐可能なコンボID:");
+
+        for (int i = 0; i < static_cast<int>(data.branchComboIDs.size()); ++i) {
+            ImGui::PushID(i);
+            ImGui::InputInt("##branchID", &data.branchComboIDs[i]);
+            ImGui::SameLine();
+            if (ImGui::Button("削除")) {
+                data.branchComboIDs.erase(data.branchComboIDs.begin() + i);
+                ImGui::PopID();
+                break;
+            }
+            ImGui::PopID();
+        }
+
+        if (ImGui::Button("+ 分岐を追加")) {
+            data.branchComboIDs.push_back(-1);
+        }
+    }
+#endif
+}
+
+///-------------------------------------------/// 
+/// プレビューコントロールの描画
+///-------------------------------------------///
+void AttackEditor::RenderPreviewControl() {
+#ifdef USE_IMGUI
+    ImGui::Begin("プレビューコントロール");
+
+    if (ImGui::Button("再生")) {
+        PlayPreview();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("停止")) {
+        StopPreview();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("リセット")) {
+        ResetPreview();
+    }
+
+    ImGui::Checkbox("自動リプレイ", &autoReplay_);
+
+    ImGui::SeparatorText("プレビュー設定");
+    ImGui::DragFloat3("武器位置", &previewWeaponPosition_.x, 0.1f);  // ← 変更
+
+    // 実際の攻撃をプレビュー
+    if (ImGui::Button("攻撃プレビュー実行") && previewWeapon_) {
+        if (selectedAttackIndex_ >= 0 && selectedAttackIndex_ < static_cast<int>(attacks_.size())) {
+            AttackData& currentAttack = attacks_[selectedAttackIndex_];
+
+            // ベジェ曲線の開始点と終了点を取得
+            if (currentAttack.trajectoryPoints.size() >= 2) {
+                Vector3 startPoint = previewWeaponPosition_ + currentAttack.trajectoryPoints.front().position;
+                Vector3 endPoint = previewWeaponPosition_ + currentAttack.trajectoryPoints.back().position;
+
+                // 武器に攻撃を実行させる
+                previewWeapon_->StartAttack(
+                    startPoint,
+                    endPoint,
+                    currentAttack.activeDuration,
+                    currentAttack.startRotation,
+                    currentAttack.endRotation
+                );
+            }
+        }
+    }
+
+    ImGui::End();
+#endif
+}
+
+///-------------------------------------------/// 
+/// 選択中の攻撃を削除
+///-------------------------------------------///
+void AttackEditor::DeleteSelectedAttack() {
+    if (selectedAttackIndex_ >= 0 && selectedAttackIndex_ < static_cast<int>(attacks_.size())) {
+        attacks_.erase(attacks_.begin() + selectedAttackIndex_);
+        selectedAttackIndex_ = -1;
+    }
+}
+
+///-------------------------------------------/// 
+/// 選択中の攻撃を複製
+///-------------------------------------------///
+void AttackEditor::DuplicateSelectedAttack() {
+    if (selectedAttackIndex_ >= 0 && selectedAttackIndex_ < static_cast<int>(attacks_.size())) {
+        AttackData copy = attacks_[selectedAttackIndex_];
+        copy.attackName += "_Copy";
+        copy.attackID = static_cast<int>(attacks_.size());
+        attacks_.push_back(copy);
+    }
+}
+
+///-------------------------------------------/// 
+/// 利用可能なプリセットファイルを更新
+///-------------------------------------------///
+void AttackEditor::UpdateAvailablePresets() {
+    availablePresets_.clear();
+
+    if (!std::filesystem::exists(kDefaultSavePath)) {
+        std::filesystem::create_directories(kDefaultSavePath);
+        return;
+    }
+
+    for (const auto& entry : std::filesystem::directory_iterator(kDefaultSavePath)) {
+        if (entry.path().extension() == ".json") {
+            availablePresets_.push_back(entry.path().filename().string());
+        }
+    }
+}
+
+///-------------------------------------------/// 
+/// 軌道のプレビュー更新
+///-------------------------------------------///
+void AttackEditor::UpdateTrajectoryPreview(const float deltaTime) {
+    if (selectedAttackIndex_ < 0 || selectedAttackIndex_ >= static_cast<int>(attacks_.size())) {
+        return;
+    }
+
+    AttackData& currentAttack = attacks_[selectedAttackIndex_];
+
+    // タイマーを進める
+    previewTimer_ += deltaTime;
+
+    // プレビュー用武器の更新
+    if (previewWeapon_) {
+        previewWeapon_->Update();
+    }
+
+    // 攻撃時間を超えたらリセット
+    if (previewTimer_ >= currentAttack.activeDuration) {
+        if (autoReplay_) {
+            previewTimer_ = 0.0f;
+        } else {
+            isPlaying_ = false;
+        }
+    }
+}
+
+============================================================
+File Path: Project/application/Game/Entity/Player/Editor/AttackEditor.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Data/AttackData.h"
+#include "application/Drawing/3d/Line.h"
+// Serializer
+#include "AttackDataSerializer.h"
+// c++
+#include <memory>
+#include <string>
+#include <vector>
+
+/// ===前方宣言=== ///
+class PlayerWeapon;
+
+///=====================================================/// 
+/// プレイヤー攻撃エディター
+/// ImGuiを使用した攻撃編集UI
+///=====================================================///
+class AttackEditor {
+public:
+
+    AttackEditor() = default;
+    ~AttackEditor();
+
+    /// <summary>
+    /// 初期化処理
+    /// </summary>
+    void Initialize();
+
+    /// <summary>
+    /// 更新処理
+    /// </summary>
+    void Update(const float deltaTime);
+
+    /// <summary>
+    /// ImGUI描画処理
+    /// </summary>
+    void Render();
+
+    /// <summary>
+    /// プレビュー描画処理（ゲーム画面に表示）
+    /// </summary>
+    void DrawPreview();
+
+    /// <summary>
+    /// エディターの表示/非表示切り替え
+    /// </summary>
+    void ToggleVisibility();
+
+    /// <summary>
+    /// エディターの表示状態を設定
+    /// </summary>
+    void SetVisible(bool visible);
+
+    /// <summary>
+    /// エディターが表示されているか
+    /// </summary>
+    bool IsVisible() const { return isVisible_; }
+
+    /// <summary>
+    /// プレビュー用プレイヤーの設定
+    /// </summary>
+    void SetPreviewPlayer(PlayerWeapon* player) { previewWeapon_ = player; }
+
+private:
+    /// ===エディター状態=== ///
+    bool isVisible_ = false;                      // 表示フラグ
+    std::vector<AttackData> attacks_;             // 攻撃データリスト
+    int selectedAttackIndex_ = -1;                // 選択中の攻撃インデックス
+
+    /// ===ファイル管理=== ///
+    static constexpr const char* kDefaultSavePath = "Data/Attacks/";
+    char filePathBuffer_[256];                    // ファイルパス入力バッファ
+    std::vector<std::string> availablePresets_;   // 利用可能なプリセットリスト
+
+    /// ===プレビュー=== ///
+    bool isPlaying_ = false;                      // プレビュー再生中フラグ
+    bool autoReplay_ = false;                     // 自動リプレイフラグ
+    float previewTimer_ = 0.0f;                   // プレビュータイマー
+    Vector3 previewWeaponPosition_{ 0.0f, 0.0f, 0.0f };  // プレビュー用プレイヤー位置
+
+    PlayerWeapon* previewWeapon_ = nullptr;             // プレビュー用プレイヤー
+
+    /// ===Line描画=== ///
+    std::unique_ptr<Line> line_;                  // 線描画オブジェクト
+    
+    /// ===Serializer=== ///
+	std::unique_ptr<AttackDataSerializer> serializer_; // シリアライザ
+
+private:
+
+    /// ===ファイル操作=== ///
+
+    /// <summary>
+    /// JSONファイルに保存
+    /// </summary>
+    void SaveToJson();
+
+    /// <summary>
+    /// JSONファイルから読み込み
+    /// </summary>
+    void LoadFromJson();
+
+    /// <summary>
+    /// 新規作成
+    /// </summary>
+    void CreateNew();
+
+    /// <summary>
+    /// 全ての攻撃を保存
+    /// </summary>
+    void SaveAllAttacks();
+
+    /// <summary>
+    /// プリセットフォルダから全JSONを読み込み
+    /// </summary>
+    void LoadAllAttacks();
+
+    /// ===プレビュー制御=== ///
+
+    /// <summary>
+    /// プレビュー再生開始
+    /// </summary>
+    void PlayPreview();
+
+    /// <summary>
+    /// プレビュー停止
+    /// </summary>
+    void StopPreview();
+
+    /// <summary>
+    /// プレビューリセット
+    /// </summary>
+    void ResetPreview();
+
+    /// ===ImGui描画関数群=== ///
+
+    /// <summary>
+    /// メニューバーの描画
+    /// </summary>
+    void RenderMenuBar();
+
+    /// <summary>
+    /// 攻撃リストの描画
+    /// </summary>
+    void RenderAttackList();
+
+    /// <summary>
+    /// 基本設定UIの描画
+    /// </summary>
+    void RenderBasicSettings(AttackData& data);
+
+    /// <summary>
+    /// タイミング設定UIの描画
+    /// </summary>
+    void RenderTimingSettings(AttackData& data);
+
+    /// <summary>
+    /// 軌道設定UIの描画
+    /// </summary>
+    void RenderTrajectorySettings(AttackData& data);
+
+    /// <summary>
+    /// エフェクト設定UIの描画
+    /// </summary>
+    void RenderEffectSettings(AttackData& data);
+
+    /// <summary>
+    /// コンボ設定UIの描画
+    /// </summary>
+    void RenderComboSettings(AttackData& data);
+
+    /// <summary>
+    /// プレビューコントロールの描画
+    /// </summary>
+    void RenderPreviewControl();
+
+    /// ===ヘルパー関数=== ///
+
+    /// <summary>
+    /// 選択中の攻撃を削除
+    /// </summary>
+    void DeleteSelectedAttack();
+
+    /// <summary>
+    /// 選択中の攻撃を複製
+    /// </summary>
+    void DuplicateSelectedAttack();
+
+    /// <summary>
+    /// 利用可能なプリセットファイルを更新
+    /// </summary>
+    void UpdateAvailablePresets();
+
+    /// <summary>
+    /// 軌道のプレビュー更新
+    /// </summary>
+    void UpdateTrajectoryPreview(const float deltaTime);
+};
+
+============================================================
+File Path: Project/application/Game/Entity/Player/Editor/Data/AttackData.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// Math
+#include "Math/Vector3.h"
+#include "Math/Quaternion.h"
+#include "Engine/DataInfo/LineObjectData.h"
+// C++
+#include <vector>
+#include <string>
+
+///-------------------------------------------/// 
+/// 攻撃データ構造体
+///-------------------------------------------///
+struct AttackData {
+    // ===基本情報=== //
+    std::string attackName;              // 攻撃名
+    std::string description;             // 説明
+    int attackID;                        // 攻撃ID（ユニーク）
+
+    // ===タイミング設定=== //
+    float activeDuration;                // 攻撃のアクティブ時間（秒）
+    float comboWindowTime;               // コンボ受付時間（秒）
+    float cooldownTime;                  // クールダウン時間（秒）
+
+    // ===軌道設定（ベジェ曲線）=== //
+    std::vector<BezierControlPointData> trajectoryPoints;  // ベジェ曲線の制御点リスト
+    int curveSegments;                   // 曲線の分割数（滑らかさ）
+    float weaponLength;                  // 武器の距離
+
+    // ===回転設定=== //
+    Quaternion startRotation;            // 開始回転
+    Quaternion endRotation;              // 終了回転
+    bool useRotationCurve;               // 回転もベジェ曲線で補間するか
+
+    // ===コンボ設定=== //
+    bool canComboToNext;                 // 次のコンボに繋げるか
+    int nextComboID;                     // 次のコンボのID（-1で無し）
+    std::vector<int> branchComboIDs;     // 分岐可能なコンボID（複数選択肢）
+
+    // ===エフェクト設定=== //
+    std::string particleEffectName;      // パーティクルエフェクト名
+    Vector3 particleOffset;              // パーティクルのオフセット
+    float cameraShakeIntensity;          // カメラシェイクの強度
+    float cameraShakeDuration;           // カメラシェイクの持続時間
+
+    // ===サウンド設定=== //
+    std::string swingSoundName;          // 振りサウンド名
+    std::string hitSoundName;            // ヒット時サウンド名
+
+    // ===プレイヤーの動き=== //
+    float moveSpeedMultiplier;           // 攻撃中の移動速度倍率（0.0～1.0）
+    Vector3 rootMotion;                  // ルートモーション（前進など）
+
+    // ===デバッグ/プレビュー用=== //
+    bool showTrajectory;                 // 軌道を表示するか
+    Vector3 trajectoryColor;             // 軌道の色（RGB）
+
+    /// デフォルトコンストラクタ
+    AttackData()
+        : attackName("NewAttack")
+        , description("")
+        , attackID(0)
+        , activeDuration(0.4f)
+        , comboWindowTime(1.0f)
+        , cooldownTime(0.3f)
+        , curveSegments(20)
+        , weaponLength(8.0f)
+        , startRotation(Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f })
+        , endRotation(Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f })
+        , useRotationCurve(false)
+        , canComboToNext(false)
+        , nextComboID(-1)
+        , particleEffectName("WeaponAttack")
+        , particleOffset(Vector3{ 0.0f, 0.0f, 0.0f })
+        , cameraShakeIntensity(0.0f)
+        , cameraShakeDuration(0.0f)
+        , swingSoundName("")
+        , hitSoundName("")
+        , moveSpeedMultiplier(0.4f)
+        , rootMotion(Vector3{ 0.0f, 0.0f, 0.0f })
+        , showTrajectory(true)
+        , trajectoryColor(Vector3{ 1.0f, 0.0f, 0.0f })
+    {
+        // デフォルトで3点のベジェ曲線を設定（左→中央→右）
+        trajectoryPoints.push_back({ Vector3{-8.0f, 0.0f, 0.0f}, 0.0f });
+        trajectoryPoints.push_back({ Vector3{0.0f, 0.0f, 8.0f}, 0.5f });
+        trajectoryPoints.push_back({ Vector3{8.0f, 0.0f, 0.0f}, 1.0f });
+    }
+};
+
+============================================================
 File Path: Project/application/Game/Entity/Player/Player.cpp
 ============================================================
 #include "Player.h"
@@ -36062,77 +37531,10 @@ Player::~Player() {
 }
 
 ///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-// フラグ
-bool Player::GetStateFlag(actionType type) const {
-	// タイプで分岐
-	if (type == actionType::kCharge) {
-		return chargeInfo_.isFlag;
-	} else {
-		return attackInfo_.isFlag;
-	}
-}
-// 準備フラグ
-bool Player::GetpreparationFlag(actionType type) const {
-	// タイプで分岐
-	if (type == actionType::kCharge) {
-		return chargeInfo_.isPreparation;
-	} else {
-		return attackInfo_.isPreparation;
-	}
-}
-// タイマー
-float Player::GetTimer(actionType type) {
-	// タイプで分岐
-	if (type == actionType::kCharge) {
-		return chargeInfo_.timer;
-	} else {
-		return attackInfo_.timer;
-	}
-}
-
-///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
 // Cameraの追従対象としてPlaeyrを設定
 void Player::SetCameraTargetPlayer() { camera_->SetTarget(&transform_.translate, &transform_.rotate); }
-// 開始フラグ
-void Player::SetStateFlag(actionType type, bool falg) {
-	// タイプで分岐
-	switch (type) {
-	case actionType::kCharge:
-		chargeInfo_.isFlag = falg;
-		break;
-	case actionType::kAttack:
-		attackInfo_.isFlag = falg;
-		break;
-	}
-}
-// 準備フラグ
-void Player::SetpreparationFlag(actionType type, bool falg) {
-	// タイプで分岐
-	switch (type) {
-	case actionType::kCharge:
-		chargeInfo_.isPreparation = falg;
-		break;
-	case actionType::kAttack:
-		attackInfo_.isPreparation = falg;
-		break;
-	}
-}
-// タイマーの設定
-void Player::SetTimer(actionType type, const float& timer) {
-	// タイプで分岐
-	switch (type) {
-	case actionType::kCharge:
-		chargeInfo_.timer = timer;
-		break;
-	case actionType::kAttack:
-		attackInfo_.timer = timer;
-		break;
-	}
-}
 // 無敵時間の設定
 void Player::SetInvicibleTime(const float& time) {
 	invicibleInfo_.time = time;
@@ -36166,6 +37568,7 @@ void Player::Initialize() {
 	// Componentの生成
 	moveComponent_ = std::make_unique<PlayerMoveComponent>();
 	avoidanceComponent_ = std::make_unique<PlayerAvoidanceComponent>();
+	attackComponent_ = std::make_unique<PlayerAttackComponent>();
 
 	// MoveComponentの初期化
 	PlayerMoveComponent::MoveConfig moveConfig{
@@ -36183,6 +37586,9 @@ void Player::Initialize() {
 		.invincibleTime = 0.01f
 	};
 	avoidanceComponent_->Initialize(avoidanceConfig);
+
+	// AttackComponentの初期化
+	attackComponent_->Initialize();
 
 	// 無敵情報の設定
 	SetInvicibleTime(1.0f);
@@ -36207,6 +37613,7 @@ void Player::Update() {
 	if (baseInfo_.isDead) {
 		ApplyDeceleration(0.7f);
 		UpdateAnimation();
+		return;
 	}
 
 	/// ===スティックの取得=== ///
@@ -36257,8 +37664,10 @@ void Player::Draw(BlendMode mode) {
 void Player::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("Player");
-	GameCharacter::Information();   // 親クラスの情報表示
-	moveComponent_->Information();  // 移動コンポーネントの情報表示
+	GameCharacter::Information();		// 親クラスの情報表示
+	moveComponent_->Information();		// 移動コンポーネントの情報表示
+	avoidanceComponent_->Information(); // 回避コンポーネントの情報表示
+	attackComponent_->Information();    // 攻撃コンポーネントの情報表示
 	ImGui::DragFloat("無敵時間", &invicibleInfo_.timer, 0.01f);
 	weapon_->Information();         // Weaponの情報表示
 	ImGui::End();
@@ -36324,22 +37733,11 @@ void Player::advanceTimer() {
 		color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; // 元の色に戻す
 	}
 
-	// 突進用のタイマーを進める
-	if (chargeInfo_.timer > 0.0f) {
-		chargeInfo_.timer -= baseInfo_.deltaTime;
-	} else {
-		chargeInfo_.isPreparation = true;
-	}
-
 	// 回避タイマーの更新
 	avoidanceComponent_->UpdateTimer(baseInfo_.deltaTime);
 
-	// 攻撃用タイマーを進める
-	if (attackInfo_.timer > 0.0f) {
-		attackInfo_.timer -= baseInfo_.deltaTime;
-	} else {
-		attackInfo_.isPreparation = true;
-	}
+	// 攻撃タイマーの更新
+	attackComponent_->UpdateTimers(baseInfo_.deltaTime);
 }
 
 ///-------------------------------------------/// 
@@ -36390,6 +37788,7 @@ File Path: Project/application/Game/Entity/Player/Player.h
 // Component
 #include "Component/PlayerMoveComponent.h"
 #include "Component/PlayerAvoidanceComponent.h"
+#include "Component/PlayerAttackComponent.h"
 // State
 #include "State/Base/PlayerState.h"
 // Weapon
@@ -36397,12 +37796,6 @@ File Path: Project/application/Game/Entity/Player/Player.h
 
 /// ===前方宣言=== ///
 class Enemy;
-
-/// ===StateType=== ///
-enum class actionType {
-	kCharge,      // 突進状態
-	kAttack       // 攻撃状態
-};
 
 ///=====================================================/// 
 /// Player
@@ -36454,25 +37847,13 @@ public: /// ===Getter=== ///
 	// Component
 	PlayerMoveComponent* GetMoveComponent() const { return moveComponent_.get(); };
 	PlayerAvoidanceComponent* GetAvoidanceComponent() const { return avoidanceComponent_.get(); };
-
-	// フラグ
-	bool GetStateFlag(actionType type) const;
-	bool GetpreparationFlag(actionType type) const;
-	
-	// タイマー
-	float GetTimer(actionType type);
+	PlayerAttackComponent* GetAttackComponent() const { return attackComponent_.get(); };
 
 public: /// ===Setter=== ///
 
 	// Camera
 	void SetCameraTargetPlayer();
-
-	// フラグ
-	void SetStateFlag(actionType type, bool flag);
-	void SetpreparationFlag(actionType type, bool flag);
-	
-	// タイマーの設定
-	void SetTimer(actionType type, const float& timer);
+	// 無敵時間の設定
 	void SetInvicibleTime(const float& time);
 
 public: /// ===State用関数=== ///
@@ -36499,6 +37880,7 @@ private: /// ===変数の宣言=== ///
 	/// ===Component=== ///
 	std::unique_ptr<PlayerMoveComponent> moveComponent_;
 	std::unique_ptr<PlayerAvoidanceComponent> avoidanceComponent_;
+	std::unique_ptr<PlayerAttackComponent> attackComponent_;
 
 	/// ===State=== ///
 	std::unique_ptr<PlayerState> currentState_;
@@ -36510,22 +37892,6 @@ private: /// ===変数の宣言=== ///
 		bool isFlag = false; // 無敵フラグ
 	};
 	InvicibleInfo invicibleInfo_;
-
-	/// ===溜め攻撃=== ///
-	struct ChargeInfo {
-		float timer = 0.0f;
-		bool isPreparation = false; // 溜め攻撃の準備フラグ
-		bool isFlag = false;        // 溜め攻撃のフラグ
-	};
-	ChargeInfo chargeInfo_;
-
-	/// ===攻撃情報=== ///
-	struct AttackInfo {
-		float timer = 0.0f;         // 攻撃のタイマー
-		bool isPreparation = false; // 攻撃の準備フラグ
-		bool isFlag = false;        // 攻撃のフラグ
-	};
-	AttackInfo attackInfo_;
 
 private:
 
@@ -36557,12 +37923,8 @@ void AttackState::Enter(Player* player, GameCamera* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	// 攻撃フラグを立てる
-	player_->SetStateFlag(actionType::kAttack, true);
-	player_->SetpreparationFlag(actionType::kAttack, false);
-
-	// 最初の攻撃を初期化
-	InitializeAttack(AttackType::kCombo1);
+	// 攻撃の開始
+	player_->GetAttackComponent()->StartAttack(0, player_->GetWeapon());
 }
 
 ///-------------------------------------------/// 
@@ -36573,41 +37935,26 @@ void AttackState::Update(Player* player, GameCamera* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	// アクティブタイマーを進める
-	attackInfo_.activTime -= player_->GetDeltaTime();
+	PlayerAttackComponent* attackComp = player_->GetAttackComponent();
+	// 早期リターン
+	if (!attackComp) return;
 
 	// 減速処理
 	player_->ApplyDeceleration(0.4f);
 
-	// コンボ受付タイマーを進める
-	if (attackInfo_.canCombo) {
-		attackInfo_.comboTimer -= player_->GetDeltaTime();
+	// 攻撃コンポーネントの更新
+	attackComp->Update();
 
-		// コンボ受付時間を過ぎたらコンボ受付終了
-		if (attackInfo_.comboTimer <= 0.0f) {
-			attackInfo_.canCombo = false;
+	// 攻撃ボタンが押されたらコンボを試行
+	if (InputService::TriggerKey(DIK_SPACE)) {
+		if (attackComp->CanCombo()) {
+			attackComp->TryCombo(player_->GetWeapon());
 		}
 	}
 
-	// コンボ入力チェック
-	CheckComboInput();
-
-	// 攻撃中の処理
-	if (attackInfo_.isAttacking) {
-		// 攻撃時間が終了
-		if (attackInfo_.activTime <= 0.0f) {
-			attackInfo_.isAttacking = false;
-
-			// 次のコンボ入力がされている場合
-			if (attackInfo_.nextComboRequest && attackInfo_.canCombo) {
-				TransitionToNextCombo();
-			} else {
-				// 攻撃終了、通常状態へ
-				player_->SetTimer(actionType::kAttack, attackInfo_.coolTime);
-				player_->SetStateFlag(actionType::kAttack, false);
-				player_->ChangState(std::make_unique<RootState>());
-			}
-		}
+	// 攻撃が終了したらRootStateへ遷移
+	if (!attackComp->IsAttacking() && !attackComp->CanCombo()) {
+		player_->ChangState(std::make_unique<RootState>());
 	}
 }
 
@@ -36616,121 +37963,6 @@ void AttackState::Update(Player* player, GameCamera* camera) {
 ///-------------------------------------------///
 void AttackState::Finalize() {
 	PlayerState::Finalize();
-}
-
-///-------------------------------------------/// 
-/// 攻撃の初期化
-///-------------------------------------------///
-void AttackState::InitializeAttack(AttackType type) {
-	// 早期リターン
-	PlayerWeapon* weapon = player_->GetWeapon();
-	if (!weapon)return;
-
-	// AttackInfoの初期化	
-	attackInfo_.currentAttack = type;
-	attackInfo_.isAttacking = true;
-	attackInfo_.canCombo = false;
-	attackInfo_.nextComboRequest = false;
-
-	// 基準の位置と回転の設定
-	Vector3 BasePos = { 0.0f, 0.0f, 0.0f};
-	Quaternion BaseRot = { 0.0f, 0.0f, 0.0f,1.0f };
-
-	// ベースの向きに基づいて方向ベクトルを計算
-	Vector3 forward = Math::RotateVector({ 0.0f, 0.0f, 1.0f }, BaseRot);
-	Vector3 up = { 0.0f, 1.0f, 0.0f };
-
-	/// ===攻撃タイプに応じた設定=== ///
-	switch (type) {
-	// コンボ1段目
-	case AttackState::AttackType::kCombo1: {
-		attackInfo_.activTime = attackInfo_.combo1Duration;
-		attackInfo_.canCombo = true;
-		attackInfo_.comboTimer = attackInfo_.comboWindowTime;
-
-		// -90度の位置（プレイヤーの向きから見て左側）
-		float startAngleRad = -90.0f * Math::Pi() / 180.0f;
-		Quaternion startRotQuat = Math::MakeRotateAxisAngle(up, startAngleRad);
-		Vector3 startDirection = Math::RotateVector(forward, startRotQuat);
-		Vector3 startPoint = BasePos + startDirection * attackInfo_.weaponLength;
-
-		// +90度の位置（プレイヤーの向きから見て右側）
-		float endAngleRad = 90.0f * Math::Pi() / 180.0f;
-		Quaternion endRotQuat = Math::MakeRotateAxisAngle(up, endAngleRad);
-		Vector3 endDirection = Math::RotateVector(forward, endRotQuat);
-		Vector3 endPoint = BasePos + endDirection * attackInfo_.weaponLength;
-
-		// 開始時は左を向く
-		Quaternion startRot = Math::MakeRotateAxisAngle(up, startAngleRad);
-		startRot = Multiply(BaseRot, startRot);
-
-		// 終了時は右を向く
-		Quaternion endRot = Math::MakeRotateAxisAngle(up, endAngleRad);
-		endRot = Multiply(BaseRot, endRot);
-
-		// 武器の攻撃を開始（左→右）
-		weapon->StartAttack(startPoint, endPoint, attackInfo_.combo1Duration, startRot, endRot);
-		break;
-	}
-	// コンボ2段目
-	case AttackState::AttackType::kCombo2: {
-		attackInfo_.activTime = attackInfo_.combo2Duration;
-		attackInfo_.canCombo = false;
-
-		// +90度の位置（プレイヤーの向きから見て右側）
-		float startAngleRad = 90.0f * Math::Pi() / 180.0f;
-		Quaternion startRotQuat = Math::MakeRotateAxisAngle(up, startAngleRad);
-		Vector3 startDirection = Math::RotateVector(forward, startRotQuat);
-		Vector3 startPoint = BasePos + startDirection * attackInfo_.weaponLength;
-
-		// -90度の位置（プレイヤーの向きから見て左側）
-		float endAngleRad = -90.0f * Math::Pi() / 180.0f;
-		Quaternion endRotQuat = Math::MakeRotateAxisAngle(up, endAngleRad);
-		Vector3 endDirection = Math::RotateVector(forward, endRotQuat);
-		Vector3 endPoint = BasePos + endDirection * attackInfo_.weaponLength;
-
-		// 開始時は右を向く
-		Quaternion startRot = Math::MakeRotateAxisAngle(up, startAngleRad);
-		startRot = Multiply(BaseRot, startRot);
-
-		// 終了時は左を向く
-		Quaternion endRot = Math::MakeRotateAxisAngle(up, endAngleRad);
-		endRot = Multiply(BaseRot, endRot);
-
-		// 武器の攻撃を開始（右→左）
-		weapon->StartAttack(startPoint, endPoint, attackInfo_.combo2Duration, startRot, endRot);
-		break;
-	}
-	}
-}
-
-///-------------------------------------------/// 
-/// コンボ入力のチェック
-///-------------------------------------------///
-void AttackState::CheckComboInput() {
-	// Xボタンのトリガー入力でコンボ継続
-	if (InputService::TriggerButton(0, ControllerButtonType::X)) {
-		// コンボ受付中なら次のコンボをリクエスト
-		if (attackInfo_.canCombo) {
-			attackInfo_.nextComboRequest = true;
-		}
-	}
-}
-
-///-------------------------------------------/// 
-/// 次のコンボへ遷移
-///-------------------------------------------///
-void AttackState::TransitionToNextCombo() {
-	attackInfo_.nextComboRequest = false;
-
-	// 現在の攻撃タイプに応じて次の攻撃へ
-	switch (attackInfo_.currentAttack) {
-	case AttackType::kCombo1:
-		InitializeAttack(AttackType::kCombo2);
-		break;
-	case AttackType::kCombo2:
-		break;
-	}
 }
 
 ============================================================
@@ -36767,55 +37999,6 @@ public:
 	/// ステートの終了処理
 	/// </summary>
 	void Finalize() override;
-
-private:
-
-	/// ===攻撃タイプ=== ///
-	enum class AttackType {
-		kCombo1,	// コンボ1段目
-		kCombo2,	// コンボ2段目
-	};
-
-	/// ===攻撃情報=== ///
-	struct AttackInfo {
-		AttackType currentAttack = AttackType::kCombo1; // 現在の攻撃タイプ
-
-		float activTime = 0.0f;			// 攻撃のアクティブ時間
-		float comboWindowTime = 1.0f;	// コンボ受付時間
-		float comboTimer = 0.0f;		// コンボ受付タイマー
-
-		bool isAttacking = false;		// 攻撃中フラグ
-		bool canCombo = false;			// コンボ可能フラグ
-		bool nextComboRequest = false;	// 次のコンボ入力フラグ
-
-		// 攻撃の設定パラメータ
-		const float weaponLength = 8.0f;// 武器までの距離
-
-		// 各攻撃の接続時間
-		float combo1Duration = 0.4f;	// コンボ1段目の持続時間
-		float combo2Duration = 0.5f;	// コンボ2段目の持続時間
-
-		// クールタイム
-		float coolTime = 0.3f;			// 攻撃後のクールタイム
-	};
-	AttackInfo attackInfo_;
-
-private:
-	/// <summary>
-	/// 攻撃の初期化処理
-	/// </summary>
-	/// <param name="type">初期化する攻撃の種類を表す AttackType 値。</param>
-	void InitializeAttack(AttackType type);
-
-	/// <summary>
-	/// コンポ入力のチェック処理
-	/// </summary>
-	void CheckComboInput();
-
-	/// <summary>
-	/// 次の攻撃への遷移処理
-	/// </summary>
-	void TransitionToNextCombo();
 };
 
 ============================================================
@@ -36979,242 +38162,6 @@ protected:
 
 
 ============================================================
-File Path: Project/application/Game/Entity/Player/State/ChargeState.cpp
-============================================================
-#include "ChargeState.h"
-// Service
-#include "Engine/System/Service/InputService.h"
-// Player
-#include "application/Game/Entity/Player/Player.h"
-#include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
-// State
-#include "RootState.h"
-// Math
-#include "Math/sMath.h"
-
-///-------------------------------------------/// 
-/// 状態に入ったときに呼ばれる
-///-------------------------------------------///
-void ChargeState::Enter(Player* player, GameCamera* camera) {
-	// 引数の取得
-	player_ = player;
-	camera_ = camera;
-
-	// チャージ状態フラグを立てる
-	player_->SetStateFlag(actionType::kCharge, true);
-	player_->SetpreparationFlag(actionType::kCharge, false);
-
-	// チャージ情報の初期化
-	chargeInfo_.currentPhase = ChargePhase::kCharging;
-	chargeInfo_.chargeTimer = 0.0f;
-	chargeInfo_.chargePower = 0.0f;
-}
-
-///-------------------------------------------/// 
-/// 更新
-///-------------------------------------------///
-void ChargeState::Update(Player* player, GameCamera* camera) {
-	// 引数の取得
-	player_ = player;
-	camera_ = camera;
-
-	// 現在のフェーズに応じた処理
-	switch (chargeInfo_.currentPhase) {
-	case ChargePhase::kCharging:
-		UpdateCharging();
-		break;
-	case ChargePhase::kAttacking:
-		UpdateAttacking();
-		break;
-	}
-}
-
-///-------------------------------------------/// 
-/// 終了処理
-///-------------------------------------------///
-void ChargeState::Finalize() {
-	PlayerState::Finalize();
-}
-
-///-------------------------------------------/// 
-/// チャージフェーズの処理
-///-------------------------------------------///
-void ChargeState::UpdateCharging() {
-	// 減速処理（チャージ中は動きを抑える）
-	player_->ApplyDeceleration(0.8f);
-
-	// RBボタンが押されている間チャージ
-	if (InputService::PushButton(0, ControllerButtonType::RB)) {
-		// チャージタイマーを進める
-		chargeInfo_.chargeTimer += player_->GetDeltaTime();
-
-		// チャージ力を計算（0.0～1.0の範囲）
-		chargeInfo_.chargePower = (std::min)(chargeInfo_.chargeTimer / chargeInfo_.chargeMaxTime, 1.0f);
-
-		// ここでチャージエフェクトやサウンドを再生可能
-		
-
-	} else {
-		// RBボタンが離されたら攻撃フェーズへ移行
-		StartChargeAttack();
-		chargeInfo_.currentPhase = ChargePhase::kAttacking;
-	}
-}
-
-///-------------------------------------------/// 
-/// 攻撃フェーズの処理
-///-------------------------------------------///
-void ChargeState::UpdateAttacking() {
-	// 減速処理
-	player_->ApplyDeceleration(0.3f);
-
-	// 武器が攻撃中かチェック
-	PlayerWeapon* weapon = player_->GetWeapon();
-	if (!weapon) {
-		// 武器がない場合は通常状態へ
-		player_->SetTimer(actionType::kCharge, chargeInfo_.coolTime);
-		player_->SetStateFlag(actionType::kCharge, false);
-		player_->ChangState(std::make_unique<RootState>());
-		return;
-	}
-
-	// 攻撃が終了したら通常状態へ
-	if (!weapon->GetIsAttack()) {
-		player_->SetTimer(actionType::kCharge, chargeInfo_.coolTime);
-		player_->SetStateFlag(actionType::kCharge, false);
-		player_->ChangState(std::make_unique<RootState>());
-	}
-}
-
-///-------------------------------------------/// 
-/// チャージ攻撃を開始する
-///-------------------------------------------///
-void ChargeState::StartChargeAttack() {
-	// 早期リターン
-	PlayerWeapon* weapon = player_->GetWeapon();
-	if (!weapon) return;
-
-	// 基準の位置と回転の設定（ローカル座標）
-	Vector3 basePos = { 0.0f, 0.0f, 0.0f}; // 高い位置から開始
-	Quaternion baseRot = { 0.0f, 0.0f, 0.0f, 1.0f };
-
-	// ベースの向きに基づいて方向ベクトルを計算
-	Vector3 forward = Math::RotateVector({ 0.0f, 0.0f, 1.0f }, baseRot);
-	Vector3 up = { 0.0f, 1.0f, 0.0f };
-
-	// 振り下ろし攻撃の開始点と終了点
-	// 開始点：頭上（前方やや上）
-	Vector3 startPoint = basePos + forward * (chargeInfo_.weaponLength * 0.3f);
-	startPoint.y += 1.5f; // さらに上に
-
-	// 終了点：前方下（地面近く）
-	Vector3 endPoint = basePos + forward * chargeInfo_.weaponLength;
-	endPoint.y -= 1.0f; // 下に振り下ろす
-
-	// 開始時の回転：武器を上に向ける（-90度回転）
-	float startAngleRad = -90.0f * Math::Pi() / 180.0f;
-	Quaternion startRot = Math::MakeRotateAxisAngle(
-		Math::Cross(up, forward), // 横軸周り
-		startAngleRad
-	);
-	startRot = Multiply(baseRot, startRot);
-
-	// 終了時の回転：武器を下に向ける（+90度回転）
-	float endAngleRad = 90.0f * Math::Pi() / 180.0f;
-	Quaternion endRot = Math::MakeRotateAxisAngle(
-		Math::Cross(up, forward),
-		endAngleRad
-	);
-	endRot = Multiply(baseRot, endRot);
-
-	// 攻撃時間をチャージ力に応じて調整（チャージが強いほど速い）
-	float adjustedDuration = chargeInfo_.attackDuration * (1.0f - chargeInfo_.chargePower * 0.3f);
-
-	// 武器の攻撃を開始（上→下）
-	weapon->StartChargeAttack(startPoint, endPoint, adjustedDuration, startRot, endRot);
-
-	// ここでチャージ力に応じたダメージを設定可能
-}
-
-============================================================
-File Path: Project/application/Game/Entity/Player/State/ChargeState.h
-============================================================
-/// ===Include=== ///
-#include "Base/PlayerState.h"
-// Math
-#include "Math/Vector3.h"
-
-///=====================================================/// 
-/// ChargeState
-///=====================================================///
-class ChargeState : public PlayerState {
-public:
-
-	~ChargeState() override = default;
-
-	/// <summary>
-	/// ステートに入った時に呼ばれる処理
-	/// </summary>
-	/// <param name="player">操作対象または影響を受けるプレイヤーを指すポインタ。入力やプレイヤー固有の初期化に使用される。</param>
-	/// <param name="camera">現在のゲームカメラを指すポインタ。表示や視点の設定・初期化に使用される。</param>
-	void Enter(Player* player, GameCamera* camera) override;
-
-	/// <summary>
-	/// ステート時の更新処理
-	/// </summary>
-	/// <param name="player">更新処理で使用するプレイヤーを指すポインタ。</param>
-	/// <param name="camera">更新処理で使用するゲームカメラを指すポインタ。</param>
-	void Update(Player* player, GameCamera* camera) override;
-
-	/// <summary>
-	/// ステートの終了処理
-	/// </summary>
-	void Finalize() override;
-
-private:
-
-	/// ===チャージフェーズ=== ///
-	enum class ChargePhase {
-		kCharging,  // チャージ中
-		kAttacking  // 攻撃中
-	};
-
-	/// ===チャージ情報=== ///
-	struct ChargeInfo {
-		ChargePhase currentPhase = ChargePhase::kCharging; // 現在のフェーズ
-
-		float chargeTimer = 0.0f;      // チャージタイマー
-		float chargeMaxTime = 2.0f;    // 最大チャージ時間
-		float chargePower = 0.0f;      // チャージ力（0.0～1.0）
-
-		float attackDuration = 0.6f;   // 攻撃の持続時間
-		float coolTime = 0.5f;         // 攻撃後のクールタイム
-
-		// 攻撃の設定パラメータ
-		const float weaponLength = 8.0f; // 武器までの距離
-		const float minDamage = 1.0f;    // 最小ダメージ
-		const float maxDamage = 5.0f;    // 最大ダメージ（フルチャージ時）
-	};
-	ChargeInfo chargeInfo_;
-
-private:
-	/// <summary>
-	/// チャージフェーズの処理
-	/// </summary>
-	void UpdateCharging();
-
-	/// <summary>
-	/// 攻撃フェーズの処理
-	/// </summary>
-	void UpdateAttacking();
-
-	/// <summary>
-	/// チャージ攻撃を開始する
-	/// </summary>
-	void StartChargeAttack();
-};
-
-============================================================
 File Path: Project/application/Game/Entity/Player/State/MoveState.cpp
 ============================================================
 #include "MoveState.h"
@@ -37227,7 +38174,6 @@ File Path: Project/application/Game/Entity/Player/State/MoveState.cpp
 // State
 #include "RootState.h"
 #include "AvoidanceState.h"
-#include "ChargeState.h"
 #include "AttackState.h"
 // Math
 #include "Math/sMath.h"
@@ -37271,15 +38217,12 @@ void MoveState::Update(Player * player, GameCamera* camera) {
 	// 攻撃ボタンが押されたら攻撃状態へ
 	if (InputService::TriggerButton(0, ControllerButtonType::X)) {
 		// 攻撃の準備ができていれば
-		if (player_->GetpreparationFlag(actionType::kAttack)) {
+		if (!player_->GetAttackComponent()->GetState().isActive) {
 			player_->ChangState(std::make_unique<AttackState>());
 		}
 	// RBボタンが押されたら進んでいる突進状態へ
 	} else if (InputService::TriggerButton(0, ControllerButtonType::RB)) {
-		// タイマーがクールタイムより高ければ、
-		if (player_->GetpreparationFlag(actionType::kCharge)) {
-			player_->ChangState(std::make_unique<ChargeState>());
-		}
+
 	// Aボタンが押されたら回避状態へ
 	} else if (InputService::TriggerButton(0, ControllerButtonType::A)) {
 		// 回避の準備ができていれば
@@ -37352,7 +38295,6 @@ File Path: Project/application/Game/Entity/Player/State/RootState.cpp
 // State
 #include "MoveState.h"
 #include "AvoidanceState.h"
-#include "ChargeState.h"
 #include "AttackState.h"
 
 ///-------------------------------------------/// 
@@ -37384,15 +38326,12 @@ void RootState::Update(Player * player, GameCamera* camera) {
 		// 攻撃ボタンが押されたら攻撃状態へ
 		if (InputService::TriggerButton(0, ControllerButtonType::X)) {
 			// 攻撃の準備ができていれば
-			if (player_->GetpreparationFlag(actionType::kAttack)) {
+			if (!player_->GetAttackComponent()->GetState().isActive) {
 				player_->ChangState(std::make_unique<AttackState>());
 			}
 			// RBボタンが押されたら進んでいる突進状態へ
 		} else if (InputService::TriggerButton(0, ControllerButtonType::RB)) {
-			// タイマーがクールタイムより高ければ、
-			if (player_->GetpreparationFlag(actionType::kCharge)) {
-				player_->ChangState(std::make_unique<ChargeState>());
-			}
+
 			// Aボタンが押されたら回避状態へ
 		} else if (InputService::TriggerButton(0, ControllerButtonType::A)) {
 			// 回避の準備ができていれば
@@ -38669,6 +39608,244 @@ private:/// ===メンバ変数=== ///
 };
 
 
+
+============================================================
+File Path: Project/application/Scene/Debug/AttackEditorScene.cpp
+============================================================
+#include "AttackEditorScene.h"
+// SceneManager
+#include "Engine/System/Managers/SceneManager.h"
+// ImGui
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
+
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+AttackEditorScene::~AttackEditorScene() {
+    attackEditor_.reset();
+    previewWeapon_.reset();
+    line_.reset();
+    // ISceneのデストラクタ
+    IScene::~IScene();
+}
+
+///-------------------------------------------/// 
+/// 初期化
+///-------------------------------------------///
+void AttackEditorScene::Initialize() {
+    // ISceneの初期化(デフォルトカメラとカメラマネージャ)
+    IScene::Initialize();
+
+    /// ===エディターの初期化=== ///
+    attackEditor_ = std::make_unique<AttackEditor>();
+    attackEditor_->Initialize();
+    attackEditor_->SetVisible(true);
+
+    /// ===Line=== ///
+    line_ = std::make_unique<Line>();
+
+    /// ===プレビュー用プレイヤーの初期化=== ///
+    previewWeapon_ = std::make_unique<PlayerWeapon>();
+    previewWeapon_->Initialize();
+
+    // エディターにプレビュー用プレイヤーとカメラを設定
+    attackEditor_->SetPreviewPlayer(previewWeapon_.get());
+}
+
+///-------------------------------------------/// 
+/// 更新
+///-------------------------------------------///
+void AttackEditorScene::Update() {
+    /// ===エディターの更新=== ///
+    if (attackEditor_) {
+        attackEditor_->Update(deltaTime_);
+    }
+
+    /// ===プレビュー用プレイヤーの更新=== ///
+    if (previewWeapon_) {
+		previewWeapon_->Update();
+    }
+
+    /// ===ImGui描画=== ///
+#ifdef USE_IMGUI
+    RenderMenuBar();
+    defaultCamera_->ImGuiUpdate();
+
+    // エディターメインウィンドウ
+    attackEditor_->Render();
+
+    // サブウィンドウ
+    if (showHelp_) {
+        RenderHelpWindow();
+    }
+    if (showStats_) {
+        RenderStatsWindow();
+    }
+#endif // USE_IMGUI
+
+    /// ===ISceneの更新=== ///
+    IScene::Update();
+}
+
+///-------------------------------------------/// 
+/// 描画
+///-------------------------------------------///
+void AttackEditorScene::Draw() {
+    /// ===グリッドの描画=== ///
+    if (showGrid_) {
+        line_->DrawGrid({ 0.0f, 0.0f, 0.0f }, { 500.0f, 0.0f, 500.0f }, 100, { 1.0f, 1.0f, 1.0f, 1.0f });
+    }
+
+    /// ===プレビュー用プレイヤーの描画=== ///
+    if (previewWeapon_) {
+        previewWeapon_->Draw(BlendMode::KBlendModeNormal);
+    }
+
+    /// ===エディタープレビューの描画=== ///
+    if (attackEditor_) {
+        attackEditor_->DrawPreview();
+    }
+
+    /// ===ISceneの描画=== ///
+    IScene::Draw();
+}
+
+///-------------------------------------------/// 
+/// メニューバーの描画
+///-------------------------------------------///
+void AttackEditorScene::RenderMenuBar() {
+#ifdef USE_IMGUI
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("表示")) {
+            ImGui::Checkbox("ヘルプ", &showHelp_);
+            ImGui::Checkbox("統計情報", &showStats_);
+            ImGui::Checkbox("グリッド", &showGrid_);
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("エディター")) {
+            if (ImGui::MenuItem("攻撃エディターを表示/非表示")) {
+                attackEditor_->ToggleVisibility();
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+#endif
+}
+
+///-------------------------------------------/// 
+/// ヘルプウィンドウの描画
+///-------------------------------------------///
+void AttackEditorScene::RenderHelpWindow() {
+#ifdef USE_IMGUI
+    ImGui::Begin("ヘルプ", &showHelp_);
+
+    ImGui::Text("攻撃エディターの使い方:");
+    ImGui::Separator();
+    ImGui::BulletText("左側のリストから攻撃を選択");
+    ImGui::BulletText("右側のタブで各設定を編集");
+    ImGui::BulletText("「保存」ボタンでJSONに保存");
+    ImGui::BulletText("プレビューで軌道を確認");
+
+    ImGui::Separator();
+    ImGui::Text("ショートカットキー:");
+    ImGui::BulletText("Ctrl+N:  新規作成");
+    ImGui::BulletText("Ctrl+S: 保存");
+    ImGui::BulletText("Ctrl+O: 読み込み");
+
+    ImGui::End();
+#endif
+}
+
+///-------------------------------------------/// 
+/// 統計情報ウィンドウの描画
+///-------------------------------------------///
+void AttackEditorScene::RenderStatsWindow() {
+#ifdef USE_IMGUI
+    ImGui::Begin("統計情報", &showStats_);
+
+    ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+    ImGui::Text("フレーム時間: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+    ImGui::Separator();
+    ImGui::Text("デルタタイム: %.3f", deltaTime_);
+
+    ImGui::End();
+#endif
+}
+
+============================================================
+File Path: Project/application/Scene/Debug/AttackEditorScene.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Engine/Scene/IScene.h"
+// Editor
+#include "application/Game/Entity/Player/Editor/AttackEditor.h"
+// Line 
+#include "application/Drawing/3d/Line.h"
+// Player
+#include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
+// c++
+#include <memory>
+
+///=====================================================/// 
+/// 攻撃エディターシーン
+///=====================================================///
+class AttackEditorScene : public IScene {
+public:
+
+    AttackEditorScene() = default;
+    ~AttackEditorScene();
+
+    /// <summary>
+    /// 初期化処理
+    /// </summary>
+    void Initialize() override;
+
+    /// <summary>
+    /// 更新処理
+    /// </summary>
+    void Update() override;
+
+    /// <summary>
+    /// 描画処理
+    /// </summary>
+    void Draw() override;
+
+private:
+    /// ===Line=== ///
+    std::unique_ptr<Line> line_;
+    /// ===エディター=== ///
+    std::unique_ptr<AttackEditor> attackEditor_;
+    /// ===プレビュー用プレイヤー=== ///
+    std::unique_ptr<PlayerWeapon> previewWeapon_;
+
+    /// ===エディター設定=== ///
+    bool showHelp_ = false;              // ヘルプ表示フラグ
+    bool showStats_ = true;              // 統計情報表示フラグ
+    bool showGrid_ = true;               // グリッド表示フラグ
+
+	float deltaTime_ = 1.0f / 60.0f;    // デルタタイム
+
+private:
+
+    /// <summary>
+    /// メニューバーの描画
+    /// </summary>
+    void RenderMenuBar();
+
+    /// <summary>
+    /// ヘルプウィンドウの描画
+    /// </summary>
+    void RenderHelpWindow();
+
+    /// <summary>
+    /// 統計情報ウィンドウの描画
+    /// </summary>
+    void RenderStatsWindow();
+};
 
 ============================================================
 File Path: Project/application/Scene/GameOverScene.cpp
