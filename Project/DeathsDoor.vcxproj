@@ -118,6 +118,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp" />
     <ClCompile Include="application\Scene\GameScene.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.cpp" />
+    <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Editor\AttackDataSerializer.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Editor\AttackEditor.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSRootSignature.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.cpp" />
     <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp" />
@@ -128,7 +131,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\BoxFilter5x5Effect.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\CloseRange\CloseRangeEnemy.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\Base\BaseEnemy.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\State\ChargeState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\AttackState.cpp" />
     <ClCompile Include="Engine\Scene\Transition\ShatterGlassTransition.cpp" />
     <ClCompile Include="Engine\System\Service\ColliderService.cpp" />
@@ -264,9 +266,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Scene\Transition\SceneTransitionManager.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\Editor\Data\AttackData.h" />
+    <ClInclude Include="application\Game\Entity\Player\Editor\Data\AttackData.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyMoveState.h" />
@@ -274,6 +277,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.h" />
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.h" />
+    <ClInclude Include="application\Scene\Debug\AttackEditorScene.h" />
+    <ClInclude Include="application\Game\Entity\Player\Editor\AttackDataSerializer.h" />
+    <ClInclude Include="application\Game\Entity\Player\Editor\AttackEditor.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.h" />
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
@@ -285,7 +291,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\BoxFilter5x5Effect.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Base\BaseEnemy.h" />
     <ClInclude Include="application\Game\Entity\Player\State\AttackState.h" />
-    <ClInclude Include="application\Game\Entity\Player\State\ChargeState.h" />
     <ClInclude Include="Engine\DataInfo\BlendModeData.h" />
     <ClInclude Include="Engine\DataInfo\LevelData.h" />
     <ClInclude Include="application\Game\Entity\Enemy\CloseRange\CloseRangeEnemy.h" />
@@ -434,6 +439,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Scene\Transition\SceneTransitionManager.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

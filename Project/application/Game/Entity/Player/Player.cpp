@@ -23,77 +23,10 @@ Player::~Player() {
 }
 
 ///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-// フラグ
-bool Player::GetStateFlag(actionType type) const {
-	// タイプで分岐
-	if (type == actionType::kCharge) {
-		return chargeInfo_.isFlag;
-	} else {
-		return attackInfo_.isFlag;
-	}
-}
-// 準備フラグ
-bool Player::GetpreparationFlag(actionType type) const {
-	// タイプで分岐
-	if (type == actionType::kCharge) {
-		return chargeInfo_.isPreparation;
-	} else {
-		return attackInfo_.isPreparation;
-	}
-}
-// タイマー
-float Player::GetTimer(actionType type) {
-	// タイプで分岐
-	if (type == actionType::kCharge) {
-		return chargeInfo_.timer;
-	} else {
-		return attackInfo_.timer;
-	}
-}
-
-///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
 // Cameraの追従対象としてPlaeyrを設定
 void Player::SetCameraTargetPlayer() { camera_->SetTarget(&transform_.translate, &transform_.rotate); }
-// 開始フラグ
-void Player::SetStateFlag(actionType type, bool falg) {
-	// タイプで分岐
-	switch (type) {
-	case actionType::kCharge:
-		chargeInfo_.isFlag = falg;
-		break;
-	case actionType::kAttack:
-		attackInfo_.isFlag = falg;
-		break;
-	}
-}
-// 準備フラグ
-void Player::SetpreparationFlag(actionType type, bool falg) {
-	// タイプで分岐
-	switch (type) {
-	case actionType::kCharge:
-		chargeInfo_.isPreparation = falg;
-		break;
-	case actionType::kAttack:
-		attackInfo_.isPreparation = falg;
-		break;
-	}
-}
-// タイマーの設定
-void Player::SetTimer(actionType type, const float& timer) {
-	// タイプで分岐
-	switch (type) {
-	case actionType::kCharge:
-		chargeInfo_.timer = timer;
-		break;
-	case actionType::kAttack:
-		attackInfo_.timer = timer;
-		break;
-	}
-}
 // 無敵時間の設定
 void Player::SetInvicibleTime(const float& time) {
 	invicibleInfo_.time = time;
@@ -127,6 +60,7 @@ void Player::Initialize() {
 	// Componentの生成
 	moveComponent_ = std::make_unique<PlayerMoveComponent>();
 	avoidanceComponent_ = std::make_unique<PlayerAvoidanceComponent>();
+	attackComponent_ = std::make_unique<PlayerAttackComponent>();
 
 	// MoveComponentの初期化
 	PlayerMoveComponent::MoveConfig moveConfig{
@@ -144,6 +78,9 @@ void Player::Initialize() {
 		.invincibleTime = 0.01f
 	};
 	avoidanceComponent_->Initialize(avoidanceConfig);
+
+	// AttackComponentの初期化
+	attackComponent_->Initialize();
 
 	// 無敵情報の設定
 	SetInvicibleTime(1.0f);
@@ -168,6 +105,7 @@ void Player::Update() {
 	if (baseInfo_.isDead) {
 		ApplyDeceleration(0.7f);
 		UpdateAnimation();
+		return;
 	}
 
 	/// ===スティックの取得=== ///
@@ -218,8 +156,10 @@ void Player::Draw(BlendMode mode) {
 void Player::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("Player");
-	GameCharacter::Information();   // 親クラスの情報表示
-	moveComponent_->Information();  // 移動コンポーネントの情報表示
+	GameCharacter::Information();		// 親クラスの情報表示
+	moveComponent_->Information();		// 移動コンポーネントの情報表示
+	avoidanceComponent_->Information(); // 回避コンポーネントの情報表示
+	attackComponent_->Information();    // 攻撃コンポーネントの情報表示
 	ImGui::DragFloat("無敵時間", &invicibleInfo_.timer, 0.01f);
 	weapon_->Information();         // Weaponの情報表示
 	ImGui::End();
@@ -285,22 +225,11 @@ void Player::advanceTimer() {
 		color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; // 元の色に戻す
 	}
 
-	// 突進用のタイマーを進める
-	if (chargeInfo_.timer > 0.0f) {
-		chargeInfo_.timer -= baseInfo_.deltaTime;
-	} else {
-		chargeInfo_.isPreparation = true;
-	}
-
 	// 回避タイマーの更新
 	avoidanceComponent_->UpdateTimer(baseInfo_.deltaTime);
 
-	// 攻撃用タイマーを進める
-	if (attackInfo_.timer > 0.0f) {
-		attackInfo_.timer -= baseInfo_.deltaTime;
-	} else {
-		attackInfo_.isPreparation = true;
-	}
+	// 攻撃タイマーの更新
+	attackComponent_->UpdateTimers(baseInfo_.deltaTime);
 }
 
 ///-------------------------------------------/// 

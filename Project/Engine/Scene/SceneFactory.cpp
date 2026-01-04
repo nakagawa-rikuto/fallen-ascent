@@ -7,6 +7,7 @@
 #include "application/Scene/ClearScene.h"
 #include "application/Scene/GameOverScene.h"
 #include "Engine/Scene/Debug/ParticleEditorScene.h"
+#include "application/Scene/Debug/AttackEditorScene.h"
 
 ///-------------------------------------------/// 
 /// シーン生成
@@ -31,6 +32,9 @@ std::unique_ptr<IScene> SceneFactory::CreateScene(SceneType type) {
 	} else if (type == SceneType::ParticleEditor) {
 		// 粒子エディターシーン
 		return std::make_unique<ParticleEditorScene>();
+	} else if (type == SceneType::AttackEditor) {
+		// 攻撃エディターシーン
+		return std::make_unique<AttackEditorScene>();
 	}
 	return nullptr;
 }

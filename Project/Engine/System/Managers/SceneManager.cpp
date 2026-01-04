@@ -10,6 +10,7 @@
 #include "application/Scene/ClearScene.h"
 #include "application/Scene/GameOverScene.h"
 #include "Engine/Scene/Debug/ParticleEditorScene.h"
+#include "application/Scene/Debug/AttackEditorScene.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -140,6 +141,10 @@ void SceneManager::SceneObservation() {
 		/// 粒子エディターシーン
 		if (ImGui::Selectable("ParticleEditor", currentSceneType_ == SceneType::ParticleEditor)) {
 			ChangeScene(SceneType::ParticleEditor);
+		}
+		// アタックエディターシーン
+		if (ImGui::Selectable("AttackEditor", currentSceneType_ == SceneType::AttackEditor)) {
+			ChangeScene(SceneType::AttackEditor);
 		}
 		ImGui::EndCombo();
 	}

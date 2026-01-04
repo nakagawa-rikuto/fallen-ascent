@@ -5,6 +5,7 @@
 // Component
 #include "Component/PlayerMoveComponent.h"
 #include "Component/PlayerAvoidanceComponent.h"
+#include "Component/PlayerAttackComponent.h"
 // State
 #include "State/Base/PlayerState.h"
 // Weapon
@@ -12,12 +13,6 @@
 
 /// ===前方宣言=== ///
 class Enemy;
-
-/// ===StateType=== ///
-enum class actionType {
-	kCharge,      // 突進状態
-	kAttack       // 攻撃状態
-};
 
 ///=====================================================/// 
 /// Player
@@ -69,25 +64,13 @@ public: /// ===Getter=== ///
 	// Component
 	PlayerMoveComponent* GetMoveComponent() const { return moveComponent_.get(); };
 	PlayerAvoidanceComponent* GetAvoidanceComponent() const { return avoidanceComponent_.get(); };
-
-	// フラグ
-	bool GetStateFlag(actionType type) const;
-	bool GetpreparationFlag(actionType type) const;
-	
-	// タイマー
-	float GetTimer(actionType type);
+	PlayerAttackComponent* GetAttackComponent() const { return attackComponent_.get(); };
 
 public: /// ===Setter=== ///
 
 	// Camera
 	void SetCameraTargetPlayer();
-
-	// フラグ
-	void SetStateFlag(actionType type, bool flag);
-	void SetpreparationFlag(actionType type, bool flag);
-	
-	// タイマーの設定
-	void SetTimer(actionType type, const float& timer);
+	// 無敵時間の設定
 	void SetInvicibleTime(const float& time);
 
 public: /// ===State用関数=== ///
@@ -114,6 +97,7 @@ private: /// ===変数の宣言=== ///
 	/// ===Component=== ///
 	std::unique_ptr<PlayerMoveComponent> moveComponent_;
 	std::unique_ptr<PlayerAvoidanceComponent> avoidanceComponent_;
+	std::unique_ptr<PlayerAttackComponent> attackComponent_;
 
 	/// ===State=== ///
 	std::unique_ptr<PlayerState> currentState_;
@@ -125,22 +109,6 @@ private: /// ===変数の宣言=== ///
 		bool isFlag = false; // 無敵フラグ
 	};
 	InvicibleInfo invicibleInfo_;
-
-	/// ===溜め攻撃=== ///
-	struct ChargeInfo {
-		float timer = 0.0f;
-		bool isPreparation = false; // 溜め攻撃の準備フラグ
-		bool isFlag = false;        // 溜め攻撃のフラグ
-	};
-	ChargeInfo chargeInfo_;
-
-	/// ===攻撃情報=== ///
-	struct AttackInfo {
-		float timer = 0.0f;         // 攻撃のタイマー
-		bool isPreparation = false; // 攻撃の準備フラグ
-		bool isFlag = false;        // 攻撃のフラグ
-	};
-	AttackInfo attackInfo_;
 
 private:
 

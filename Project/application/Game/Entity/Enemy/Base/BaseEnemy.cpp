@@ -184,7 +184,7 @@ void BaseEnemy::OnCollision(Collider* collider) {
 		// クールタイム中でなければノックバック処理を実行
 		if (!knockbackInfo_.isInCooldown) {
 			// 通常攻撃の時
-			if (player_->GetStateFlag(actionType::kAttack)) {
+			if (player_->GetAttackComponent()->IsAttacking()) {
 				// Stateを移動状態に変更
 				ChangeState(std::make_unique<EnemyMoveState>());
 
@@ -214,10 +214,6 @@ void BaseEnemy::OnCollision(Collider* collider) {
 				knockbackInfo_.hitColorTimer = knockbackInfo_.hitColorDuration;
 				knockbackInfo_.cooldownTimer = knockbackInfo_.cooldownDuration;
 				knockbackInfo_.isInCooldown = true;
-
-				// チャージ攻撃の時
-			} else if (player_->GetStateFlag(actionType::kCharge)) {
-
 			}
 		}
 	}

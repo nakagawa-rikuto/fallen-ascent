@@ -7,7 +7,6 @@
 // State
 #include "MoveState.h"
 #include "AvoidanceState.h"
-#include "ChargeState.h"
 #include "AttackState.h"
 
 ///-------------------------------------------/// 
@@ -39,15 +38,12 @@ void RootState::Update(Player * player, GameCamera* camera) {
 		// 攻撃ボタンが押されたら攻撃状態へ
 		if (InputService::TriggerButton(0, ControllerButtonType::X)) {
 			// 攻撃の準備ができていれば
-			if (player_->GetpreparationFlag(actionType::kAttack)) {
+			if (!player_->GetAttackComponent()->GetState().isActive) {
 				player_->ChangState(std::make_unique<AttackState>());
 			}
 			// RBボタンが押されたら進んでいる突進状態へ
 		} else if (InputService::TriggerButton(0, ControllerButtonType::RB)) {
-			// タイマーがクールタイムより高ければ、
-			if (player_->GetpreparationFlag(actionType::kCharge)) {
-				player_->ChangState(std::make_unique<ChargeState>());
-			}
+
 			// Aボタンが押されたら回避状態へ
 		} else if (InputService::TriggerButton(0, ControllerButtonType::A)) {
 			// 回避の準備ができていれば

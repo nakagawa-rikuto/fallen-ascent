@@ -128,9 +128,6 @@
     <ClCompile Include="application\Game\Entity\Player\State\AvoidanceState.cpp">
       <Filter>application\Game\Entity\Player\State</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Player\State\ChargeState.cpp">
-      <Filter>application\Game\Entity\Player\State</Filter>
-    </ClCompile>
     <ClCompile Include="application\Game\Entity\Player\State\MoveState.cpp">
       <Filter>application\Game\Entity\Player\State</Filter>
     </ClCompile>
@@ -502,6 +499,10 @@
     <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp" />
+    <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Editor\AttackEditor.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Editor\AttackDataSerializer.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -547,9 +548,6 @@
       <Filter>application\Game\Entity\Player\State\Base</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Player\State\AvoidanceState.h">
-      <Filter>application\Game\Entity\Player\State</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\Player\State\ChargeState.h">
       <Filter>application\Game\Entity\Player\State</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Player\State\MoveState.h">
@@ -967,7 +965,11 @@
     <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h" />
-    <ClInclude Include="application\Editor\Data\AttackData.h" />
+    <ClInclude Include="application\Game\Entity\Player\Editor\Data\AttackData.h" />
+    <ClInclude Include="application\Scene\Debug\AttackEditorScene.h" />
+    <ClInclude Include="application\Game\Entity\Player\Editor\AttackEditor.h" />
+    <ClInclude Include="application\Game\Entity\Player\Editor\AttackDataSerializer.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

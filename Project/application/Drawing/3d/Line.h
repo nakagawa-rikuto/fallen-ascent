@@ -4,6 +4,7 @@
 #include "Engine/DataInfo/ColliderData.h"
 #include "Engine/DataInfo/LineObjectData.h"
 // C++
+#include <vector>
 #include <cstdint>
 
 ///=====================================================/// 
