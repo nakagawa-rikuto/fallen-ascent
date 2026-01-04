@@ -289,6 +289,7 @@
 └── └── ├── BGM/
 └── └── ├── Fonts/
 └── └── ├── Json/
+└── └── └── ├── Attacks/
 └── └── └── ├── Level/
 └── └── └── └── Particles/
 └── └── ├── Models/
@@ -18557,7 +18558,7 @@ void Framework::Initialize(const wchar_t* title) {
 	/// ===初期化=== ///
 	// MiiEnigne
 	MiiEngine_ = std::make_unique<Mii>();
-	MiiEngine_->Initialize(title, 1280, 720);
+	MiiEngine_->Initialize(title, 1920, 1080);
 	// CameraManager
 	cameraManager_ = std::make_unique<CameraManager>();
 	// ParticleManager
@@ -35712,33 +35713,46 @@ File Path: Project/application/Game/Entity/Player/Component/PlayerAttackComponen
 /// 初期化処理
 ///-------------------------------------------///
 void PlayerAttackComponent::Initialize() {
-
+    // コンボの読み込み
+    LoadAttackData(0, "Resource/Json/Attacks/Attack_0.json");
+    LoadAttackData(1, "Resource/Json/Attacks/Attack_1.json");
+    LoadAttackData(2, "Resource/Json/Attacks/Attack_2.json");
 }
 
 ///-------------------------------------------/// 
 /// 更新処理
 ///-------------------------------------------///
-void PlayerAttackComponent::Update() {
-    if (!state_.isActive) return;
+void PlayerAttackComponent::Update(const float deltaTime) {
+    // タイマーを更新
+    UpdateTimers(deltaTime);
 
-    // 攻撃時間が終了したかチェック
-    const AttackData* currentData = GetCurrentAttackData();
-    if (currentData && state_.timer >= currentData->activeDuration) {
-        state_.isActive = false;
-        state_.currentAttackID = -1;
+    // 攻撃中の処理
+    if (state_.isActive) {
+        // 攻撃時間が終了したかチェック
+        const AttackData* currentData = GetAttackData(state_.currentAttackID);
 
-        // コンボ受付開始
-        if (currentData->canComboToNext) {
-            state_.canCombo = true;
-            state_.comboTimer = 0.0f;
+        if (currentData && state_.timer >= currentData->activeDuration) {
+            state_.isActive = false;
+            state_.previousAttackID = state_.currentAttackID;  // ← 前の攻撃IDを保存
+            state_.currentAttackID = -1;
+
+            // コンボ受付開始
+            if (currentData->canComboToNext) {
+                state_.canCombo = true;
+                state_.comboTimer = 0.0f;
+            }
         }
     }
 
     // コンボ受付時間の管理
     if (state_.canCombo) {
-        if (currentData && state_.comboTimer >= currentData->comboWindowTime) {
+        // ★ 前の攻撃IDからデータを取得
+        const AttackData* previousData = GetAttackData(state_.previousAttackID);
+
+        if (previousData && state_.comboTimer >= previousData->comboWindowTime) {
             state_.canCombo = false;
-            state_.comboCount = 0;  // コンボリセット
+            state_.comboCount = 0;
+            state_.previousAttackID = -1;  // ← リセット
         }
     }
 }
@@ -35750,13 +35764,37 @@ void PlayerAttackComponent::Information() {
 #ifdef USE_IMGUI
     ImGui::SeparatorText("PlayerAttackComponent");
 
-    ImGui::Text("攻撃中:  %s", state_.isActive ? "true" : "false");
-    ImGui::Text("現在の攻撃ID:  %d", state_.currentAttackID);
-    ImGui::Text("コンボ可能:  %s", state_.canCombo ? "true" : "false");
+    ImGui::Text("攻撃中: %s", state_.isActive ? "true" : "false");
+    ImGui::Text("現在の攻撃ID: %d", state_.currentAttackID);
+    ImGui::Text("前の攻撃ID: %d", state_.previousAttackID);  // ← 追加
+    ImGui::Text("コンボ可能: %s", state_.canCombo ? "true" : "false");
     ImGui::Text("コンボ数: %d", state_.comboCount);
-    ImGui::Text("攻撃タイマー: %.2f", state_.timer);
-    ImGui::Text("コンボタイマー: %.2f", state_.comboTimer);
-    ImGui::Text("攻撃進行度: %.2f%%", GetAttackProgress() * 100.0f);
+    ImGui::Text("攻撃タイマー: %.3f", state_.timer);
+    ImGui::Text("コンボタイマー: %.3f", state_.comboTimer);
+    ImGui::Text("攻撃進行度: %. 1f%%", GetAttackProgress() * 100.0f);
+
+    // デバッグ情報
+    ImGui::Separator();
+
+    if (state_.isActive) {
+        const AttackData* currentData = GetAttackData(state_.currentAttackID);
+        if (currentData) {
+            ImGui::TextColored(ImVec4(0, 1, 0, 1), "現在の攻撃:  %s", currentData->attackName.c_str());
+            ImGui::Text("攻撃時間: %.2f秒", currentData->activeDuration);
+            ImGui::Text("終了まで: %. 2f秒", currentData->activeDuration - state_.timer);
+        }
+    }
+
+    if (state_.canCombo) {
+        const AttackData* previousData = GetAttackData(state_.previousAttackID);
+        if (previousData) {
+            ImGui::TextColored(ImVec4(1, 1, 0, 1), "コンボ受付中！");
+            ImGui::Text("前の攻撃:  %s", previousData->attackName.c_str());
+            ImGui::Text("次の攻撃ID: %d", previousData->nextComboID);
+            ImGui::Text("受付時間: %.2f秒", previousData->comboWindowTime);
+            ImGui::Text("残り時間: %.2f秒", previousData->comboWindowTime - state_.comboTimer);
+        }
+    }
 
     ImGui::Separator();
     ImGui::Text("登録されている攻撃数: %zu", attackDataMap_.size());
@@ -35784,6 +35822,8 @@ bool PlayerAttackComponent::StartAttack(int attackID, PlayerWeapon* weapon) {
     if (state_.isActive) {
         return false;
     }
+
+	CancelAttack(); // 状態をリセット
 
     // 攻撃データを取得
     auto it = attackDataMap_.find(attackID);
@@ -35815,14 +35855,14 @@ bool PlayerAttackComponent::TryCombo(PlayerWeapon* weapon) {
         return false;
     }
 
-    // 現在の攻撃データを取得
-    const AttackData* currentData = GetCurrentAttackData();
-    if (!currentData || !currentData->canComboToNext) {
+    // ★ 前の攻撃データを取得
+    const AttackData* previousData = GetAttackData(state_.previousAttackID);
+    if (!previousData || !previousData->canComboToNext) {
         return false;
     }
 
     // 次のコンボIDを取得
-    int nextAttackID = currentData->nextComboID;
+    int nextAttackID = previousData->nextComboID;
     if (nextAttackID < 0) {
         return false;
     }
@@ -35841,6 +35881,7 @@ void PlayerAttackComponent::CancelAttack() {
     state_.isActive = false;
     state_.canCombo = false;
     state_.currentAttackID = -1;
+    state_.previousAttackID = -1;  // ← リセット
     state_.comboCount = 0;
     state_.timer = 0.0f;
     state_.comboTimer = 0.0f;
@@ -35884,18 +35925,9 @@ void PlayerAttackComponent::ApplyAttackToWeapon(const AttackData& data, PlayerWe
         return;
     }
 
-    // ベジェ曲線の開始点と終了点を取得
-    Vector3 localStart = data.trajectoryPoints.front().position;
-    Vector3 localEnd = data.trajectoryPoints.back().position;
-
-    //// プレイヤーの回転を適用してワールド座標に変換
-    //Vector3 worldStart = basePosition + localStart;
-    //Vector3 worldEnd = basePosition + localEnd;
-
-    // 武器に攻撃を開始させる
+    // ベジェ曲線の制御点をそのまま渡す
     weapon->StartAttack(
-        localStart,
-        localEnd,
+        data.trajectoryPoints,     // ベジェ曲線の全制御点
         data.activeDuration,
         data.startRotation,
         data.endRotation
@@ -35941,6 +35973,7 @@ private:
 		bool isActive = false;      // 攻撃中フラグ
 		bool canCombo = false;      // コンボ可能フラグ
 		int currentAttackID = -1;   // 現在の攻撃ID
+		int previousAttackID = -1;  // ← 追加：前の攻撃ID（コンボ受付用）
 		int comboCount = 0;         // コンボカウント
 	};
 
@@ -35961,18 +35994,12 @@ public:
 	/// <summary>
 	/// 更新処理
 	/// </summary>
-	void Update();
+	void Update(const float deltaTime);
 
 	/// <summary>
 	/// ImGui情報の表示
 	/// </summary>
 	void Information();
-
-	/// <summary>
-	/// タイマーを更新します。
-	/// </summary>
-	/// <param name="deltaTime">前回の更新からの経過時間（秒）</param>
-	void UpdateTimers(const float deltaTime);
 
 	/// <summary>
 	/// 攻撃データをJSONから読み込み
@@ -36029,6 +36056,12 @@ private:
 	AttackState state_;
 
 private:
+
+	/// <summary>
+	/// タイマーを更新します。
+	/// </summary>
+	/// <param name="deltaTime">前回の更新からの経過時間（秒）</param>
+	void UpdateTimers(const float deltaTime);
 
 	/// <summary>
 	/// 武器に攻撃軌道を設定
@@ -36722,9 +36755,76 @@ void AttackEditor::Render() {
 
         // 保存ボタン
         if (ImGui::Button("この攻撃を保存", ImVec2(-1, 0))) {
-            std::string savePath = std::string(kDefaultSavePath) + currentAttack.attackName + ".json";
-            serializer_->SaveToJson(currentAttack, savePath);
+            // 保存前に名前をチェック
+            if (currentAttack.attackName.empty()) {
+                // エラーメッセージを表示
+                ImGui::OpenPopup("保存エラー");
+            } else {
+                std::string savePath = std::string(kDefaultSavePath) + currentAttack.attackName + ".json";
+                if (serializer_->SaveToJson(currentAttack, savePath)) {
+                    // 保存成功のメッセージ
+                    ImGui::OpenPopup("保存成功");
+                } else {
+                    // 保存失敗のメッセージ
+                    ImGui::OpenPopup("保存失敗");
+                }
+            }
         }
+
+        // 保存エラーのポップアップ
+        if (ImGui::BeginPopupModal("保存エラー", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("エラー:  攻撃名が入力されていません。");
+            ImGui::Separator();
+            ImGui::Text("攻撃を保存するには、「基本設定」タブで");
+            ImGui::Text("攻撃名を入力してください。");
+
+            ImGui::Spacing();
+            if (ImGui::Button("OK", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+
+        // 保存成功のポップアップ
+        if (ImGui::BeginPopupModal("保存成功", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("保存が完了しました。");
+            ImGui::Text("ファイル: %s. json", currentAttack.attackName.c_str());
+
+            ImGui::Spacing();
+            if (ImGui::Button("OK", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+
+        // 保存失敗のポップアップ
+        if (ImGui::BeginPopupModal("保存失敗", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("エラー: ファイルの保存に失敗しました。");
+            ImGui::Separator();
+            ImGui::Text("ファイルパスを確認してください。");
+
+            ImGui::Spacing();
+            if (ImGui::Button("OK", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+
+        // 一括保存結果のポップアップ
+        if (ImGui::BeginPopupModal("一括保存結果", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("一括保存が完了しました。");
+            ImGui::Separator();
+
+            // ここに成功数と失敗数を表示するコードを追加
+            // （SaveAllAttacks()で管理）
+
+            ImGui::Spacing();
+            if (ImGui::Button("OK", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+
     } else {
         ImGui::Text("攻撃を選択してください");
     }
@@ -36803,6 +36903,13 @@ void AttackEditor::SaveToJson() {
     }
 
     AttackData& currentAttack = attacks_[selectedAttackIndex_];
+
+    // 名前チェック
+    if (currentAttack.attackName.empty()) {
+        // 名前が空の場合は保存しない
+        return;
+    }
+
     std::string savePath = std::string(filePathBuffer_) + currentAttack.attackName + ".json";
     serializer_->SaveToJson(currentAttack, savePath);
 }
@@ -36829,10 +36936,30 @@ void AttackEditor::CreateNew() {
 /// 全ての攻撃を保存
 ///-------------------------------------------///
 void AttackEditor::SaveAllAttacks() {
+    int successCount = 0;
+    int failCount = 0;
+
     for (const auto& attack : attacks_) {
+        // 名前が空の攻撃はスキップ
+        if (attack.attackName.empty()) {
+            failCount++;
+            continue;
+        }
+
         std::string savePath = std::string(kDefaultSavePath) + attack.attackName + ".json";
-        serializer_->SaveToJson(attack, savePath);
+        if (serializer_->SaveToJson(attack, savePath)) {
+            successCount++;
+        } else {
+            failCount++;
+        }
     }
+
+#ifdef USE_IMGUI
+    // 結果を表示
+    if (failCount > 0) {
+        ImGui::OpenPopup("一括保存結果");
+    }
+#endif
 }
 
 ///-------------------------------------------/// 
@@ -36887,9 +37014,20 @@ void AttackEditor::RenderMenuBar() {
             if (ImGui::MenuItem("新規作成", "Ctrl+N")) {
                 CreateNew();
             }
-            if (ImGui::MenuItem("保存", "Ctrl+S")) {
+
+            // 保存メニューは名前がある場合のみ有効
+            bool canSave = (selectedAttackIndex_ >= 0 &&
+                selectedAttackIndex_ < static_cast<int>(attacks_.size()) &&
+                !attacks_[selectedAttackIndex_].attackName.empty());
+
+            if (ImGui::MenuItem("保存", "Ctrl+S", false, canSave)) {
                 SaveToJson();
             }
+
+            if (!canSave && ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("保存するには攻撃名を入力してください");
+            }
+
             if (ImGui::MenuItem("全て保存")) {
                 SaveAllAttacks();
             }
@@ -36947,8 +37085,26 @@ void AttackEditor::RenderBasicSettings(AttackData& data) {
 
     char nameBuffer[256];
     strncpy_s(nameBuffer, data.attackName.c_str(), sizeof(nameBuffer));
+
+    // 名前が空の場合は警告色で表示
+    if (data.attackName.empty()) {
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.6f, 0.2f, 0.2f, 0.5f)); // 赤っぽい背景
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));    // 黄色いテキスト
+    }
+
     if (ImGui::InputText("攻撃名", nameBuffer, sizeof(nameBuffer))) {
         data.attackName = nameBuffer;
+    }
+
+    if (data.attackName.empty()) {
+        ImGui::PopStyleColor(2);
+
+        // ヘルプテキスト
+        ImGui::SameLine();
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "(*)");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("保存するには攻撃名が必要です");
+        }
     }
 
     char descBuffer[512];
@@ -37015,9 +37171,58 @@ void AttackEditor::RenderTrajectorySettings(AttackData& data) {
         data.trajectoryPoints.push_back(newPoint);
     }
 
-    ImGui::SeparatorText("回転設定");
-    ImGui::DragFloat4("開始回転 (Quaternion)", &data.startRotation.x, 0.01f);
-    ImGui::DragFloat4("終了回転 (Quaternion)", &data.endRotation.x, 0.01f);
+    // 編集用データを取得または初期化
+    if (rotationEditMap_.find(data.attackID) == rotationEditMap_.end()) {
+        // 初回：QuaternionからVector3に変換
+        RotationEditData editData;
+        editData.startEuler = Math::QuaternionToEuler(data.startRotation);
+        editData.endEuler = Math::QuaternionToEuler(data.endRotation);
+        rotationEditMap_[data.attackID] = editData;
+    }
+
+    RotationEditData& editData = rotationEditMap_[data.attackID];
+
+    // Vector3（度数法）で編集
+    ImGui::Text("開始回転 (度数法)");
+    if (ImGui::DragFloat3("StartEuler", &editData.startEuler.x, 0.5f, -360.0f, 360.0f)) {
+        // 編集されたらQuaternionに変換
+        data.startRotation = Math::QuaternionFromVector(editData.startEuler);
+    }
+
+    // 現在のQuaternion値も表示
+    ImGui::SameLine();
+    if (ImGui::TreeNode("StartQuaternion")) {
+        ImGui::Text("x: %.3f, y: %.3f", data.startRotation.x, data.startRotation.y);
+        ImGui::Text("z: %.3f, w: %. 3f", data.startRotation.z, data.startRotation.w);
+        ImGui::TreePop();
+    }
+
+    ImGui::Spacing();
+
+    ImGui::Text("終了回転 (度数法)");
+    if (ImGui::DragFloat3("EndEuler", &editData.endEuler.x, 0.5f, -360.0f, 360.0f)) {
+        // 編集されたらQuaternionに変換
+        data.endRotation = Math::QuaternionFromVector(editData.endEuler);
+    }
+
+    // 現在のQuaternion値も表示
+    ImGui::SameLine();
+    if (ImGui::TreeNode("EndQuaternion")) {
+        ImGui::Text("x:  %.3f, y: %.3f", data.endRotation.x, data.endRotation.y);
+        ImGui::Text("z: %.3f, w: %.3f", data.endRotation.z, data.endRotation.w);
+        ImGui::TreePop();
+    }
+
+    ImGui::Spacing();
+
+    // リセットボタン
+    if (ImGui::Button("回転をリセット")) {
+        editData.startEuler = { 0.0f, 0.0f, 0.0f };
+        editData.endEuler = { 0.0f, 0.0f, 0.0f };
+        data.startRotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
+        data.endRotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
+    }
+
     ImGui::Checkbox("回転もベジェ曲線で補間", &data.useRotationCurve);
 
     ImGui::SeparatorText("プレビュー");
@@ -37070,7 +37275,7 @@ void AttackEditor::RenderComboSettings(AttackData& data) {
 #ifdef USE_IMGUI
     ImGui::SeparatorText("コンボ連携");
 
-    ImGui::Checkbox("次のコンボに繋げる", &data.canComboToNext);
+    ImGui::Checkbox("次のコンボにつなげる", &data.canComboToNext);
 
     if (data.canComboToNext) {
         ImGui::InputInt("次のコンボID", &data.nextComboID);
@@ -37080,7 +37285,7 @@ void AttackEditor::RenderComboSettings(AttackData& data) {
 
         for (int i = 0; i < static_cast<int>(data.branchComboIDs.size()); ++i) {
             ImGui::PushID(i);
-            ImGui::InputInt("##branchID", &data.branchComboIDs[i]);
+            ImGui::InputInt("branchID", &data.branchComboIDs[i]);
             ImGui::SameLine();
             if (ImGui::Button("削除")) {
                 data.branchComboIDs.erase(data.branchComboIDs.begin() + i);
@@ -37119,29 +37324,44 @@ void AttackEditor::RenderPreviewControl() {
     ImGui::Checkbox("自動リプレイ", &autoReplay_);
 
     ImGui::SeparatorText("プレビュー設定");
-    ImGui::DragFloat3("武器位置", &previewWeaponPosition_.x, 0.1f);  // ← 変更
+    ImGui::DragFloat3("武器位置", &previewWeaponPosition_.x, 0.1f);
 
     // 実際の攻撃をプレビュー
-    if (ImGui::Button("攻撃プレビュー実行") && previewWeapon_) {
+    if (ImGui::Button("攻撃プレビュー実行", ImVec2(-1, 0)) && previewWeapon_) {
         if (selectedAttackIndex_ >= 0 && selectedAttackIndex_ < static_cast<int>(attacks_.size())) {
             AttackData& currentAttack = attacks_[selectedAttackIndex_];
 
-            // ベジェ曲線の開始点と終了点を取得
+            // ベジェ曲線の制御点が2点以上あるか確認
             if (currentAttack.trajectoryPoints.size() >= 2) {
-                Vector3 startPoint = previewWeaponPosition_ + currentAttack.trajectoryPoints.front().position;
-                Vector3 endPoint = previewWeaponPosition_ + currentAttack.trajectoryPoints.back().position;
 
-                // 武器に攻撃を実行させる
+                // 全ての制御点にオフセットを適用
+                std::vector<BezierControlPointData> worldPoints;
+                for (const auto& point : currentAttack.trajectoryPoints) {
+                    BezierControlPointData worldPoint;
+                    worldPoint.position = previewWeaponPosition_ + point.position;
+                    worldPoint.time = point.time;
+                    worldPoints.push_back(worldPoint);
+                }
+
+                // 武器に攻撃を実行させる（ベジェ曲線版）
                 previewWeapon_->StartAttack(
-                    startPoint,
-                    endPoint,
+                    worldPoints,                    // ← 全制御点を渡す
                     currentAttack.activeDuration,
                     currentAttack.startRotation,
                     currentAttack.endRotation
                 );
+
+                // プレビュー再生開始
+                PlayPreview();
             }
         }
     }
+
+    // ヘルプテキスト
+    ImGui::Separator();
+    ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "ヒント:");
+    ImGui::BulletText("「再生」で軌道のプレビュー表示");
+    ImGui::BulletText("「攻撃プレビュー実行」で実際の攻撃モーション");
 
     ImGui::End();
 #endif
@@ -37228,6 +37448,7 @@ File Path: Project/application/Game/Entity/Player/Editor/AttackEditor.h
 #include <memory>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 /// ===前方宣言=== ///
 class PlayerWeapon;
@@ -37289,7 +37510,7 @@ private:
     int selectedAttackIndex_ = -1;                // 選択中の攻撃インデックス
 
     /// ===ファイル管理=== ///
-    static constexpr const char* kDefaultSavePath = "Data/Attacks/";
+    static constexpr const char* kDefaultSavePath = "Resource/Json/Attacks";
     char filePathBuffer_[256];                    // ファイルパス入力バッファ
     std::vector<std::string> availablePresets_;   // 利用可能なプリセットリスト
 
@@ -37306,6 +37527,13 @@ private:
     
     /// ===Serializer=== ///
 	std::unique_ptr<AttackDataSerializer> serializer_; // シリアライザ
+
+    /// ===回転編集用（オイラー角）=== ///  
+    struct RotationEditData {
+        Vector3 startEuler = { 0.0f, 0.0f, 0.0f };  // 開始回転（度数法）
+        Vector3 endEuler = { 0.0f, 0.0f, 0.0f };    // 終了回転（度数法）
+    };
+    std::unordered_map<int, RotationEditData> rotationEditMap_;  
 
 private:
 
@@ -37716,6 +37944,7 @@ void Player::OnCollision(Collider* collider) {
 			baseInfo_.velocity = knockbackDirection * knockbackSpeed;
 
 			// Stateを Root に変更
+			attackComponent_->CancelAttack(); // 攻撃キャンセル
 			ChangState(std::make_unique<RootState>());
 
 			// ダメージ処理
@@ -37743,9 +37972,6 @@ void Player::advanceTimer() {
 
 	// 回避タイマーの更新
 	avoidanceComponent_->UpdateTimer(baseInfo_.deltaTime);
-
-	// 攻撃タイマーの更新
-	attackComponent_->UpdateTimers(baseInfo_.deltaTime);
 }
 
 ///-------------------------------------------/// 
@@ -37951,10 +38177,10 @@ void AttackState::Update(Player* player, GameCamera* camera) {
 	player_->ApplyDeceleration(0.4f);
 
 	// 攻撃コンポーネントの更新
-	attackComp->Update();
+	attackComp->Update(player_->GetDeltaTime());
 
 	// 攻撃ボタンが押されたらコンボを試行
-	if (InputService::TriggerKey(DIK_SPACE)) {
+	if (InputService::TriggerButton(0, ControllerButtonType::X)) {
 		if (attackComp->CanCombo()) {
 			attackComp->TryCombo(player_->GetWeapon());
 		}
@@ -38423,21 +38649,8 @@ File Path: Project/application/Game/Entity/Player/Weapon/PlayerWeapon.cpp
 /// デストラクタ
 ///-------------------------------------------///
 PlayerWeapon::~PlayerWeapon() {
-	//particle_.reset();
 	object3d_.reset();
 }
-
-///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-bool PlayerWeapon::GetIsAttack() const {return attackInfo_.isAttacking;}
-float PlayerWeapon::GetAttackProgress() const {return attackInfo_.progress;}
-
-///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-// アクティブ設定
-void PlayerWeapon::SetActive(bool flag) { baseInfo_.isActive = flag; }
 
 ///-------------------------------------------/// 
 /// 初期化
@@ -38460,7 +38673,6 @@ void PlayerWeapon::Initialize() {
 	// 初期状態では非アクティブ
 	SetActive(false);
 	attackInfo_.isAttacking = false;
-	attackInfo_.isChargeAttack = false;
 
 	// 更新
 	Update();
@@ -38475,7 +38687,7 @@ void PlayerWeapon::Update() {
 	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
 
 	// 攻撃中でない場合は早期リターン
-	if (!attackInfo_.isAttacking && !attackInfo_.isChargeAttack) {
+	if (!attackInfo_.isAttacking) {
 		SetActive(false);
 		OBBCollider::Update();
 		return;
@@ -38488,7 +38700,6 @@ void PlayerWeapon::Update() {
 	// 攻撃終了チェック
 	if (attackInfo_.progress >= 1.0f) {
 		attackInfo_.isAttacking = false;
-		attackInfo_.isChargeAttack = false;
 		attackInfo_.progress = 1.0f;
 		SetActive(false);
 		ParticleService::StopParticle("WeaponAttack");
@@ -38497,16 +38708,11 @@ void PlayerWeapon::Update() {
 		return;
 	}
 
-	// 攻撃軌道の更新
-	if (attackInfo_.isAttacking) {
-		// Particleの軌道更新
-		ParticleService::SetEmitterPosition("WeaponAttack", object3d_->GetWorldTranslate());
-		// コンボ攻撃の軌道更新
-		UpdateAttackTrajectory();
-	} else if (attackInfo_.isChargeAttack) {
-		ParticleService::SetEmitterPosition("WeaponAttack", object3d_->GetWorldTranslate());
-		UpdateChargeAttackTrajectory();
-	}
+	// ベジェ曲線に沿った軌道更新
+	UpdateBezierTrajectory();
+
+	// Particleの軌道更新
+	ParticleService::SetEmitterPosition("WeaponAttack", object3d_->GetWorldTranslate());
 
 	/// ===OBBCollider=== ///
 	OBBCollider::Update();
@@ -38517,9 +38723,8 @@ void PlayerWeapon::Update() {
 ///-------------------------------------------///
 void PlayerWeapon::Draw(BlendMode mode) {
 	// 攻撃中のみ描画
-	if (attackInfo_.isAttacking || attackInfo_.isChargeAttack) {
+	if (attackInfo_.isAttacking) {
 		OBBCollider::Draw(mode);
-		//particle_->Draw(BlendMode::kBlendModeAdd);
 	}
 }
 
@@ -38529,19 +38734,27 @@ void PlayerWeapon::Draw(BlendMode mode) {
 void PlayerWeapon::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("PlayerWeapon");
-	ImGui::Text("フラグ");
+
+	ImGui::SeparatorText("攻撃情報");
 	ImGui::Checkbox("攻撃フラグ", &attackInfo_.isAttacking);
-	ImGui::Checkbox("チャージ攻撃フラグ", &attackInfo_.isChargeAttack);
-	ImGui::Text("攻撃情報");
 	ImGui::DragFloat("タイマー", &attackInfo_.timer, 0.01f);
 	ImGui::DragFloat("進行度", &attackInfo_.progress, 0.01f, 0.0f, 1.0f);
-	ImGui::DragFloat("接続時間", &attackInfo_.duration, 0.01f);
-	ImGui::Text("円弧");
-	ImGui::DragFloat3("中心", &attackInfo_.arcCenter.x, 0.1f);
-	ImGui::DragFloat("半径", &attackInfo_.arcRadius, 0.1f);
-	ImGui::DragFloat("開始角度", &attackInfo_.startAngle, 1.0f);
-	ImGui::DragFloat("終了角度", &attackInfo_.endAngle, 1.0f);
-	//OBBCollider::Information();
+	ImGui::DragFloat("持続時間", &attackInfo_.duration, 0.01f);
+
+	ImGui::SeparatorText("ベジェ曲線");
+	ImGui::Text("制御点数: %zu", attackInfo_.trajectoryPoints.size());
+
+	for (size_t i = 0; i < attackInfo_.trajectoryPoints.size(); ++i) {
+		ImGui::PushID(static_cast<int>(i));
+		ImGui::Text("制御点 %zu", i);
+		ImGui::Text("  位置: (%.2f, %.2f, %.2f)",
+			attackInfo_.trajectoryPoints[i].position.x,
+			attackInfo_.trajectoryPoints[i].position.y,
+			attackInfo_.trajectoryPoints[i].position.z);
+		ImGui::Text("  時間: %.2f", attackInfo_.trajectoryPoints[i].time);
+		ImGui::PopID();
+	}
+
 	ImGui::End();
 #endif // USE_IMGUI
 }
@@ -38572,65 +38785,30 @@ void PlayerWeapon::SetUpParent(Player* parent) {
 	object3d_->SetParent(player_->GetModelCommon());
 }
 
-///-------------------------------------------/// 
-/// 攻撃開始処理
+//-------------------------------------------/// 
+/// 攻撃開始処理（ベジェ曲線版）
 ///-------------------------------------------///
 void PlayerWeapon::StartAttack(
-	const Vector3& startPoint,
-	const Vector3& endPoint,
+	const std::vector<BezierControlPointData>& trajectoryPoints,
 	float duration,
 	const Quaternion& startRotation,
 	const Quaternion& endRotation) {
+
+	// 制御点が2点未満の場合はエラー
+	if (trajectoryPoints.size() < 2) {
+		return;
+	}
+
 	// 攻撃情報の設定
 	attackInfo_.isAttacking = true;
 	attackInfo_.timer = 0.0f;
 	attackInfo_.duration = duration;
 	attackInfo_.progress = 0.0f;
-	// 開始・終了位置と回転の設定
-	attackInfo_.startPoint = startPoint;
-	attackInfo_.endPoint = endPoint;
-	attackInfo_.startRotation = startRotation;
-	attackInfo_.endRotation = endRotation;
 
-	// コライダーに追加
-	ColliderService::AddCollider(this);
+	// ベジェ曲線の制御点を保存
+	attackInfo_.trajectoryPoints = trajectoryPoints;
 
-	// 扇形の軌道計算のため、円弧の中心と半径を算出
-	CalculateArcParameters();
-
-	// 当たり判定フラグをリセット
-	attackInfo_.hasHit = false;
-
-	// コライダーを有効化
-	SetActive(true);
-
-	//// Particleの開始
-	ParticleService::StopParticle("WeaponAttack");
-	ParticleService::Emit("WeaponAttack", startPoint);
-	ParticleService::SetEmitterPosition("WeaponAttack", object3d_->GetWorldTranslate());
-
-	// 初期位置を設定
-	transform_.translate = startPoint;
-	transform_.rotate = startRotation;
-}
-
-///-------------------------------------------/// 
-/// チャージ攻撃開始処理
-///-------------------------------------------///
-void PlayerWeapon::StartChargeAttack(
-	const Vector3& startPoint,
-	const Vector3& endPoint,
-	float duration,
-	const Quaternion& startRotation,
-	const Quaternion& endRotation) {
-	// 攻撃情報の設定
-	attackInfo_.isChargeAttack = true;
-	attackInfo_.timer = 0.0f;
-	attackInfo_.duration = duration;
-	attackInfo_.progress = 0.0f;
-	// 開始・終了位置と回転の設定
-	attackInfo_.startPoint = startPoint;
-	attackInfo_.endPoint = endPoint;
+	// 回転の設定
 	attackInfo_.startRotation = startRotation;
 	attackInfo_.endRotation = endRotation;
 
@@ -38643,143 +38821,107 @@ void PlayerWeapon::StartChargeAttack(
 	// コライダーを有効化
 	SetActive(true);
 
-	//// Particleの開始
+	// Particleの開始
 	ParticleService::StopParticle("WeaponAttack");
-	ParticleService::Emit("WeaponAttack", startPoint);
+	ParticleService::Emit("WeaponAttack", trajectoryPoints.front().position);
 	ParticleService::SetEmitterPosition("WeaponAttack", object3d_->GetWorldTranslate());
 
 	// 初期位置を設定
-	transform_.translate = startPoint;
+	transform_.translate = trajectoryPoints.front().position;
 	transform_.rotate = startRotation;
 }
 
 ///-------------------------------------------/// 
-/// 扇形の軌道パラメータを計算
+/// ベジェ曲線上の位置を計算
 ///-------------------------------------------///
-void PlayerWeapon::CalculateArcParameters() {
-	
-	// 開始点と終了点の中点
-	Vector3 midPoint = (attackInfo_.startPoint + attackInfo_.endPoint) * 0.5f;
-	
-	// 開始点から終了点へのベクトル
-	Vector3 startToEnd = attackInfo_.endPoint - attackInfo_.startPoint;
-	float chordLength = Length(startToEnd);
-	
-	// 弦の方向ベクトル（正規化）
-	Vector3 chordDir = Normalize(startToEnd);
-	
-	// 上方向ベクトル
-	Vector3 up = { 0.0f, 1.0f, 0.0f };
-	
-	// 弦に垂直な方向ベクトル
-	Vector3 perpendicular = Math::Cross(up, chordDir);
-	perpendicular = Normalize(perpendicular);
-	
-	// 扇形の半径を計算
-	float halfChord = chordLength * 0.5f;
-	
-	// 扇形の開き角度（120度）から適切な半径を計算
-	float halfAngleRad = 60.0f * Math::Pi() / 180.0f; // 60度
-	
-	// sin(60°) = 0.866、この関係から半径を逆算
-	attackInfo_.arcRadius = halfChord / std::sin(halfAngleRad);
-	
-	// 扇形の中心位置を計算
-	float centerOffset = attackInfo_.arcRadius * std::cos(halfAngleRad);
-	
-	// perpendicularの向きを確認して、プレイヤー側（扇形の頂点側）に配置
-	attackInfo_.arcCenter = midPoint + perpendicular * centerOffset;
-	
-	// 開始角度と終了角度を計算（Y軸周りの角度）
-	Vector3 startDir = Normalize(attackInfo_.startPoint - attackInfo_.arcCenter);
-	Vector3 endDir = Normalize(attackInfo_.endPoint - attackInfo_.arcCenter);
-	
-	// XZ平面での角度を計算（atan2を使用）
-	attackInfo_.startAngle = std::atan2(startDir.x, startDir.z);
-	attackInfo_.endAngle = std::atan2(endDir.x, endDir.z);
-	
-	// 角度の範囲を正規化（最短経路を選択）
-	float angleDiff = attackInfo_.endAngle - attackInfo_.startAngle;
+Vector3 PlayerWeapon::CalculateBezierPoint(const std::vector<BezierControlPointData>& controlPoints, float t) {
+	size_t n = controlPoints.size();
 
-	// [-π, π] の範囲に正規化（fmod を使用）
-	angleDiff = std::fmod(angleDiff + Math::Pi(), 2.0f * Math::Pi());
-	angleDiff -= Math::Pi();
+	// 制御点が2点の場合は線形補間
+	if (n == 2) {
+		return Math::Lerp(controlPoints[0].position, controlPoints[1].position, t);
+	}
 
-	// endAngle を調整
-	attackInfo_.endAngle = attackInfo_.startAngle + angleDiff;
+	// 制御点が3点の場合は2次ベジェ曲線
+	if (n == 3) {
+		float u = 1.0f - t;
+		float uu = u * u;
+		float tt = t * t;
+
+		Vector3 point;
+		point.x = uu * controlPoints[0].position.x +
+			2.0f * u * t * controlPoints[1].position.x +
+			tt * controlPoints[2].position.x;
+		point.y = uu * controlPoints[0].position.y +
+			2.0f * u * t * controlPoints[1].position.y +
+			tt * controlPoints[2].position.y;
+		point.z = uu * controlPoints[0].position.z +
+			2.0f * u * t * controlPoints[1].position.z +
+			tt * controlPoints[2].position.z;
+
+		return point;
+	}
+
+	// 制御点が4点の場合は3次ベジェ曲線
+	if (n == 4) {
+		float u = 1.0f - t;
+		float uu = u * u;
+		float uuu = uu * u;
+		float tt = t * t;
+		float ttt = tt * t;
+
+		Vector3 point;
+		point.x = uuu * controlPoints[0].position.x +
+			3.0f * uu * t * controlPoints[1].position.x +
+			3.0f * u * tt * controlPoints[2].position.x +
+			ttt * controlPoints[3].position.x;
+		point.y = uuu * controlPoints[0].position.y +
+			3.0f * uu * t * controlPoints[1].position.y +
+			3.0f * u * tt * controlPoints[2].position.y +
+			ttt * controlPoints[3].position.y;
+		point.z = uuu * controlPoints[0].position.z +
+			3.0f * uu * t * controlPoints[1].position.z +
+			3.0f * u * tt * controlPoints[2].position.z +
+			ttt * controlPoints[3].position.z;
+
+		return point;
+	}
+
+	// 5点以上の場合はDe Casteljauのアルゴリズム
+	std::vector<Vector3> temp;
+	for (const auto& cp : controlPoints) {
+		temp.push_back(cp.position);
+	}
+
+	while (temp.size() > 1) {
+		std::vector<Vector3> newTemp;
+		for (size_t i = 0; i < temp.size() - 1; ++i) {
+			newTemp.push_back(Math::Lerp(temp[i], temp[i + 1], t));
+		}
+		temp = newTemp;
+	}
+
+	return temp[0];
 }
 
 ///-------------------------------------------/// 
-/// 攻撃軌道の更新
+/// ベジェ曲線に沿った軌道更新
 ///-------------------------------------------///
-void PlayerWeapon::UpdateAttackTrajectory() {
-	// イージング関数を適用（EaseInOutQuad で自然な加速・減速）
+void PlayerWeapon::UpdateBezierTrajectory() {
+	// イージング関数を適用（滑らかな加速・減速）
 	float t = attackInfo_.progress;
 	float easedT = Easing::EaseInOutQuad(t);
 
-	// 扇形の軌道に沿って移動：円弧上の角度を補間
-	float currentAngle = Math::Lerp(attackInfo_.startAngle, attackInfo_.endAngle, easedT);
-	
-	// 円弧上の位置を計算
-	Vector3 offset;
-	offset.x = std::sin(currentAngle) * attackInfo_.arcRadius;
-	offset.y = 0.0f;
-	offset.z = std::cos(currentAngle) * attackInfo_.arcRadius;
-	
-	// Y座標は開始点と終了点を線形補間
-	float currentY = Math::Lerp(
-		attackInfo_.startPoint.y, 
-		attackInfo_.endPoint.y, 
-		easedT
-	);
-	
-	// 最終的な位置を計算（円弧の中心 + オフセット）
-	transform_.translate = attackInfo_.arcCenter + offset;
-	transform_.translate.y = currentY;
-	
-	// 武器を常に円弧の中心を向くように回転
-	Vector3 dirToCenter = Normalize(attackInfo_.arcCenter - transform_.translate);
-	Vector3 up(0.0f, 1.0f, 0.0f);
-	
-	// 中心を向く基本回転
-	Quaternion lookRotation = Math::LookRotation(dirToCenter, up);
-	
-	// 開始回転と終了回転の補間（滑らかな遷移）
-	Quaternion interpolatedRot = Math::SLerp(
-		attackInfo_.startRotation,
-		attackInfo_.endRotation,
-		easedT
-	);
-	
-	// 両方の回転を合成
-	transform_.rotate = Multiply(lookRotation, interpolatedRot);
-}
+	// ベジェ曲線上の位置を計算
+	transform_.translate = CalculateBezierPoint(attackInfo_.trajectoryPoints, easedT);
 
-///-------------------------------------------/// 
-/// チャージ攻撃軌道の更新
-///-------------------------------------------///
-void PlayerWeapon::UpdateChargeAttackTrajectory() {
-	// 勢いのあるイージング関数を適用（EaseInCubicで加速感を出す）
-	float t = attackInfo_.progress;
-	// 前半はゆっくり、後半は勢いよく振り下ろす
-	float easedT = t * t * t; // EaseInCubic
-
-	// まっすぐ線形補間で移動（扇形ではなく直線）
-	transform_.translate = Math::Lerp(
-		attackInfo_.startPoint,
-		attackInfo_.endPoint,
-		easedT
-	);
-
-	// 回転も線形補間（滑らかに回転）
+	// 回転の補間（滑らかに回転）
 	transform_.rotate = Math::SLerp(
 		attackInfo_.startRotation,
 		attackInfo_.endRotation,
 		easedT
 	);
 }
-
-
 
 ============================================================
 File Path: Project/application/Game/Entity/Player/Weapon/PlayerWeapon.h
@@ -38788,8 +38930,8 @@ File Path: Project/application/Game/Entity/Player/Weapon/PlayerWeapon.h
 /// ===Include=== ///
 // OBB
 #include "Engine/Collider/OBBCollider.h"
-// Particle
-//#include "application/Game/Particle/AttackTrajectoryParticle.h"
+// AttackData
+#include "application/Game/Entity/Player/Editor/Data/AttackData.h"
 
 /// ===前方宣言=== ///
 class Player;
@@ -38830,32 +38972,14 @@ public:
 	void SetUpParent(Player* parent);
 
 	/// <summary>
-	/// 攻撃を開始する
+	/// 攻撃を開始する（ベジェ曲線）
 	/// </summary>
-	/// <param name="startPoint">攻撃開始位置（ワールド座標）</param>
-	/// <param name="endPoint">攻撃終了位置（ワールド座標）</param>
+	/// <param name="trajectoryPoints">ベジェ曲線の制御点リスト</param>
 	/// <param name="duration">攻撃にかける時間（秒）</param>
-	/// <param name="startRotation">開始時の回転（デフォルト：単位クォータニオン）</param>
-	/// <param name="endRotation">終了時の回転（デフォルト：単位クォータニオン）</param>
+	/// <param name="startRotation">開始時の回転</param>
+	/// <param name="endRotation">終了時の回転</param>
 	void StartAttack(
-		const Vector3& startPoint,
-		const Vector3& endPoint,
-		float duration,
-		const Quaternion& startRotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f },
-		const Quaternion& endRotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f }
-	);
-
-	/// <summary>
-	/// チャージ攻撃を開始する
-	/// </summary>
-	/// <param name="startPoint">攻撃開始位置（ワールド座標）</param>
-	/// <param name="endPoint">攻撃終了位置（ワールド座標）</param>
-	/// <param name="duration">攻撃にかける時間（秒）</param>
-	/// <param name="startRotation">開始時の回転（デフォルト：単位クォータニオン）</param>
-	/// <param name="endRotation">終了時の回転（デフォルト：単位クォータニオン）</param>
-	void StartChargeAttack(
-		const Vector3& startPoint,
-		const Vector3& endPoint,
+		const std::vector<BezierControlPointData>& trajectoryPoints,
 		float duration,
 		const Quaternion& startRotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f },
 		const Quaternion& endRotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f }
@@ -38870,14 +38994,14 @@ public: /// ===衝突=== ///
 
 public: /// ===Getter=== ///
 	// 攻撃中かどうか
-	bool GetIsAttack() const;
+	bool GetIsAttack() const { return attackInfo_.isAttacking; }
 	// 攻撃の進行度を取得
-	float GetAttackProgress() const;
+	float GetAttackProgress() const { return attackInfo_.progress; }
 
 public: /// ===Setter=== ///
 
 	// アクティブ状態の設定
-	void SetActive(bool flag);
+	void SetActive(bool flag) { baseInfo_.isActive = flag; }
 
 private:
 	// Player
@@ -38897,42 +39021,34 @@ private:
 
 	/// ===攻撃情報=== ///
 	struct AttackInfo {
-		bool isAttacking = false;		// 攻撃中フラグ
-		bool isChargeAttack = false;	// チャージ攻撃中フラグ
-		bool hasHit = false;			// ヒット済みフラグ（多段ヒット防止）
+		bool isAttacking = false;      // 攻撃中フラグ
+		bool hasHit = false;            // ヒット済みフラグ
 
-		float timer = 0.0f;				// 攻撃タイマー
-		float duration = 0.0f;			// 攻撃の持続時間
-		float progress = 0.0f;			// 攻撃の進行度（0.0～1.0）
+		float timer = 0.0f;             // 攻撃タイマー
+		float duration = 0.0f;          // 攻撃の持続時間
+		float progress = 0.0f;          // 攻撃の進行度（0.0～1.0）
 
-		Vector3 startPoint;				// 攻撃開始位置
-		Vector3 endPoint;				// 攻撃終了位置
-		Quaternion startRotation;		// 開始時の回転
-		Quaternion endRotation;			// 終了時の回転
+		// ベジェ曲線の制御点
+		std::vector<BezierControlPointData> trajectoryPoints;
 
-		// 扇形軌道のパラメータ
-		Vector3 arcCenter;				// 円弧の中心位置
-		float arcRadius = 0.0f;			// 円弧の半径
-		float startAngle = 0.0f;		// 開始角度（ラジアン）
-		float endAngle = 0.0f;			// 終了角度（ラジアン）
+		Quaternion startRotation;      // 開始時の回転
+		Quaternion endRotation;        // 終了時の回転
 	};
 	AttackInfo attackInfo_;
 
 private:
 	/// <summary>
-	/// 扇形の軌道パラメータを計算
+	/// ベジェ曲線上の位置を計算
 	/// </summary>
-	void CalculateArcParameters();
+	/// <param name="controlPoints">制御点のリスト</param>
+	/// <param name="t">進行度（0.0～1.0）</param>
+	/// <returns>ベジェ曲線上の位置</returns>
+	Vector3 CalculateBezierPoint(const std::vector<BezierControlPointData>& controlPoints, float t);
 
 	/// <summary>
-	/// 攻撃軌道の更新処理
+	/// ベジェ曲線に沿った攻撃軌道の更新処理
 	/// </summary>
-	void UpdateAttackTrajectory();
-
-	/// <summary>
-	/// チャージ攻撃軌道の更新処理
-	/// </summary>
-	void UpdateChargeAttackTrajectory();
+	void UpdateBezierTrajectory();
 };
 
 ============================================================
@@ -39660,6 +39776,10 @@ void AttackEditorScene::Initialize() {
 
     // エディターにプレビュー用プレイヤーとカメラを設定
     attackEditor_->SetPreviewPlayer(previewWeapon_.get());
+
+    // デフォルトカメラの位置を設定
+    defaultCamera_->SetTranslate(cameraPosition_);
+    defaultCamera_->SetRotate(cameraRotation_);
 }
 
 ///-------------------------------------------/// 
@@ -39679,7 +39799,9 @@ void AttackEditorScene::Update() {
     /// ===ImGui描画=== ///
 #ifdef USE_IMGUI
     RenderMenuBar();
+    /// ===デバッグ時のカメラ=== ///
     defaultCamera_->ImGuiUpdate();
+	defaultCamera_->DebugUpdate();
 
     // エディターメインウィンドウ
     attackEditor_->Render();
@@ -39835,7 +39957,12 @@ private:
     bool showStats_ = true;              // 統計情報表示フラグ
     bool showGrid_ = true;               // グリッド表示フラグ
 
-	float deltaTime_ = 1.0f / 60.0f;    // デルタタイム
+    // デルタタイム
+	float deltaTime_ = 1.0f / 60.0f;    
+
+    /// ===カメラ=== ///
+	Vector3 cameraPosition_{ 0.0f, 10.0f, -50.0f };   // カメラ位置
+	Quaternion cameraRotation_{ 0.0f, 0.0f, 0.0f, 1.0f }; // カメラ回転
 
 private:
 
