@@ -14764,6 +14764,18 @@ void ParticleGroup::Update() {
     // デルタタイムの取得
     kDeltaTime_ = DeltaTimeSevice::GetDeltaTime();
 
+    // 停止中の場合は新規発生を止めて、既存パーティクルの寿命を短縮
+    if (isStopped_) {
+        // 既存のパーティクルの寿命を強制終了
+        for (auto& particle : group_.particles) {
+            particle.currentTime = particle.lifeTime;  // 即座に寿命を終了させる
+        }
+        // パーティクルの更新のみ実行（発生処理はスキップ）
+        UpdateParticles();
+        return;
+    }
+
+    // 通常時の処理
     // パーティクルの発生処理
     Emit();
 
@@ -14781,9 +14793,19 @@ void ParticleGroup::Draw(BlendMode mode) {
 }
 
 ///-------------------------------------------/// 
+/// 停止処理
+///-------------------------------------------///
+void ParticleGroup::Stop() { isStopped_ = true; }
+
+///-------------------------------------------/// 
 /// 終了判定
 ///-------------------------------------------///
 bool ParticleGroup::IsFinish() const {
+    // 停止されている場合、全パーティクルが消えたら終了
+    if (isStopped_) {
+        return group_.particles.empty();
+    }
+
     // バーストモードの場合は全パーティクルが消えたらtrue
     if (definition_.emission.isBurst) {
         return group_.particles.empty() && group_.hasEmitted;
@@ -14792,6 +14814,11 @@ bool ParticleGroup::IsFinish() const {
     // 連続発生モードの場合は常にfalse（手動で停止する必要がある）
     return false;
 }
+
+///-------------------------------------------/// 
+/// 停止判定
+///-------------------------------------------///
+bool ParticleGroup::IsStopped() const { return isStopped_; }
 
 ///-------------------------------------------/// 
 /// Setter
@@ -15220,10 +15247,21 @@ public:
 	void Draw(BlendMode mode);
 
 	/// <summary>
+	/// 停止処理
+	/// </summary>
+	void Stop();
+
+	/// <summary>
 	/// 生存しているかを判定する関数
 	/// </summary>
 	/// <returns>処理が完了している場合は true、そうでない場合は false を返します。</returns>
 	bool IsFinish() const;
+
+	/// <summary>
+	/// 停止中かどうか
+	/// </summary>
+	/// <returns></returns>
+	bool IsStopped() const;
 
 public: /// ===Setter=== ///
 
@@ -15300,9 +15338,11 @@ private:
 	};
 
 	Group group_{};
-	ParticleDefinition definition_;                  // パーティクル定義
-	float kDeltaTime_ = 1.0f / 60.0f;                // デルタタイム
-	std::mt19937 randomEngine_;                      // 乱数生成器
+	ParticleDefinition definition_;     // パーティクル定義
+	float kDeltaTime_ = 1.0f / 60.0f;   // デルタタイム
+	std::mt19937 randomEngine_;         // 乱数生成器
+
+	bool isStopped_ = false;		// 停止フラグ
 
 private:
 
@@ -24721,35 +24761,40 @@ void ParticleManager::AddParticleDefinition(const std::string& name, const Parti
 ///-------------------------------------------/// 
 /// 発生
 ///-------------------------------------------///
-void  ParticleManager::Emit(const std::string& name, const Vector3& translate) {
-	// 定義を検索
-	auto defIt = definitions_.find(name);
-	if (defIt == definitions_.end()) {
-		assert(false && "Not definition");
-		return; // 定義が見つからない
+ParticleGroup* ParticleManager::Emit(const std::string& name, const Vector3& translate) {
+	// 定義が存在するか確認
+	auto it = definitions_.find(name);
+	if (it == definitions_.end()) {
+		return nullptr; // 定義が見つからない
 	}
 
-	// 新しいパーティクルグループを生成
-	std::unique_ptr<ParticleGroup> newParticle = std::make_unique<ParticleGroup>();
-	newParticle->Initialze(translate, defIt->second);
-	activeParticles_[name].push_back(std::move(newParticle));
+	// 新しいParticleGroupを作成
+	auto particleGroup = std::make_unique<ParticleGroup>();
+	particleGroup->Initialze(translate, it->second);
 
-	return;
+	// ポインタを保存してから返す
+	ParticleGroup* ptr = particleGroup.get();
+	activeParticles_.push_back(std::move(particleGroup));
+
+	return ptr;
 }
 
 ///-------------------------------------------/// 
 /// 全てのParticleの更新
 ///-------------------------------------------///
 void ParticleManager::Update() {
-	for (auto& [name, list] : activeParticles_) {
-		for (auto it = list.begin(); it != list.end();) {
-			(*it)->Update();
-			if ((*it)->IsFinish()) {
-				it = list.erase(it);
-			} else {
-				++it;
-			}
-		}
+	// 完了したパーティクルを削除
+	activeParticles_.erase(
+		std::remove_if(activeParticles_.begin(), activeParticles_.end(),
+			[](const std::unique_ptr<ParticleGroup>& particle) {
+				return particle->IsFinish();
+			}),
+		activeParticles_.end()
+	);
+
+	// アクティブなパーティクルを更新
+	for (auto& particle : activeParticles_) {
+		particle->Update();
 	}
 }
 
@@ -24757,10 +24802,8 @@ void ParticleManager::Update() {
 /// 全てのParticleの描画
 ///-------------------------------------------///
 void ParticleManager::Draw(BlendMode mode) {
-	for (auto& [name, list] : activeParticles_) {
-		for (const auto& particle : list) {
-			particle->Draw(mode);
-		}
+	for (auto& particle : activeParticles_) {
+		particle->Draw(mode);
 	}
 }
 
@@ -24768,7 +24811,12 @@ void ParticleManager::Draw(BlendMode mode) {
 /// 停止処理
 ///-------------------------------------------///
 void ParticleManager::StopParticle(const std::string& name) {
-	activeParticles_.erase(name);
+	// アクティブなパーティクルから該当する名前のものを全て停止
+	for (auto& particle : activeParticles_) {
+		if (particle->GetDefinition().name == name) {
+			particle->Stop();
+		}
+	}
 }
 
 ///-------------------------------------------/// 
@@ -24778,15 +24826,22 @@ void ParticleManager::RemoveParticleDefinition(const std::string& name) {
 	// 定義から削除
 	definitions_.erase(name);
 
-	// アクティブなパーティクルも削除
-	activeParticles_.erase(name);
+	// アクティブなパーティクルからも該当するものを削除
+	activeParticles_.erase(
+		std::remove_if(activeParticles_.begin(), activeParticles_.end(),
+			[&name](const std::unique_ptr<ParticleGroup>& particle) {
+				return particle->GetDefinition().name == name;
+			}),
+		activeParticles_.end()
+	);
 }
+
+///-------------------------------------------/// 
+/// 全てのパーティクルを削除
+///-------------------------------------------///
 void ParticleManager::RemoveAllParticles() {
 	activeParticles_.clear();
-	definitions_.clear();
 }
-
-
 
 ///-------------------------------------------/// 
 /// テクスチャ設定
@@ -24799,11 +24854,8 @@ void ParticleManager::SetTexture(const std::string& name, const std::string& tex
 	}
 
 	// アクティブなパーティクルにも適用
-	auto it = activeParticles_.find(name);
-	if (it == activeParticles_.end()) return;
-
-	for (auto& particle : it->second) {
-		if (particle) {
+	for (auto& particle : activeParticles_) {
+		if (particle->GetDefinition().name == name) {
 			particle->SetTexture(textureName);
 		}
 	}
@@ -24921,81 +24973,9 @@ void ParticleManager::SetParameter(const std::string& name, ParticleParameter pa
 	}
 
 	// アクティブなパーティクルにも適用
-	auto activeIt = activeParticles_.find(name);
-	if (activeIt != activeParticles_.end()) {
-		for (auto& particle : activeIt->second) {
-			if (particle) {
-				particle->SetParameter(param, value);
-			}
-		}
-	}
-}
-
-///-------------------------------------------/// 
-/// エミッタ位置の設定
-///-------------------------------------------///
-void ParticleManager::SetEmitterPosition(const std::string& name, const Vector3& position, int groupIndex) {
-	auto it = activeParticles_.find(name);
-	if (it == activeParticles_.end()) return;
-
-	// 全グループに適用
-	if (groupIndex == -1) {
-		for (auto& particle : it->second) {
-			if (particle) {
-				particle->SetEmitterPosition(position);
-			}
-		}
-	}
-	// 特定のグループに適用
-	else if (groupIndex >= 0 && groupIndex < static_cast<int>(it->second.size())) {
-		if (it->second[groupIndex]) {
-			it->second[groupIndex]->SetEmitterPosition(position);
-		}
-	}
-}
-
-///-------------------------------------------/// 
-/// エミッタ位置の移動
-///-------------------------------------------///
-void ParticleManager::MoveEmitterPosition(const std::string& name, const Vector3& offset, int groupIndex) {
-	auto it = activeParticles_.find(name);
-	if (it == activeParticles_.end()) return;
-
-	// 全グループに適用
-	if (groupIndex == -1) {
-		for (auto& particle : it->second) {
-			if (particle) {
-				particle->MoveEmitterPosition(offset);
-			}
-		}
-	}
-	// 特定のグループに適用
-	else if (groupIndex >= 0 && groupIndex < static_cast<int>(it->second.size())) {
-		if (it->second[groupIndex]) {
-			it->second[groupIndex]->MoveEmitterPosition(offset);
-		}
-	}
-}
-
-///-------------------------------------------/// 
-/// エミッタ回転の設定
-///-------------------------------------------///
-void ParticleManager::SetEmitterRotation(const std::string& name, const Vector3& rotation, int groupIndex) {
-	auto it = activeParticles_.find(name);
-	if (it == activeParticles_.end()) return;
-
-	// 全グループに適用
-	if (groupIndex == -1) {
-		for (auto& particle : it->second) {
-			if (particle) {
-				particle->SetEmitterRotate(rotation);
-			}
-		}
-	}
-	// 特定のグループに適用
-	else if (groupIndex >= 0 && groupIndex < static_cast<int>(it->second.size())) {
-		if (it->second[groupIndex]) {
-			it->second[groupIndex]->SetEmitterRotate(rotation);
+	for (auto& particle : activeParticles_) {
+		if (particle->GetDefinition().name == name) {
+			particle->SetParameter(param, value);
 		}
 	}
 }
@@ -25011,25 +24991,32 @@ const ParticleDefinition* ParticleManager::GetDefinition(const std::string& name
 	return nullptr;
 }
 
+///-------------------------------------------/// 
+/// パーティクル定義が登録されているか確認
+///-------------------------------------------///
 bool ParticleManager::HasDefinition(const std::string& name) const {
 	return definitions_.find(name) != definitions_.end();
 }
 
+///-------------------------------------------/// 
+/// アクティブなパーティクル数を取得
+///-------------------------------------------///
 uint32_t ParticleManager::GetActiveParticleCount(const std::string& name) const {
-	auto it = activeParticles_.find(name);
-	if (it == activeParticles_.end()) {
-		return 0;
-	}
-
 	uint32_t totalCount = 0;
-	for (const auto& particle : it->second) {
-		if (particle) {
+
+	// vectorを線形探索して該当する名前のパーティクルをカウント
+	for (const auto& particle : activeParticles_) {
+		if (particle && particle->GetDefinition().name == name) {
 			totalCount += particle->GetActiveParticleCount();
 		}
 	}
+
 	return totalCount;
 }
 
+///-------------------------------------------/// 
+/// 登録されているパーティクル定義の一覧を取得
+///-------------------------------------------///
 std::vector<std::string> ParticleManager::GetDefinitionNames() const {
 	std::vector<std::string> names;
 	names.reserve(definitions_.size());
@@ -25041,28 +25028,20 @@ std::vector<std::string> ParticleManager::GetDefinitionNames() const {
 	return names;
 }
 
-size_t ParticleManager::GetActiveGroupCount(const std::string& name) const {
-	auto it = activeParticles_.find(name);
-	if (it != activeParticles_.end()) {
-		return it->second.size();
-	}
-	return 0;
-}
-
 ///-------------------------------------------/// 
-/// エミッタ位置の取得
+/// アクティブなパーティクルグループ数を取得
 ///-------------------------------------------///
-Vector3 ParticleManager::GetEmitterPosition(const std::string& name, size_t groupIndex) const {
-	auto it = activeParticles_.find(name);
-	if (it == activeParticles_.end()) {
-		return Vector3{ 0.0f, 0.0f, 0.0f };
+size_t ParticleManager::GetActiveGroupCount(const std::string& name) const {
+	size_t count = 0;
+
+	// vectorを線形探索して該当する名前のグループをカウント
+	for (const auto& particle : activeParticles_) {
+		if (particle && particle->GetDefinition().name == name) {
+			++count;
+		}
 	}
 
-	if (groupIndex < it->second.size() && it->second[groupIndex]) {
-		return it->second[groupIndex]->GetEmitterPosition();
-	}
-
-	return Vector3{ 0.0f, 0.0f, 0.0f };
+	return count;
 }
 
 ============================================================
@@ -25070,29 +25049,26 @@ File Path: Project/Engine/System/Managers/ParticleManager.h
 ============================================================
 #pragma once
 /// ===include=== ///
+// ParticleGroup
+#include "Engine/Graphics/Particle/ParticleGroup.h"
+#include "Engine/Graphics/Particle/ParticleDefinition.h"
+#include "Engine/Graphics/Particle/ParticleParameter.h"
 // c++
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-// ParticleGroup
-#include "Engine/Graphics/Particle/ParticleGroup.h"
-#include "Engine/Graphics/Particle/ParticleDefinition.h"
-#include "Engine/Graphics/Particle/ParticleParameter.h"
 
 /// ===前方宣言=== ///
 class GameCamera;
 
 ///=====================================================/// 
-/// ParticleManager（新方式のみ）
-/// 定義ベースの管理システム
+/// ParticleManager
 ///=====================================================///
 class ParticleManager {
 public:
 	ParticleManager() = default;
 	~ParticleManager();
-
-	/// ===定義の管理=== ///
 
 	/// <summary>
 	/// パーティクル定義の追加（JSONファイルから）
@@ -25109,12 +25085,12 @@ public:
 	void AddParticleDefinition(const std::string& name, const ParticleDefinition& definition);
 
 	/// <summary>
-    /// パーティクルの発生処理
-    /// </summary>
-    /// <param name="name">発生させるパーティクルの名前</param>
-    /// <param name="translate">発生させる場所</param>
-    /// <returns>発生に成功したかどうか</returns>
-	void Emit(const std::string& name, const Vector3& translate);
+	/// パーティクルの発生処理
+	/// </summary>
+	/// <param name="name">発生させるパーティクルの名前</param>
+	/// <param name="translate">発生させる場所</param>
+	/// <returns>生成されたParticleGroupへのポインタ（nullptrの場合は失敗）</returns>
+	ParticleGroup* Emit(const std::string& name, const Vector3& translate);
 
 	/// <summary>
 	/// パーティクル全体の更新処理
@@ -25161,30 +25137,6 @@ public: /// ===設定=== ///
 	/// <param name="value">設定する値</param>
 	void SetParameter(const std::string& name, ParticleParameter param, float value);
 
-	/// <summary>
-	/// アクティブなパーティクルのエミッタ位置を設定
-	/// </summary>
-	/// <param name="name">対象パーティクルの名前</param>
-	/// <param name="position">新しい位置</param>
-	/// <param name="groupIndex">グループのインデックス(-1で全グループ)</param>
-	void SetEmitterPosition(const std::string& name, const Vector3& position, int groupIndex = -1);
-
-	/// <summary>
-	/// アクティブなパーティクルのエミッタ位置を移動
-	/// </summary>
-	/// <param name="name">対象パーティクルの名前</param>
-	/// <param name="offset">移動量</param>
-	/// <param name="groupIndex">グループのインデックス(-1で全グループ)</param>
-	void MoveEmitterPosition(const std::string& name, const Vector3& offset, int groupIndex = -1);
-
-	/// <summary>
-	/// 指定された名前のエミッターの回転を設定します。
-	/// </summary>
-	/// <param name="name">設定対象のエミッターを識別する名前。</param>
-	/// <param name="rotation">エミッターに適用する回転（Vector3で表現）。</param>
-	/// <param name="groupIndex">適用先のグループインデックス。省略時は -1（グループ未指定または既定動作を示す）。</param>
-	void SetEmitterRotation(const std::string& name, const Vector3& rotation, int groupIndex = -1);
-
 public: /// ===情報取得=== ///
 
 	/// <summary>
@@ -25221,20 +25173,12 @@ public: /// ===情報取得=== ///
 	/// <returns>アクティブなグループ数</returns>
 	size_t GetActiveGroupCount(const std::string& name) const;
 
-	/// <summary>
-	/// 特定のグループのエミッタ位置を取得
-	/// </summary>
-	/// <param name="name">対象パーティクルの名前</param>
-	/// <param name="groupIndex">グループのインデックス(0-based)</param>
-	/// <returns>エミッタ位置(グループが存在しない場合はゼロベクトル)</returns>
-	Vector3 GetEmitterPosition(const std::string& name, size_t groupIndex = 0) const;
-
 private:
 	// 定義ベース
 	std::map<std::string, ParticleDefinition> definitions_;
 
 	// アクティブなパーティクル
-	std::map<std::string, std::vector<std::unique_ptr<ParticleGroup>>> activeParticles_;
+	std::vector<std::unique_ptr<ParticleGroup>> activeParticles_;
 };
 
 ============================================================
@@ -27604,7 +27548,7 @@ void ParticleService::RemoveParticleDefinition(const std::string& name) {
 /// パーティクルの操作
 ///-------------------------------------------///
 // パーティクルを発生
-void ParticleService::Emit(const std::string& name, const Vector3& translate) {
+ParticleGroup* ParticleService::Emit(const std::string& name, const Vector3& translate) {
 	return ServiceLocator::GetParticleManager()->Emit(name, translate);
 }
 
@@ -27616,21 +27560,6 @@ void ParticleService::SetTexture(const std::string& name, const std::string& tex
 // パラメータを設定（型安全版）
 void ParticleService::SetParameter(const std::string& name, ParticleParameter param, float value) {
 	ServiceLocator::GetParticleManager()->SetParameter(name, param, value);
-}
-
-// エミッタ位置を設定
-void ParticleService::SetEmitterPosition(const std::string& name, const Vector3& position, int groupIndex) {
-	ServiceLocator::GetParticleManager()->SetEmitterPosition(name, position, groupIndex);
-}
-
-// エミッタ位置を移動
-void ParticleService::MoveEmitterPosition(const std::string& name, const Vector3& offset, int groupIndex) {
-	ServiceLocator::GetParticleManager()->MoveEmitterPosition(name, offset, groupIndex);
-}
-
-// エミッタの回転を設定
-void ParticleService::SetEmitterRotate(const std::string& name, const Vector3& rotate, int groupIndex) {
-	ServiceLocator::GetParticleManager()->SetEmitterRotation(name, rotate, groupIndex);
 }
 
 // パーティクルを停止
@@ -27646,7 +27575,6 @@ void ParticleService::RemoveAllParticles() {
 ///-------------------------------------------/// 
 /// 情報取得
 ///-------------------------------------------///
-
 // 定義を取得
 const ParticleDefinition* ParticleService::GetDefinition(const std::string& name) {
 	return ServiceLocator::GetParticleManager()->GetDefinition(name);
@@ -27677,6 +27605,8 @@ File Path: Project/Engine/System/Service/ParticleService.h
 ============================================================
 #pragma once
 /// ===include=== ///
+// ParticleGroup
+#include "Engine/Graphics/Particle/ParticleGroup.h"
 // c++
 #include <string>
 #include <vector>
@@ -27694,122 +27624,97 @@ enum class ParticleParameter;
 class ParticleService {
 public:
 
-    /// ===定義の管理=== ///
+	/// ===定義の管理=== ///
 
-    /// <summary>
-    /// パーティクル定義の追加（JSONファイルから）
-    /// </summary>
-    /// <param name="jsonPath">JSONファイルのパス</param>
-    /// <returns>読み込みに成功したかどうか</returns>
-    static void LoadParticleDefinition(const std::string& jsonPath);
+	/// <summary>
+	/// パーティクル定義の追加（JSONファイルから）
+	/// </summary>
+	/// <param name="jsonPath">JSONファイルのパス</param>
+	/// <returns>読み込みに成功したかどうか</returns>
+	static void LoadParticleDefinition(const std::string& jsonPath);
 
-    /// <summary>
-    /// パーティクル定義の追加（直接指定）
-    /// </summary>
-    /// <param name="name">パーティクルの名前</param>
-    /// <param name="definition">パーティクル定義</param>
-    static void AddParticleDefinition(const std::string& name, const ParticleDefinition& definition);
+	/// <summary>
+	/// パーティクル定義の追加（直接指定）
+	/// </summary>
+	/// <param name="name">パーティクルの名前</param>
+	/// <param name="definition">パーティクル定義</param>
+	static void AddParticleDefinition(const std::string& name, const ParticleDefinition& definition);
 
-    /// <summary>
-    /// パーティクルの発生処理
-    /// </summary>
-    /// <param name="name">発生させるパーティクルの名前</param>
-    /// <param name="translate">発生させる場所</param>
-    /// <returns>発生に成功したかどうか</returns>
-    static void Emit(const std::string& name, const Vector3& translate);
+	/// <summary>
+	/// パーティクルの発生処理
+	/// </summary>
+	/// <param name="name">発生させるパーティクルの名前</param>
+	/// <param name="translate">発生させる場所</param>
+	/// <returns>生成されたParticleGroupへのポインタ（nullptrの場合は失敗）</returns>
+	static ParticleGroup* Emit(const std::string& name, const Vector3& translate);
 
-    /// <summary>
-    /// 指定した名前のアクティブなパーティクルをすべて停止
-    /// </summary>
-    /// <param name="name">停止するパーティクルの名前</param>
-    static void StopParticle(const std::string& name);
+	/// <summary>
+	/// 指定した名前のアクティブなパーティクルをすべて停止
+	/// </summary>
+	/// <param name="name">停止するパーティクルの名前</param>
+	static void StopParticle(const std::string& name);
 
-    /// <summary>
-    /// パーティクル定義の削除
-    /// </summary>
-    /// <param name="name">削除するパーティクルの名前</param>
-    static void RemoveParticleDefinition(const std::string& name);
+	/// <summary>
+	/// パーティクル定義の削除
+	/// </summary>
+	/// <param name="name">削除するパーティクルの名前</param>
+	static void RemoveParticleDefinition(const std::string& name);
 
-    /// <summary>
-    /// 全てのパーティクルを削除
-    /// </summary>
-    static void RemoveAllParticles();
+	/// <summary>
+	/// 全てのパーティクルを削除
+	/// </summary>
+	static void RemoveAllParticles();
 
 public: /// ===設定=== ///
+	/// <summary>
+	/// パーティクルのテクスチャを設定
+	/// </summary>
+	/// <param name="name">テクスチャを設定するパーティクルの名前</param>
+	/// <param name="textureName">設定するテクスチャの名前</param>
+	static void SetTexture(const std::string& name, const std::string& textureName);
 
-    /// <summary>
-    /// パーティクルのテクスチャを設定
-    /// </summary>
-    /// <param name="name">テクスチャを設定するパーティクルの名前</param>
-    /// <param name="textureName">設定するテクスチャの名前</param>
-    static void SetTexture(const std::string& name, const std::string& textureName);
-
-    /// <summary>
-    /// 実行時パラメータ変更（型安全版）
-    /// </summary>
-    /// <param name="name">対象パーティクルの名前</param>
-    /// <param name="param">変更するパラメータ</param>
-    /// <param name="value">設定する値</param>
-    static void SetParameter(const std::string& name, ParticleParameter param, float value);
-
-    /// <summary>
-    /// アクティブなパーティクルのエミッタ位置を設定
-    /// </summary>
-    /// <param name="name">対象パーティクルの名前</param>
-    /// <param name="position">新しい位置</param>
-    /// <param name="groupIndex">グループのインデックス(-1で全グループ)</param>
-    static void SetEmitterPosition(const std::string& name, const Vector3& position, int groupIndex = -1);
-
-    /// <summary>
-    /// アクティブなパーティクルのエミッタ位置を移動
-    /// </summary>
-    /// <param name="name">対象パーティクルの名前</param>
-    /// <param name="offset">移動量</param>
-    /// <param name="groupIndex">グループのインデックス(-1で全グループ)</param>
-    static void MoveEmitterPosition(const std::string& name, const Vector3& offset, int groupIndex = -1);
-
-    /// <summary>
-    /// 指定したエミッタの回転を設定する。
-    /// </summary>
-    /// <param name="name">設定対象のエミッタを識別する名前。</param>
-    /// <param name="rotate">適用する回転を表す Vector3 型のベクトル。</param>
-    /// <param name="groupIndex">適用するグループのインデックス（省略可、デフォルトは -1）。</param>
-    static void SetEmitterRotate(const std::string& name, const Vector3& rotate, int groupIndex = -1);
+	/// <summary>
+	/// 実行時パラメータ変更（型安全版）
+	/// </summary>
+	/// <param name="name">対象パーティクルの名前</param>
+	/// <param name="param">変更するパラメータ</param>
+	/// <param name="value">設定する値</param>
+	static void SetParameter(const std::string& name, ParticleParameter param, float value);
 
 public: /// ===取得=== ///
-    /// <summary>
-    /// パーティクル定義を取得
-    /// </summary>
-    /// <param name="name">取得するパーティクルの名前</param>
-    /// <returns>パーティクル定義へのポインタ（存在しない場合はnullptr）</returns>
-    static const ParticleDefinition* GetDefinition(const std::string& name);
+	/// <summary>
+	/// パーティクル定義を取得
+	/// </summary>
+	/// <param name="name">取得するパーティクルの名前</param>
+	/// <returns>パーティクル定義へのポインタ（存在しない場合はnullptr）</returns>
+	static const ParticleDefinition* GetDefinition(const std::string& name);
 
-    /// <summary>
-    /// パーティクル定義が登録されているか確認
-    /// </summary>
-    /// <param name="name">確認するパーティクルの名前</param>
-    /// <returns>登録されている場合はtrue</returns>
-    static bool HasDefinition(const std::string& name);
+	/// <summary>
+	/// パーティクル定義が登録されているか確認
+	/// </summary>
+	/// <param name="name">確認するパーティクルの名前</param>
+	/// <returns>登録されている場合はtrue</returns>
+	static bool HasDefinition(const std::string& name);
 
-    /// <summary>
-    /// アクティブなパーティクル数を取得
-    /// </summary>
-    /// <param name="name">対象パーティクルの名前</param>
-    /// <returns>アクティブなパーティクルの総数</returns>
-    static uint32_t GetActiveParticleCount(const std::string& name);
+	/// <summary>
+	/// アクティブなパーティクル数を取得
+	/// </summary>
+	/// <param name="name">対象パーティクルの名前</param>
+	/// <returns>アクティブなパーティクルの総数</returns>
+	static uint32_t GetActiveParticleCount(const std::string& name);
 
-    /// <summary>
-    /// 登録されているパーティクル定義の一覧を取得
-    /// </summary>
-    /// <returns>定義名のリスト</returns>
-    static std::vector<std::string> GetDefinitionNames();
+	/// <summary>
+	/// 登録されているパーティクル定義の一覧を取得
+	/// </summary>
+	/// <returns>定義名のリスト</returns>
+	static std::vector<std::string> GetDefinitionNames();
 
-    /// <summary>
+	/// <summary>
     /// アクティブなパーティクルグループ数を取得
     /// </summary>
     /// <param name="name">対象パーティクルの名前</param>
     /// <returns>アクティブなグループ数</returns>
-    static size_t GetActiveGroupCount(const std::string& name);
+	static size_t GetActiveGroupCount(const std::string& name);
 };
 
 ============================================================
@@ -33037,7 +32942,7 @@ void BaseEnemy::OnCollision(Collider* collider) {
 
 				// HPを減少
 				baseInfo_.HP--;
-				ParticleService::Emit("Game", transform_.translate);
+				hitParticle_ = ParticleService::Emit("Game", transform_.translate);
 
 				// タイマーをセット
 				knockbackInfo_.hitColorTimer = knockbackInfo_.hitColorDuration;
@@ -33137,8 +33042,12 @@ void BaseEnemy::advanceTimer() {
 		// 消えるまでの時間を進める
 		disappearTimer_ -= baseInfo_.deltaTime;
 		if (disappearTimer_ <= 0) {
-			ParticleService::Emit("nakagawa", transform_.translate);
+			deathParticle_ = ParticleService::Emit("nakagawa", transform_.translate);
 			isTentativeDeath_ = true;
+			if (hitParticle_ != nullptr) {
+				hitParticle_->Stop();
+				hitParticle_ = nullptr;
+			}
 		}
 	} else {
 
@@ -33189,6 +33098,7 @@ File Path: Project/application/Game/Entity/Enemy/Base/BaseEnemy.h
 
 /// ===前方宣言=== ///
 class Player;
+class ParticleGroup;
 
 /// ===StateType=== ///
 enum class StateType {
@@ -33343,6 +33253,9 @@ protected: /// ===変数の宣言=== ///
 	bool isCollision_ = false;
 
 private:
+	ParticleGroup* hitParticle_ = nullptr;
+	ParticleGroup* deathParticle_ = nullptr;
+
 	// ノックバック情報
 	KnockbackInfo knockbackInfo_;
 
@@ -33351,8 +33264,6 @@ private:
 	bool isTentativeDeath_ = false;
 
 protected: /// ===関数の宣言=== ///
-
-	
 
 	/// <summary>
 	/// 派生側で型固有のチューニング値をコピーするための関数
@@ -34986,7 +34897,7 @@ void EnemyPrePareAttackState::Enter(BaseEnemy* enemy) {
 	// フラグをリセット
 	enemy_->SetIsRotationComplete(false);
 	// パーティクルの再生
-	//ParticleService::Emit("EnemyPrePareAttack", enemy_->GetTransform().translate);
+	activeParticle_ = ParticleService::Emit("EnemyPrePareAttack", enemy_->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 
@@ -35010,8 +34921,10 @@ void EnemyPrePareAttackState::Update(BaseEnemy* enemy) {
 		/// ===Stateの変更=== ///
 		if (enemy_->GetIsRotationComplete()) {
 			// Particleの停止
-			//ParticleService::StopParticle("EnemyPrePareAttack");
-
+			if (activeParticle_) {
+				activeParticle_->Stop();
+				activeParticle_ = nullptr;
+			}
 			// 回転完了フラグをリセット
 			enemy_->SetIsRotationComplete(false);
 			// 攻撃方向を設定
@@ -35050,6 +34963,8 @@ File Path: Project/application/Game/Entity/Enemy/State/EnemyPrePareAttackState.h
 #include "Base/EnemyState.h"
 #include "Math/Vector3.h"
 
+class ParticleGroup;
+
 ///-------------------------------------------/// 
 /// PrePareAttackState
 ///-------------------------------------------///
@@ -35076,6 +34991,8 @@ public:
 	void Finalize() override;
 
 private:
+	ParticleGroup* activeParticle_ = nullptr;
+
 	/// ===タイマー=== ///
 	float activeTimer_ = 0.0f;	// アクティブタイマー
 	float acticeTime = 1.6f;	// アクティブ時間
@@ -38717,7 +38634,6 @@ File Path: Project/application/Game/Entity/Player/State/RootState.cpp
 #include "RootState.h"
 // Service
 #include "Engine/System/Service/InputService.h"
-#include "Engine/System/Service/ParticleService.h"
 // Player, Camera
 #include "application/Game/Entity/Player/Player.h"
 // State
@@ -38833,7 +38749,6 @@ File Path: Project/application/Game/Entity/Player/Weapon/PlayerWeapon.cpp
 #include "Engine/System/Service/ColliderService.h"
 #include "Engine/System/Service/DeltaTimeSevice.h"
 #include "Engine/System/Service/ParticleService.h"
-
 // ImGui
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -38896,9 +38811,11 @@ void PlayerWeapon::Update() {
 		attackInfo_.isAttacking = false;
 		attackInfo_.progress = 1.0f;
 		SetActive(false);
-		ParticleService::StopParticle("WeaponAttack");
 		ColliderService::RemoveCollider(this);
 		OBBCollider::Update();
+		// パーティクルの削除
+		attackParticle_->Stop();
+		attackParticle_ = nullptr;
 		return;
 	}
 
@@ -38906,7 +38823,10 @@ void PlayerWeapon::Update() {
 	UpdateBezierTrajectory();
 
 	// Particleの軌道更新
-	ParticleService::SetEmitterPosition("WeaponAttack", object3d_->GetWorldTranslate());
+	if (attackParticle_) {
+		attackParticle_->SetEmitterPosition(object3d_->GetWorldTranslate());
+	}
+	
 
 	/// ===OBBCollider=== ///
 	OBBCollider::Update();
@@ -39016,9 +38936,12 @@ void PlayerWeapon::StartAttack(
 	SetActive(true);
 
 	// Particleの開始
-	ParticleService::StopParticle("WeaponAttack");
-	ParticleService::Emit("WeaponAttack", trajectoryPoints.front().position);
-	ParticleService::SetEmitterPosition("WeaponAttack", object3d_->GetWorldTranslate());
+	if (attackParticle_) {
+		attackParticle_->Stop();
+		attackParticle_ = nullptr;
+	}
+	attackParticle_ = ParticleService::Emit("WeaponAttack", trajectoryPoints.front().position);
+	attackParticle_->SetEmitterPosition(object3d_->GetWorldTranslate());
 
 	// 初期位置を設定
 	transform_.translate = trajectoryPoints.front().position;
@@ -39129,6 +39052,7 @@ File Path: Project/application/Game/Entity/Player/Weapon/PlayerWeapon.h
 
 /// ===前方宣言=== ///
 class Player;
+class ParticleGroup;
 
 ///=====================================================/// 
 /// PlayerWeapon
@@ -39202,7 +39126,7 @@ private:
 	Player* player_ = nullptr;
 
 	// Particle
-	//std::shared_ptr<AttackTrajectoryParticle> particle_;
+	ParticleGroup* attackParticle_ = nullptr;
 
 	/// ===基本情報=== ///
 	struct BaseInfo {
