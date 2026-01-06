@@ -17,8 +17,8 @@ ParticleData ParticleFactory::CreateParticle(
     // スケールの設定
     particle.transform.scale = GenerateRandomScale(definition, randomEngine);
 
-    // 回転の初期化
-    particle.transform.rotate = { 0.0f, 0.0f, 0.0f };
+    // 初期回転の設定
+    particle.transform.rotate = GenerateRandomInitialRotation(definition, randomEngine);
 
     // 位置の設定（爆発範囲を考慮）
     Vector3 offset = { 0.0f, 0.0f, 0.0f };
@@ -227,6 +227,36 @@ Vector3 ParticleFactory::GenerateRandomRotationSpeed(
         distY(randomEngine),
         distZ(randomEngine)
     };
+}
+
+///-------------------------------------------/// 
+/// ランダム初期回転角度生成
+///-------------------------------------------///
+Vector3 ParticleFactory::GenerateRandomInitialRotation(
+    const ParticleDefinition& definition,
+    std::mt19937& randomEngine) {
+
+    if (definition.rotation.randomInitialRotation) {
+        // ランダム初期回転の場合、最小〜最大の範囲でランダム生成
+        std::uniform_real_distribution<float> distX(
+            definition.rotation.initialRotationMin.x,
+            definition.rotation.initialRotationMax.x);
+        std::uniform_real_distribution<float> distY(
+            definition.rotation.initialRotationMin.y,
+            definition.rotation.initialRotationMax.y);
+        std::uniform_real_distribution<float> distZ(
+            definition.rotation.initialRotationMin.z,
+            definition.rotation.initialRotationMax.z);
+
+        return {
+            distX(randomEngine),
+            distY(randomEngine),
+            distZ(randomEngine)
+        };
+    } else {
+        // 固定初期回転の場合、最小値を使用
+        return definition.rotation.initialRotationMin;
+    }
 }
 
 ///-------------------------------------------/// 

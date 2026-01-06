@@ -79,6 +79,9 @@ struct ParticleRotationSettings {
 	Vector3 rotationSpeedMax = { 0.0f, 0.0f, 0.0f };  // 回転速度最大
 	bool randomRotation = false;                      // ランダム回転を使用
 	bool enableRotation = false;                      // 回転を有効化
+	Vector3 initialRotationMin = { 0.0f, 0.0f, 0.0f }; // 初期回転角度最小
+	Vector3 initialRotationMax = { 0.0f, 0.0f, 0.0f }; // 初期回転角度最大
+	bool randomInitialRotation = false;               // 初期回転をランダム化
 };
 
 ///=====================================================/// 

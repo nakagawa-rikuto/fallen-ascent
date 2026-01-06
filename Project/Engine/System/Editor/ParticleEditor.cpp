@@ -613,6 +613,40 @@ void ParticleEditor::RenderRotationSettings() {
         }
 
         ImGui::Spacing();
+        ImGui::Separator();
+
+        /// ===初期回転角度の設定=== ///
+        ImGui::SeparatorText("初期回転角度");
+
+        if (ImGui::Checkbox("ランダム初期回転", &currentDefinition_.rotation.randomInitialRotation)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+        ImGui::TextDisabled("パーティクル生成時の回転角度をランダムにする");
+
+        ImGui::Spacing();
+
+        bool initialRotationChanged = false;
+
+        if (currentDefinition_.rotation.randomInitialRotation) {
+            ImGui::Text("初期回転角度範囲（ラジアン）");
+            initialRotationChanged |= ImGui::DragFloat3("最小初期回転", &currentDefinition_.rotation.initialRotationMin.x, 0.1f, -6.28f, 6.28f);
+            initialRotationChanged |= ImGui::DragFloat3("最大初期回転", &currentDefinition_.rotation.initialRotationMax.x, 0.1f, -6.28f, 6.28f);
+            ImGui::TextDisabled("各パーティクルの初期回転はこの範囲でランダム");
+        } else {
+            ImGui::Text("固定初期回転角度（ラジアン）");
+            initialRotationChanged |= ImGui::DragFloat3("初期回転", &currentDefinition_.rotation.initialRotationMin.x, 0.1f, -6.28f, 6.28f);
+            ImGui::TextDisabled("全てのパーティクルが同じ角度で生成される");
+        }
+
+        if (initialRotationChanged && previewParticle_) {
+            // 初期回転の変更は新規生成されるパーティクルに影響
+            // 既存のパーティクルには影響しないため、定義のみ更新
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+
+        ImGui::Spacing();
     } else {
         ImGui::Spacing();
         ImGui::TextDisabled("回転が無効化されています");

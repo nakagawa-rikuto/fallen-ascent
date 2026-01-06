@@ -77,6 +77,13 @@ private:
         std::mt19937& randomEngine);
 
     /// <summary>
+    /// ランダムな初期回転角度を生成
+    /// </summary>
+    static Vector3 GenerateRandomInitialRotation(
+        const ParticleDefinition& definition,
+        std::mt19937& randomEngine);
+
+    /// <summary>
     /// ランダムな寿命を生成
     /// </summary>
     static float GenerateRandomLifetime(
