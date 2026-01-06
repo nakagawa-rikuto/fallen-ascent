@@ -61,6 +61,13 @@ private:
         const ParticleDefinition& definition,
         std::mt19937& randomEngine,
         const Vector3& position);
+    
+    /// <summary>
+    /// ランダムな初期回転を生成
+    /// </summary>
+    static Vector3 GenerateRandomInitialRotation(
+        const ParticleDefinition& definition,
+        std::mt19937& randomEngine);
 
     /// <summary>
     /// ランダムなスケールを生成

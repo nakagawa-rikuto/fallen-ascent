@@ -29,11 +29,11 @@
             "billboardRotationSpeed": 3.0,
             "enableBillboardRotation": false,
             "enableSwirling": true,
-            "expansionRate": 1.899999976158142,
+            "expansionRate": 5.0,
             "followEmitter": false,
             "followStrength": 1.0,
             "rotationInfluence": 5.0,
-            "swirlingSpeed": 4.400000095367432,
+            "swirlingSpeed": 5.599999904632568,
             "useRotationInfluence": false,
             "velocityDamping": 0.9800000190734863
         },
@@ -47,9 +47,9 @@
     },
     "appearance": {
         "endColor": [
-            0.0,
-            0.07594943046569824,
-            1.0,
+            0.9662446975708008,
+            0.5667005181312561,
+            0.5667005181312561,
             1.0
         ],
         "endScale": [
@@ -58,9 +58,9 @@
             0.5
         ],
         "startColor": [
-            0.405063271522522,
-            0.0,
-            0.0,
+            1.0,
+            0.9151310324668884,
+            0.04219406843185425,
             1.0
         ],
         "startScaleMax": [
@@ -74,7 +74,7 @@
             1.0
         ],
         "texturePath": "Fire",
-        "useColorGradient": false,
+        "useColorGradient": true,
         "useScaleAnimation": false
     },
     "emission": {
@@ -99,18 +99,18 @@
             1.0,
             1.0
         ],
-        "gravity": -1.2000000476837158,
+        "gravity": 1.600000023841858,
         "upwardForce": 2.0,
-        "useRandomVelocity": false,
+        "useRandomVelocity": true,
         "velocityMax": [
-            0.0,
-            2.0,
-            0.0
+            2.9000000953674316,
+            4.199999809265137,
+            2.799999952316284
         ],
         "velocityMin": [
+            -2.700000047683716,
             0.0,
-            1.0,
-            0.0
+            -2.799999952316284
         ]
     },
     "rotation": {

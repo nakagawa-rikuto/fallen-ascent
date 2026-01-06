@@ -586,7 +586,36 @@ void ParticleEditor::RenderRotationSettings() {
     if (currentDefinition_.rotation.enableRotation) {
         ImGui::Spacing();
 
-        if (ImGui::Checkbox("ランダム回転", &currentDefinition_.rotation.randomRotation)) {
+        // ===初期回転設定=== ///
+        ImGui::SeparatorText("初期回転");
+
+        if (ImGui::Checkbox("初期回転をランダム化", &currentDefinition_.rotation.randomInitialRotation)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+
+        bool initialRotationChanged = false;
+        if (currentDefinition_.rotation.randomInitialRotation) {
+            ImGui::Text("初期回転範囲（ラジアン）");
+            initialRotationChanged |= ImGui::DragFloat3("最小初期回転", &currentDefinition_.rotation.initialRotationMin.x, 0.01f, -6.28f, 6.28f);
+            initialRotationChanged |= ImGui::DragFloat3("最大初期回転", &currentDefinition_.rotation.initialRotationMax.x, 0.01f, -6.28f, 6.28f);
+        } else {
+            ImGui::Text("固定初期回転（ラジアン）");
+            initialRotationChanged |= ImGui::DragFloat3("初期回転", &currentDefinition_.rotation.initialRotationMin.x, 0.01f, -6.28f, 6.28f);
+        }
+
+        if (initialRotationChanged && previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        /// ===回転速度設定=== ///
+        ImGui::SeparatorText("回転速度");
+
+        if (ImGui::Checkbox("ランダム回転速度", &currentDefinition_.rotation.randomRotation)) {
             if (previewParticle_) {
                 previewParticle_->SetDefinition(currentDefinition_);
             }
