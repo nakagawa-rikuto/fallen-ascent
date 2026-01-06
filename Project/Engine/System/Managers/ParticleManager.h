@@ -1,28 +1,25 @@
 #pragma once
 /// ===include=== ///
+// ParticleGroup
+#include "Engine/Graphics/Particle/ParticleGroup.h"
+#include "Engine/Graphics/Particle/ParticleDefinition.h"
+#include "Engine/Graphics/Particle/ParticleParameter.h"
 // c++
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-// ParticleGroup
-#include "Engine/Graphics/Particle/ParticleGroup.h"
-#include "Engine/Graphics/Particle/ParticleDefinition.h"
-#include "Engine/Graphics/Particle/ParticleParameter.h"
 
 /// ===前方宣言=== ///
 class GameCamera;
 
 ///=====================================================/// 
-/// ParticleManager（新方式のみ）
-/// 定義ベースの管理システム
+/// ParticleManager
 ///=====================================================///
 class ParticleManager {
 public:
 	ParticleManager() = default;
 	~ParticleManager();
-
-	/// ===定義の管理=== ///
 
 	/// <summary>
 	/// パーティクル定義の追加（JSONファイルから）
@@ -39,12 +36,12 @@ public:
 	void AddParticleDefinition(const std::string& name, const ParticleDefinition& definition);
 
 	/// <summary>
-    /// パーティクルの発生処理
-    /// </summary>
-    /// <param name="name">発生させるパーティクルの名前</param>
-    /// <param name="translate">発生させる場所</param>
-    /// <returns>発生に成功したかどうか</returns>
-	void Emit(const std::string& name, const Vector3& translate);
+	/// パーティクルの発生処理
+	/// </summary>
+	/// <param name="name">発生させるパーティクルの名前</param>
+	/// <param name="translate">発生させる場所</param>
+	/// <returns>生成されたParticleGroupへのポインタ（nullptrの場合は失敗）</returns>
+	ParticleGroup* Emit(const std::string& name, const Vector3& translate);
 
 	/// <summary>
 	/// パーティクル全体の更新処理
@@ -91,30 +88,6 @@ public: /// ===設定=== ///
 	/// <param name="value">設定する値</param>
 	void SetParameter(const std::string& name, ParticleParameter param, float value);
 
-	/// <summary>
-	/// アクティブなパーティクルのエミッタ位置を設定
-	/// </summary>
-	/// <param name="name">対象パーティクルの名前</param>
-	/// <param name="position">新しい位置</param>
-	/// <param name="groupIndex">グループのインデックス(-1で全グループ)</param>
-	void SetEmitterPosition(const std::string& name, const Vector3& position, int groupIndex = -1);
-
-	/// <summary>
-	/// アクティブなパーティクルのエミッタ位置を移動
-	/// </summary>
-	/// <param name="name">対象パーティクルの名前</param>
-	/// <param name="offset">移動量</param>
-	/// <param name="groupIndex">グループのインデックス(-1で全グループ)</param>
-	void MoveEmitterPosition(const std::string& name, const Vector3& offset, int groupIndex = -1);
-
-	/// <summary>
-	/// 指定された名前のエミッターの回転を設定します。
-	/// </summary>
-	/// <param name="name">設定対象のエミッターを識別する名前。</param>
-	/// <param name="rotation">エミッターに適用する回転（Vector3で表現）。</param>
-	/// <param name="groupIndex">適用先のグループインデックス。省略時は -1（グループ未指定または既定動作を示す）。</param>
-	void SetEmitterRotation(const std::string& name, const Vector3& rotation, int groupIndex = -1);
-
 public: /// ===情報取得=== ///
 
 	/// <summary>
@@ -151,18 +124,10 @@ public: /// ===情報取得=== ///
 	/// <returns>アクティブなグループ数</returns>
 	size_t GetActiveGroupCount(const std::string& name) const;
 
-	/// <summary>
-	/// 特定のグループのエミッタ位置を取得
-	/// </summary>
-	/// <param name="name">対象パーティクルの名前</param>
-	/// <param name="groupIndex">グループのインデックス(0-based)</param>
-	/// <returns>エミッタ位置(グループが存在しない場合はゼロベクトル)</returns>
-	Vector3 GetEmitterPosition(const std::string& name, size_t groupIndex = 0) const;
-
 private:
 	// 定義ベース
 	std::map<std::string, ParticleDefinition> definitions_;
 
 	// アクティブなパーティクル
-	std::map<std::string, std::vector<std::unique_ptr<ParticleGroup>>> activeParticles_;
+	std::vector<std::unique_ptr<ParticleGroup>> activeParticles_;
 };

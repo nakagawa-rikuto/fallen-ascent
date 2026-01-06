@@ -8,7 +8,6 @@
 #include "Engine/System/Service/ColliderService.h"
 #include "Engine/System/Service/DeltaTimeSevice.h"
 #include "Engine/System/Service/ParticleService.h"
-
 // ImGui
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -71,9 +70,11 @@ void PlayerWeapon::Update() {
 		attackInfo_.isAttacking = false;
 		attackInfo_.progress = 1.0f;
 		SetActive(false);
-		ParticleService::StopParticle("WeaponAttack");
 		ColliderService::RemoveCollider(this);
 		OBBCollider::Update();
+		// パーティクルの削除
+		attackParticle_->Stop();
+		attackParticle_ = nullptr;
 		return;
 	}
 
@@ -81,7 +82,10 @@ void PlayerWeapon::Update() {
 	UpdateBezierTrajectory();
 
 	// Particleの軌道更新
-	ParticleService::SetEmitterPosition("WeaponAttack", object3d_->GetWorldTranslate());
+	if (attackParticle_) {
+		attackParticle_->SetEmitterPosition(object3d_->GetWorldTranslate());
+	}
+	
 
 	/// ===OBBCollider=== ///
 	OBBCollider::Update();
@@ -191,9 +195,12 @@ void PlayerWeapon::StartAttack(
 	SetActive(true);
 
 	// Particleの開始
-	ParticleService::StopParticle("WeaponAttack");
-	ParticleService::Emit("WeaponAttack", trajectoryPoints.front().position);
-	ParticleService::SetEmitterPosition("WeaponAttack", object3d_->GetWorldTranslate());
+	if (attackParticle_) {
+		attackParticle_->Stop();
+		attackParticle_ = nullptr;
+	}
+	attackParticle_ = ParticleService::Emit("WeaponAttack", trajectoryPoints.front().position);
+	attackParticle_->SetEmitterPosition(object3d_->GetWorldTranslate());
 
 	// 初期位置を設定
 	transform_.translate = trajectoryPoints.front().position;

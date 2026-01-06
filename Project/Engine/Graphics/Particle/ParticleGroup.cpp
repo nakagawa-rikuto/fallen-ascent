@@ -77,6 +77,18 @@ void ParticleGroup::Update() {
     // デルタタイムの取得
     kDeltaTime_ = DeltaTimeSevice::GetDeltaTime();
 
+    // 停止中の場合は新規発生を止めて、既存パーティクルの寿命を短縮
+    if (isStopped_) {
+        // 既存のパーティクルの寿命を強制終了
+        for (auto& particle : group_.particles) {
+            particle.currentTime = particle.lifeTime;  // 即座に寿命を終了させる
+        }
+        // パーティクルの更新のみ実行（発生処理はスキップ）
+        UpdateParticles();
+        return;
+    }
+
+    // 通常時の処理
     // パーティクルの発生処理
     Emit();
 
@@ -94,9 +106,19 @@ void ParticleGroup::Draw(BlendMode mode) {
 }
 
 ///-------------------------------------------/// 
+/// 停止処理
+///-------------------------------------------///
+void ParticleGroup::Stop() { isStopped_ = true; }
+
+///-------------------------------------------/// 
 /// 終了判定
 ///-------------------------------------------///
 bool ParticleGroup::IsFinish() const {
+    // 停止されている場合、全パーティクルが消えたら終了
+    if (isStopped_) {
+        return group_.particles.empty();
+    }
+
     // バーストモードの場合は全パーティクルが消えたらtrue
     if (definition_.emission.isBurst) {
         return group_.particles.empty() && group_.hasEmitted;
@@ -105,6 +127,11 @@ bool ParticleGroup::IsFinish() const {
     // 連続発生モードの場合は常にfalse（手動で停止する必要がある）
     return false;
 }
+
+///-------------------------------------------/// 
+/// 停止判定
+///-------------------------------------------///
+bool ParticleGroup::IsStopped() const { return isStopped_; }
 
 ///-------------------------------------------/// 
 /// Setter

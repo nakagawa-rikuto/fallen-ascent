@@ -40,10 +40,21 @@ public:
 	void Draw(BlendMode mode);
 
 	/// <summary>
+	/// 停止処理
+	/// </summary>
+	void Stop();
+
+	/// <summary>
 	/// 生存しているかを判定する関数
 	/// </summary>
 	/// <returns>処理が完了している場合は true、そうでない場合は false を返します。</returns>
 	bool IsFinish() const;
+
+	/// <summary>
+	/// 停止中かどうか
+	/// </summary>
+	/// <returns></returns>
+	bool IsStopped() const;
 
 public: /// ===Setter=== ///
 
@@ -120,9 +131,11 @@ private:
 	};
 
 	Group group_{};
-	ParticleDefinition definition_;                  // パーティクル定義
-	float kDeltaTime_ = 1.0f / 60.0f;                // デルタタイム
-	std::mt19937 randomEngine_;                      // 乱数生成器
+	ParticleDefinition definition_;     // パーティクル定義
+	float kDeltaTime_ = 1.0f / 60.0f;   // デルタタイム
+	std::mt19937 randomEngine_;         // 乱数生成器
+
+	bool isStopped_ = false;		// 停止フラグ
 
 private:
 

@@ -208,7 +208,7 @@ void BaseEnemy::OnCollision(Collider* collider) {
 
 				// HPを減少
 				baseInfo_.HP--;
-				ParticleService::Emit("Game", transform_.translate);
+				hitParticle_ = ParticleService::Emit("Game", transform_.translate);
 
 				// タイマーをセット
 				knockbackInfo_.hitColorTimer = knockbackInfo_.hitColorDuration;
@@ -308,8 +308,12 @@ void BaseEnemy::advanceTimer() {
 		// 消えるまでの時間を進める
 		disappearTimer_ -= baseInfo_.deltaTime;
 		if (disappearTimer_ <= 0) {
-			ParticleService::Emit("nakagawa", transform_.translate);
+			deathParticle_ = ParticleService::Emit("nakagawa", transform_.translate);
 			isTentativeDeath_ = true;
+			if (hitParticle_ != nullptr) {
+				hitParticle_->Stop();
+				hitParticle_ = nullptr;
+			}
 		}
 	} else {
 

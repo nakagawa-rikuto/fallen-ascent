@@ -7,6 +7,7 @@
 
 /// ===前方宣言=== ///
 class Player;
+class ParticleGroup;
 
 ///=====================================================/// 
 /// PlayerWeapon
@@ -80,7 +81,7 @@ private:
 	Player* player_ = nullptr;
 
 	// Particle
-	//std::shared_ptr<AttackTrajectoryParticle> particle_;
+	ParticleGroup* attackParticle_ = nullptr;
 
 	/// ===基本情報=== ///
 	struct BaseInfo {
