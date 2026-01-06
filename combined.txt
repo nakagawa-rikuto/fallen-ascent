@@ -30099,6 +30099,16 @@ File Path: Project/Math/sMath.cpp
 ///=====================================================///
 float Math::Pi() { return std::numbers::pi_v<float>; }
 
+///-------------------------------------------/// 
+/// 角度の正規化
+///-------------------------------------------/// 
+float Math::NormalizeAngle(float angle) {
+    // 角度を [-π, π] に正規化
+    while (angle > std::numbers::pi_v<float>) angle -= 2.0f * std::numbers::pi_v<float>;
+    while (angle < -std::numbers::pi_v<float>) angle += 2.0f * std::numbers::pi_v<float>;
+    return angle;
+}
+
 ///=====================================================///
 /// クロス積の計算
 ///=====================================================///
@@ -30254,6 +30264,7 @@ Quaternion Math::LookRotation(Vector3 forward, Vector3 up) {
 ///-------------------------------------------/// 
 /// 軸の回転を行うQuaternionを返す関数
 ///-------------------------------------------///
+// X軸回転Quaternionを返す関数
 Quaternion Math::RotateX(float angle) {
     float half = angle * 0.5f;
     return Quaternion(
@@ -30263,7 +30274,7 @@ Quaternion Math::RotateX(float angle) {
         std::cos(half)         // w
     );
 }
-
+// Y軸回転Quaternionを返す関数
 Quaternion Math::RotateY(float angle) {
     float half = angle * 0.5f;
     return Quaternion(
@@ -30273,7 +30284,7 @@ Quaternion Math::RotateY(float angle) {
         std::cos(half)         // w
     );
 }
-
+// Z軸回転Quaternionを返す関数
 Quaternion Math::RotateZ(float angle) {
     float half = angle * 0.5f;
     return Quaternion(
@@ -30285,14 +30296,31 @@ Quaternion Math::RotateZ(float angle) {
 }
 
 ///-------------------------------------------/// 
-/// 
+/// ピッチ回転を適用したQuaternionを返す関数
 ///-------------------------------------------///
-// 
-float Math::NormalizeAngle(float angle) {
-    // 角度を [-π, π] に正規化
-    while (angle > std::numbers::pi_v<float>) angle -= 2.0f * std::numbers::pi_v<float>;
-    while (angle < -std::numbers::pi_v<float>) angle += 2.0f * std::numbers::pi_v<float>;
-    return angle;
+Quaternion Math::ApplyPitchToCurrentRotation(const Quaternion& currentYRotation, float pitchAngleDegrees) {
+    // X軸周りの回転クォータニオンを作成
+    float halfAngle = pitchAngleDegrees * 0.5f * (Pi() / 180.0f); // ラジアンに変換
+    Quaternion pitchRotation;
+    pitchRotation.x = sinf(halfAngle);
+    pitchRotation.y = 0.0f;
+    pitchRotation.z = 0.0f;
+    pitchRotation.w = cosf(halfAngle);
+
+    // 現在のY軸回転に、X軸回転を合成
+    Quaternion result;
+
+    float w1 = currentYRotation.w, x1 = currentYRotation.x;
+    float y1 = currentYRotation.y, z1 = currentYRotation.z;
+    float w2 = pitchRotation.w, x2 = pitchRotation.x;
+    float y2 = pitchRotation.y, z2 = pitchRotation.z;
+
+    result.w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2;
+    result.x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2;
+    result.y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2;
+    result.z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2;
+
+    return result;
 }
 
 ///-------------------------------------------/// 
@@ -30352,7 +30380,7 @@ Quaternion Math::SLerp(const Quaternion& start, const Quaternion& end, float t) 
 
     // 逆方向補間を防ぐために符号を反転
     if (dot < 0.0f) {
-        q2Modified = Conjugate(q2Modified);
+        q2Modified = Quaternion(-q2Modified.x, -q2Modified.y, -q2Modified.z, -q2Modified.w);
         dot = -dot;
     }
 
@@ -30387,6 +30415,13 @@ namespace Math {
 	/// </summary>
 	/// <returns>円周率 π を float 型で返します。</returns>
 	float Pi();
+
+	/// <summary>
+	/// 角度を標準的な範囲に正規化
+	/// </summary>
+	/// <param name="angle">正規化する角度。通常はラジアンで表されます。</param>
+	/// <returns>正規化された角度（入力と同じ単位）。通常は -π〜π または 0〜2π の範囲に収まるように変換されます。</returns>
+	float NormalizeAngle(float angle);
 
 	/// <summary>
 	/// 2つの3次元ベクトルの外積（クロス積）を計算して返す
@@ -30504,12 +30539,14 @@ namespace Math {
 	Quaternion RotateZ(float angle);
 
 	/// <summary>
-	/// 角度を標準的な範囲に正規化
+	/// 与えられた現在のY回転にピッチ回転（X軸周り）を適用した新しい四元数を生成して返します。
 	/// </summary>
-	/// <param name="angle">正規化する角度。通常はラジアンで表されます。</param>
-	/// <returns>正規化された角度（入力と同じ単位）。通常は -π〜π または 0〜2π の範囲に収まるように変換されます。</returns>
-	float NormalizeAngle(float angle);
+	/// <param name="currentYRotation">現在のY回転を表す四元数（const 参照）。この四元数にピッチを適用して結果を作成します。</param>
+	/// <param name="pitchAngleDegrees">適用するピッチ角（度単位）。正の角度の向きは座標系の定義に依存します。</param>
+	/// <returns>ピッチが適用された新しい Quaternion。元の四元数は変更されません。</returns>
+	Quaternion ApplyPitchToCurrentRotation(const Quaternion& currentYRotation, float pitchAngleDegrees);
 
+#pragma region Lerp・SLerp
 	/// <summary>
 	/// start と end の間を t に応じて線形補間してその値を返す
 	/// </summary>
@@ -30554,6 +30591,7 @@ namespace Math {
 	/// <param name="t">補間係数。通常は 0.0（start）から 1.0（end）の範囲で指定します。範囲外の値は外挿となる場合があります。</param>
 	/// <returns>指定した係数に対応する補間後のクォータニオン。通常は正規化されたクォータニオンが返されます。</returns>
 	Quaternion SLerp(const Quaternion& start, const Quaternion& end, float t);
+#pragma endregion
 }
 
 
@@ -33064,23 +33102,30 @@ void BaseEnemy::ChangeState(std::unique_ptr<EnemyState> newState) {
 /// 回転更新関数
 ///-------------------------------------------///
 void BaseEnemy::UpdateRotationTowards(const Vector3& direction, float slerpT) {
-	if (Length(direction) < 0.001f) return;
+	// 方向ベクトルのY成分を0にして水平方向のみを考慮
+	Vector3 horizontalDir = { direction.x, 0.0f, direction.z };
 
-	// forward方向からターゲットクォータニオンを作成
-	Quaternion targetRotation = Math::LookRotation(direction, Vector3(0.0f, 1.0f, 0.0f));
+	// 値が小さすぎる場合は何もしない
+	if (Length(horizontalDir) < 0.01f) return;
+
+	// forward方向からターゲットクォータニオンを作成(Y軸回転のみ)
+	Quaternion targetRotation = Math::LookRotation(horizontalDir, Vector3(0.0f, 1.0f, 0.0f));
+
+	// Quaternionの内積で類似度を計算
+	float dotProduct = Dot(transform_.rotate, targetRotation);
+	float absDot = std::abs(dotProduct);
+
+	// 0.9999以上なら十分近い
+	if (absDot > 0.99f) {
+		isRotationComplete_ = true;
+		return; // 既に向いているので処理終了
+	}
+	// 回転が完了していない場合はフラグをリセット
+	isRotationComplete_ = false;
 
 	// SLerp補間
 	Quaternion result = Math::SLerp(transform_.rotate, targetRotation, slerpT);
 	transform_.rotate = Normalize(result); // 正規化でスケール崩れ防止
-
-	// 回転が完了したかをチェック
-	Quaternion diff = transform_.rotate - targetRotation;
-	float rotationDiff = Math::Norm(diff);
-
-	// 回転差分が十分小さければ完了フラグを立てる
-	if (rotationDiff < 0.01f) {
-		isRotationComplete_ = true;
-	}
 }
 
 ///-------------------------------------------/// 
@@ -33274,6 +33319,7 @@ public: /// ===Setter=== ///
 	void SetIsRotationComplete(bool flag) { isRotationComplete_ = flag; };
 	// AttackDirection
 	void SetAttackDirection(const Vector3& dir) { attackInfo_.direction = dir; };
+	void SetPlayerPos(const Vector3& pos) { attackInfo_.playerPos = pos; };
 	
 
 protected: /// ===変数の宣言=== ///
@@ -33426,8 +33472,6 @@ void CloseRangeEnemy::OnCollision(Collider* collider) {
 void CloseRangeEnemy::StartAttack() {
 	// 攻撃開始
 	attackInfo_.isAttack = true;
-	// ターゲットの位置を保存
-	attackInfo_.playerPos = player_->GetTransform().translate;
 	// 攻撃時間の設定
 	attackInfo_.timer = 1.0f;
 	// 移動ベクトルを設定
@@ -33438,8 +33482,6 @@ void CloseRangeEnemy::StartAttack() {
 /// 攻撃処理
 ///-------------------------------------------///
 void CloseRangeEnemy::Attack() {
-	// 早期リターン
-	if (!player_) return;
 
 	// プレイヤーとの差を計算
 	Vector3 toTarget = attackInfo_.playerPos - transform_.translate;
@@ -34133,8 +34175,6 @@ void LongRangeEnemy::OnCollision(Collider* collider) {
 void LongRangeEnemy::StartAttack() {
 	// 攻撃開始
 	attackInfo_.isAttack = true;
-	// ターゲットの位置を保存
-	attackInfo_.playerPos = player_->GetTransform().translate;
 	// 攻撃時間の設定
 	attackInfo_.timer = 1.0f;
 }
@@ -34143,8 +34183,6 @@ void LongRangeEnemy::StartAttack() {
 /// 攻撃処理
 ///-------------------------------------------///
 void LongRangeEnemy::Attack() {
-	// 早期リターン
-	if (!player_) return;
 
 	// 弾の生成
 	auto bullet = std::make_unique<LongRangeEnemeyBullet>();
@@ -34764,6 +34802,7 @@ void EnemyAttackState::Update(BaseEnemy * enemy) {
 		enemy_->SetColor({ 1.0f, 0.0f, 1.0f, 1.0f }); // 元の色に戻す
 		// MoveStateに移行
 		enemy_->ChangeState(std::make_unique<EnemyMoveState>());
+		return;
 	}
 }
 
@@ -34922,8 +34961,13 @@ File Path: Project/application/Game/Entity/Enemy/State/EnemyPrePareAttackState.c
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
+// Service
+#include "Engine/System/Service/ParticleService.h"
 // State
 #include "EnemyAttackState.h"
+// Math
+#include "Math/sMath.h"
+#include "Math/EasingMath.h"
 
 ///-------------------------------------------/// 
 /// ステートに入った時に呼ばれる処理
@@ -34936,6 +34980,13 @@ void EnemyPrePareAttackState::Enter(BaseEnemy* enemy) {
 	enemy_->SetColor({ 0.0f, 0.0f, 1.0f, 1.0f });
 	// 実行時間の設定
 	activeTimer_ = acticeTime;
+	// 向きの初期化
+	attackDirection_ = { 0.0f, 0.0f, 0.0f };
+	playerPos_ = { 0.0f, 0.0f, 0.0f };
+	// フラグをリセット
+	enemy_->SetIsRotationComplete(false);
+	// パーティクルの再生
+	//ParticleService::Emit("EnemyPrePareAttack", enemy_->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 
@@ -34943,27 +34994,44 @@ void EnemyPrePareAttackState::Enter(BaseEnemy* enemy) {
 ///-------------------------------------------///
 void EnemyPrePareAttackState::Update(BaseEnemy* enemy) {
 	enemy_ = enemy;
+	
+	// タイマーが残っている場合
+	if (activeTimer_ > 0.0f) {
+		// タイマーの更新
+		activeTimer_ -= enemy_->GetDeltaTime();
 
-	// タイマーの更新
-	activeTimer_ -= enemy_->GetDeltaTime();
+		// プレイヤーの位置への方向ベクトルを計算
+		playerPos_ = enemy_->GetPlayer()->GetTransform().translate; // プレイヤーの位置を取得
+		Vector3 dir = playerPos_ - enemy_->GetTransform().translate;
+		attackDirection_ = Normalize(dir); // 正規化して方向ベクトルを得る
 
-	// プレイヤーの位置への方向ベクトルを計算
-	Vector3 dir = enemy_->GetTransform().translate - enemy_->GetPlayer()->GetTransform().translate;
-	Vector3 NormalDir = Normalize(dir); // 正規化
-	NormalDir = NormalDir * -1.0f; // 反転
+	} else { // タイマーが終了した場合
+
+		/// ===Stateの変更=== ///
+		if (enemy_->GetIsRotationComplete()) {
+			// Particleの停止
+			//ParticleService::StopParticle("EnemyPrePareAttack");
+
+			// 回転完了フラグをリセット
+			enemy_->SetIsRotationComplete(false);
+			// 攻撃方向を設定
+			enemy_->SetAttackDirection(attackDirection_);
+			// プレイヤーの位置を設定
+			enemy_->SetPlayerPos(playerPos_);
+			// AttackStateに移行
+			enemy_->ChangeState(std::make_unique<EnemyAttackState>());
+			return;
+		}
+	}
+
+	//NOTE:後にのけぞりながら回転するように変更予定,Particleも追加予定
 
 	// 回転の更新
-	enemy_->UpdateRotationTowards(NormalDir, 0.2f);
-
-	// Stateの変更
-	if (enemy_->GetIsRotationComplete() && activeTimer_ <= 0.0f) {
-		// 回転完了フラグをリセット
-		enemy_->SetIsRotationComplete(false);
-		// 攻撃方向を設定
-		enemy_->SetAttackDirection(NormalDir);
-		// AttackStateに移行
-		enemy_->ChangeState(std::make_unique<EnemyAttackState>());
-	}
+	enemy_->UpdateRotationTowards(attackDirection_, rotationSpeed_);
+	
+	// 少し傾ける
+	Quaternion enemyRot = Math::MakeRotateAxisAngle(Math::Cross(attackDirection_, { 0.0f, 1.0f, 0.0f }), 0.05f);
+	enemy_->SetRotate(enemyRot * enemy_->GetTransform().rotate);
 }
 
 ///-------------------------------------------/// 
@@ -34980,6 +35048,7 @@ File Path: Project/application/Game/Entity/Enemy/State/EnemyPrePareAttackState.h
 #pragma once
 /// ===Include=== ///
 #include "Base/EnemyState.h"
+#include "Math/Vector3.h"
 
 ///-------------------------------------------/// 
 /// PrePareAttackState
@@ -35007,10 +35076,16 @@ public:
 	void Finalize() override;
 
 private:
-	// アクティブタイマー
-	float activeTimer_ = 0.0f;
-	// アクティブ時間
-	float acticeTime = 1.0f;
+	/// ===タイマー=== ///
+	float activeTimer_ = 0.0f;	// アクティブタイマー
+	float acticeTime = 1.6f;	// アクティブ時間
+
+	/// ===攻撃方向関連=== /
+	Vector3 attackDirection_ = { 0.0f, 0.0f, 0.0f }; // 攻撃方向
+	Vector3 playerPos_ = { 0.0f, 0.0f, 0.0f }; 		 // プレイヤーの位置
+	
+	// 回転速度
+	float rotationSpeed_ = 0.2f;
 };
 
 
@@ -40246,7 +40321,9 @@ void GameScene::Initialize() {
 	ParticleService::LoadParticleDefinition("Game.json");
 	ParticleService::LoadParticleDefinition("WeaponAttack.json");
 	ParticleService::LoadParticleDefinition("nakagawa.json");
+	// Enemy用
 	ParticleService::LoadParticleDefinition("EnemyAttack.json");
+	ParticleService::LoadParticleDefinition("EnemyPrePareAttack.json");
 
 	/// ===Camera=== ///
 	camera_ = std::make_shared<GameCamera>();
