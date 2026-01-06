@@ -15,6 +15,13 @@ namespace Math {
 	float Pi();
 
 	/// <summary>
+	/// 角度を標準的な範囲に正規化
+	/// </summary>
+	/// <param name="angle">正規化する角度。通常はラジアンで表されます。</param>
+	/// <returns>正規化された角度（入力と同じ単位）。通常は -π〜π または 0〜2π の範囲に収まるように変換されます。</returns>
+	float NormalizeAngle(float angle);
+
+	/// <summary>
 	/// 2つの3次元ベクトルの外積（クロス積）を計算して返す
 	/// </summary>
 	/// <param name="v1">外積の左オペランドとなるベクトル（const 参照で渡され、関数内では変更されません）。</param>
@@ -130,12 +137,14 @@ namespace Math {
 	Quaternion RotateZ(float angle);
 
 	/// <summary>
-	/// 角度を標準的な範囲に正規化
+	/// 与えられた現在のY回転にピッチ回転（X軸周り）を適用した新しい四元数を生成して返します。
 	/// </summary>
-	/// <param name="angle">正規化する角度。通常はラジアンで表されます。</param>
-	/// <returns>正規化された角度（入力と同じ単位）。通常は -π〜π または 0〜2π の範囲に収まるように変換されます。</returns>
-	float NormalizeAngle(float angle);
+	/// <param name="currentYRotation">現在のY回転を表す四元数（const 参照）。この四元数にピッチを適用して結果を作成します。</param>
+	/// <param name="pitchAngleDegrees">適用するピッチ角（度単位）。正の角度の向きは座標系の定義に依存します。</param>
+	/// <returns>ピッチが適用された新しい Quaternion。元の四元数は変更されません。</returns>
+	Quaternion ApplyPitchToCurrentRotation(const Quaternion& currentYRotation, float pitchAngleDegrees);
 
+#pragma region Lerp・SLerp
 	/// <summary>
 	/// start と end の間を t に応じて線形補間してその値を返す
 	/// </summary>
@@ -180,6 +189,7 @@ namespace Math {
 	/// <param name="t">補間係数。通常は 0.0（start）から 1.0（end）の範囲で指定します。範囲外の値は外挿となる場合があります。</param>
 	/// <returns>指定した係数に対応する補間後のクォータニオン。通常は正規化されたクォータニオンが返されます。</returns>
 	Quaternion SLerp(const Quaternion& start, const Quaternion& end, float t);
+#pragma endregion
 }
 
 

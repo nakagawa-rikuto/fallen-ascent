@@ -112,8 +112,6 @@ void LongRangeEnemy::OnCollision(Collider* collider) {
 void LongRangeEnemy::StartAttack() {
 	// 攻撃開始
 	attackInfo_.isAttack = true;
-	// ターゲットの位置を保存
-	attackInfo_.playerPos = player_->GetTransform().translate;
 	// 攻撃時間の設定
 	attackInfo_.timer = 1.0f;
 }
@@ -122,8 +120,6 @@ void LongRangeEnemy::StartAttack() {
 /// 攻撃処理
 ///-------------------------------------------///
 void LongRangeEnemy::Attack() {
-	// 早期リターン
-	if (!player_) return;
 
 	// 弾の生成
 	auto bullet = std::make_unique<LongRangeEnemeyBullet>();

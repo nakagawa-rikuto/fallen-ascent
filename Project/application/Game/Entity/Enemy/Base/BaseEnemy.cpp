@@ -273,23 +273,30 @@ void BaseEnemy::ChangeState(std::unique_ptr<EnemyState> newState) {
 /// 回転更新関数
 ///-------------------------------------------///
 void BaseEnemy::UpdateRotationTowards(const Vector3& direction, float slerpT) {
-	if (Length(direction) < 0.001f) return;
+	// 方向ベクトルのY成分を0にして水平方向のみを考慮
+	Vector3 horizontalDir = { direction.x, 0.0f, direction.z };
 
-	// forward方向からターゲットクォータニオンを作成
-	Quaternion targetRotation = Math::LookRotation(direction, Vector3(0.0f, 1.0f, 0.0f));
+	// 値が小さすぎる場合は何もしない
+	if (Length(horizontalDir) < 0.01f) return;
+
+	// forward方向からターゲットクォータニオンを作成(Y軸回転のみ)
+	Quaternion targetRotation = Math::LookRotation(horizontalDir, Vector3(0.0f, 1.0f, 0.0f));
+
+	// Quaternionの内積で類似度を計算
+	float dotProduct = Dot(transform_.rotate, targetRotation);
+	float absDot = std::abs(dotProduct);
+
+	// 0.9999以上なら十分近い
+	if (absDot > 0.99f) {
+		isRotationComplete_ = true;
+		return; // 既に向いているので処理終了
+	}
+	// 回転が完了していない場合はフラグをリセット
+	isRotationComplete_ = false;
 
 	// SLerp補間
 	Quaternion result = Math::SLerp(transform_.rotate, targetRotation, slerpT);
 	transform_.rotate = Normalize(result); // 正規化でスケール崩れ防止
-
-	// 回転が完了したかをチェック
-	Quaternion diff = transform_.rotate - targetRotation;
-	float rotationDiff = Math::Norm(diff);
-
-	// 回転差分が十分小さければ完了フラグを立てる
-	if (rotationDiff < 0.01f) {
-		isRotationComplete_ = true;
-	}
 }
 
 ///-------------------------------------------/// 

@@ -8,6 +8,16 @@
 ///=====================================================///
 float Math::Pi() { return std::numbers::pi_v<float>; }
 
+///-------------------------------------------/// 
+/// 角度の正規化
+///-------------------------------------------/// 
+float Math::NormalizeAngle(float angle) {
+    // 角度を [-π, π] に正規化
+    while (angle > std::numbers::pi_v<float>) angle -= 2.0f * std::numbers::pi_v<float>;
+    while (angle < -std::numbers::pi_v<float>) angle += 2.0f * std::numbers::pi_v<float>;
+    return angle;
+}
+
 ///=====================================================///
 /// クロス積の計算
 ///=====================================================///
@@ -163,6 +173,7 @@ Quaternion Math::LookRotation(Vector3 forward, Vector3 up) {
 ///-------------------------------------------/// 
 /// 軸の回転を行うQuaternionを返す関数
 ///-------------------------------------------///
+// X軸回転Quaternionを返す関数
 Quaternion Math::RotateX(float angle) {
     float half = angle * 0.5f;
     return Quaternion(
@@ -172,7 +183,7 @@ Quaternion Math::RotateX(float angle) {
         std::cos(half)         // w
     );
 }
-
+// Y軸回転Quaternionを返す関数
 Quaternion Math::RotateY(float angle) {
     float half = angle * 0.5f;
     return Quaternion(
@@ -182,7 +193,7 @@ Quaternion Math::RotateY(float angle) {
         std::cos(half)         // w
     );
 }
-
+// Z軸回転Quaternionを返す関数
 Quaternion Math::RotateZ(float angle) {
     float half = angle * 0.5f;
     return Quaternion(
@@ -194,14 +205,31 @@ Quaternion Math::RotateZ(float angle) {
 }
 
 ///-------------------------------------------/// 
-/// 
+/// ピッチ回転を適用したQuaternionを返す関数
 ///-------------------------------------------///
-// 
-float Math::NormalizeAngle(float angle) {
-    // 角度を [-π, π] に正規化
-    while (angle > std::numbers::pi_v<float>) angle -= 2.0f * std::numbers::pi_v<float>;
-    while (angle < -std::numbers::pi_v<float>) angle += 2.0f * std::numbers::pi_v<float>;
-    return angle;
+Quaternion Math::ApplyPitchToCurrentRotation(const Quaternion& currentYRotation, float pitchAngleDegrees) {
+    // X軸周りの回転クォータニオンを作成
+    float halfAngle = pitchAngleDegrees * 0.5f * (Pi() / 180.0f); // ラジアンに変換
+    Quaternion pitchRotation;
+    pitchRotation.x = sinf(halfAngle);
+    pitchRotation.y = 0.0f;
+    pitchRotation.z = 0.0f;
+    pitchRotation.w = cosf(halfAngle);
+
+    // 現在のY軸回転に、X軸回転を合成
+    Quaternion result;
+
+    float w1 = currentYRotation.w, x1 = currentYRotation.x;
+    float y1 = currentYRotation.y, z1 = currentYRotation.z;
+    float w2 = pitchRotation.w, x2 = pitchRotation.x;
+    float y2 = pitchRotation.y, z2 = pitchRotation.z;
+
+    result.w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2;
+    result.x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2;
+    result.y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2;
+    result.z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2;
+
+    return result;
 }
 
 ///-------------------------------------------/// 
@@ -261,7 +289,7 @@ Quaternion Math::SLerp(const Quaternion& start, const Quaternion& end, float t) 
 
     // 逆方向補間を防ぐために符号を反転
     if (dot < 0.0f) {
-        q2Modified = Conjugate(q2Modified);
+        q2Modified = Quaternion(-q2Modified.x, -q2Modified.y, -q2Modified.z, -q2Modified.w);
         dot = -dot;
     }
 
