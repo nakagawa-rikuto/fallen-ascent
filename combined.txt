@@ -6852,10 +6852,13 @@ struct ParticleAppearanceSettings {
 /// パーティクル回転設定
 ///=====================================================///
 struct ParticleRotationSettings {
+	Vector3 initialRotationMin = { 0.0f, 0.0f, 0.0f }; // 初期回転最小
+	Vector3 initialRotationMax = { 0.0f, 0.0f, 0.0f }; // 初期回転最大
 	Vector3 rotationSpeedMin = { 0.0f, 0.0f, 0.0f };  // 回転速度最小
 	Vector3 rotationSpeedMax = { 0.0f, 0.0f, 0.0f };  // 回転速度最大
 	bool randomRotation = false;                      // ランダム回転を使用
 	bool enableRotation = false;                      // 回転を有効化
+	bool randomInitialRotation = false;               // ランダム初期回転を使用
 };
 
 ///=====================================================/// 
@@ -13931,10 +13934,13 @@ nlohmann::json ParticleDefinition::ToJson() const {
 
 	// 回転設定
 	j["rotation"] = {
+		{"initialRotationMin", Vector3ToJson(rotation.initialRotationMin)},
+		{"initialRotationMax", Vector3ToJson(rotation.initialRotationMax)},
 		{"rotationSpeedMin", Vector3ToJson(rotation.rotationSpeedMin)},
 		{"rotationSpeedMax", Vector3ToJson(rotation.rotationSpeedMax)},
 		{"randomRotation", rotation.randomRotation},
-		{"enableRotation", rotation.enableRotation}
+		{"enableRotation", rotation.enableRotation},
+		{"randomInitialRotation", rotation.randomInitialRotation}
 	};
 
 	// 発生設定
@@ -14007,10 +14013,13 @@ ParticleDefinition ParticleDefinition::FromJson(const nlohmann::json& json) {
 	// 回転設定
 	if (json.contains("rotation")) {
 		const auto& r = json["rotation"];
+		if (r.contains("initialRotationMin")) def.rotation.initialRotationMin = JsonToVector3(r["initialRotationMin"]);
+		if (r.contains("initialRotationMax")) def.rotation.initialRotationMax = JsonToVector3(r["initialRotationMax"]);
 		if (r.contains("rotationSpeedMin")) def.rotation.rotationSpeedMin = JsonToVector3(r["rotationSpeedMin"]);
 		if (r.contains("rotationSpeedMax")) def.rotation.rotationSpeedMax = JsonToVector3(r["rotationSpeedMax"]);
 		if (r.contains("randomRotation")) def.rotation.randomRotation = r["randomRotation"];
 		if (r.contains("enableRotation")) def.rotation.enableRotation = r["enableRotation"];
+		if (r.contains("randomInitialRotation")) def.rotation.randomInitialRotation = r["randomInitialRotation"];
 	}
 
 	// 発生設定
@@ -14327,7 +14336,11 @@ ParticleData ParticleFactory::CreateParticle(
     particle.transform.scale = GenerateRandomScale(definition, randomEngine);
 
     // 回転の初期化
-    particle.transform.rotate = { 0.0f, 0.0f, 0.0f };
+    if (definition.rotation.randomInitialRotation) {
+        particle.transform.rotate = GenerateRandomInitialRotation(definition, randomEngine);
+    } else {
+        particle.transform.rotate = definition.rotation.initialRotationMin;
+    }
 
     // 位置の設定（爆発範囲を考慮）
     Vector3 offset = { 0.0f, 0.0f, 0.0f };
@@ -14491,6 +14504,30 @@ Vector3 ParticleFactory::GenerateRandomVelocity(
 }
 
 ///-------------------------------------------/// 
+/// ランダム初期回転生成
+///-------------------------------------------///
+Vector3 ParticleFactory::GenerateRandomInitialRotation(
+    const ParticleDefinition& definition, 
+    std::mt19937& randomEngine) {
+
+    std::uniform_real_distribution<float> distX(
+        definition.rotation.initialRotationMin.x,
+        definition.rotation.initialRotationMax.x);
+    std::uniform_real_distribution<float> distY(
+        definition.rotation.initialRotationMin.y,
+        definition.rotation.initialRotationMax.y);
+    std::uniform_real_distribution<float> distZ(
+        definition.rotation.initialRotationMin.z,
+        definition.rotation.initialRotationMax.z);
+
+    return {
+        distX(randomEngine),
+        distY(randomEngine),
+        distZ(randomEngine)
+    };
+}
+
+///-------------------------------------------/// 
 /// ランダムスケール生成
 ///-------------------------------------------///
 Vector3 ParticleFactory::GenerateRandomScale(
@@ -14643,6 +14680,13 @@ private:
         const ParticleDefinition& definition,
         std::mt19937& randomEngine,
         const Vector3& position);
+    
+    /// <summary>
+    /// ランダムな初期回転を生成
+    /// </summary>
+    static Vector3 GenerateRandomInitialRotation(
+        const ParticleDefinition& definition,
+        std::mt19937& randomEngine);
 
     /// <summary>
     /// ランダムなスケールを生成
@@ -20474,7 +20518,36 @@ void ParticleEditor::RenderRotationSettings() {
     if (currentDefinition_.rotation.enableRotation) {
         ImGui::Spacing();
 
-        if (ImGui::Checkbox("ランダム回転", &currentDefinition_.rotation.randomRotation)) {
+        // ===初期回転設定=== ///
+        ImGui::SeparatorText("初期回転");
+
+        if (ImGui::Checkbox("初期回転をランダム化", &currentDefinition_.rotation.randomInitialRotation)) {
+            if (previewParticle_) {
+                previewParticle_->SetDefinition(currentDefinition_);
+            }
+        }
+
+        bool initialRotationChanged = false;
+        if (currentDefinition_.rotation.randomInitialRotation) {
+            ImGui::Text("初期回転範囲（ラジアン）");
+            initialRotationChanged |= ImGui::DragFloat3("最小初期回転", &currentDefinition_.rotation.initialRotationMin.x, 0.01f, -6.28f, 6.28f);
+            initialRotationChanged |= ImGui::DragFloat3("最大初期回転", &currentDefinition_.rotation.initialRotationMax.x, 0.01f, -6.28f, 6.28f);
+        } else {
+            ImGui::Text("固定初期回転（ラジアン）");
+            initialRotationChanged |= ImGui::DragFloat3("初期回転", &currentDefinition_.rotation.initialRotationMin.x, 0.01f, -6.28f, 6.28f);
+        }
+
+        if (initialRotationChanged && previewParticle_) {
+            previewParticle_->SetDefinition(currentDefinition_);
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        /// ===回転速度設定=== ///
+        ImGui::SeparatorText("回転速度");
+
+        if (ImGui::Checkbox("ランダム回転速度", &currentDefinition_.rotation.randomRotation)) {
             if (previewParticle_) {
                 previewParticle_->SetDefinition(currentDefinition_);
             }
