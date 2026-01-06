@@ -37,10 +37,13 @@ nlohmann::json ParticleDefinition::ToJson() const {
 
 	// 回転設定
 	j["rotation"] = {
+		{"initialRotationMin", Vector3ToJson(rotation.initialRotationMin)},
+		{"initialRotationMax", Vector3ToJson(rotation.initialRotationMax)},
 		{"rotationSpeedMin", Vector3ToJson(rotation.rotationSpeedMin)},
 		{"rotationSpeedMax", Vector3ToJson(rotation.rotationSpeedMax)},
 		{"randomRotation", rotation.randomRotation},
-		{"enableRotation", rotation.enableRotation}
+		{"enableRotation", rotation.enableRotation},
+		{"randomInitialRotation", rotation.randomInitialRotation}
 	};
 
 	// 発生設定
@@ -113,10 +116,13 @@ ParticleDefinition ParticleDefinition::FromJson(const nlohmann::json& json) {
 	// 回転設定
 	if (json.contains("rotation")) {
 		const auto& r = json["rotation"];
+		if (r.contains("initialRotationMin")) def.rotation.initialRotationMin = JsonToVector3(r["initialRotationMin"]);
+		if (r.contains("initialRotationMax")) def.rotation.initialRotationMax = JsonToVector3(r["initialRotationMax"]);
 		if (r.contains("rotationSpeedMin")) def.rotation.rotationSpeedMin = JsonToVector3(r["rotationSpeedMin"]);
 		if (r.contains("rotationSpeedMax")) def.rotation.rotationSpeedMax = JsonToVector3(r["rotationSpeedMax"]);
 		if (r.contains("randomRotation")) def.rotation.randomRotation = r["randomRotation"];
 		if (r.contains("enableRotation")) def.rotation.enableRotation = r["enableRotation"];
+		if (r.contains("randomInitialRotation")) def.rotation.randomInitialRotation = r["randomInitialRotation"];
 	}
 
 	// 発生設定

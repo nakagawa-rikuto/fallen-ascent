@@ -75,10 +75,13 @@ struct ParticleAppearanceSettings {
 /// パーティクル回転設定
 ///=====================================================///
 struct ParticleRotationSettings {
+	Vector3 initialRotationMin = { 0.0f, 0.0f, 0.0f }; // 初期回転最小
+	Vector3 initialRotationMax = { 0.0f, 0.0f, 0.0f }; // 初期回転最大
 	Vector3 rotationSpeedMin = { 0.0f, 0.0f, 0.0f };  // 回転速度最小
 	Vector3 rotationSpeedMax = { 0.0f, 0.0f, 0.0f };  // 回転速度最大
 	bool randomRotation = false;                      // ランダム回転を使用
 	bool enableRotation = false;                      // 回転を有効化
+	bool randomInitialRotation = false;               // ランダム初期回転を使用
 };
 
 ///=====================================================/// 

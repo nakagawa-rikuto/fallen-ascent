@@ -18,7 +18,11 @@ ParticleData ParticleFactory::CreateParticle(
     particle.transform.scale = GenerateRandomScale(definition, randomEngine);
 
     // 回転の初期化
-    particle.transform.rotate = { 0.0f, 0.0f, 0.0f };
+    if (definition.rotation.randomInitialRotation) {
+        particle.transform.rotate = GenerateRandomInitialRotation(definition, randomEngine);
+    } else {
+        particle.transform.rotate = definition.rotation.initialRotationMin;
+    }
 
     // 位置の設定（爆発範囲を考慮）
     Vector3 offset = { 0.0f, 0.0f, 0.0f };
@@ -179,6 +183,30 @@ Vector3 ParticleFactory::GenerateRandomVelocity(
     velocity.y += definition.physics.upwardForce;
 
     return velocity;
+}
+
+///-------------------------------------------/// 
+/// ランダム初期回転生成
+///-------------------------------------------///
+Vector3 ParticleFactory::GenerateRandomInitialRotation(
+    const ParticleDefinition& definition, 
+    std::mt19937& randomEngine) {
+
+    std::uniform_real_distribution<float> distX(
+        definition.rotation.initialRotationMin.x,
+        definition.rotation.initialRotationMax.x);
+    std::uniform_real_distribution<float> distY(
+        definition.rotation.initialRotationMin.y,
+        definition.rotation.initialRotationMax.y);
+    std::uniform_real_distribution<float> distZ(
+        definition.rotation.initialRotationMin.z,
+        definition.rotation.initialRotationMax.z);
+
+    return {
+        distX(randomEngine),
+        distY(randomEngine),
+        distZ(randomEngine)
+    };
 }
 
 ///-------------------------------------------/// 
