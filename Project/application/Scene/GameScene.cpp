@@ -47,7 +47,9 @@ void GameScene::Initialize() {
 	ParticleService::LoadParticleDefinition("Game.json");
 	ParticleService::LoadParticleDefinition("WeaponAttack.json");
 	ParticleService::LoadParticleDefinition("nakagawa.json");
+	// Enemy用
 	ParticleService::LoadParticleDefinition("EnemyAttack.json");
+	ParticleService::LoadParticleDefinition("EnemyPrePareAttack.json");
 
 	/// ===Camera=== ///
 	camera_ = std::make_shared<GameCamera>();

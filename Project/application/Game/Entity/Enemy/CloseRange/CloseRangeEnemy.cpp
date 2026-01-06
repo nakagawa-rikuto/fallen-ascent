@@ -98,8 +98,6 @@ void CloseRangeEnemy::OnCollision(Collider* collider) {
 void CloseRangeEnemy::StartAttack() {
 	// 攻撃開始
 	attackInfo_.isAttack = true;
-	// ターゲットの位置を保存
-	attackInfo_.playerPos = player_->GetTransform().translate;
 	// 攻撃時間の設定
 	attackInfo_.timer = 1.0f;
 	// 移動ベクトルを設定
@@ -110,8 +108,6 @@ void CloseRangeEnemy::StartAttack() {
 /// 攻撃処理
 ///-------------------------------------------///
 void CloseRangeEnemy::Attack() {
-	// 早期リターン
-	if (!player_) return;
 
 	// プレイヤーとの差を計算
 	Vector3 toTarget = attackInfo_.playerPos - transform_.translate;

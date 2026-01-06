@@ -142,6 +142,7 @@ public: /// ===Setter=== ///
 	void SetIsRotationComplete(bool flag) { isRotationComplete_ = flag; };
 	// AttackDirection
 	void SetAttackDirection(const Vector3& dir) { attackInfo_.direction = dir; };
+	void SetPlayerPos(const Vector3& pos) { attackInfo_.playerPos = pos; };
 	
 
 protected: /// ===変数の宣言=== ///

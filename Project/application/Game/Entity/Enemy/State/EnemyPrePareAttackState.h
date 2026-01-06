@@ -1,6 +1,7 @@
 #pragma once
 /// ===Include=== ///
 #include "Base/EnemyState.h"
+#include "Math/Vector3.h"
 
 ///-------------------------------------------/// 
 /// PrePareAttackState
@@ -28,9 +29,15 @@ public:
 	void Finalize() override;
 
 private:
-	// アクティブタイマー
-	float activeTimer_ = 0.0f;
-	// アクティブ時間
-	float acticeTime = 1.0f;
+	/// ===タイマー=== ///
+	float activeTimer_ = 0.0f;	// アクティブタイマー
+	float acticeTime = 1.6f;	// アクティブ時間
+
+	/// ===攻撃方向関連=== /
+	Vector3 attackDirection_ = { 0.0f, 0.0f, 0.0f }; // 攻撃方向
+	Vector3 playerPos_ = { 0.0f, 0.0f, 0.0f }; 		 // プレイヤーの位置
+	
+	// 回転速度
+	float rotationSpeed_ = 0.2f;
 };
 

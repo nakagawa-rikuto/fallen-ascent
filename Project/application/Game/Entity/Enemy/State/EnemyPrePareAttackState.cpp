@@ -3,8 +3,13 @@
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
+// Service
+#include "Engine/System/Service/ParticleService.h"
 // State
 #include "EnemyAttackState.h"
+// Math
+#include "Math/sMath.h"
+#include "Math/EasingMath.h"
 
 ///-------------------------------------------/// 
 /// ステートに入った時に呼ばれる処理
@@ -17,6 +22,13 @@ void EnemyPrePareAttackState::Enter(BaseEnemy* enemy) {
 	enemy_->SetColor({ 0.0f, 0.0f, 1.0f, 1.0f });
 	// 実行時間の設定
 	activeTimer_ = acticeTime;
+	// 向きの初期化
+	attackDirection_ = { 0.0f, 0.0f, 0.0f };
+	playerPos_ = { 0.0f, 0.0f, 0.0f };
+	// フラグをリセット
+	enemy_->SetIsRotationComplete(false);
+	// パーティクルの再生
+	//ParticleService::Emit("EnemyPrePareAttack", enemy_->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 
@@ -24,27 +36,44 @@ void EnemyPrePareAttackState::Enter(BaseEnemy* enemy) {
 ///-------------------------------------------///
 void EnemyPrePareAttackState::Update(BaseEnemy* enemy) {
 	enemy_ = enemy;
+	
+	// タイマーが残っている場合
+	if (activeTimer_ > 0.0f) {
+		// タイマーの更新
+		activeTimer_ -= enemy_->GetDeltaTime();
 
-	// タイマーの更新
-	activeTimer_ -= enemy_->GetDeltaTime();
+		// プレイヤーの位置への方向ベクトルを計算
+		playerPos_ = enemy_->GetPlayer()->GetTransform().translate; // プレイヤーの位置を取得
+		Vector3 dir = playerPos_ - enemy_->GetTransform().translate;
+		attackDirection_ = Normalize(dir); // 正規化して方向ベクトルを得る
 
-	// プレイヤーの位置への方向ベクトルを計算
-	Vector3 dir = enemy_->GetTransform().translate - enemy_->GetPlayer()->GetTransform().translate;
-	Vector3 NormalDir = Normalize(dir); // 正規化
-	NormalDir = NormalDir * -1.0f; // 反転
+	} else { // タイマーが終了した場合
+
+		/// ===Stateの変更=== ///
+		if (enemy_->GetIsRotationComplete()) {
+			// Particleの停止
+			//ParticleService::StopParticle("EnemyPrePareAttack");
+
+			// 回転完了フラグをリセット
+			enemy_->SetIsRotationComplete(false);
+			// 攻撃方向を設定
+			enemy_->SetAttackDirection(attackDirection_);
+			// プレイヤーの位置を設定
+			enemy_->SetPlayerPos(playerPos_);
+			// AttackStateに移行
+			enemy_->ChangeState(std::make_unique<EnemyAttackState>());
+			return;
+		}
+	}
+
+	//NOTE:後にのけぞりながら回転するように変更予定,Particleも追加予定
 
 	// 回転の更新
-	enemy_->UpdateRotationTowards(NormalDir, 0.2f);
-
-	// Stateの変更
-	if (enemy_->GetIsRotationComplete() && activeTimer_ <= 0.0f) {
-		// 回転完了フラグをリセット
-		enemy_->SetIsRotationComplete(false);
-		// 攻撃方向を設定
-		enemy_->SetAttackDirection(NormalDir);
-		// AttackStateに移行
-		enemy_->ChangeState(std::make_unique<EnemyAttackState>());
-	}
+	enemy_->UpdateRotationTowards(attackDirection_, rotationSpeed_);
+	
+	// 少し傾ける
+	Quaternion enemyRot = Math::MakeRotateAxisAngle(Math::Cross(attackDirection_, { 0.0f, 1.0f, 0.0f }), 0.05f);
+	enemy_->SetRotate(enemyRot * enemy_->GetTransform().rotate);
 }
 
 ///-------------------------------------------/// 

@@ -36,6 +36,7 @@ void EnemyAttackState::Update(BaseEnemy * enemy) {
 		enemy_->SetColor({ 1.0f, 0.0f, 1.0f, 1.0f }); // 元の色に戻す
 		// MoveStateに移行
 		enemy_->ChangeState(std::make_unique<EnemyMoveState>());
+		return;
 	}
 }
 
