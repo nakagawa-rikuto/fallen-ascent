@@ -32,7 +32,7 @@ void ParticleService::RemoveParticleDefinition(const std::string& name) {
 /// パーティクルの操作
 ///-------------------------------------------///
 // パーティクルを発生
-void ParticleService::Emit(const std::string& name, const Vector3& translate) {
+ParticleGroup* ParticleService::Emit(const std::string& name, const Vector3& translate) {
 	return ServiceLocator::GetParticleManager()->Emit(name, translate);
 }
 
@@ -44,21 +44,6 @@ void ParticleService::SetTexture(const std::string& name, const std::string& tex
 // パラメータを設定（型安全版）
 void ParticleService::SetParameter(const std::string& name, ParticleParameter param, float value) {
 	ServiceLocator::GetParticleManager()->SetParameter(name, param, value);
-}
-
-// エミッタ位置を設定
-void ParticleService::SetEmitterPosition(const std::string& name, const Vector3& position, int groupIndex) {
-	ServiceLocator::GetParticleManager()->SetEmitterPosition(name, position, groupIndex);
-}
-
-// エミッタ位置を移動
-void ParticleService::MoveEmitterPosition(const std::string& name, const Vector3& offset, int groupIndex) {
-	ServiceLocator::GetParticleManager()->MoveEmitterPosition(name, offset, groupIndex);
-}
-
-// エミッタの回転を設定
-void ParticleService::SetEmitterRotate(const std::string& name, const Vector3& rotate, int groupIndex) {
-	ServiceLocator::GetParticleManager()->SetEmitterRotation(name, rotate, groupIndex);
 }
 
 // パーティクルを停止
@@ -74,7 +59,6 @@ void ParticleService::RemoveAllParticles() {
 ///-------------------------------------------/// 
 /// 情報取得
 ///-------------------------------------------///
-
 // 定義を取得
 const ParticleDefinition* ParticleService::GetDefinition(const std::string& name) {
 	return ServiceLocator::GetParticleManager()->GetDefinition(name);

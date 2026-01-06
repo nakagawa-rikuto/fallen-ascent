@@ -3,6 +3,8 @@
 #include "Base/EnemyState.h"
 #include "Math/Vector3.h"
 
+class ParticleGroup;
+
 ///-------------------------------------------/// 
 /// PrePareAttackState
 ///-------------------------------------------///
@@ -29,6 +31,8 @@ public:
 	void Finalize() override;
 
 private:
+	ParticleGroup* activeParticle_ = nullptr;
+
 	/// ===タイマー=== ///
 	float activeTimer_ = 0.0f;	// アクティブタイマー
 	float acticeTime = 1.6f;	// アクティブ時間

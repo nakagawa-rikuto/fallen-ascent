@@ -12,6 +12,7 @@
 
 /// ===前方宣言=== ///
 class Player;
+class ParticleGroup;
 
 /// ===StateType=== ///
 enum class StateType {
@@ -166,6 +167,9 @@ protected: /// ===変数の宣言=== ///
 	bool isCollision_ = false;
 
 private:
+	ParticleGroup* hitParticle_ = nullptr;
+	ParticleGroup* deathParticle_ = nullptr;
+
 	// ノックバック情報
 	KnockbackInfo knockbackInfo_;
 
@@ -174,8 +178,6 @@ private:
 	bool isTentativeDeath_ = false;
 
 protected: /// ===関数の宣言=== ///
-
-	
 
 	/// <summary>
 	/// 派生側で型固有のチューニング値をコピーするための関数
