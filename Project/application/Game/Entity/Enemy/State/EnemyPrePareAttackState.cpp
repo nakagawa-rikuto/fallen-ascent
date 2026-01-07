@@ -37,7 +37,7 @@ void EnemyPrePareAttackState::Enter(BaseEnemy* enemy) {
 ///-------------------------------------------///
 void EnemyPrePareAttackState::Update(BaseEnemy* enemy) {
 	enemy_ = enemy;
-	
+
 	// タイマーが残っている場合
 	if (activeTimer_ > 0.0f) {
 		// タイマーの更新
@@ -73,7 +73,7 @@ void EnemyPrePareAttackState::Update(BaseEnemy* enemy) {
 
 	// 回転の更新
 	enemy_->UpdateRotationTowards(attackDirection_, rotationSpeed_);
-	
+
 	// 少し傾ける
 	Quaternion enemyRot = Math::MakeRotateAxisAngle(Math::Cross(attackDirection_, { 0.0f, 1.0f, 0.0f }), 0.05f);
 	enemy_->SetRotate(enemyRot * enemy_->GetTransform().rotate);
@@ -84,4 +84,13 @@ void EnemyPrePareAttackState::Update(BaseEnemy* enemy) {
 ///-------------------------------------------///
 void EnemyPrePareAttackState::Finalize() {
 	EnemyState::Finalize();
+	if (activeParticle_) {
+		activeParticle_->Stop();
+		activeParticle_ = nullptr;
+	}
+
+	if (prePareAttackParticle_) {
+		prePareAttackParticle_->Stop();
+		prePareAttackParticle_ = nullptr;
+	}
 }

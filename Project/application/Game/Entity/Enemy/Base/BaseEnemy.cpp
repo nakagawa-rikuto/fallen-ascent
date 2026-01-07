@@ -23,6 +23,9 @@
 /// デストラクタ
 ///-------------------------------------------///
 BaseEnemy::~BaseEnemy() {
+	// 状態を解放
+	currentState_->Finalize();
+	currentState_.reset();
 	ColliderService::RemoveCollider(this);
 	object3d_.reset();
 }
