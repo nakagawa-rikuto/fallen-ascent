@@ -53,9 +53,9 @@
             0.6705882549285889
         ],
         "endScale": [
-            0.4000000059604645,
-            0.4000000059604645,
-            0.4000000059604645
+            0.20000000298023224,
+            0.20000000298023224,
+            0.20000000298023224
         ],
         "startColor": [
             0.9409282803535461,
@@ -64,14 +64,14 @@
             1.0
         ],
         "startScaleMax": [
-            0.800000011920929,
-            0.800000011920929,
-            0.800000011920929
-        ],
-        "startScaleMin": [
             0.20000000298023224,
             0.20000000298023224,
             0.20000000298023224
+        ],
+        "startScaleMin": [
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612
         ],
         "texturePath": "",
         "useColorGradient": true,
@@ -79,13 +79,13 @@
     },
     "emission": {
         "burstCount": 0,
-        "emissionRate": 10.0,
+        "emissionRate": 27.899999618530273,
         "frequency": 0.5,
         "isBurst": false,
-        "lifetimeMax": 1.0,
-        "lifetimeMin": 0.5
+        "lifetimeMax": 0.4000000059604645,
+        "lifetimeMin": 0.20000000298023224
     },
-    "maxInstance": 100,
+    "maxInstance": 150,
     "modelName": "cube",
     "name": "PlayerWarke",
     "physics": {
@@ -99,8 +99,8 @@
             1.0,
             1.0
         ],
-        "gravity": -18.799999237060547,
-        "upwardForce": 50.0,
+        "gravity": -37.400001525878906,
+        "upwardForce": 49.79999923706055,
         "useRandomVelocity": true,
         "velocityMax": [
             4.0,
