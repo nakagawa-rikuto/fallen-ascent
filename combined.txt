@@ -18721,7 +18721,7 @@ void Framework::Initialize(const wchar_t* title) {
 	/// ===初期化=== ///
 	// MiiEnigne
 	MiiEngine_ = std::make_unique<Mii>();
-	MiiEngine_->Initialize(title, 1920, 1080);
+	MiiEngine_->Initialize(title, 1280, 720);
 	// CameraManager
 	cameraManager_ = std::make_unique<CameraManager>();
 	// ParticleManager
@@ -32909,6 +32909,9 @@ File Path: Project/application/Game/Entity/Enemy/Base/BaseEnemy.cpp
 /// デストラクタ
 ///-------------------------------------------///
 BaseEnemy::~BaseEnemy() {
+	// 状態を解放
+	currentState_->Finalize();
+	currentState_.reset();
 	ColliderService::RemoveCollider(this);
 	object3d_.reset();
 }
@@ -35099,7 +35102,7 @@ void EnemyPrePareAttackState::Enter(BaseEnemy* enemy) {
 ///-------------------------------------------///
 void EnemyPrePareAttackState::Update(BaseEnemy* enemy) {
 	enemy_ = enemy;
-	
+
 	// タイマーが残っている場合
 	if (activeTimer_ > 0.0f) {
 		// タイマーの更新
@@ -35135,7 +35138,7 @@ void EnemyPrePareAttackState::Update(BaseEnemy* enemy) {
 
 	// 回転の更新
 	enemy_->UpdateRotationTowards(attackDirection_, rotationSpeed_);
-	
+
 	// 少し傾ける
 	Quaternion enemyRot = Math::MakeRotateAxisAngle(Math::Cross(attackDirection_, { 0.0f, 1.0f, 0.0f }), 0.05f);
 	enemy_->SetRotate(enemyRot * enemy_->GetTransform().rotate);
@@ -35146,6 +35149,15 @@ void EnemyPrePareAttackState::Update(BaseEnemy* enemy) {
 ///-------------------------------------------///
 void EnemyPrePareAttackState::Finalize() {
 	EnemyState::Finalize();
+	if (activeParticle_) {
+		activeParticle_->Stop();
+		activeParticle_ = nullptr;
+	}
+
+	if (prePareAttackParticle_) {
+		prePareAttackParticle_->Stop();
+		prePareAttackParticle_ = nullptr;
+	}
 }
 
 
