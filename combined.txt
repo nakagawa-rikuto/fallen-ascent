@@ -14992,6 +14992,7 @@ void ParticleGroup::SetEmitterPosition(const Vector3& position) {
     group_.previouseEmitterPosition = group_.transform.translate;
     group_.transform.translate = position; 
 }
+// 
 void ParticleGroup::MoveEmitterPosition(const Vector3& offset) { group_.transform.translate += offset; }
 // エミッタ回転設定
 void ParticleGroup::SetEmitterRotate(const Vector3& rotate) { 
@@ -33538,6 +33539,14 @@ void CloseRangeEnemy::StartAttack() {
 	attackInfo_.timer = 1.0f;
 	// 移動ベクトルを設定
 	baseInfo_.velocity = attackInfo_.direction * chargeInfo_.moveSpeed;
+	// パーティクル停止
+	if (attackParticle_) {
+		attackParticle_->Stop();
+		attackParticle_ = nullptr;
+	}
+	// パーティクルの再生
+	attackParticle_ = ParticleService::Emit("CloseEnemyAttack", transform_.translate);
+	attackParticle_->SetEmitterPosition(transform_.translate);
 }
 
 ///-------------------------------------------/// 
@@ -33549,8 +33558,14 @@ void CloseRangeEnemy::Attack() {
 	Vector3 toTarget = attackInfo_.playerPos - transform_.translate;
 	float length = Length(toTarget);
 
+	// パーティクルの位置更新
+	if (attackParticle_) {
+		attackParticle_->SetEmitterPosition(transform_.translate);
+	}
+
 	// 攻撃終了判定
 	if (length < 0.5f) { // 到達判定
+
 		// 攻撃終了フラグをfalse
 		attackInfo_.isAttack = false;
 		// 移動ベクトルをリセット
@@ -33576,6 +33591,9 @@ File Path: Project/application/Game/Entity/Enemy/CloseRange/CloseRangeEnemy.h
 #pragma once
 /// ===Include=== ///
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
+
+/// ===前方宣言=== ///
+class ParticleGroup;
 
 ///=====================================================/// 
 /// 近接戦闘Enemy
@@ -33630,6 +33648,9 @@ public: /// ===衝突判定=== ///
 	void OnCollision(Collider* collider) override;
 
 private: /// ===変数=== ///
+
+	// ParticleGroup
+	ParticleGroup* attackParticle_ = nullptr;
 
 	/// ===突進情報=== ///
 	struct ChargeInfo {
@@ -33924,6 +33945,8 @@ private:
 File Path: Project/application/Game/Entity/Enemy/LongRange/LongRangeEnemeyBullet.cpp
 ============================================================
 #include "LongRangeEnemeyBullet.h"
+// Service
+#include "Engine/System/Service/ParticleService.h"
 #include "Engine/System/Service/ColliderService.h"
 
 ///-------------------------------------------/// 
@@ -33972,7 +33995,13 @@ void LongRangeEnemeyBullet::Update() {
 		/// ===タイマー=== ///
 		PromoteTimer();
 
+		// 位置更新
 		transform_.translate += info_.velocity;
+		
+		// Particleの位置更新
+		if (bulletParticle_) {
+			bulletParticle_->SetEmitterPosition(transform_.translate);
+		}
 
 		// コライダーの更新
 		SphereCollider::Update();
@@ -34003,13 +34032,20 @@ void LongRangeEnemeyBullet::Create(const Vector3& pos, const Vector3& vel) {
 	// 生存時間の設定
 	lifeTimer_ = lifeTime_;
 
-	
+	// パーティクル停止
+	if (bulletParticle_) {
+		bulletParticle_->Stop();
+		bulletParticle_ = nullptr;
+	}
+	// パーティクルの再生
+	bulletParticle_ = ParticleService::Emit("LongEnemyAttack", transform_.translate);
+	bulletParticle_->SetEmitterPosition(transform_.translate);
 }
 
 ///-------------------------------------------///  
 /// 衝突判定
 ///-------------------------------------------///
-void LongRangeEnemeyBullet::OnCollision(Collider * collider) {
+void LongRangeEnemeyBullet::OnCollision(Collider* collider) {
 	collider;
 }
 
@@ -34028,7 +34064,7 @@ void LongRangeEnemeyBullet::PromoteTimer() {
 	lifeTimer_ -= 1.0f / 60.0f;
 	if (lifeTimer_ <= 0.0f) {
 		// 生存時間が0.0fになったら削除。
-		isAlive_ = false; 
+		isAlive_ = false;
 	}
 }
 
@@ -34038,6 +34074,9 @@ File Path: Project/application/Game/Entity/Enemy/LongRange/LongRangeEnemeyBullet
 #pragma once
 /// ===Inclde=== ///
 #include "Engine/Collider/SphereCollider.h"
+
+/// ===前方宣言=== ///
+class ParticleGroup;
 
 ///=====================================================/// 
 /// 遠距離攻撃Enemyの弾
@@ -34095,6 +34134,9 @@ private: /// ===変数=== ///
 		Vector3 velocity = { 0.0f, 0.0f, 0.0f }; // ベクトル
 	};
 	BaseInfo info_;
+
+	// ParticleGroup
+	ParticleGroup* bulletParticle_ = nullptr;
 
 	// 速度
 	float speed_ = 1.5f;
@@ -35049,6 +35091,7 @@ void EnemyPrePareAttackState::Enter(BaseEnemy* enemy) {
 	enemy_->SetIsRotationComplete(false);
 	// パーティクルの再生
 	activeParticle_ = ParticleService::Emit("EnemyPrePareAttack", enemy_->GetTransform().translate);
+	prePareAttackParticle_ = ParticleService::Emit("EnemyPrePareAttackCharge", enemy_->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 
@@ -35072,10 +35115,10 @@ void EnemyPrePareAttackState::Update(BaseEnemy* enemy) {
 		/// ===Stateの変更=== ///
 		if (enemy_->GetIsRotationComplete()) {
 			// Particleの停止
-			if (activeParticle_) {
-				activeParticle_->Stop();
-				activeParticle_ = nullptr;
-			}
+			activeParticle_->Stop();
+			activeParticle_ = nullptr;
+			prePareAttackParticle_->Stop();
+			prePareAttackParticle_ = nullptr;
 			// 回転完了フラグをリセット
 			enemy_->SetIsRotationComplete(false);
 			// 攻撃方向を設定
@@ -35143,6 +35186,7 @@ public:
 
 private:
 	ParticleGroup* activeParticle_ = nullptr;
+	ParticleGroup* prePareAttackParticle_ = nullptr;
 
 	/// ===タイマー=== ///
 	float activeTimer_ = 0.0f;	// アクティブタイマー
@@ -38682,6 +38726,15 @@ void MoveState::Enter(Player* player, GameCamera* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
+
+	// 移動パーティクルの強制停止
+	if (moveParticle_) {
+		moveParticle_->Stop();
+		moveParticle_ = nullptr;
+	}
+	// 移動パーティクルの再生
+	moveParticle_ = ParticleService::Emit("PlayerWarke", player_->GetTransform().translate);
+	moveParticle_->SetEmitterPosition(player_->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 
@@ -38709,11 +38762,19 @@ void MoveState::Update(Player * player, GameCamera* camera) {
 	player_->SetVelocity(result.velocity);
 	player_->SetRotate(result.targetRotation);
 
+	// パーティクルの位置更新
+	if (moveParticle_) {
+		moveParticle_->SetEmitterPosition(player_->GetTransform().translate);
+	}
+
 	/// ===Stateの変更=== ///
 	// 攻撃ボタンが押されたら攻撃状態へ
 	if (InputService::TriggerButton(0, ControllerButtonType::X)) {
 		// 攻撃の準備ができていれば
 		if (!player_->GetAttackComponent()->GetState().isActive) {
+			// パーティクルの停止
+			//StopMoveParticle();
+			// AttackStateへ移行
 			player_->ChangState(std::make_unique<AttackState>());
 		}
 	// RBボタンが押されたら進んでいる突進状態へ
@@ -38723,11 +38784,16 @@ void MoveState::Update(Player * player, GameCamera* camera) {
 	} else if (InputService::TriggerButton(0, ControllerButtonType::A)) {
 		// 回避の準備ができていれば
 		if (player_->GetAvoidanceComponent()->GetState().isPreparation) {
-			// パーティクル発生
+			// パーティクルの停止
+			//StopMoveParticle();
+			// AvoidanceStateへ移行
 			player_->ChangState(std::make_unique<AvoidanceState>(Normalize(player_->GetMoveComponent()->GetCurrentDirection())));
 		}
 	// 移動が無ければ通常状態へ
 	} else if (std::abs(leftStick.x) < 0.1f && std::abs(leftStick.y) < 0.1f) {
+		// パーティクルの停止
+		//StopMoveParticle();
+		// RootStateへ移行
 		player_->ChangState(std::make_unique<RootState>());
 	}
 }
@@ -38739,6 +38805,16 @@ void MoveState::Finalize() {
 	PlayerState::Finalize();
 }
 
+///-------------------------------------------/// 
+/// パーティクルの停止
+///-------------------------------------------///
+void MoveState::StopMoveParticle() {
+	if (moveParticle_) {
+		moveParticle_->Stop();
+		moveParticle_ = nullptr;
+	}
+}
+
 
 ============================================================
 File Path: Project/application/Game/Entity/Player/State/MoveState.h
@@ -38748,6 +38824,9 @@ File Path: Project/application/Game/Entity/Player/State/MoveState.h
 #include "Base/PlayerState.h"
 // Math
 #include "Math/Vector3.h"
+
+/// ===前方宣言=== ///
+class ParticleGroup;
 
 ///=====================================================/// 
 /// MoveState
@@ -38774,7 +38853,17 @@ public:
 	/// <summary>
 	/// ステートの終了処理
 	/// </summary>
-	void Finalize() override;
+	void Finalize() override;	
+
+private:
+	ParticleGroup* moveParticle_ = nullptr;
+
+private:
+
+	/// <summary>
+	/// パーティクルの停止
+	/// </summary>
+	void StopMoveParticle();
 };
 
 
@@ -40393,12 +40482,17 @@ void GameScene::Initialize() {
 	Loader::LoadLevelJson("Level/EntityData.json");
 
 	// パーティクルの読み込み
+	// Player用
 	ParticleService::LoadParticleDefinition("Game.json");
 	ParticleService::LoadParticleDefinition("WeaponAttack.json");
 	ParticleService::LoadParticleDefinition("nakagawa.json");
+	ParticleService::LoadParticleDefinition("PlayerWarke.json");
 	// Enemy用
 	ParticleService::LoadParticleDefinition("EnemyAttack.json");
 	ParticleService::LoadParticleDefinition("EnemyPrePareAttack.json");
+	ParticleService::LoadParticleDefinition("EnemyPrePareAttackCharge.json");
+	ParticleService::LoadParticleDefinition("CloseEnemyAttack.json");
+	ParticleService::LoadParticleDefinition("LongEnemyAttack.json");
 
 	/// ===Camera=== ///
 	camera_ = std::make_shared<GameCamera>();
