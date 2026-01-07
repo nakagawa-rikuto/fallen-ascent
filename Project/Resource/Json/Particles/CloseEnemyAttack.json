@@ -1,0 +1,142 @@
+{
+    "advanced": {
+        "clearOnStop": true,
+        "colorGradient": {
+            "colorBlendCurve": 1.0,
+            "oscillateColor": false,
+            "primaryColor": [
+                0.30000001192092896,
+                0.30000001192092896,
+                0.30000001192092896,
+                0.800000011920929
+            ],
+            "secondaryColor": [
+                0.6000000238418579,
+                0.6000000238418579,
+                0.6000000238418579,
+                0.20000000298023224
+            ],
+            "useGradient": true
+        },
+        "emissionPattern": {
+            "particlesPerEmit": 3,
+            "pattern": "Cone",
+            "patternAngle": 30.0,
+            "patternRadius": 0.5
+        },
+        "isTrajectoryParticle": true,
+        "motion": {
+            "billboardRotationSpeed": 3.0,
+            "enableBillboardRotation": true,
+            "enableSwirling": true,
+            "expansionRate": 1.5,
+            "followEmitter": false,
+            "followStrength": 1.0,
+            "rotationInfluence": 1.2000000476837158,
+            "swirlingSpeed": 0.5,
+            "useRotationInfluence": false,
+            "velocityDamping": 0.9800000190734863
+        },
+        "scaleAnimation": {
+            "endScale": 3.0,
+            "maxScale": 1.5,
+            "startScale": 0.5,
+            "type": "Linear"
+        },
+        "trailSpacing": 0.00800000037997961
+    },
+    "appearance": {
+        "endColor": [
+            0.3764705955982208,
+            0.0784313753247261,
+            0.0784313753247261,
+            0.0
+        ],
+        "endScale": [
+            4.0,
+            4.0,
+            4.0
+        ],
+        "startColor": [
+            0.17817644774913788,
+            0.0,
+            0.5864979028701782,
+            1.0
+        ],
+        "startScaleMax": [
+            4.0,
+            4.0,
+            4.0
+        ],
+        "startScaleMin": [
+            2.0,
+            2.0,
+            2.0
+        ],
+        "texturePath": "FlameEye",
+        "useColorGradient": true,
+        "useScaleAnimation": true
+    },
+    "emission": {
+        "burstCount": 0,
+        "emissionRate": 10.0,
+        "frequency": 0.5,
+        "isBurst": false,
+        "lifetimeMax": 2.0,
+        "lifetimeMin": 1.0
+    },
+    "maxInstance": 300,
+    "modelName": "plane",
+    "name": "CloseEnemyAttack",
+    "physics": {
+        "acceleration": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "explosionRange": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "gravity": -3.299999952316284,
+        "upwardForce": 2.0,
+        "useRandomVelocity": true,
+        "velocityMax": [
+            8.0,
+            16.0,
+            8.0
+        ],
+        "velocityMin": [
+            -8.0,
+            8.0,
+            -8.0
+        ]
+    },
+    "rotation": {
+        "enableRotation": false,
+        "initialRotationMax": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "initialRotationMin": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "randomInitialRotation": false,
+        "randomRotation": false,
+        "rotationSpeedMax": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "rotationSpeedMin": [
+            0.0,
+            0.0,
+            0.0
+        ]
+    },
+    "shape": "None"
+}

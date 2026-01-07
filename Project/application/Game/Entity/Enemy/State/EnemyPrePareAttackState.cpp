@@ -29,6 +29,7 @@ void EnemyPrePareAttackState::Enter(BaseEnemy* enemy) {
 	enemy_->SetIsRotationComplete(false);
 	// パーティクルの再生
 	activeParticle_ = ParticleService::Emit("EnemyPrePareAttack", enemy_->GetTransform().translate);
+	prePareAttackParticle_ = ParticleService::Emit("EnemyPrePareAttackCharge", enemy_->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 
@@ -52,10 +53,10 @@ void EnemyPrePareAttackState::Update(BaseEnemy* enemy) {
 		/// ===Stateの変更=== ///
 		if (enemy_->GetIsRotationComplete()) {
 			// Particleの停止
-			if (activeParticle_) {
-				activeParticle_->Stop();
-				activeParticle_ = nullptr;
-			}
+			activeParticle_->Stop();
+			activeParticle_ = nullptr;
+			prePareAttackParticle_->Stop();
+			prePareAttackParticle_ = nullptr;
 			// 回転完了フラグをリセット
 			enemy_->SetIsRotationComplete(false);
 			// 攻撃方向を設定

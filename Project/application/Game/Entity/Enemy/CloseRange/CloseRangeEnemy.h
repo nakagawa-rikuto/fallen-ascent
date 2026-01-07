@@ -2,6 +2,9 @@
 /// ===Include=== ///
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
 
+/// ===前方宣言=== ///
+class ParticleGroup;
+
 ///=====================================================/// 
 /// 近接戦闘Enemy
 ///=====================================================///
@@ -55,6 +58,9 @@ public: /// ===衝突判定=== ///
 	void OnCollision(Collider* collider) override;
 
 private: /// ===変数=== ///
+
+	// ParticleGroup
+	ParticleGroup* attackParticle_ = nullptr;
 
 	/// ===突進情報=== ///
 	struct ChargeInfo {

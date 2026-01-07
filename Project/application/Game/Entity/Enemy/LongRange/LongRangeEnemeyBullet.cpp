@@ -1,4 +1,6 @@
 #include "LongRangeEnemeyBullet.h"
+// Service
+#include "Engine/System/Service/ParticleService.h"
 #include "Engine/System/Service/ColliderService.h"
 
 ///-------------------------------------------/// 
@@ -47,7 +49,13 @@ void LongRangeEnemeyBullet::Update() {
 		/// ===タイマー=== ///
 		PromoteTimer();
 
+		// 位置更新
 		transform_.translate += info_.velocity;
+		
+		// Particleの位置更新
+		if (bulletParticle_) {
+			bulletParticle_->SetEmitterPosition(transform_.translate);
+		}
 
 		// コライダーの更新
 		SphereCollider::Update();
@@ -78,13 +86,20 @@ void LongRangeEnemeyBullet::Create(const Vector3& pos, const Vector3& vel) {
 	// 生存時間の設定
 	lifeTimer_ = lifeTime_;
 
-	
+	// パーティクル停止
+	if (bulletParticle_) {
+		bulletParticle_->Stop();
+		bulletParticle_ = nullptr;
+	}
+	// パーティクルの再生
+	bulletParticle_ = ParticleService::Emit("LongEnemyAttack", transform_.translate);
+	bulletParticle_->SetEmitterPosition(transform_.translate);
 }
 
 ///-------------------------------------------///  
 /// 衝突判定
 ///-------------------------------------------///
-void LongRangeEnemeyBullet::OnCollision(Collider * collider) {
+void LongRangeEnemeyBullet::OnCollision(Collider* collider) {
 	collider;
 }
 
@@ -103,6 +118,6 @@ void LongRangeEnemeyBullet::PromoteTimer() {
 	lifeTimer_ -= 1.0f / 60.0f;
 	if (lifeTimer_ <= 0.0f) {
 		// 生存時間が0.0fになったら削除。
-		isAlive_ = false; 
+		isAlive_ = false;
 	}
 }

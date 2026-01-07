@@ -261,6 +261,7 @@ void ParticleGroup::SetEmitterPosition(const Vector3& position) {
     group_.previouseEmitterPosition = group_.transform.translate;
     group_.transform.translate = position; 
 }
+// 
 void ParticleGroup::MoveEmitterPosition(const Vector3& offset) { group_.transform.translate += offset; }
 // エミッタ回転設定
 void ParticleGroup::SetEmitterRotate(const Vector3& rotate) { 
