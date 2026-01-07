@@ -4,6 +4,9 @@
 // Math
 #include "Math/Vector3.h"
 
+/// ===前方宣言=== ///
+class ParticleGroup;
+
 ///=====================================================/// 
 /// MoveState
 ///=====================================================///
@@ -29,6 +32,16 @@ public:
 	/// <summary>
 	/// ステートの終了処理
 	/// </summary>
-	void Finalize() override;
+	void Finalize() override;	
+
+private:
+	ParticleGroup* moveParticle_ = nullptr;
+
+private:
+
+	/// <summary>
+	/// パーティクルの停止
+	/// </summary>
+	void StopMoveParticle();
 };
 

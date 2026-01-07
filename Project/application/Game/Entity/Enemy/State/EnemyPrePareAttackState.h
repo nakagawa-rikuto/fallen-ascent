@@ -32,6 +32,7 @@ public:
 
 private:
 	ParticleGroup* activeParticle_ = nullptr;
+	ParticleGroup* prePareAttackParticle_ = nullptr;
 
 	/// ===タイマー=== ///
 	float activeTimer_ = 0.0f;	// アクティブタイマー

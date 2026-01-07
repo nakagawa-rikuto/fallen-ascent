@@ -2,6 +2,9 @@
 /// ===Inclde=== ///
 #include "Engine/Collider/SphereCollider.h"
 
+/// ===前方宣言=== ///
+class ParticleGroup;
+
 ///=====================================================/// 
 /// 遠距離攻撃Enemyの弾
 ///=====================================================///
@@ -58,6 +61,9 @@ private: /// ===変数=== ///
 		Vector3 velocity = { 0.0f, 0.0f, 0.0f }; // ベクトル
 	};
 	BaseInfo info_;
+
+	// ParticleGroup
+	ParticleGroup* bulletParticle_ = nullptr;
 
 	// 速度
 	float speed_ = 1.5f;

@@ -44,12 +44,17 @@ void GameScene::Initialize() {
 	Loader::LoadLevelJson("Level/EntityData.json");
 
 	// パーティクルの読み込み
+	// Player用
 	ParticleService::LoadParticleDefinition("Game.json");
 	ParticleService::LoadParticleDefinition("WeaponAttack.json");
 	ParticleService::LoadParticleDefinition("nakagawa.json");
+	ParticleService::LoadParticleDefinition("PlayerWarke.json");
 	// Enemy用
 	ParticleService::LoadParticleDefinition("EnemyAttack.json");
 	ParticleService::LoadParticleDefinition("EnemyPrePareAttack.json");
+	ParticleService::LoadParticleDefinition("EnemyPrePareAttackCharge.json");
+	ParticleService::LoadParticleDefinition("CloseEnemyAttack.json");
+	ParticleService::LoadParticleDefinition("LongEnemyAttack.json");
 
 	/// ===Camera=== ///
 	camera_ = std::make_shared<GameCamera>();

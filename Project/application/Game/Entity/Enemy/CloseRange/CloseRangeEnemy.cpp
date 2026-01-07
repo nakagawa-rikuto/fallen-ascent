@@ -102,6 +102,14 @@ void CloseRangeEnemy::StartAttack() {
 	attackInfo_.timer = 1.0f;
 	// 移動ベクトルを設定
 	baseInfo_.velocity = attackInfo_.direction * chargeInfo_.moveSpeed;
+	// パーティクル停止
+	if (attackParticle_) {
+		attackParticle_->Stop();
+		attackParticle_ = nullptr;
+	}
+	// パーティクルの再生
+	attackParticle_ = ParticleService::Emit("CloseEnemyAttack", transform_.translate);
+	attackParticle_->SetEmitterPosition(transform_.translate);
 }
 
 ///-------------------------------------------/// 
@@ -113,8 +121,14 @@ void CloseRangeEnemy::Attack() {
 	Vector3 toTarget = attackInfo_.playerPos - transform_.translate;
 	float length = Length(toTarget);
 
+	// パーティクルの位置更新
+	if (attackParticle_) {
+		attackParticle_->SetEmitterPosition(transform_.translate);
+	}
+
 	// 攻撃終了判定
 	if (length < 0.5f) { // 到達判定
+
 		// 攻撃終了フラグをfalse
 		attackInfo_.isAttack = false;
 		// 移動ベクトルをリセット
