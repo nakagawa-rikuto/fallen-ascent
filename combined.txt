@@ -347,6 +347,8 @@
 └── └── └── └── └── └── ├── CloseRangeEnemy.cpp
 └── └── └── └── └── └── └── CloseRangeEnemy.h
 └── └── └── └── └── ├── Component/
+└── └── └── └── └── └── ├── EnemyHitReactionComponent.cpp
+└── └── └── └── └── └── ├── EnemyHitReactionComponent.h
 └── └── └── └── └── └── ├── EnemyMoveComponent.cpp
 └── └── └── └── └── └── └── EnemyMoveComponent.h
 └── └── └── └── └── ├── LongRange/
@@ -363,6 +365,8 @@
 └── └── └── └── └──     └── └── EnemyState.h
 └── └── └── └── └──     ├── EnemyAttackState.cpp
 └── └── └── └── └──     ├── EnemyAttackState.h
+└── └── └── └── └──     ├── EnemyHitReactionState.cpp
+└── └── └── └── └──     ├── EnemyHitReactionState.h
 └── └── └── └── └──     ├── EnemyMoveState.cpp
 └── └── └── └── └──     ├── EnemyMoveState.h
 └── └── └── └── └──     ├── EnemyPrePareAttackState.cpp
@@ -563,6 +567,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Editor\AttackDataSerializer.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Editor\AttackEditor.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSRootSignature.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.cpp" />
     <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp" />
@@ -722,6 +728,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Scene\Debug\AttackEditorScene.h" />
     <ClInclude Include="application\Game\Entity\Player\Editor\AttackDataSerializer.h" />
     <ClInclude Include="application\Game\Entity\Player\Editor\AttackEditor.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.h" />
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
@@ -1593,6 +1601,8 @@ File Path: Project/DeathsDoor.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Player\Editor\AttackEditor.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Editor\AttackDataSerializer.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -2060,6 +2070,8 @@ File Path: Project/DeathsDoor.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Player\Editor\AttackEditor.h" />
     <ClInclude Include="application\Game\Entity\Player\Editor\AttackDataSerializer.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -3114,7 +3126,7 @@ public: /// ===Getter=== ///
 	// AABBの取得
 	AABB GetAABB() const;
 
-protected:
+private:
 	AABB aabb_;
 };
 
@@ -4061,7 +4073,7 @@ public: /// ===Getter=== ///
 	// OBBの取得
     OBB GetOBB() const;
 
-protected:
+private:
     OBB obb_;
 
 private:
@@ -4205,7 +4217,7 @@ public: /// ===Getter=== ///
 	// Sphereの取得
 	Sphere GetSphere()const;
 
-protected:
+private:
 	Sphere sphere_;
 };
 
@@ -18719,7 +18731,7 @@ File Path: Project/Engine/Scene/Framework.cpp
 ///-------------------------------------------///
 void Framework::Initialize(const wchar_t* title) {
 	/// ===初期化=== ///
-	// MiiEnigne
+	// MiiEngine
 	MiiEngine_ = std::make_unique<Mii>();
 	MiiEngine_->Initialize(title, 1280, 720);
 	// CameraManager
@@ -18795,7 +18807,7 @@ void Framework::Update() {
 ///-------------------------------------------/// 
 /// 終了チェック
 ///-------------------------------------------///
-bool Framework::IsEndRequst() { return endRequst_; }
+bool Framework::IsEndRequest() { return endRequest_; }
 
 ///-------------------------------------------/// 
 /// 実行
@@ -18808,7 +18820,7 @@ void Framework::Run(const wchar_t* title) {
 		/// ===毎フレーム更新=== ///
 		Update();
 		/// ===終了リクエストが来たら抜ける=== ///
-		if (IsEndRequst()) { break; }
+		if (IsEndRequest()) { break; }
 		/// ===描画=== ///
 		Draw();
 	}
@@ -18886,7 +18898,7 @@ public:/// ====== ///
 	/// </summary>
 	virtual void Draw() = 0;
 	// 終了フラグのチェック
-	virtual bool IsEndRequst();
+	virtual bool IsEndRequest();
 
 public:/// ===メンバ関数=== ///
 	/// <summary>
@@ -18918,7 +18930,7 @@ private:
 	std::unique_ptr<DeltaTime> deltaTime_;
 protected:
 	// ゲーム終了フラグ
-	bool endRequst_ = false;
+	bool endRequest_ = false;
 	// シーンファクトリー
 	std::unique_ptr<AbstractSceneFactory> sceneFactory_;
 };
@@ -18946,7 +18958,6 @@ File Path: Project/Engine/Scene/IScene.cpp
 ///-------------------------------------------///
 IScene::~IScene() {
 	defaultCamera_.reset();
-	models_.clear();
 }
 
 ///-------------------------------------------/// 
@@ -18988,50 +18999,6 @@ void IScene::Draw() {
 	ServiceLocator::GetLineObject3D()->Draw();
 }
 
-///-------------------------------------------/// 
-/// LevelDataからModelを生成して配置する
-///-------------------------------------------///
-void IScene::GenerateModelsFromLevelData(const std::string& file_name) {
-
-	LevelData* levelData = GraphicsResourceGetter::GetLevelData(file_name);
-
-	for (const auto& obj : levelData->objects) {
-
-		// モデルの読み込み
-		//Loader::LoadLevelModel(obj.fileName);
-
-		// 生成
-		std::unique_ptr<Model> model = std::make_unique<Model>();
-
-		// モデル初期化（ファイル名指定）
-		model->Initialize(obj.fileName);
-
-		// 位置・回転・スケーリングを設定
-		model->SetTranslate(obj.translation);
-		model->SetScale(obj.scaling);
-
-		// オイラー角からクォータニオンへ変換（ユーティリティ関数を使用）
-		model->SetRotate(Math::QuaternionFromVector(obj.rotation));
-
-		// モデルの更新
-		model->Update();
-
-		// モデルをリストに追加
-		models_.push_back(std::move(model));
-	}
-}
-// 更新
-void IScene::UpdateLevelModels() {
-	for (auto& model : models_) {
-		model->Update();
-	}
-}
-
-void IScene::DrawLevelModels(BlendMode mode) {
-	for (auto& model : models_) {
-		model->Draw(mode);
-	}
-}
 
 
 
@@ -19074,27 +19041,6 @@ protected:
 	SceneManager* sceneManager_ = nullptr;
 	// Camera
 	std::shared_ptr<GameCamera> defaultCamera_;
-
-	// 共有モデル群
-	std::vector<std::unique_ptr<Model>> models_;
-
-protected: 
-	/// <summary>
-	/// 配置関数(Level)
-	/// </summary>
-	/// <param name="file_name">Jsonファイルの登録名</param>
-	void GenerateModelsFromLevelData(const std::string& file_name);
-
-	/// <summary>
-	/// 配置関数の更新処理
-	/// </summary>
-	void UpdateLevelModels();
-
-	/// <summary>
-	/// 配置関数の描画処理
-	/// </summary>
-	/// <param name="mode">ブレンドモード</param>
-	void DrawLevelModels(BlendMode mode = BlendMode::kBlendModeNone);
 };
 
 
@@ -19105,7 +19051,10 @@ File Path: Project/Engine/Scene/MyGame.cpp
 #include "MyGame.h"
 // シーンファクトリー
 #include "Engine/Scene/SceneFactory.h"
+// Service
 #include "Engine/System/Service/Loader.h"
+#include "Engine/System/Service/ParticleService.h"
+// Logger
 #include "Engine/Core/Logger.h"
 // c++
 #include <iostream>
@@ -19133,11 +19082,13 @@ void MyGame::Initialize(const wchar_t* title) {
 
 	/// ===読み込み処理=== ///
 	// 各読み込み処理用のスレッドを生成
-	LoadTexture();
+	LoadTexture(); // テクスチャの読み込みはメインスレッドで実行
 	std::vector<std::thread> loadingThreads;
-	loadingThreads.emplace_back([this] { LoadAudio(); });
-	loadingThreads.emplace_back([this] { LoadModel(); });
-	loadingThreads.emplace_back([this] { LoadAnimation(); });
+	loadingThreads.emplace_back([this] { LoadAudio(); });     // Soundの読み込み
+	loadingThreads.emplace_back([this] { LoadModel(); });	  // モデルの読み込み
+	loadingThreads.emplace_back([this] { LoadAnimation(); }); // アニメーションの読み込み
+	loadingThreads.emplace_back([this] { LoadParticle(); });  // パーティクルの読み込み
+	loadingThreads.emplace_back([this] { LoadJson(); });	  // Jsonデータの読み込み
 	// すべてのスレッドの終了を待機
 	for (auto& thread : loadingThreads) {
 		thread.join();
@@ -19191,10 +19142,10 @@ void MyGame::Draw() {
 	Framework::PostDraw();
 }
 
+
 ///-------------------------------------------/// 
-/// 読み込み関数
+/// Soundの読み込み関数
 ///-------------------------------------------///
-// 音
 void MyGame::LoadAudio() {
 #pragma region Wave
 	Loader::LoadWave("fanfare", "fanfare.wav");
@@ -19203,7 +19154,10 @@ void MyGame::LoadAudio() {
 	Loader::LoadMP3("clear", "clear.mp3");
 #pragma endregion
 }
-// テクスチャ
+
+///-------------------------------------------/// 
+///	テクスチャの読み込み処理
+///-------------------------------------------///
 void MyGame::LoadTexture() {
 	// DebugSceneで使用。
 	Loader::LoadTexture("uvChecker", "uvChecker.png");
@@ -19233,7 +19187,10 @@ void MyGame::LoadTexture() {
 	// GameAnimaiton
 	Loader::LoadTexture("GameOvverAnimation", "Animation/GameOverAnimation.png");
 }
-// モデル
+
+///-------------------------------------------/// 
+/// モデルの読み込み処理
+///-------------------------------------------///
 void MyGame::LoadModel() {
 	// DebugSceneで使用
 	Loader::LoadModel("MonsterBall", "MonsterBall/MonsterBall.obj");
@@ -19250,12 +19207,32 @@ void MyGame::LoadModel() {
 	Loader::LoadModel("Object2", "Object2/Object2.obj");
 	Loader::LoadModel("PlayerWeapon", "PlayerWeapon/PlayerWeapon.obj");
 }
-// アニメーション
+
+///-------------------------------------------/// 
+/// アニメーションモデルの読み込み処理
+///-------------------------------------------///
 void MyGame::LoadAnimation() {
 	// DebugSceneで使用。
 	Loader::LoadAnimation("simpleSkin", "simpleSkin/simpleSkin.gltf");
 	Loader::LoadAnimation("human", "human/sneakWalk.gltf");
 }
+
+///-------------------------------------------/// 
+/// パーティクルの読み込み処理
+///-------------------------------------------///
+void MyGame::LoadParticle() {
+	
+}
+
+///-------------------------------------------/// 
+/// Jsonデータの読み込み処理
+///-------------------------------------------///
+void MyGame::LoadJson() {
+	// Jsonの読み込み
+	Loader::LoadLevelJson("Level/StageData.json");
+	Loader::LoadLevelJson("Level/EntityData.json");
+}
+
 
 ============================================================
 File Path: Project/Engine/Scene/MyGame.h
@@ -19326,6 +19303,16 @@ private:
 	/// アニメーションモデルの読み込み処理
 	/// </summary>
 	void LoadAnimation();
+
+	/// <summary>
+	/// パーティクルの読み込み処理
+	/// </summary>
+	void LoadParticle();
+
+	/// <summary>
+	/// Jsonデータの読み込み処理
+	/// </summary>
+	void LoadJson();
 };
 
 
@@ -32890,6 +32877,7 @@ File Path: Project/application/Game/Entity/Enemy/Base/BaseEnemy.cpp
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // State
+#include "application/Game/Entity/Enemy/State/EnemyHitReactionState.h"
 #include "application/Game/Entity/Enemy/State/EnemyMoveState.h"
 // Service
 #include "Engine/System/Service/InputService.h"
@@ -32917,12 +32905,20 @@ BaseEnemy::~BaseEnemy() {
 }
 
 ///-------------------------------------------/// 
+/// Setter
+///-------------------------------------------///
+void BaseEnemy::SetInvincibleTime() {
+	invincibleInfo_.timer = invincibleInfo_.time;
+	invincibleInfo_.isInvincible = true;
+}
+
+///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
 void BaseEnemy::Initialize() {
-
 	/// ===Componentの生成=== ///
 	moveComponent_ = std::make_unique<EnemyMoveComponent>();
+	hitReactionComponent_ = std::make_unique<EnemyHitReactionComponent>();
 	// MoveComponentの初期化
 	EnemyMoveComponent::MoveConfig moveConfig{
 			.speed = 0.05f,
@@ -32932,6 +32928,13 @@ void BaseEnemy::Initialize() {
 			. rotationSpeed = 0.1f
 	};
 	moveComponent_->Initialize(transform_.translate, moveConfig);
+	// HitReactionComponentの初期化
+	EnemyHitReactionComponent::KnockBackConfig hitReactionConfig{
+		.knockBackForce = 1.5f,
+		.slowdownFactor = 0.5f,
+		.slowdownDuration = 0.2f
+	};
+	hitReactionComponent_->Initialize(hitReactionConfig);
 
 	// オブジェクトの色設定
 	color_ = { 1.0f, 0.0f, 1.0f, 1.0f };
@@ -32944,17 +32947,15 @@ void BaseEnemy::Initialize() {
 
 	// コライダーに追加
 	ColliderService::AddCollider(this);
+	
+	// 無敵情報の初期化
+	invincibleInfo_.time = 0.5f;
+	invincibleInfo_.timer = 0.0f;
+	invincibleInfo_.isInvincible = false;
 
-	// ノックバック情報の初期化
-	knockbackInfo_.cooldownTimer = 0.0f;
-	knockbackInfo_.cooldownDuration = 0.5f;  // 0.5秒のクールタイム
-	knockbackInfo_.knockbackForce = 1.5f;    // ノックバックの強さ
-	knockbackInfo_.hitColorDuration = 0.1f;  // 0.2秒間赤く表示
-	knockbackInfo_.hitColorTimer = 1.0f;
-	knockbackInfo_.originalColor = color_;   // 元の色を保存
-	knockbackInfo_.isInCooldown = true;
-
+	// 消滅タイマー
 	disappearTimer_ = 3.0f;
+	isTentativeDeath_ = false;
 
 	// HP 
 	baseInfo_.HP = 2;
@@ -32986,7 +32987,7 @@ void BaseEnemy::Update() {
 /// アニメーション時の更新処理
 ///-------------------------------------------///
 void BaseEnemy::UpdateAnimation() {
-	// GameChareacterの更新
+	// GameCharacterの更新
 	GameCharacter::Update();
 }
 
@@ -32994,7 +32995,7 @@ void BaseEnemy::UpdateAnimation() {
 /// 描画
 ///-------------------------------------------///
 void BaseEnemy::Draw(BlendMode mode) {
-	/// ===GameCahracterの描画=== ///
+	/// ===GameCharacterの描画=== ///
 	GameCharacter::Draw(mode);
 }
 
@@ -33003,7 +33004,7 @@ void BaseEnemy::Draw(BlendMode mode) {
 ///-------------------------------------------///
 void BaseEnemy::Information() {
 #ifdef USE_IMGUI
-	// MoveInfo
+	// MoveComponent
 	moveComponent_->Information();
 
 	// AttackInfo
@@ -33013,12 +33014,16 @@ void BaseEnemy::Information() {
 	ImGui::DragFloat("攻撃間隔", &attackInfo_.interval, 0.1f);
 	ImGui::DragInt("パワー", &attackInfo_.power, 1);
 
-	// KnockbackInfo
-	ImGui::Text("ノックバック情報");
-	ImGui::DragFloat("クールタイムの持続時間", &knockbackInfo_.cooldownDuration, 0.01f);
-	ImGui::DragFloat("ノックバックの強さ", &knockbackInfo_.knockbackForce, 0.1f);
-	ImGui::DragFloat("色変更時間", &knockbackInfo_.hitColorDuration, 0.01f);
-	ImGui::Checkbox("クール中かどうか", &knockbackInfo_.isInCooldown);
+	// HitReactionComponent
+	hitReactionComponent_->Information();
+
+	// InvincibleInfo
+	ImGui::Separator();
+	ImGui::Text("無敵情報");
+	ImGui::DragFloat("無敵時間", &invincibleInfo_.time, 0.01f, 0.0f, 5.0f);
+	ImGui::Text("無敵タイマー: %.2f", invincibleInfo_.timer);
+	ImGui::Text("無敵中: %s", invincibleInfo_.isInvincible ? "true" : "false");
+
 #endif // USE_IMGUI
 }
 
@@ -33032,10 +33037,7 @@ void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 	enemy->color_ = color_;
 
 	// ===== Move 系(設計値) ===== //
-	enemy->moveComponent_->SetSpeed(moveComponent_->GetConfig().speed);
-	enemy->moveComponent_->SetInterval(moveComponent_->GetConfig().interval);
-	enemy->moveComponent_->SetRange(moveComponent_->GetConfig().range);
-	enemy->moveComponent_->SetWaitTime(moveComponent_->GetConfig().waitTime);
+	enemy->moveComponent_->ApplyConfig(moveComponent_->GetConfig());
 
 	// ===== Attack 系(設計値) ===== //
 	enemy->attackInfo_.distance = attackInfo_.distance;
@@ -33044,9 +33046,7 @@ void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 	enemy->attackInfo_.power = attackInfo_.power;
 
 	// ===== Knockback 系(設計値) ===== //
-	enemy->knockbackInfo_.cooldownDuration = knockbackInfo_.cooldownDuration;
-	enemy->knockbackInfo_.knockbackForce = knockbackInfo_.knockbackForce;
-	enemy->knockbackInfo_.hitColorDuration = knockbackInfo_.hitColorDuration;
+	enemy->hitReactionComponent_->ApplyConfig(hitReactionComponent_->GetConfig());
 
 	// 型固有の値を派生側でコピー
 	this->CopyTypeTuningFromThisTo(enemy);
@@ -33071,38 +33071,24 @@ void BaseEnemy::OnCollision(Collider* collider) {
 	// Weaponとの当たり判定
 	if (collider->GetColliderName() == ColliderName::PlayerWeapon) {
 		// クールタイム中でなければノックバック処理を実行
-		if (!knockbackInfo_.isInCooldown) {
+		if (!invincibleInfo_.isInvincible) {
 			// 通常攻撃の時
 			if (player_->GetAttackComponent()->IsAttacking()) {
-				// Stateを移動状態に変更
-				ChangeState(std::make_unique<EnemyMoveState>());
+				// StateをHitReaction変更
+				ChangeState(std::make_unique<EnemyHitReactionState>());
 
-				// プレイヤーの位置を取得
-				Vector3 playerPos = player_->GetTransform().translate;
-
-				// 敵からプレイヤーへの方向ベクトルを計算
-				Vector3 toEnemy = transform_.translate - playerPos;
-				toEnemy.y = 0.0f; // Y軸は無視
-
-				// 正規化してノックバック方向を決定
-				if (Length(toEnemy) > 0.001f) {
-					toEnemy = Normalize(toEnemy);
-
-					// ノックバック速度を設定
-					baseInfo_.velocity = toEnemy * knockbackInfo_.knockbackForce;
-				}
-
-				// 色を赤に変更
-				color_ = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 赤色
+				// ノックバック方向の計算
+				Vector3 toWeapon = collider->GetTransform().translate - transform_.translate;
+				toWeapon.y = 0.0f; // Y軸は無視
+				toWeapon = -Normalize(toWeapon); // 反転して正規化
+				hitReactionComponent_->OnHit(toWeapon);
 
 				// HPを減少
 				baseInfo_.HP--;
 				hitParticle_ = ParticleService::Emit("Game", transform_.translate);
 
-				// タイマーをセット
-				knockbackInfo_.hitColorTimer = knockbackInfo_.hitColorDuration;
-				knockbackInfo_.cooldownTimer = knockbackInfo_.cooldownDuration;
-				knockbackInfo_.isInCooldown = true;
+				// 無敵時間のセット
+				SetInvincibleTime();
 			}
 		}
 	}
@@ -33205,34 +33191,20 @@ void BaseEnemy::advanceTimer() {
 			}
 		}
 	} else {
-
-
 		// 攻撃用のタイマーを進める
 		if (attackInfo_.timer > 0.0f) {
 			attackInfo_.timer -= baseInfo_.deltaTime;
 		}
 
-		// ノックバッククールタイムの更新
-		if (knockbackInfo_.isInCooldown) {
-			knockbackInfo_.cooldownTimer -= baseInfo_.deltaTime;
-
-			// クールタイムが終了したら解除
-			if (knockbackInfo_.cooldownTimer <= 0.0f) {
-				knockbackInfo_.isInCooldown = false;
-				knockbackInfo_.cooldownTimer = 0.0f;
-			}
+		// 無敵タイマーを進める
+		if (invincibleInfo_.timer > 0.0f) {
+			invincibleInfo_.timer -= baseInfo_.deltaTime;
+			invincibleInfo_.isInvincible = true;
+		} else {
+			invincibleInfo_.isInvincible = false;
+			invincibleInfo_.timer = 0.0f;
 		}
 
-		// ヒット時の赤色表示タイマーの更新
-		if (knockbackInfo_.hitColorTimer > 0.0f) {
-			knockbackInfo_.hitColorTimer -= baseInfo_.deltaTime;
-
-			// 赤色表示時間が終了したら元の色に戻す
-			if (knockbackInfo_.hitColorTimer <= 0.0f) {
-				color_ = knockbackInfo_.originalColor;
-				knockbackInfo_.hitColorTimer = 0.0f;
-			}
-		}
 	}
 }
 
@@ -33247,6 +33219,7 @@ File Path: Project/application/Game/Entity/Enemy/Base/BaseEnemy.h
 #include "application/Game/Entity/Enemy/State/Base/EnemyState.h"
 // Component
 #include "application/Game/Entity/Enemy/Component/EnemyMoveComponent.h"
+#include "application/Game/Entity/Enemy/Component/EnemyHitReactionComponent.h"
 
 // c++
 #include <random>
@@ -33275,20 +33248,16 @@ private: /// ===型定義=== ///
 		int32_t power;		// 待機時間
 
 		Vector3 direction;  // 攻撃方向
-		Vector3 playerPos;  // プレイヤーの位置
+		Vector3 targetPos;  // プレイヤーの位置
 
 		bool isAttack;		// 攻撃フラグ
 	};
 
-	/// ===ノックバック情報=== ///
-	struct KnockbackInfo {
-		float cooldownTimer;		// クールタイム用タイマー
-		float cooldownDuration;		// クールタイムの持続時間
-		float knockbackForce;		// ノックバックの強さ
-		float hitColorDuration;		// 赤色表示の持続時間
-		float hitColorTimer;		// 赤色表示用タイマー
-		Vector4 originalColor;		// 元の色
-		bool isInCooldown;			// クールタイム中かどうか
+	/// ===無敵時間情報=== ///
+	struct InvincibleInfo {
+		float time = 0.5f;			// 無敵時間
+		float timer = 0.0f;			// 無敵タイマー
+		bool isInvincible = false;	// 無敵フラグ
 	};
 
 public:
@@ -33367,12 +33336,13 @@ public: /// ===State用関数=== ///
 
 public: /// ===Getter=== ///
 	// Component
-	EnemyMoveComponent& GetMovementComponent() { return *moveComponent_; };
+	EnemyMoveComponent& GetMovementComponent() const { return *moveComponent_; };
+	EnemyHitReactionComponent& GetHitReactionComponent() const { return *hitReactionComponent_; };
 	// Player
 	Player* GetPlayer() const { return player_; };
 	// AttackInfo
 	AttackInfo GetAttackInfo()const { return attackInfo_; };
-	// tentativeDeah
+	// tentativeDeath
 	bool GetTentativeDeath() const { return isTentativeDeath_; };
 	// isRotationComplete
 	bool GetIsRotationComplete() const { return isRotationComplete_; };
@@ -33384,35 +33354,38 @@ public: /// ===Setter=== ///
 	void SetIsRotationComplete(bool flag) { isRotationComplete_ = flag; };
 	// AttackDirection
 	void SetAttackDirection(const Vector3& dir) { attackInfo_.direction = dir; };
-	void SetPlayerPos(const Vector3& pos) { attackInfo_.playerPos = pos; };
-	
+	void SetTargetPos(const Vector3& pos) { attackInfo_.targetPos = pos; };
+	// 無敵時間の設定
+	void SetInvincibleTime();
 
 protected: /// ===変数の宣言=== ///
 
 	GameCamera* camera_ = nullptr; // カメラ
 	Player* player_ = nullptr; // Player
 
-	/// ===State=== ///
-	std::unique_ptr<EnemyState> currentState_;
-
-	/// ===コンポーネント=== ///
-	std::unique_ptr<EnemyMoveComponent> moveComponent_;
-
 	// 攻撃情報
 	AttackInfo attackInfo_;
 
-	// 回転完了フラグ
-	bool isRotationComplete_ = false;
+	// 無敵時間情報
+	InvincibleInfo invincibleInfo_;
 
 	// 衝突フラグ
 	bool isCollision_ = false;
 
 private:
+	/// ===State=== ///
+	std::unique_ptr<EnemyState> currentState_;
+
+	/// ===コンポーネント=== ///
+	std::unique_ptr<EnemyMoveComponent> moveComponent_;
+	std::unique_ptr<EnemyHitReactionComponent> hitReactionComponent_;
+
+	// Particle
 	ParticleGroup* hitParticle_ = nullptr;
 	ParticleGroup* deathParticle_ = nullptr;
 
-	// ノックバック情報
-	KnockbackInfo knockbackInfo_;
+	// 回転完了フラグ
+	bool isRotationComplete_ = false;
 
 	// 消えるまでの時間
 	float disappearTimer_ = 2.0f;
@@ -33558,7 +33531,7 @@ void CloseRangeEnemy::StartAttack() {
 void CloseRangeEnemy::Attack() {
 
 	// プレイヤーとの差を計算
-	Vector3 toTarget = attackInfo_.playerPos - transform_.translate;
+	Vector3 toTarget = attackInfo_.targetPos - transform_.translate;
 	float length = Length(toTarget);
 
 	// パーティクルの位置更新
@@ -33672,16 +33645,281 @@ protected:
 
 
 ============================================================
-File Path: Project/application/Game/Entity/Enemy/Component/EnemyMoveComponent.cpp
+File Path: Project/application/Game/Entity/Enemy/Component/EnemyHitReactionComponent.cpp
 ============================================================
-#include "EnemyMoveComponent.h"
-#include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
+#include "EnemyHitReactionComponent.h"
+// C++
 #include <cassert>
-
+// Math
+#include "Math/sMath.h"
+// ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
 #endif // USE_IMGUI
 
+#ifdef USE_IMGUI
+///-------------------------------------------/// 
+/// 設定の適用
+///-------------------------------------------///
+void EnemyHitReactionComponent::ApplyConfig(const KnockBackConfig& newConfig) {
+	if (newConfig.knockBackForce < 0.0f) {
+		// デバッグビルドでのみエラー
+		assert(false && "Invalid KnockBackConfig");
+	}
+	config_ = newConfig;
+}
+#endif // USE_IMGUI
+
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void EnemyHitReactionComponent::Initialize(const KnockBackConfig& config) {
+
+	// 設定の初期化
+	config_ = config;
+
+	// 状態の初期化
+	state_.slowdownTimer = 0.0f;
+	state_.slowdownMultiplier = 1.0f;
+	state_.isHit = false;
+
+	// ヒット方向の初期化
+	hitParentDirection_ = { 0.0f, 0.0f, 0.0f };
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+EnemyHitReactionComponent::UpdateResult EnemyHitReactionComponent::Update(const UpdateContext& context) {
+	UpdateResult result{};
+
+	/// ===タイマーの更新=== ///
+	TimerUpdate(context.deltaTime);
+
+	/// ===減速係数の更新=== ///
+	UpdateSlowdownMultiplier();
+
+	/// ===ノックバック処理=== ///
+	if (state_.isHit) {
+		// ノックバック方向の計算(攻撃元から離れる方向)
+		Vector3 direction = hitParentDirection_;
+		direction.y = 0.0f; // Y軸方向は無視
+
+		// 正規化
+		float length = Length(direction);
+		if (length > 0.001f) {
+			direction = Normalize(direction);
+			// ノックバック速度を設定
+			result.velocity = direction * config_.knockBackForce;
+		}
+
+		// ヒットフラグをリセット
+		state_.isHit = false;
+
+	} else {
+		// ノックバック中でない場合は、現在の速度に減速係数を適用
+		result.velocity = context.currentVelocity * state_.slowdownMultiplier;
+	}
+
+	return result;
+}
+
+///-------------------------------------------/// 
+/// ImGui情報の表示
+///-------------------------------------------///
+void EnemyHitReactionComponent::Information() {
+#ifdef USE_IMGUI
+	if (ImGui::TreeNode("ダメージリアクション")) {
+		ImGui::DragFloat("ノックバックの強さ", &config_.knockBackForce, 0.1f, 0.0f, 100.0f);
+		ImGui::DragFloat("減速率", &config_.slowdownFactor, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat("減速時間", &config_.slowdownDuration, 0.01f, 0.0f, 2.0f);
+
+		ImGui::Separator();
+		ImGui::Text("状態");
+		ImGui::Text("減速タイマー: %.2f", state_.slowdownTimer);
+		ImGui::Text("ヒットしたかどうか: %s", state_.isHit ? "true" : "false");
+		ImGui::TreePop();
+	}
+#endif // USE_IMGUI
+}
+
+///-------------------------------------------/// 
+/// ヒット処理の開始
+///-------------------------------------------///
+void EnemyHitReactionComponent::OnHit(const Vector3& hitParentDirection) {
+	// ヒットフラグを立てる
+	state_.isHit = true;
+	// 当たっている方向を取得
+	hitParentDirection_ = hitParentDirection;
+	// 減速タイマーを設定
+	state_.slowdownTimer = config_.slowdownDuration;
+}
+
+///-------------------------------------------/// 
+/// タイマーの更新処理
+///-------------------------------------------///
+void EnemyHitReactionComponent::TimerUpdate(const float deltaTime) {
+	// 減速タイマーの更新
+	if (state_.slowdownTimer > 0.0f) {
+		state_.slowdownTimer -= deltaTime;
+
+		if (state_.slowdownTimer < 0.0f) {
+			state_.slowdownTimer = 0.0f;
+		}
+	}
+}
+
+///-------------------------------------------/// 
+/// 減速係数の更新処理
+///-------------------------------------------///
+void EnemyHitReactionComponent::UpdateSlowdownMultiplier() {
+	if (state_.slowdownTimer > 0.0f) {
+		// 減速時間に応じて線形補間
+		// タイマーが減るにつれて、減速率から通常速度(1.0)に戻る
+		float t = state_.slowdownTimer / config_.slowdownDuration;
+		state_.slowdownMultiplier = Math::Lerp(1.0f, config_.slowdownFactor, t);
+	} else {
+		// 減速時間が終了したら通常速度
+		state_.slowdownMultiplier = 1.0f;
+	}
+}
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/Component/EnemyHitReactionComponent.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Math/Vector3.h"
+#include "Math/Vector4.h"
+
+///=====================================================/// 
+/// EnemyHitReactionComponent
+///=====================================================///
+class EnemyHitReactionComponent {
+private:
+	/// ===状態の構造体=== ///
+	struct KnockBackState {
+		float slowdownTimer = 0.0f;		 // 減速用タイマー
+		float slowdownMultiplier = 1.0f; // 減速率の乗数
+		bool isHit = false;				 // ヒットしたかどうか
+	};
+
+public:
+	/// ===設定パラメータの構造体=== ///
+	struct KnockBackConfig {
+		float knockBackForce = 1.5f;	// ノックバックの強さ
+		float slowdownFactor = 0.3f;	// 減速率(0.0~1.0、小さいほど遅くなる)
+		float slowdownDuration = 0.2f;	// 減速効果の持続時間
+	};
+
+	/// ===更新用コンテキスト=== ///
+	struct UpdateContext {
+		Vector3 currentPosition;	// 現在の位置
+		Vector3 currentVelocity;	// 現在の速度
+		float deltaTime;
+	};
+
+	/// ===更新結果=== ///
+	struct UpdateResult {
+		Vector3 velocity = { 0.0f, 0.0f, 0.0f };
+	};
+
+public:
+
+	EnemyHitReactionComponent() = default;
+	~EnemyHitReactionComponent() = default;
+
+	// コピー・ムーブは明示的に制御
+	EnemyHitReactionComponent(const EnemyHitReactionComponent&) = delete;
+	EnemyHitReactionComponent& operator=(const EnemyHitReactionComponent&) = delete;
+
+	/// <summary>
+	/// KnockBack の初期化を行います。
+	/// </summary>
+	/// <param name="config">初期化に使用する設定を const 参照で受け取ります。引数を省略した場合は KnockBackConfig の既定値が使用されます。</param>
+	void Initialize(const KnockBackConfig& config = KnockBackConfig{});
+
+	/// <summary>
+	/// 与えられた更新コンテキストに基づいて更新処理を行い、その結果を返します。
+	/// </summary>
+	/// <param name="context">更新に必要な情報を保持する入力コンテキスト。参照で渡され、関数はこの情報を用いて更新を実行します。</param>
+	/// <returns>更新処理の結果を表す UpdateResult。成功／失敗や状態に関する情報を含みます。</returns>
+	UpdateResult Update(const UpdateContext& context);
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
+	void Information();
+
+	/// <summary>
+	/// オブジェクトがヒットされたときに呼び出されるコールバック。ヒットの方向を受け取ります。
+	/// </summary>
+	/// <param name="hitParentDirection">親座標系（親オブジェクト基準）で表されたヒットの方向を示すVector3へのconst参照。関数内で値は変更されません。</param>
+	void OnHit(const Vector3& hitParentDirection);
+
+public: /// ===Getter=== ///
+	// KnockBackConfig
+	const KnockBackConfig& GetConfig() const { return config_; }
+	// KnockBackState
+	const KnockBackState& GetState() const { return state_; }
+
+#ifdef USE_IMGUI
+public: /// ===Setter=== ///
+	// KnockBackConfig
+	void ApplyConfig(const KnockBackConfig& newConfig);
+#endif // USE_IMGUI
+
+private:
+	/// ===情報=== ///
+	KnockBackConfig config_;
+	KnockBackState state_;
+
+	// ヒットした相手の方向
+	Vector3 hitParentDirection_ = {0.0f, 0.0f, 0.0f};
+
+private:
+
+	/// <summary>
+	/// タイマーの更新処理
+	/// </summary>
+	/// <param name="deltaTime">デルタタイム</param>
+	void TimerUpdate(const float deltaTime);
+
+	/// <summary>
+	/// 減速係数の更新処理
+	/// </summary>
+	void UpdateSlowdownMultiplier();
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/Component/EnemyMoveComponent.cpp
+============================================================
+#include "EnemyMoveComponent.h"
+// C++
+#include <cassert>
+// Math
+#include "Math/sMath.h"
+// ImGui
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
+
+#ifdef USE_IMGUI
+///-------------------------------------------/// 
+/// 設定の適用
+///-------------------------------------------///
+void EnemyMoveComponent::ApplyConfig(const MoveConfig& newconfig) {
+	if (newconfig.speed < 0.0f || newconfig.range <= 0.0f) {
+		// デバッグビルドでのみエラー
+		assert(false && "Invalid MoveConfig");
+	}
+	config_ = newconfig;
+}
+#endif // USE_IMGUI
 
 ///-------------------------------------------/// 
 /// 初期化処理
@@ -33806,16 +34044,11 @@ void EnemyMoveComponent::Information() {
 }
 
 ///-------------------------------------------/// 
-/// 設定の適用
+/// 移動開始処理
 ///-------------------------------------------///
-void EnemyMoveComponent::ApplyConfig(const MoveConfig& newconfig) {
-#ifdef _DEBUG
-	if (newconfig.speed < 0.0f || newconfig.range <= 0.0f) {
-		// デバッグビルドでのみエラー
-		assert(false && "Invalid MoveConfig");
-	}
-#endif
-	config_ = newconfig;
+void EnemyMoveComponent::StartMove(const Vector3& center) {
+	state_.timer = config_.waitTime;
+	state_.rangeCenter = center;
 }
 
 ///-------------------------------------------/// 
@@ -33903,29 +34136,25 @@ public:
 	/// </summary>
 	void Information();
 
-public: /// ===Getter=== ///
+	/// <summary>
+	/// 指定した中心点を基準に移動を開始します。
+	/// </summary>
+	/// <param name="center">移動の基準となる中心位置を表す Vector3 型の座標（const 参照）。</param>
+	void StartMove(const Vector3& center);
 
+public: /// ===Getter=== ///
 	// MoveConfig
 	const MoveConfig& GetConfig() const { return config_; }
 	// MoveState
 	const MoveState& GetState() const { return state_; }
 
+#ifdef USE_IMGUI
 public: /// ===Setter=== ///
-
 	// MoveConfig
-	void SetSpeed(float speed) { config_.speed = speed; }
-	void SetRange(float range) { config_.range = range; }
-	void SetInterval(float interval) { config_.interval = interval; }
-	void SetWaitTime(float waitTime) { config_.waitTime = waitTime; }
-	void SetRotationSpeed(float rotationSpeed) { config_.rotationSpeed = rotationSpeed; }
 	void ApplyConfig(const MoveConfig& newconfig);
-	// timer
-	void SetTimer(float timer) { state_.timer = timer; }
-	void SetRangeCenter(const Vector3& center) { state_.rangeCenter = center; }
-	
+#endif // USE_IMGUI
 
 private:
-
 	/// ===情報=== ///
 	MoveConfig config_;
 	MoveState state_;
@@ -33979,7 +34208,7 @@ void LongRangeEnemeyBullet::Initialize() {
 	// Sphereの設定
 	SphereCollider::Initialize();
 	name_ = ColliderName::EnemyBullet;
-	sphere_.radius = 0.5f;
+	SphereCollider::SetRadius(0.5f);
 
 	// コライダーに追加
 	ColliderService::AddCollider(this);
@@ -34957,6 +35186,93 @@ public:
 
 
 ============================================================
+File Path: Project/application/Game/Entity/Enemy/State/EnemyHitReactionState.cpp
+============================================================
+#include "EnemyHitReactionState.h"
+// BaseEnemy
+#include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
+// State
+#include "EnemyMoveState.h"
+
+///-------------------------------------------/// 
+/// 開始時に呼び出す
+///-------------------------------------------///
+void EnemyHitReactionState::Enter(BaseEnemy* enemy) {
+	enemy_ = enemy;
+}
+
+///-------------------------------------------/// 
+/// 更新時に呼び出す
+///-------------------------------------------///
+void EnemyHitReactionState::Update(BaseEnemy * enemy) {
+	enemy_ = enemy;
+
+	/// ===HitReactionComponentの更新=== ///
+	// 更新コンテキストの作成
+	EnemyHitReactionComponent::UpdateContext hitContext{
+		.currentPosition = enemy_->GetTransform().translate,
+		.currentVelocity = enemy_->GetVelocity(),
+		.deltaTime = enemy_->GetDeltaTime()
+	};
+
+	// コンポーネントの更新
+	auto result = enemy_->GetHitReactionComponent().Update(hitContext);
+
+	// 結果の反映
+	enemy_->SetVelocity(result.velocity);
+
+	/// ===ヒットリアクションが終了したらMoveStateへ遷移=== ///
+	// 減速も終了したら移動状態へ
+	const auto& state = enemy_->GetHitReactionComponent().GetState();
+	if (state.slowdownTimer <= 0.0f) {
+		enemy_->ChangeState(std::make_unique<EnemyMoveState>());
+	}
+}
+
+///-------------------------------------------/// 
+/// 終了時に呼びだす
+///-------------------------------------------///
+void EnemyHitReactionState::Finalize() {
+	EnemyState::Finalize();
+}
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/State/EnemyHitReactionState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Base/EnemyState.h"
+
+///-------------------------------------------/// 
+/// EnemyHitReactionState
+///-------------------------------------------///
+class EnemyHitReactionState : public EnemyState {
+public:
+
+	~EnemyHitReactionState() override = default;
+
+	/// <summary>
+	/// ステートに入った時に呼ばれる処理
+	/// </summary>
+	/// <param name="enemy">処理対象の BaseEnemy オブジェクトへのポインタ。ステートへ入る対象となる敵を指す</param>
+	void Enter(BaseEnemy* enemy) override;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	/// <param name="enemy">更新対象の BaseEnemy 型オブジェクトへのポインタ。</param>
+	void Update(BaseEnemy* enemy) override;
+
+	/// <summary>
+	/// 終了処理
+	/// </summary>
+	void Finalize() override;
+};
+
+
+
+============================================================
 File Path: Project/application/Game/Entity/Enemy/State/EnemyMoveState.cpp
 ============================================================
 #include "EnemyMoveState.h"
@@ -34973,10 +35289,8 @@ void EnemyMoveState::Enter(BaseEnemy* enemy) {
 	enemy_ = enemy;
 	// 移動範囲の中心を設定
 	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
-	// 動くまでの時間を設定
-    enemy_->GetMovementComponent().SetTimer(0.5f);
-	// 移動範囲の中心を現在地に設定
-    enemy_->GetMovementComponent().SetRangeCenter(enemy_->GetTransform().translate);
+    // 移動開始処理
+    enemy_->GetMovementComponent().StartMove(enemy_->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 
@@ -34991,7 +35305,6 @@ void EnemyMoveState::Update(BaseEnemy * enemy) {
         .deltaTime = enemy_->GetDeltaTime(),
         .isRotationComplete = enemy_->GetIsRotationComplete()
     };
-
     // 移動コンポーネントの更新
     auto result = enemy_->GetMovementComponent().Update(context);
 
@@ -35000,8 +35313,8 @@ void EnemyMoveState::Update(BaseEnemy * enemy) {
 
 	// 回転の更新
     if (result.needsRotation) {
-        auto& config = enemy_->GetMovementComponent().GetConfig();
-        enemy_->UpdateRotationTowards(result.targetDirection, config.rotationSpeed);
+        float rotationSpeed = enemy_->GetMovementComponent().GetConfig().rotationSpeed;
+        enemy_->UpdateRotationTowards(result.targetDirection, rotationSpeed);
     }
 
 	// 回転完了フラグのリセット
@@ -35127,7 +35440,7 @@ void EnemyPrePareAttackState::Update(BaseEnemy* enemy) {
 			// 攻撃方向を設定
 			enemy_->SetAttackDirection(attackDirection_);
 			// プレイヤーの位置を設定
-			enemy_->SetPlayerPos(playerPos_);
+			enemy_->SetTargetPos(playerPos_);
 			// AttackStateに移行
 			enemy_->ChangeState(std::make_unique<EnemyAttackState>());
 			return;
@@ -38087,14 +38400,13 @@ Player::~Player() {
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
-// Cameraの追従対象としてPlaeyrを設定
+// Cameraの追従対象としてPlayerを設定
 void Player::SetCameraTargetPlayer() { camera_->SetTarget(&transform_.translate, &transform_.rotate); }
 // 無敵時間の設定
-void Player::SetInvicibleTime(const float& time) {
-	invicibleInfo_.time = time;
-	invicibleInfo_.timer = invicibleInfo_.time;
+void Player::SetInvincibleTime(const float& time) {
+	invincibleInfo_.time = time;
+	invincibleInfo_.timer = invincibleInfo_.time;
 }
-
 
 ///-------------------------------------------/// 
 /// 初期化
@@ -38145,8 +38457,8 @@ void Player::Initialize() {
 	attackComponent_->Initialize();
 
 	// 無敵情報の設定
-	SetInvicibleTime(1.0f);
-	invicibleInfo_.isFlag = true;
+	SetInvincibleTime(1.0f);
+	invincibleInfo_.isFlag = true;
 
 	// HPの設定
 	baseInfo_.HP = 5;
@@ -38222,7 +38534,7 @@ void Player::Information() {
 	moveComponent_->Information();		// 移動コンポーネントの情報表示
 	avoidanceComponent_->Information(); // 回避コンポーネントの情報表示
 	attackComponent_->Information();    // 攻撃コンポーネントの情報表示
-	ImGui::DragFloat("無敵時間", &invicibleInfo_.timer, 0.01f);
+	ImGui::DragFloat("無敵時間", &invincibleInfo_.timer, 0.01f);
 	weapon_->Information();         // Weaponの情報表示
 	ImGui::End();
 #endif // USE_IMGUI
@@ -38241,7 +38553,7 @@ void Player::OnCollision(Collider* collider) {
 	if (collider->GetColliderName() == ColliderName::Enemy || collider->GetColliderName() == ColliderName::EnemyBullet) {
 
 		// 無敵状態でなければダメージを受ける
-		if (!invicibleInfo_.isFlag) {
+		if (!invincibleInfo_.isFlag) {
 
 			/// ===カメラのシェイク=== ///
 			camera_->StartShake(1.2f, 1.0f);
@@ -38266,9 +38578,9 @@ void Player::OnCollision(Collider* collider) {
 			ChangState(std::make_unique<RootState>());
 
 			// ダメージ処理
-			baseInfo_.HP--;
+			//baseInfo_.HP--;
 			// 無敵状態にする
-			SetInvicibleTime(0.5f);
+			SetInvincibleTime(0.5f);
 		}
 	}
 }
@@ -38279,12 +38591,12 @@ void Player::OnCollision(Collider* collider) {
 void Player::advanceTimer() {
 
 	// 無敵タイマーを進める
-	if (invicibleInfo_.timer > 0.0f) {
-		invicibleInfo_.timer -= baseInfo_.deltaTime;
+	if (invincibleInfo_.timer > 0.0f) {
+		invincibleInfo_.timer -= baseInfo_.deltaTime;
 		color_ = { 1.0f, 0.0f, 0.0f, 0.5f }; // 半透明にする
-		invicibleInfo_.isFlag = true;
+		invincibleInfo_.isFlag = true;
 	} else {
-		invicibleInfo_.isFlag = false;
+		invincibleInfo_.isFlag = false;
 		color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; // 元の色に戻す
 	}
 
@@ -38406,15 +38718,15 @@ public: /// ===Setter=== ///
 	// Camera
 	void SetCameraTargetPlayer();
 	// 無敵時間の設定
-	void SetInvicibleTime(const float& time);
+	void SetInvincibleTime(const float& time);
 
 public: /// ===State用関数=== ///
 
 	/// <summary>
 	/// 減速処理
 	/// </summary>
-	/// <param name="develeration">適用する減速量を表す浮動小数点数への const 参照。</param>
-	void ApplyDeceleration(const float& develeration);
+	/// <param name="deceleration">適用する減速量を表す浮動小数点数への const 参照。</param>
+	void ApplyDeceleration(const float& deceleration);
 
 	/// <summary>
 	/// Stateの変更処理
@@ -38438,12 +38750,12 @@ private: /// ===変数の宣言=== ///
 	std::unique_ptr<PlayerState> currentState_;
 
 	/// ===無敵時間の情報=== ///
-	struct InvicibleInfo {
+	struct InvincibleInfo {
 		float time = 1.0f;   // 無敵時間
 		float timer = 0.0f;  // 無敵タイマー
 		bool isFlag = false; // 無敵フラグ
 	};
-	InvicibleInfo invicibleInfo_;
+	InvincibleInfo invincibleInfo_;
 
 private:
 
@@ -39026,7 +39338,7 @@ void PlayerWeapon::Initialize() {
 	/// ===OBBCollider=== ///
 	OBBCollider::Initialize();
 	name_ = ColliderName::PlayerWeapon;
-	obb_.halfSize = { 0.5f, 0.5f, 3.0f };
+	OBBCollider::SethalfSize({ 0.5f, 0.5f, 3.0f });
 
 	// DeltaTime初期化
 	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
@@ -39548,9 +39860,9 @@ GroundOshan::~GroundOshan() {
 ///-------------------------------------------///
 void GroundOshan::Initialize() {
 
+	// AABBコライダーの初期化と設定
 	AABBCollider::Initialize();
-	aabb_.min = { -500.0f, -2.0f, -500.0f };
-	aabb_.max = { 500.0f, 0.0f, 500.0f };
+	AABBCollider::SetAABB({ { -500.0f, -2.0f, -500.0f }, { 500.0f, 0.0f, 500.0f } });
 
 	// オーシャンの初期化
 	ocean_ = std::make_unique<Ocean>();
@@ -40489,17 +40801,11 @@ void GameScene::Initialize() {
 	// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 	IScene::Initialize();
 
-	// Jsonの読み込み
-	Loader::LoadLevelJson("Level/StageData.json");
-	Loader::LoadLevelJson("Level/EntityData.json");
-
 	// パーティクルの読み込み
-	// Player用
 	ParticleService::LoadParticleDefinition("Game.json");
 	ParticleService::LoadParticleDefinition("WeaponAttack.json");
 	ParticleService::LoadParticleDefinition("nakagawa.json");
 	ParticleService::LoadParticleDefinition("PlayerWarke.json");
-	// Enemy用
 	ParticleService::LoadParticleDefinition("EnemyAttack.json");
 	ParticleService::LoadParticleDefinition("EnemyPrePareAttack.json");
 	ParticleService::LoadParticleDefinition("EnemyPrePareAttackCharge.json");
@@ -40715,13 +41021,14 @@ void GameScene::UpdateGameOverAnimation() {
 	enemyManager_->UpdateAnimation();
 
 	// アニメーション完了でシーン移動
+	//NOTE:この部分はシーン移動ではなく遷移にする。クリアも同じ
 	if (gameOverAnimation_->IsCompleted()) {
 		sceneManager_->ChangeScene(SceneType::Title);
 	}
 }
 
 ///-------------------------------------------/// 
-/// フェードアウト時の更新処理
+/// クリア時の更新処理
 ///-------------------------------------------///
 void GameScene::UpdateGameClearAnimtaion() {
 
