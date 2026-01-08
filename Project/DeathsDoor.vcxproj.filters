@@ -503,6 +503,8 @@
     <ClCompile Include="application\Game\Entity\Player\Editor\AttackEditor.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Editor\AttackDataSerializer.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -970,6 +972,8 @@
     <ClInclude Include="application\Game\Entity\Player\Editor\AttackEditor.h" />
     <ClInclude Include="application\Game\Entity\Player\Editor\AttackDataSerializer.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

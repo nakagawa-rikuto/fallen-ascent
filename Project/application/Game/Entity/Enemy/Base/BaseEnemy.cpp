@@ -4,6 +4,7 @@
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // State
+#include "application/Game/Entity/Enemy/State/EnemyHitReactionState.h"
 #include "application/Game/Entity/Enemy/State/EnemyMoveState.h"
 // Service
 #include "Engine/System/Service/InputService.h"
@@ -31,12 +32,20 @@ BaseEnemy::~BaseEnemy() {
 }
 
 ///-------------------------------------------/// 
+/// Setter
+///-------------------------------------------///
+void BaseEnemy::SetInvincibleTime() {
+	invincibleInfo_.timer = invincibleInfo_.time;
+	invincibleInfo_.isInvincible = true;
+}
+
+///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
 void BaseEnemy::Initialize() {
-
 	/// ===Componentの生成=== ///
 	moveComponent_ = std::make_unique<EnemyMoveComponent>();
+	hitReactionComponent_ = std::make_unique<EnemyHitReactionComponent>();
 	// MoveComponentの初期化
 	EnemyMoveComponent::MoveConfig moveConfig{
 			.speed = 0.05f,
@@ -46,6 +55,13 @@ void BaseEnemy::Initialize() {
 			. rotationSpeed = 0.1f
 	};
 	moveComponent_->Initialize(transform_.translate, moveConfig);
+	// HitReactionComponentの初期化
+	EnemyHitReactionComponent::KnockBackConfig hitReactionConfig{
+		.knockBackForce = 1.5f,
+		.slowdownFactor = 0.5f,
+		.slowdownDuration = 0.2f
+	};
+	hitReactionComponent_->Initialize(hitReactionConfig);
 
 	// オブジェクトの色設定
 	color_ = { 1.0f, 0.0f, 1.0f, 1.0f };
@@ -58,17 +74,15 @@ void BaseEnemy::Initialize() {
 
 	// コライダーに追加
 	ColliderService::AddCollider(this);
+	
+	// 無敵情報の初期化
+	invincibleInfo_.time = 0.5f;
+	invincibleInfo_.timer = 0.0f;
+	invincibleInfo_.isInvincible = false;
 
-	// ノックバック情報の初期化
-	knockbackInfo_.cooldownTimer = 0.0f;
-	knockbackInfo_.cooldownDuration = 0.5f;  // 0.5秒のクールタイム
-	knockbackInfo_.knockbackForce = 1.5f;    // ノックバックの強さ
-	knockbackInfo_.hitColorDuration = 0.1f;  // 0.2秒間赤く表示
-	knockbackInfo_.hitColorTimer = 1.0f;
-	knockbackInfo_.originalColor = color_;   // 元の色を保存
-	knockbackInfo_.isInCooldown = true;
-
+	// 消滅タイマー
 	disappearTimer_ = 3.0f;
+	isTentativeDeath_ = false;
 
 	// HP 
 	baseInfo_.HP = 2;
@@ -100,7 +114,7 @@ void BaseEnemy::Update() {
 /// アニメーション時の更新処理
 ///-------------------------------------------///
 void BaseEnemy::UpdateAnimation() {
-	// GameChareacterの更新
+	// GameCharacterの更新
 	GameCharacter::Update();
 }
 
@@ -108,7 +122,7 @@ void BaseEnemy::UpdateAnimation() {
 /// 描画
 ///-------------------------------------------///
 void BaseEnemy::Draw(BlendMode mode) {
-	/// ===GameCahracterの描画=== ///
+	/// ===GameCharacterの描画=== ///
 	GameCharacter::Draw(mode);
 }
 
@@ -117,7 +131,7 @@ void BaseEnemy::Draw(BlendMode mode) {
 ///-------------------------------------------///
 void BaseEnemy::Information() {
 #ifdef USE_IMGUI
-	// MoveInfo
+	// MoveComponent
 	moveComponent_->Information();
 
 	// AttackInfo
@@ -127,12 +141,16 @@ void BaseEnemy::Information() {
 	ImGui::DragFloat("攻撃間隔", &attackInfo_.interval, 0.1f);
 	ImGui::DragInt("パワー", &attackInfo_.power, 1);
 
-	// KnockbackInfo
-	ImGui::Text("ノックバック情報");
-	ImGui::DragFloat("クールタイムの持続時間", &knockbackInfo_.cooldownDuration, 0.01f);
-	ImGui::DragFloat("ノックバックの強さ", &knockbackInfo_.knockbackForce, 0.1f);
-	ImGui::DragFloat("色変更時間", &knockbackInfo_.hitColorDuration, 0.01f);
-	ImGui::Checkbox("クール中かどうか", &knockbackInfo_.isInCooldown);
+	// HitReactionComponent
+	hitReactionComponent_->Information();
+
+	// InvincibleInfo
+	ImGui::Separator();
+	ImGui::Text("無敵情報");
+	ImGui::DragFloat("無敵時間", &invincibleInfo_.time, 0.01f, 0.0f, 5.0f);
+	ImGui::Text("無敵タイマー: %.2f", invincibleInfo_.timer);
+	ImGui::Text("無敵中: %s", invincibleInfo_.isInvincible ? "true" : "false");
+
 #endif // USE_IMGUI
 }
 
@@ -146,10 +164,7 @@ void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 	enemy->color_ = color_;
 
 	// ===== Move 系(設計値) ===== //
-	enemy->moveComponent_->SetSpeed(moveComponent_->GetConfig().speed);
-	enemy->moveComponent_->SetInterval(moveComponent_->GetConfig().interval);
-	enemy->moveComponent_->SetRange(moveComponent_->GetConfig().range);
-	enemy->moveComponent_->SetWaitTime(moveComponent_->GetConfig().waitTime);
+	enemy->moveComponent_->ApplyConfig(moveComponent_->GetConfig());
 
 	// ===== Attack 系(設計値) ===== //
 	enemy->attackInfo_.distance = attackInfo_.distance;
@@ -158,9 +173,7 @@ void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 	enemy->attackInfo_.power = attackInfo_.power;
 
 	// ===== Knockback 系(設計値) ===== //
-	enemy->knockbackInfo_.cooldownDuration = knockbackInfo_.cooldownDuration;
-	enemy->knockbackInfo_.knockbackForce = knockbackInfo_.knockbackForce;
-	enemy->knockbackInfo_.hitColorDuration = knockbackInfo_.hitColorDuration;
+	enemy->hitReactionComponent_->ApplyConfig(hitReactionComponent_->GetConfig());
 
 	// 型固有の値を派生側でコピー
 	this->CopyTypeTuningFromThisTo(enemy);
@@ -185,38 +198,24 @@ void BaseEnemy::OnCollision(Collider* collider) {
 	// Weaponとの当たり判定
 	if (collider->GetColliderName() == ColliderName::PlayerWeapon) {
 		// クールタイム中でなければノックバック処理を実行
-		if (!knockbackInfo_.isInCooldown) {
+		if (!invincibleInfo_.isInvincible) {
 			// 通常攻撃の時
 			if (player_->GetAttackComponent()->IsAttacking()) {
-				// Stateを移動状態に変更
-				ChangeState(std::make_unique<EnemyMoveState>());
+				// StateをHitReaction変更
+				ChangeState(std::make_unique<EnemyHitReactionState>());
 
-				// プレイヤーの位置を取得
-				Vector3 playerPos = player_->GetTransform().translate;
-
-				// 敵からプレイヤーへの方向ベクトルを計算
-				Vector3 toEnemy = transform_.translate - playerPos;
-				toEnemy.y = 0.0f; // Y軸は無視
-
-				// 正規化してノックバック方向を決定
-				if (Length(toEnemy) > 0.001f) {
-					toEnemy = Normalize(toEnemy);
-
-					// ノックバック速度を設定
-					baseInfo_.velocity = toEnemy * knockbackInfo_.knockbackForce;
-				}
-
-				// 色を赤に変更
-				color_ = Vector4(1.0f, 0.0f, 0.0f, 1.0f); // 赤色
+				// ノックバック方向の計算
+				Vector3 toWeapon = collider->GetTransform().translate - transform_.translate;
+				toWeapon.y = 0.0f; // Y軸は無視
+				toWeapon = -Normalize(toWeapon); // 反転して正規化
+				hitReactionComponent_->OnHit(toWeapon);
 
 				// HPを減少
 				baseInfo_.HP--;
 				hitParticle_ = ParticleService::Emit("Game", transform_.translate);
 
-				// タイマーをセット
-				knockbackInfo_.hitColorTimer = knockbackInfo_.hitColorDuration;
-				knockbackInfo_.cooldownTimer = knockbackInfo_.cooldownDuration;
-				knockbackInfo_.isInCooldown = true;
+				// 無敵時間のセット
+				SetInvincibleTime();
 			}
 		}
 	}
@@ -319,33 +318,19 @@ void BaseEnemy::advanceTimer() {
 			}
 		}
 	} else {
-
-
 		// 攻撃用のタイマーを進める
 		if (attackInfo_.timer > 0.0f) {
 			attackInfo_.timer -= baseInfo_.deltaTime;
 		}
 
-		// ノックバッククールタイムの更新
-		if (knockbackInfo_.isInCooldown) {
-			knockbackInfo_.cooldownTimer -= baseInfo_.deltaTime;
-
-			// クールタイムが終了したら解除
-			if (knockbackInfo_.cooldownTimer <= 0.0f) {
-				knockbackInfo_.isInCooldown = false;
-				knockbackInfo_.cooldownTimer = 0.0f;
-			}
+		// 無敵タイマーを進める
+		if (invincibleInfo_.timer > 0.0f) {
+			invincibleInfo_.timer -= baseInfo_.deltaTime;
+			invincibleInfo_.isInvincible = true;
+		} else {
+			invincibleInfo_.isInvincible = false;
+			invincibleInfo_.timer = 0.0f;
 		}
 
-		// ヒット時の赤色表示タイマーの更新
-		if (knockbackInfo_.hitColorTimer > 0.0f) {
-			knockbackInfo_.hitColorTimer -= baseInfo_.deltaTime;
-
-			// 赤色表示時間が終了したら元の色に戻す
-			if (knockbackInfo_.hitColorTimer <= 0.0f) {
-				color_ = knockbackInfo_.originalColor;
-				knockbackInfo_.hitColorTimer = 0.0f;
-			}
-		}
 	}
 }

@@ -118,7 +118,7 @@ void CloseRangeEnemy::StartAttack() {
 void CloseRangeEnemy::Attack() {
 
 	// プレイヤーとの差を計算
-	Vector3 toTarget = attackInfo_.playerPos - transform_.translate;
+	Vector3 toTarget = attackInfo_.targetPos - transform_.translate;
 	float length = Length(toTarget);
 
 	// パーティクルの位置更新

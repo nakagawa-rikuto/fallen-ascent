@@ -259,13 +259,14 @@ void GameScene::UpdateGameOverAnimation() {
 	enemyManager_->UpdateAnimation();
 
 	// アニメーション完了でシーン移動
+	//NOTE:この部分はシーン移動ではなく遷移にする。クリアも同じ
 	if (gameOverAnimation_->IsCompleted()) {
 		sceneManager_->ChangeScene(SceneType::Title);
 	}
 }
 
 ///-------------------------------------------/// 
-/// フェードアウト時の更新処理
+/// クリア時の更新処理
 ///-------------------------------------------///
 void GameScene::UpdateGameClearAnimtaion() {
 

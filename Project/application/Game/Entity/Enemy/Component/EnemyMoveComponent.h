@@ -65,29 +65,25 @@ public:
 	/// </summary>
 	void Information();
 
-public: /// ===Getter=== ///
+	/// <summary>
+	/// 指定した中心点を基準に移動を開始します。
+	/// </summary>
+	/// <param name="center">移動の基準となる中心位置を表す Vector3 型の座標（const 参照）。</param>
+	void StartMove(const Vector3& center);
 
+public: /// ===Getter=== ///
 	// MoveConfig
 	const MoveConfig& GetConfig() const { return config_; }
 	// MoveState
 	const MoveState& GetState() const { return state_; }
 
+#ifdef USE_IMGUI
 public: /// ===Setter=== ///
-
 	// MoveConfig
-	void SetSpeed(float speed) { config_.speed = speed; }
-	void SetRange(float range) { config_.range = range; }
-	void SetInterval(float interval) { config_.interval = interval; }
-	void SetWaitTime(float waitTime) { config_.waitTime = waitTime; }
-	void SetRotationSpeed(float rotationSpeed) { config_.rotationSpeed = rotationSpeed; }
 	void ApplyConfig(const MoveConfig& newconfig);
-	// timer
-	void SetTimer(float timer) { state_.timer = timer; }
-	void SetRangeCenter(const Vector3& center) { state_.rangeCenter = center; }
-	
+#endif // USE_IMGUI
 
 private:
-
 	/// ===情報=== ///
 	MoveConfig config_;
 	MoveState state_;

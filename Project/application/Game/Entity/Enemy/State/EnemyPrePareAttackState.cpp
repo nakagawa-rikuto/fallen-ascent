@@ -62,7 +62,7 @@ void EnemyPrePareAttackState::Update(BaseEnemy* enemy) {
 			// 攻撃方向を設定
 			enemy_->SetAttackDirection(attackDirection_);
 			// プレイヤーの位置を設定
-			enemy_->SetPlayerPos(playerPos_);
+			enemy_->SetTargetPos(playerPos_);
 			// AttackStateに移行
 			enemy_->ChangeState(std::make_unique<EnemyAttackState>());
 			return;

@@ -33,26 +33,5 @@ protected:
 	SceneManager* sceneManager_ = nullptr;
 	// Camera
 	std::shared_ptr<GameCamera> defaultCamera_;
-
-	// 共有モデル群
-	std::vector<std::unique_ptr<Model>> models_;
-
-protected: 
-	/// <summary>
-	/// 配置関数(Level)
-	/// </summary>
-	/// <param name="file_name">Jsonファイルの登録名</param>
-	void GenerateModelsFromLevelData(const std::string& file_name);
-
-	/// <summary>
-	/// 配置関数の更新処理
-	/// </summary>
-	void UpdateLevelModels();
-
-	/// <summary>
-	/// 配置関数の描画処理
-	/// </summary>
-	/// <param name="mode">ブレンドモード</param>
-	void DrawLevelModels(BlendMode mode = BlendMode::kBlendModeNone);
 };
 

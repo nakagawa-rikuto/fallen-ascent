@@ -47,7 +47,7 @@ public: /// ===Getter=== ///
 	// AABBの取得
 	AABB GetAABB() const;
 
-protected:
+private:
 	AABB aabb_;
 };
 

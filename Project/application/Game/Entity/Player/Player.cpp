@@ -25,14 +25,13 @@ Player::~Player() {
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
-// Cameraの追従対象としてPlaeyrを設定
+// Cameraの追従対象としてPlayerを設定
 void Player::SetCameraTargetPlayer() { camera_->SetTarget(&transform_.translate, &transform_.rotate); }
 // 無敵時間の設定
-void Player::SetInvicibleTime(const float& time) {
-	invicibleInfo_.time = time;
-	invicibleInfo_.timer = invicibleInfo_.time;
+void Player::SetInvincibleTime(const float& time) {
+	invincibleInfo_.time = time;
+	invincibleInfo_.timer = invincibleInfo_.time;
 }
-
 
 ///-------------------------------------------/// 
 /// 初期化
@@ -83,8 +82,8 @@ void Player::Initialize() {
 	attackComponent_->Initialize();
 
 	// 無敵情報の設定
-	SetInvicibleTime(1.0f);
-	invicibleInfo_.isFlag = true;
+	SetInvincibleTime(1.0f);
+	invincibleInfo_.isFlag = true;
 
 	// HPの設定
 	baseInfo_.HP = 5;
@@ -160,7 +159,7 @@ void Player::Information() {
 	moveComponent_->Information();		// 移動コンポーネントの情報表示
 	avoidanceComponent_->Information(); // 回避コンポーネントの情報表示
 	attackComponent_->Information();    // 攻撃コンポーネントの情報表示
-	ImGui::DragFloat("無敵時間", &invicibleInfo_.timer, 0.01f);
+	ImGui::DragFloat("無敵時間", &invincibleInfo_.timer, 0.01f);
 	weapon_->Information();         // Weaponの情報表示
 	ImGui::End();
 #endif // USE_IMGUI
@@ -179,7 +178,7 @@ void Player::OnCollision(Collider* collider) {
 	if (collider->GetColliderName() == ColliderName::Enemy || collider->GetColliderName() == ColliderName::EnemyBullet) {
 
 		// 無敵状態でなければダメージを受ける
-		if (!invicibleInfo_.isFlag) {
+		if (!invincibleInfo_.isFlag) {
 
 			/// ===カメラのシェイク=== ///
 			camera_->StartShake(1.2f, 1.0f);
@@ -204,9 +203,9 @@ void Player::OnCollision(Collider* collider) {
 			ChangState(std::make_unique<RootState>());
 
 			// ダメージ処理
-			baseInfo_.HP--;
+			//baseInfo_.HP--;
 			// 無敵状態にする
-			SetInvicibleTime(0.5f);
+			SetInvincibleTime(0.5f);
 		}
 	}
 }
@@ -217,12 +216,12 @@ void Player::OnCollision(Collider* collider) {
 void Player::advanceTimer() {
 
 	// 無敵タイマーを進める
-	if (invicibleInfo_.timer > 0.0f) {
-		invicibleInfo_.timer -= baseInfo_.deltaTime;
+	if (invincibleInfo_.timer > 0.0f) {
+		invincibleInfo_.timer -= baseInfo_.deltaTime;
 		color_ = { 1.0f, 0.0f, 0.0f, 0.5f }; // 半透明にする
-		invicibleInfo_.isFlag = true;
+		invincibleInfo_.isFlag = true;
 	} else {
-		invicibleInfo_.isFlag = false;
+		invincibleInfo_.isFlag = false;
 		color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; // 元の色に戻す
 	}
 

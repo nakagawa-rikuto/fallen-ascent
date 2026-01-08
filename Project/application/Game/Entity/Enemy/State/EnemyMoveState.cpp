@@ -12,10 +12,8 @@ void EnemyMoveState::Enter(BaseEnemy* enemy) {
 	enemy_ = enemy;
 	// 移動範囲の中心を設定
 	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
-	// 動くまでの時間を設定
-    enemy_->GetMovementComponent().SetTimer(0.5f);
-	// 移動範囲の中心を現在地に設定
-    enemy_->GetMovementComponent().SetRangeCenter(enemy_->GetTransform().translate);
+    // 移動開始処理
+    enemy_->GetMovementComponent().StartMove(enemy_->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 
@@ -30,7 +28,6 @@ void EnemyMoveState::Update(BaseEnemy * enemy) {
         .deltaTime = enemy_->GetDeltaTime(),
         .isRotationComplete = enemy_->GetIsRotationComplete()
     };
-
     // 移動コンポーネントの更新
     auto result = enemy_->GetMovementComponent().Update(context);
 
@@ -39,8 +36,8 @@ void EnemyMoveState::Update(BaseEnemy * enemy) {
 
 	// 回転の更新
     if (result.needsRotation) {
-        auto& config = enemy_->GetMovementComponent().GetConfig();
-        enemy_->UpdateRotationTowards(result.targetDirection, config.rotationSpeed);
+        float rotationSpeed = enemy_->GetMovementComponent().GetConfig().rotationSpeed;
+        enemy_->UpdateRotationTowards(result.targetDirection, rotationSpeed);
     }
 
 	// 回転完了フラグのリセット

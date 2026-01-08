@@ -33,7 +33,7 @@ void PlayerWeapon::Initialize() {
 	/// ===OBBCollider=== ///
 	OBBCollider::Initialize();
 	name_ = ColliderName::PlayerWeapon;
-	obb_.halfSize = { 0.5f, 0.5f, 3.0f };
+	OBBCollider::SethalfSize({ 0.5f, 0.5f, 3.0f });
 
 	// DeltaTime初期化
 	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();

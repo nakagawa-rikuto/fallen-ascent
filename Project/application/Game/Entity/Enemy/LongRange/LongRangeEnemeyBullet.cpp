@@ -30,7 +30,7 @@ void LongRangeEnemeyBullet::Initialize() {
 	// Sphereの設定
 	SphereCollider::Initialize();
 	name_ = ColliderName::EnemyBullet;
-	sphere_.radius = 0.5f;
+	SphereCollider::SetRadius(0.5f);
 
 	// コライダーに追加
 	ColliderService::AddCollider(this);

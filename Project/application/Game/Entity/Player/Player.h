@@ -71,15 +71,15 @@ public: /// ===Setter=== ///
 	// Camera
 	void SetCameraTargetPlayer();
 	// 無敵時間の設定
-	void SetInvicibleTime(const float& time);
+	void SetInvincibleTime(const float& time);
 
 public: /// ===State用関数=== ///
 
 	/// <summary>
 	/// 減速処理
 	/// </summary>
-	/// <param name="develeration">適用する減速量を表す浮動小数点数への const 参照。</param>
-	void ApplyDeceleration(const float& develeration);
+	/// <param name="deceleration">適用する減速量を表す浮動小数点数への const 参照。</param>
+	void ApplyDeceleration(const float& deceleration);
 
 	/// <summary>
 	/// Stateの変更処理
@@ -103,12 +103,12 @@ private: /// ===変数の宣言=== ///
 	std::unique_ptr<PlayerState> currentState_;
 
 	/// ===無敵時間の情報=== ///
-	struct InvicibleInfo {
+	struct InvincibleInfo {
 		float time = 1.0f;   // 無敵時間
 		float timer = 0.0f;  // 無敵タイマー
 		bool isFlag = false; // 無敵フラグ
 	};
-	InvicibleInfo invicibleInfo_;
+	InvincibleInfo invincibleInfo_;
 
 private:
 
