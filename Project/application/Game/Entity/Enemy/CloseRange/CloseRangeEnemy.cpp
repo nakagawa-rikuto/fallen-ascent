@@ -138,6 +138,7 @@ void CloseRangeEnemy::Attack() {
 	}
 }
 
+#ifdef USE_IMGUI
 ///-------------------------------------------/// 
 /// 派生用の拡張ポイント
 ///-------------------------------------------///
@@ -146,3 +147,4 @@ void CloseRangeEnemy::CopyTypeTuningFromThisTo(BaseEnemy* dst) const {
 		d->chargeInfo_.moveSpeed = this->chargeInfo_.moveSpeed;
 	}
 }
+#endif // USE_IMGUI

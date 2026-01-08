@@ -68,11 +68,12 @@ private: /// ===変数=== ///
 	};
 	ChargeInfo chargeInfo_;
 
+#ifdef USE_IMGUI
 protected:
-
 	/// <summary>
 	/// 派生側で型固有のチューニング値をコピーするための関数
 	/// </summary>
 	/// <param name="dst"></param>
 	void CopyTypeTuningFromThisTo(BaseEnemy* dst) const override;
+#endif // USE_IMGUI
 };

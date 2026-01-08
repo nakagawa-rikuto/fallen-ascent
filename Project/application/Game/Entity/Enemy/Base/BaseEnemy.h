@@ -93,18 +93,20 @@ public:
 	/// </summary>
 	virtual void Attack() = 0;
 
+#ifdef USE_IMGUI
 	/// <summary>
 	/// このオブジェクトのチューニング設定を指定した情報を他のBaseEnemyオブジェクトにコピー
 	/// </summary>
 	/// <param name="enemy">コピー先の BaseEnemy オブジェクトへのポインター。</param>
 	void CopyTuningTo(BaseEnemy* enemy) const;
+#endif // USE_IMGUI
 
 public: /// ===衝突判定=== ///
 
 	/// <summary>
-   /// 衝突時の処理
-   /// </summary>
-   /// <param name="collider">衝突した相手を表す Collider へのポインター。</param>
+    /// 衝突時の処理
+    /// </summary>
+    /// <param name="collider">衝突した相手を表す Collider へのポインター。</param>
 	void OnCollision(Collider* collider) override;
 
 public: /// ===State用関数=== ///
@@ -179,13 +181,13 @@ private:
 	bool isTentativeDeath_ = false;
 
 protected: /// ===関数の宣言=== ///
-
+#ifdef USE_IMGUI
 	/// <summary>
 	/// 派生側で型固有のチューニング値をコピーするための関数
 	/// </summary>
 	/// <param name="enemy">親のBaseEnemy</param>
 	virtual void CopyTypeTuningFromThisTo(BaseEnemy* enemy) const = 0;
-
+#endif // USE_IMGUI
 private:
 
 	/// <summary>

@@ -21,7 +21,6 @@ void EnemyHitReactionComponent::ApplyConfig(const KnockBackConfig& newConfig) {
 }
 #endif // USE_IMGUI
 
-
 ///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///

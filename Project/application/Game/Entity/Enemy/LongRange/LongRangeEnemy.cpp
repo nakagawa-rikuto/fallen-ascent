@@ -132,6 +132,7 @@ void LongRangeEnemy::Attack() {
 	attackInfo_.timer = attackInfo_.interval; 
 }
 
+#ifdef USE_IMGUI
 ///-------------------------------------------/// 
 /// 派生用の拡張ポイント
 ///-------------------------------------------///
@@ -142,3 +143,4 @@ void LongRangeEnemy::CopyTypeTuningFromThisTo(BaseEnemy* dst) const {
 		// isShot / isHit / bullets_ はランタイム値なのでコピーしない
 	}
 }
+#endif // USE_IMGUI

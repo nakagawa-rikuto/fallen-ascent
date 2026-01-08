@@ -62,6 +62,26 @@ public:
     /// </summary>
     void Clear();
 
+public: /// ===Getter=== ///
+    
+    // 指定タイプの敵数を取得
+    int GetEnemyCount(EnemyType type) const;
+    // 全敵数を取得
+    int GetTotalEnemyCount() const;
+
+private:
+    // Player
+    Player* player_ = nullptr;
+
+	// BaseEnemyの配列
+    std::vector<std::unique_ptr<BaseEnemy>> enemies_;
+
+    // タイプ判定
+    EnemyType GetEnemyType(BaseEnemy* enemy) const;
+
+#ifdef USE_IMGUI
+private:
+
     /// <summary>
     /// 指定した敵の種類にソース敵の設定を適用
     /// </summary>
@@ -76,41 +96,20 @@ public:
     void ApplySettingsToAll(const BaseEnemy* sourceEnemy);
 
     /// <summary>
-    /// 指定した EnemyType に代表的な設定を適用
+    /// 指定した敵タイプに対応する代表的な BaseEnemy インスタンスへのポインタを取得します。
     /// </summary>
-    /// <param name="type">適用対象の敵の種類。EnemyType（列挙型など）で指定します。</param>
-    void ApplyRepresentativeSettingsToType(EnemyType type);
-
-    /// <summary>
-    /// 指定した敵タイプの代表的な設定を、すべての対象に適用
-    /// </summary>
-    /// <param name="sourceType">代表設定のソースとなる敵の種類。ここで指定した敵タイプの設定が他のすべての対象に適用されます。</param>
-    void ApplyRepresentativeSettingsToAll(EnemyType sourceType);
-
-public: /// ===Getter=== ///
-    //指定タイプの代表敵を取得
+    /// <param name="type">取得したい敵の種類を表す EnemyType 値。</param>
+    /// <returns>指定したタイプに対応する BaseEnemy へのポインタ。該当する敵が存在しない場合は nullptr を返すことがあります。</returns>
     BaseEnemy* GetRepresentative(EnemyType type);
-
-    // 指定タイプの敵数を取得
-    int GetEnemyCount(EnemyType type) const;
-
-    // 全敵数を取得
-    int GetTotalEnemyCount() const;
-
-private:
-    // Player
-    Player* player_ = nullptr;
-
-	// BaseEnemyの配列
-    std::vector<std::unique_ptr<BaseEnemy>> enemies_;
-
-    // タイプ判定
-    EnemyType GetEnemyType(BaseEnemy* enemy) const;
 
 public:
     // === テンプレート関数の実装 === //
-
-    /// 指定タイプの代表敵を取得して調整用の関数を実行後、同タイプ全体に適用
+    /// <summary>
+    /// 指定した敵タイプの代表的な敵オブジェクトに対して調整関数を実行し、その変更を同タイプ全体に反映します。
+    /// </summary>
+    /// <typeparam name="Func">代表インスタンス（BaseEnemy*）を受け取って設定を変更する呼び出し可能型。戻り値は通常不要（void でも可）。</typeparam>
+    /// <param name="type">操作対象の敵タイプ。GetRepresentativeを使って代表インスタンスが取得されます。</param>
+    /// <param name="adjustFunction">代表インスタンスを受け取って設定を変更する呼び出し可能オブジェクト（例: ラムダや関数オブジェクト）。</param>
     template<typename Func>
     void ModifyAndApplyToType(EnemyType type, Func adjustFunction) {
         BaseEnemy* representative = GetRepresentative(type);
@@ -122,7 +121,12 @@ public:
         }
     }
 
-    /// 指定タイプの代表敵を取得して調整用の関数を実行後、全敵に適用
+    /// <summary>
+    /// 指定した敵タイプの代表個体に対して調整関数を実行し、その設定を全ての敵に適用する。代表が見つからない場合は何もしない。
+    /// </summary>
+    /// <typeparam name="Func">代表個体を引数に取る呼び出し可能な型（例: void(BaseEnemy*)）。代表に対する変更・調整を行うための型。</typeparam>
+    /// <param name="sourceType">設定の基準となる敵タイプ。代表個体がこのタイプから取得される。</param>
+    /// <param name="adjustFunction">代表個体（BaseEnemy*）を受け取り、その設定を変更する呼び出し可能オブジェクト（関数、関数オブジェクト、ラムダなど）。戻り値は無視される。</param>
     template<typename Func>
     void ModifyAndApplyToAll(EnemyType sourceType, Func adjustFunction) {
         BaseEnemy* representative = GetRepresentative(sourceType);
@@ -133,4 +137,5 @@ public:
             ApplySettingsToAll(representative);
         }
     }
+#endif // USE_IMGUI
 };

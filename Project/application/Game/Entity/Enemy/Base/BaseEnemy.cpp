@@ -154,6 +154,7 @@ void BaseEnemy::Information() {
 #endif // USE_IMGUI
 }
 
+#ifdef USE_IMGUI
 ///-------------------------------------------/// 
 /// 変更した値をコピー
 ///-------------------------------------------///
@@ -178,6 +179,7 @@ void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 	// 型固有の値を派生側でコピー
 	this->CopyTypeTuningFromThisTo(enemy);
 }
+#endif // USE_IMGUI
 
 ///-------------------------------------------/// 
 /// 当たり判定

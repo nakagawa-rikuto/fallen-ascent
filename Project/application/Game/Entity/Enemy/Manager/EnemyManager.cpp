@@ -168,6 +168,46 @@ void EnemyManager::Clear() {
 	enemies_.clear(); // unique_ptr 破棄で各Enemyのデストラクトへ
 }
 
+///-------------------------------------------/// 
+/// 指定タイプの敵数を取得
+///-------------------------------------------///
+int EnemyManager::GetEnemyCount(EnemyType type) const {
+	int count = 0;
+	for (const auto& e : enemies_) {
+		if (!e) continue;
+
+		if (GetEnemyType(e.get()) == type) {
+			count++;
+		}
+	}
+	return count;
+}
+
+///-------------------------------------------/// 
+/// 全敵数を取得
+///-------------------------------------------///
+int EnemyManager::GetTotalEnemyCount() const {
+	int count = 0;
+	for (const auto& e : enemies_) {
+		if (e) count++;
+	}
+	return count;
+}
+
+///-------------------------------------------/// 
+/// タイプ判定
+///-------------------------------------------///
+EnemyType EnemyManager::GetEnemyType(BaseEnemy* enemy) const {
+	if (dynamic_cast<CloseRangeEnemy*>(enemy)) {
+		return EnemyType::CloseRange;
+	} else if (dynamic_cast<LongRangeEnemy*>(enemy)) {
+		return EnemyType::LongRange;
+	}
+	// デフォルト（本来ここは通らない想定）
+	return EnemyType::CloseRange;
+}
+
+#ifdef USE_IMGUI
 //-------------------------------------------/// 
 /// 指定タイプの全敵に設定をコピー
 ///-------------------------------------------///
@@ -216,62 +256,5 @@ BaseEnemy* EnemyManager::GetRepresentative(EnemyType type) {
 	}
 	return nullptr;
 }
+#endif // USE_IMGUI
 
-///-------------------------------------------/// 
-/// 指定タイプの敵数を取得
-///-------------------------------------------///
-int EnemyManager::GetEnemyCount(EnemyType type) const {
-	int count = 0;
-	for (const auto& e : enemies_) {
-		if (!e) continue;
-
-		if (GetEnemyType(e.get()) == type) {
-			count++;
-		}
-	}
-	return count;
-}
-
-///-------------------------------------------/// 
-/// 全敵数を取得
-///-------------------------------------------///
-int EnemyManager::GetTotalEnemyCount() const {
-	int count = 0;
-	for (const auto& e : enemies_) {
-		if (e) count++;
-	}
-	return count;
-}
-
-///-------------------------------------------/// 
-/// 代表敵の設定を同タイプ全体に適用
-///-------------------------------------------///
-void EnemyManager::ApplyRepresentativeSettingsToType(EnemyType type) {
-	BaseEnemy* representative = GetRepresentative(type);
-	if (representative) {
-		ApplySettingsToType(type, representative);
-	}
-}
-
-///-------------------------------------------/// 
-/// 代表敵の設定を全敵に適用
-///-------------------------------------------///
-void EnemyManager::ApplyRepresentativeSettingsToAll(EnemyType sourceType) {
-	BaseEnemy* representative = GetRepresentative(sourceType);
-	if (representative) {
-		ApplySettingsToAll(representative);
-	}
-}
-
-///-------------------------------------------/// 
-/// タイプ判定
-///-------------------------------------------///
-EnemyType EnemyManager::GetEnemyType(BaseEnemy* enemy) const {
-	if (dynamic_cast<CloseRangeEnemy*>(enemy)) {
-		return EnemyType::CloseRange;
-	} else if (dynamic_cast<LongRangeEnemy*>(enemy)) {
-		return EnemyType::LongRange;
-	}
-	// デフォルト（本来ここは通らない想定）
-	return EnemyType::CloseRange;
-}

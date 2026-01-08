@@ -68,10 +68,12 @@ private: /// ===変数=== ///
 	};
 	BulletInfo bulletInfo_;
 
+#ifdef USE_IMGUI
 protected:
 	/// <summary>
 	/// 派生側で型固有のチューニング値をコピーするための関数
 	/// </summary>
 	/// <param name="dst">コピー先の BaseEnemy オブジェクトへのポインタ。nullptr でないことが期待されます。</param>
 	void CopyTypeTuningFromThisTo(BaseEnemy* dst) const override;
+#endif // USE_IMGUI
 };
