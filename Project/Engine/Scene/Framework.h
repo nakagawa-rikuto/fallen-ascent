@@ -45,7 +45,7 @@ public:/// ====== ///
 	/// </summary>
 	virtual void Draw() = 0;
 	// 終了フラグのチェック
-	virtual bool IsEndRequst();
+	virtual bool IsEndRequest();
 
 public:/// ===メンバ関数=== ///
 	/// <summary>
@@ -77,7 +77,7 @@ private:
 	std::unique_ptr<DeltaTime> deltaTime_;
 protected:
 	// ゲーム終了フラグ
-	bool endRequst_ = false;
+	bool endRequest_ = false;
 	// シーンファクトリー
 	std::unique_ptr<AbstractSceneFactory> sceneFactory_;
 };

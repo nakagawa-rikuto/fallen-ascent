@@ -1,7 +1,10 @@
 #include "MyGame.h"
 // シーンファクトリー
 #include "Engine/Scene/SceneFactory.h"
+// Service
 #include "Engine/System/Service/Loader.h"
+#include "Engine/System/Service/ParticleService.h"
+// Logger
 #include "Engine/Core/Logger.h"
 // c++
 #include <iostream>
@@ -29,11 +32,13 @@ void MyGame::Initialize(const wchar_t* title) {
 
 	/// ===読み込み処理=== ///
 	// 各読み込み処理用のスレッドを生成
-	LoadTexture();
+	LoadTexture(); // テクスチャの読み込みはメインスレッドで実行
 	std::vector<std::thread> loadingThreads;
-	loadingThreads.emplace_back([this] { LoadAudio(); });
-	loadingThreads.emplace_back([this] { LoadModel(); });
-	loadingThreads.emplace_back([this] { LoadAnimation(); });
+	loadingThreads.emplace_back([this] { LoadAudio(); });     // Soundの読み込み
+	loadingThreads.emplace_back([this] { LoadModel(); });	  // モデルの読み込み
+	loadingThreads.emplace_back([this] { LoadAnimation(); }); // アニメーションの読み込み
+	loadingThreads.emplace_back([this] { LoadParticle(); });  // パーティクルの読み込み
+	loadingThreads.emplace_back([this] { LoadJson(); });	  // Jsonデータの読み込み
 	// すべてのスレッドの終了を待機
 	for (auto& thread : loadingThreads) {
 		thread.join();
@@ -87,10 +92,10 @@ void MyGame::Draw() {
 	Framework::PostDraw();
 }
 
+
 ///-------------------------------------------/// 
-/// 読み込み関数
+/// Soundの読み込み関数
 ///-------------------------------------------///
-// 音
 void MyGame::LoadAudio() {
 #pragma region Wave
 	Loader::LoadWave("fanfare", "fanfare.wav");
@@ -99,7 +104,10 @@ void MyGame::LoadAudio() {
 	Loader::LoadMP3("clear", "clear.mp3");
 #pragma endregion
 }
-// テクスチャ
+
+///-------------------------------------------/// 
+///	テクスチャの読み込み処理
+///-------------------------------------------///
 void MyGame::LoadTexture() {
 	// DebugSceneで使用。
 	Loader::LoadTexture("uvChecker", "uvChecker.png");
@@ -129,7 +137,10 @@ void MyGame::LoadTexture() {
 	// GameAnimaiton
 	Loader::LoadTexture("GameOvverAnimation", "Animation/GameOverAnimation.png");
 }
-// モデル
+
+///-------------------------------------------/// 
+/// モデルの読み込み処理
+///-------------------------------------------///
 void MyGame::LoadModel() {
 	// DebugSceneで使用
 	Loader::LoadModel("MonsterBall", "MonsterBall/MonsterBall.obj");
@@ -146,9 +157,28 @@ void MyGame::LoadModel() {
 	Loader::LoadModel("Object2", "Object2/Object2.obj");
 	Loader::LoadModel("PlayerWeapon", "PlayerWeapon/PlayerWeapon.obj");
 }
-// アニメーション
+
+///-------------------------------------------/// 
+/// アニメーションモデルの読み込み処理
+///-------------------------------------------///
 void MyGame::LoadAnimation() {
 	// DebugSceneで使用。
 	Loader::LoadAnimation("simpleSkin", "simpleSkin/simpleSkin.gltf");
 	Loader::LoadAnimation("human", "human/sneakWalk.gltf");
+}
+
+///-------------------------------------------/// 
+/// パーティクルの読み込み処理
+///-------------------------------------------///
+void MyGame::LoadParticle() {
+	
+}
+
+///-------------------------------------------/// 
+/// Jsonデータの読み込み処理
+///-------------------------------------------///
+void MyGame::LoadJson() {
+	// Jsonの読み込み
+	Loader::LoadLevelJson("Level/StageData.json");
+	Loader::LoadLevelJson("Level/EntityData.json");
 }

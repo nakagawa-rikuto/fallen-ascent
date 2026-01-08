@@ -47,7 +47,7 @@ public: /// ===Getter=== ///
 	// Sphereの取得
 	Sphere GetSphere()const;
 
-protected:
+private:
 	Sphere sphere_;
 };
 

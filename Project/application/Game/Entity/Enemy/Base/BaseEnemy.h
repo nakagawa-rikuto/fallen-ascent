@@ -6,6 +6,7 @@
 #include "application/Game/Entity/Enemy/State/Base/EnemyState.h"
 // Component
 #include "application/Game/Entity/Enemy/Component/EnemyMoveComponent.h"
+#include "application/Game/Entity/Enemy/Component/EnemyHitReactionComponent.h"
 
 // c++
 #include <random>
@@ -34,20 +35,16 @@ private: /// ===型定義=== ///
 		int32_t power;		// 待機時間
 
 		Vector3 direction;  // 攻撃方向
-		Vector3 playerPos;  // プレイヤーの位置
+		Vector3 targetPos;  // プレイヤーの位置
 
 		bool isAttack;		// 攻撃フラグ
 	};
 
-	/// ===ノックバック情報=== ///
-	struct KnockbackInfo {
-		float cooldownTimer;		// クールタイム用タイマー
-		float cooldownDuration;		// クールタイムの持続時間
-		float knockbackForce;		// ノックバックの強さ
-		float hitColorDuration;		// 赤色表示の持続時間
-		float hitColorTimer;		// 赤色表示用タイマー
-		Vector4 originalColor;		// 元の色
-		bool isInCooldown;			// クールタイム中かどうか
+	/// ===無敵時間情報=== ///
+	struct InvincibleInfo {
+		float time = 0.5f;			// 無敵時間
+		float timer = 0.0f;			// 無敵タイマー
+		bool isInvincible = false;	// 無敵フラグ
 	};
 
 public:
@@ -126,12 +123,13 @@ public: /// ===State用関数=== ///
 
 public: /// ===Getter=== ///
 	// Component
-	EnemyMoveComponent& GetMovementComponent() { return *moveComponent_; };
+	EnemyMoveComponent& GetMovementComponent() const { return *moveComponent_; };
+	EnemyHitReactionComponent& GetHitReactionComponent() const { return *hitReactionComponent_; };
 	// Player
 	Player* GetPlayer() const { return player_; };
 	// AttackInfo
 	AttackInfo GetAttackInfo()const { return attackInfo_; };
-	// tentativeDeah
+	// tentativeDeath
 	bool GetTentativeDeath() const { return isTentativeDeath_; };
 	// isRotationComplete
 	bool GetIsRotationComplete() const { return isRotationComplete_; };
@@ -143,35 +141,38 @@ public: /// ===Setter=== ///
 	void SetIsRotationComplete(bool flag) { isRotationComplete_ = flag; };
 	// AttackDirection
 	void SetAttackDirection(const Vector3& dir) { attackInfo_.direction = dir; };
-	void SetPlayerPos(const Vector3& pos) { attackInfo_.playerPos = pos; };
-	
+	void SetTargetPos(const Vector3& pos) { attackInfo_.targetPos = pos; };
+	// 無敵時間の設定
+	void SetInvincibleTime();
 
 protected: /// ===変数の宣言=== ///
 
 	GameCamera* camera_ = nullptr; // カメラ
 	Player* player_ = nullptr; // Player
 
-	/// ===State=== ///
-	std::unique_ptr<EnemyState> currentState_;
-
-	/// ===コンポーネント=== ///
-	std::unique_ptr<EnemyMoveComponent> moveComponent_;
-
 	// 攻撃情報
 	AttackInfo attackInfo_;
 
-	// 回転完了フラグ
-	bool isRotationComplete_ = false;
+	// 無敵時間情報
+	InvincibleInfo invincibleInfo_;
 
 	// 衝突フラグ
 	bool isCollision_ = false;
 
 private:
+	/// ===State=== ///
+	std::unique_ptr<EnemyState> currentState_;
+
+	/// ===コンポーネント=== ///
+	std::unique_ptr<EnemyMoveComponent> moveComponent_;
+	std::unique_ptr<EnemyHitReactionComponent> hitReactionComponent_;
+
+	// Particle
 	ParticleGroup* hitParticle_ = nullptr;
 	ParticleGroup* deathParticle_ = nullptr;
 
-	// ノックバック情報
-	KnockbackInfo knockbackInfo_;
+	// 回転完了フラグ
+	bool isRotationComplete_ = false;
 
 	// 消えるまでの時間
 	float disappearTimer_ = 2.0f;

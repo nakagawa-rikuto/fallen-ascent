@@ -47,7 +47,7 @@ public: /// ===Getter=== ///
 	// OBBの取得
     OBB GetOBB() const;
 
-protected:
+private:
     OBB obb_;
 
 private:

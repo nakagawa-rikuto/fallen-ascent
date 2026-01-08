@@ -39,17 +39,11 @@ void GameScene::Initialize() {
 	// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 	IScene::Initialize();
 
-	// Jsonの読み込み
-	Loader::LoadLevelJson("Level/StageData.json");
-	Loader::LoadLevelJson("Level/EntityData.json");
-
 	// パーティクルの読み込み
-	// Player用
 	ParticleService::LoadParticleDefinition("Game.json");
 	ParticleService::LoadParticleDefinition("WeaponAttack.json");
 	ParticleService::LoadParticleDefinition("nakagawa.json");
 	ParticleService::LoadParticleDefinition("PlayerWarke.json");
-	// Enemy用
 	ParticleService::LoadParticleDefinition("EnemyAttack.json");
 	ParticleService::LoadParticleDefinition("EnemyPrePareAttack.json");
 	ParticleService::LoadParticleDefinition("EnemyPrePareAttackCharge.json");
@@ -265,13 +259,14 @@ void GameScene::UpdateGameOverAnimation() {
 	enemyManager_->UpdateAnimation();
 
 	// アニメーション完了でシーン移動
+	//NOTE:この部分はシーン移動ではなく遷移にする。クリアも同じ
 	if (gameOverAnimation_->IsCompleted()) {
 		sceneManager_->ChangeScene(SceneType::Title);
 	}
 }
 
 ///-------------------------------------------/// 
-/// フェードアウト時の更新処理
+/// クリア時の更新処理
 ///-------------------------------------------///
 void GameScene::UpdateGameClearAnimtaion() {
 

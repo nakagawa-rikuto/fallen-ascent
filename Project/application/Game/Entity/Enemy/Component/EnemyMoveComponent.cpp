@@ -1,11 +1,25 @@
 #include "EnemyMoveComponent.h"
-#include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
+// C++
 #include <cassert>
-
+// Math
+#include "Math/sMath.h"
+// ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
 #endif // USE_IMGUI
 
+#ifdef USE_IMGUI
+///-------------------------------------------/// 
+/// 設定の適用
+///-------------------------------------------///
+void EnemyMoveComponent::ApplyConfig(const MoveConfig& newconfig) {
+	if (newconfig.speed < 0.0f || newconfig.range <= 0.0f) {
+		// デバッグビルドでのみエラー
+		assert(false && "Invalid MoveConfig");
+	}
+	config_ = newconfig;
+}
+#endif // USE_IMGUI
 
 ///-------------------------------------------/// 
 /// 初期化処理
@@ -130,16 +144,11 @@ void EnemyMoveComponent::Information() {
 }
 
 ///-------------------------------------------/// 
-/// 設定の適用
+/// 移動開始処理
 ///-------------------------------------------///
-void EnemyMoveComponent::ApplyConfig(const MoveConfig& newconfig) {
-#ifdef _DEBUG
-	if (newconfig.speed < 0.0f || newconfig.range <= 0.0f) {
-		// デバッグビルドでのみエラー
-		assert(false && "Invalid MoveConfig");
-	}
-#endif
-	config_ = newconfig;
+void EnemyMoveComponent::StartMove(const Vector3& center) {
+	state_.timer = config_.waitTime;
+	state_.rangeCenter = center;
 }
 
 ///-------------------------------------------/// 

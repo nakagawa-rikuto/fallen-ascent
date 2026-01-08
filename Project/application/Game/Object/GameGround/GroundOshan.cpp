@@ -15,9 +15,9 @@ GroundOshan::~GroundOshan() {
 ///-------------------------------------------///
 void GroundOshan::Initialize() {
 
+	// AABBコライダーの初期化と設定
 	AABBCollider::Initialize();
-	aabb_.min = { -500.0f, -2.0f, -500.0f };
-	aabb_.max = { 500.0f, 0.0f, 500.0f };
+	AABBCollider::SetAABB({ { -500.0f, -2.0f, -500.0f }, { 500.0f, 0.0f, 500.0f } });
 
 	// オーシャンの初期化
 	ocean_ = std::make_unique<Ocean>();

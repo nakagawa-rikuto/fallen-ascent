@@ -7,7 +7,7 @@
 ///-------------------------------------------///
 void Framework::Initialize(const wchar_t* title) {
 	/// ===初期化=== ///
-	// MiiEnigne
+	// MiiEngine
 	MiiEngine_ = std::make_unique<Mii>();
 	MiiEngine_->Initialize(title, 1280, 720);
 	// CameraManager
@@ -83,7 +83,7 @@ void Framework::Update() {
 ///-------------------------------------------/// 
 /// 終了チェック
 ///-------------------------------------------///
-bool Framework::IsEndRequst() { return endRequst_; }
+bool Framework::IsEndRequest() { return endRequest_; }
 
 ///-------------------------------------------/// 
 /// 実行
@@ -96,7 +96,7 @@ void Framework::Run(const wchar_t* title) {
 		/// ===毎フレーム更新=== ///
 		Update();
 		/// ===終了リクエストが来たら抜ける=== ///
-		if (IsEndRequst()) { break; }
+		if (IsEndRequest()) { break; }
 		/// ===描画=== ///
 		Draw();
 	}
