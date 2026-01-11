@@ -31117,22 +31117,50 @@ void Line::CreateSmoothCurve(const std::vector<BezierControlPointData>& controlP
 		return;
 	}
 
-	// 各セグメント間を補間して描画
-	for (size_t i = 0; i < controlPoints.size() - 1; ++i) {
-		const Vector3& p0 = controlPoints[i].position;
-		const Vector3& p1 = controlPoints[i + 1].position;
+	// 制御点の数に応じて処理を分岐
+	size_t n = controlPoints.size();
 
-		Vector3 previousPoint = p0;
+	// 2点の場合は直線
+	if (n == 2) {
+		DrawLine(controlPoints[0].position, controlPoints[1].position, color);
+		return;
+	}
 
-		// セグメントを分割して線を引く
-		for (int j = 1; j <= segments; ++j) {
-			float t = static_cast<float>(j) / static_cast<float>(segments);
-			Vector3 currentPoint = Math::Lerp(p0, p1, t);
+	// 3点の場合は2次ベジェ曲線
+	if (n == 3) {
+		CreateQuadraticBezier(
+			controlPoints[0].position,
+			controlPoints[1].position,
+			controlPoints[2].position,
+			color,
+			segments
+		);
+		return;
+	}
 
-			DrawLine(previousPoint, currentPoint, color);
+	// 4点の場合は3次ベジェ曲線
+	if (n == 4) {
+		CreateCubicBezier(
+			controlPoints[0].position,
+			controlPoints[1].position,
+			controlPoints[2].position,
+			controlPoints[3].position,
+			color,
+			segments
+		);
+		return;
+	}
 
-			previousPoint = currentPoint;
-		}
+	// 5点以上の場合はDe Casteljauのアルゴリズムを使用
+	Vector3 previousPoint = CalculateBezierPointDeCasteljau(controlPoints, 0.0f);
+
+	for (int i = 1; i <= segments; ++i) {
+		float t = static_cast<float>(i) / static_cast<float>(segments);
+		Vector3 currentPoint = CalculateBezierPointDeCasteljau(controlPoints, t);
+
+		DrawLine(previousPoint, currentPoint, color);
+
+		previousPoint = currentPoint;
 	}
 }
 
@@ -31171,6 +31199,29 @@ Vector3 Line::CalculateCubicBezier(const Vector3& p0, const Vector3& p1, const V
 
 	return point;
 }
+
+///-------------------------------------------/// 
+/// ベジェ曲線の計算（De Casteljauのアルゴリズム）
+///-------------------------------------------///
+Vector3 Line::CalculateBezierPointDeCasteljau(const std::vector<BezierControlPointData>& controlPoints, float t) {
+	// 制御点の位置のみを抽出
+	std::vector<Vector3> temp;
+	for (const auto& cp : controlPoints) {
+		temp.push_back(cp.position);
+	}
+
+	// De Casteljauのアルゴリズム
+	while (temp.size() > 1) {
+		std::vector<Vector3> newTemp;
+		for (size_t i = 0; i < temp.size() - 1; ++i) {
+			newTemp.push_back(Math::Lerp(temp[i], temp[i + 1], t));
+		}
+		temp = newTemp;
+	}
+
+	return temp[0];
+}
+
 
 ============================================================
 File Path: Project/application/Drawing/3d/Line.h
@@ -31286,6 +31337,11 @@ private:
 	/// 3次ベジェ曲線上の点を計算
 	/// </summary>
 	Vector3 CalculateCubicBezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t);
+
+	/// <summary>
+	/// De Casteljauのアルゴリズムでベジェ曲線上の点を計算（任意の制御点数に対応）
+	/// </summary>
+	Vector3 CalculateBezierPointDeCasteljau(const std::vector<BezierControlPointData>& controlPoints, float t);
 };
 
 
