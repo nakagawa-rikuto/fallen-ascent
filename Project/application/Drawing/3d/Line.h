@@ -109,5 +109,10 @@ private:
 	/// 3次ベジェ曲線上の点を計算
 	/// </summary>
 	Vector3 CalculateCubicBezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t);
+
+	/// <summary>
+	/// De Casteljauのアルゴリズムでベジェ曲線上の点を計算（任意の制御点数に対応）
+	/// </summary>
+	Vector3 CalculateBezierPointDeCasteljau(const std::vector<BezierControlPointData>& controlPoints, float t);
 };
 
