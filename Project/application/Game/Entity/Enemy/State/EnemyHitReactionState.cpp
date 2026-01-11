@@ -14,7 +14,7 @@ void EnemyHitReactionState::Enter(BaseEnemy* enemy) {
 ///-------------------------------------------/// 
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void EnemyHitReactionState::Update(BaseEnemy * enemy) {
+void EnemyHitReactionState::Update(BaseEnemy* enemy) {
 	enemy_ = enemy;
 
 	/// ===HitReactionComponentの更新=== ///
@@ -22,6 +22,7 @@ void EnemyHitReactionState::Update(BaseEnemy * enemy) {
 	EnemyHitReactionComponent::UpdateContext hitContext{
 		.currentPosition = enemy_->GetTransform().translate,
 		.currentVelocity = enemy_->GetVelocity(),
+		.currentColor = enemy_->GetColor(),
 		.deltaTime = enemy_->GetDeltaTime()
 	};
 
@@ -30,11 +31,12 @@ void EnemyHitReactionState::Update(BaseEnemy * enemy) {
 
 	// 結果の反映
 	enemy_->SetVelocity(result.velocity);
+	enemy_->SetColor(result.color);
 
 	/// ===ヒットリアクションが終了したらMoveStateへ遷移=== ///
-	// 減速も終了したら移動状態へ
-	const auto& state = enemy_->GetHitReactionComponent().GetState();
-	if (state.slowdownTimer <= 0.0f) {
+	float slowdownTimer = enemy_->GetHitReactionComponent().GetKnockBackState().slowdownTimer;
+	float colorTimer = enemy_->GetHitReactionComponent().GetColorState().colorTImer;
+	if (slowdownTimer <= 0.0f && colorTimer <= 0.0f) {
 		enemy_->ChangeState(std::make_unique<EnemyMoveState>());
 	}
 }

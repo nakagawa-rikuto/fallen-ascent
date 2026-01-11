@@ -59,7 +59,10 @@ void BaseEnemy::Initialize() {
 	EnemyHitReactionComponent::KnockBackConfig hitReactionConfig{
 		.knockBackForce = 1.5f,
 		.slowdownFactor = 0.5f,
-		.slowdownDuration = 0.2f
+		.slowdownDuration = 0.2f,
+		.alphaDuration = 0.2f,
+		.hitAlpha = 0.1f,
+		.flashSpeed = 10.0f
 	};
 	hitReactionComponent_->Initialize(hitReactionConfig);
 
