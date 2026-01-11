@@ -32932,7 +32932,10 @@ void BaseEnemy::Initialize() {
 	EnemyHitReactionComponent::KnockBackConfig hitReactionConfig{
 		.knockBackForce = 1.5f,
 		.slowdownFactor = 0.5f,
-		.slowdownDuration = 0.2f
+		.slowdownDuration = 0.2f,
+		.alphaDuration = 0.2f,
+		.hitAlpha = 0.1f,
+		.flashSpeed = 10.0f
 	};
 	hitReactionComponent_->Initialize(hitReactionConfig);
 
@@ -33656,6 +33659,7 @@ File Path: Project/application/Game/Entity/Enemy/Component/EnemyHitReactionCompo
 #include "EnemyHitReactionComponent.h"
 // C++
 #include <cassert>
+#include <numbers>
 // Math
 #include "Math/sMath.h"
 // ImGui
@@ -33689,6 +33693,11 @@ void EnemyHitReactionComponent::Initialize(const KnockBackConfig& config) {
 	state_.slowdownMultiplier = 1.0f;
 	state_.isHit = false;
 
+	// 色の状態を初期化
+	colorState_.colorTImer = 0.0f;
+	colorState_.colorInterval = 0.0f;
+	colorState_.isColorChange = false;
+
 	// ヒット方向の初期化
 	hitParentDirection_ = { 0.0f, 0.0f, 0.0f };
 }
@@ -33704,6 +33713,9 @@ EnemyHitReactionComponent::UpdateResult EnemyHitReactionComponent::Update(const 
 
 	/// ===減速係数の更新=== ///
 	UpdateSlowdownMultiplier();
+
+	/// ===色の更新処理=== ///
+	result.color = UpdateColor(context.currentColor);
 
 	/// ===ノックバック処理=== ///
 	if (state_.isHit) {
@@ -33739,11 +33751,16 @@ void EnemyHitReactionComponent::Information() {
 		ImGui::DragFloat("ノックバックの強さ", &config_.knockBackForce, 0.1f, 0.0f, 100.0f);
 		ImGui::DragFloat("減速率", &config_.slowdownFactor, 0.01f, 0.0f, 1.0f);
 		ImGui::DragFloat("減速時間", &config_.slowdownDuration, 0.01f, 0.0f, 2.0f);
+		ImGui::DragFloat("透明度変化時間", &config_.alphaDuration, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat("ヒット時の透明度", &config_.hitAlpha, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat("点滅速度", &config_.flashSpeed, 0.5f, 1.0f, 30.0f);
 
 		ImGui::Separator();
 		ImGui::Text("状態");
 		ImGui::Text("減速タイマー: %.2f", state_.slowdownTimer);
+		ImGui::Text("色変化タイマー: %.2f", colorState_.colorTImer);
 		ImGui::Text("ヒットしたかどうか: %s", state_.isHit ? "true" : "false");
+		ImGui::Text("色変化中: %s", colorState_.isColorChange ? "true" : "false");
 		ImGui::TreePop();
 	}
 #endif // USE_IMGUI
@@ -33759,6 +33776,10 @@ void EnemyHitReactionComponent::OnHit(const Vector3& hitParentDirection) {
 	hitParentDirection_ = hitParentDirection;
 	// 減速タイマーを設定
 	state_.slowdownTimer = config_.slowdownDuration;
+	// 色変化のタイマーを設定
+	colorState_.colorTImer = config_.alphaDuration;
+	colorState_.colorInterval = 0.0f;
+	colorState_.isColorChange = true;
 }
 
 ///-------------------------------------------/// 
@@ -33771,6 +33792,18 @@ void EnemyHitReactionComponent::TimerUpdate(const float deltaTime) {
 
 		if (state_.slowdownTimer < 0.0f) {
 			state_.slowdownTimer = 0.0f;
+		}
+	}
+
+	// 色変化タイマーの更新
+	if (colorState_.colorTImer > 0.0f) {
+		colorState_.colorTImer -= deltaTime;
+		colorState_.colorInterval += deltaTime;
+
+		if (colorState_.colorTImer < 0.0f) {
+			colorState_.colorTImer = 0.0f;
+			colorState_.colorInterval = 0.0f;
+			colorState_.isColorChange = false;
 		}
 	}
 }
@@ -33788,6 +33821,30 @@ void EnemyHitReactionComponent::UpdateSlowdownMultiplier() {
 		// 減速時間が終了したら通常速度
 		state_.slowdownMultiplier = 1.0f;
 	}
+}
+
+///-------------------------------------------/// 
+/// 色の更新処理
+///-------------------------------------------///
+Vector4 EnemyHitReactionComponent::UpdateColor(const Vector4& currentColor) {
+	Vector4 color = currentColor;
+
+	if (colorState_.isColorChange && colorState_.colorTImer > 0.0f) {
+		// サイン波を使って点滅効果を生成
+		float wave = std::sin(colorState_.colorInterval * config_.flashSpeed * 2.0f * std::numbers::pi_v<float>);
+
+		// サイン波の値が正の時は半透明、負の時は通常
+		if (wave > 0.0f) {
+			color.w = config_.hitAlpha;
+		} else {
+			color.w = 1.0f;
+		}
+	} else {
+		// 色変化が終了したら元の色に戻す
+		color.w = 1.0f;
+	}
+
+	return color;
 }
 
 
@@ -33810,6 +33867,12 @@ private:
 		float slowdownMultiplier = 1.0f; // 減速率の乗数
 		bool isHit = false;				 // ヒットしたかどうか
 	};
+	/// ===色の状態構造体=== ///
+	struct ColorState {
+		float colorTImer = 0.0f;    // 色変化用タイマー
+		float colorInterval = 0.0f; // 色変化の間隔
+		bool isColorChange = false; // 色変化フラグ
+	};
 
 public:
 	/// ===設定パラメータの構造体=== ///
@@ -33817,18 +33880,23 @@ public:
 		float knockBackForce = 1.5f;	// ノックバックの強さ
 		float slowdownFactor = 0.3f;	// 減速率(0.0~1.0、小さいほど遅くなる)
 		float slowdownDuration = 0.2f;	// 減速効果の持続時間
+		float alphaDuration = 0.2f;		// 透明度変化の持続時間
+		float hitAlpha = 0.6f;			// ヒット時の透明度
+		float flashSpeed = 10.0f;		// 点滅速度
 	};
 
 	/// ===更新用コンテキスト=== ///
 	struct UpdateContext {
 		Vector3 currentPosition;	// 現在の位置
 		Vector3 currentVelocity;	// 現在の速度
+		Vector4 currentColor;    // 現在の色
 		float deltaTime;
 	};
 
 	/// ===更新結果=== ///
 	struct UpdateResult {
 		Vector3 velocity = { 0.0f, 0.0f, 0.0f };
+		Vector4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	};
 
 public:
@@ -33868,18 +33936,20 @@ public: /// ===Getter=== ///
 	// KnockBackConfig
 	const KnockBackConfig& GetConfig() const { return config_; }
 	// KnockBackState
-	const KnockBackState& GetState() const { return state_; }
+	const KnockBackState& GetKnockBackState() const { return state_; }
+	// ColorState
+	const ColorState& GetColorState() const { return colorState_; }
 
 #ifdef USE_IMGUI
 public: /// ===Setter=== ///
 	// KnockBackConfig
 	void ApplyConfig(const KnockBackConfig& newConfig);
 #endif // USE_IMGUI
-
 private:
 	/// ===情報=== ///
 	KnockBackConfig config_;
 	KnockBackState state_;
+	ColorState colorState_;
 
 	// ヒットした相手の方向
 	Vector3 hitParentDirection_ = {0.0f, 0.0f, 0.0f};
@@ -33896,6 +33966,13 @@ private:
 	/// 減速係数の更新処理
 	/// </summary>
 	void UpdateSlowdownMultiplier();
+
+	/// <summary>
+	/// 渡された色を元に更新された色を返します。`
+	/// </summary>
+	/// <param name="color">更新の基となる色。参照渡しされた const Vector4 オブジェクト。</param>
+	/// <returns>更新された色を表す Vector4 オブジェクト。</returns>
+	Vector4 UpdateColor(const Vector4& color);
 };
 
 
@@ -35202,7 +35279,7 @@ void EnemyHitReactionState::Enter(BaseEnemy* enemy) {
 ///-------------------------------------------/// 
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void EnemyHitReactionState::Update(BaseEnemy * enemy) {
+void EnemyHitReactionState::Update(BaseEnemy* enemy) {
 	enemy_ = enemy;
 
 	/// ===HitReactionComponentの更新=== ///
@@ -35210,6 +35287,7 @@ void EnemyHitReactionState::Update(BaseEnemy * enemy) {
 	EnemyHitReactionComponent::UpdateContext hitContext{
 		.currentPosition = enemy_->GetTransform().translate,
 		.currentVelocity = enemy_->GetVelocity(),
+		.currentColor = enemy_->GetColor(),
 		.deltaTime = enemy_->GetDeltaTime()
 	};
 
@@ -35218,11 +35296,12 @@ void EnemyHitReactionState::Update(BaseEnemy * enemy) {
 
 	// 結果の反映
 	enemy_->SetVelocity(result.velocity);
+	enemy_->SetColor(result.color);
 
 	/// ===ヒットリアクションが終了したらMoveStateへ遷移=== ///
-	// 減速も終了したら移動状態へ
-	const auto& state = enemy_->GetHitReactionComponent().GetState();
-	if (state.slowdownTimer <= 0.0f) {
+	float slowdownTimer = enemy_->GetHitReactionComponent().GetKnockBackState().slowdownTimer;
+	float colorTimer = enemy_->GetHitReactionComponent().GetColorState().colorTImer;
+	if (slowdownTimer <= 0.0f && colorTimer <= 0.0f) {
 		enemy_->ChangeState(std::make_unique<EnemyMoveState>());
 	}
 }
@@ -38591,11 +38670,11 @@ void Player::advanceTimer() {
 	// 無敵タイマーを進める
 	if (invincibleInfo_.timer > 0.0f) {
 		invincibleInfo_.timer -= baseInfo_.deltaTime;
-		color_ = { 1.0f, 0.0f, 0.0f, 0.5f }; // 半透明にする
+		//color_ = { 1.0f, 0.0f, 0.0f, 0.5f }; // 半透明にする
 		invincibleInfo_.isFlag = true;
 	} else {
 		invincibleInfo_.isFlag = false;
-		color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; // 元の色に戻す
+		//color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; // 元の色に戻す
 	}
 
 	// 回避タイマーの更新
