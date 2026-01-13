@@ -55,13 +55,14 @@ void TitleScene::Initialize() {
 	titleSprite_ = std::make_unique<Sprite>();
 	titleSprite_->Initialize("Title"); // テクスチャファイルパスは適宜変更
 	titleSprite_->SetPosition({ windowWidth / 2.0f, windowHeight / 4.0f });
-	titleSprite_->SetSize({ 500.0f, 500.0f });
+	titleSprite_->SetSize({ 1000.0f, 1000.0f });
 	titleSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	titleSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 
 	// 開始スプライト
-	spaceY_ = windowHeight / 8.0f; // メニュー項目間の垂直スペース
-	startY_ = windowHeight / 2.0f + windowHeight / 16.0f; // 開始項目のY位置
+	spaceY_ = windowHeight / 16.0f; // メニュー項目間の垂直スペース
+	startY_ = windowHeight / 2.0f + windowHeight / 8.0f; // 開始項目のY位置
+
 	startSprite_ = std::make_unique<Sprite>();
 	startSprite_->Initialize("Start");
 	startSprite_->SetPosition({ windowWidth / 2.0f, startY_ });
