@@ -7,6 +7,7 @@ namespace {
 	const std::unordered_map<PipelineType, D3D12_CULL_MODE> kCullModeTable_ = {
 	{ PipelineType::ForGround2D,		D3D12_CULL_MODE_NONE },
 	{ PipelineType::BackGround2D,		D3D12_CULL_MODE_NONE },
+	{ PipelineType::BackGround2D,		D3D12_CULL_MODE_NONE },
 	{ PipelineType::Obj3D,				D3D12_CULL_MODE_BACK },
 	{ PipelineType::PrimitiveSkyBox,    D3D12_CULL_MODE_NONE },
 	{ PipelineType::PrimitiveOcean,     D3D12_CULL_MODE_BACK },

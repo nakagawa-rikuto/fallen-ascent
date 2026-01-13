@@ -19,6 +19,8 @@ namespace {
 		inputElementDescs2[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 	}
 
+	/// ====== ///
+
 	/// ===Line3D用=== ///
 	static D3D12_INPUT_ELEMENT_DESC inputElementDescsLine[2] = {};
 	// デスクに対応した設定
@@ -107,6 +109,7 @@ namespace {
 		return std::unordered_map<PipelineType, LayoutInfo>{
 			{ PipelineType::ForGround2D,  { inputElementDescs2,      _countof(inputElementDescs2)}},
 			{ PipelineType::BackGround2D, { inputElementDescs2,      _countof(inputElementDescs2)}},
+			{ PipelineType::CircularGauge2D,  { inputElementDescs2,      _countof(inputElementDescs2)}},
 			{ PipelineType::Obj3D,        { inputElementDescs3,      _countof(inputElementDescs3)}},
 			{ PipelineType::PrimitiveSkyBox,  { inputElementDescs3,      _countof(inputElementDescs3) }},
 			{ PipelineType::PrimitiveOcean,   { inputElementDescs3,      _countof(inputElementDescs3) }},

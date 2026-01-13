@@ -11,6 +11,8 @@ enum PipelineType {
 	ForGround2D,
 	// 背景2D
 	BackGround2D,
+	// CircularGauge(Sprite)
+	CircularGauge2D,
 	// 3D
 	Obj3D,
 	// SkyBox
@@ -55,6 +57,7 @@ constexpr std::array<PipelineType, static_cast<size_t>(PipelineType::CountOfPipe
 		// Graphics Pipelines
 		PipelineType::ForGround2D,
 		PipelineType::BackGround2D,
+		PipelineType::CircularGauge2D,
 		PipelineType::Obj3D,
 		PipelineType::PrimitiveSkyBox,
 		PipelineType::Particle ,
@@ -84,6 +87,7 @@ inline bool IsComputePipeline(PipelineType type) {
 		/// ===Graphics Pipelines=== ///
 	case PipelineType::ForGround2D:
 	case PipelineType::BackGround2D:
+	case PipelineType::CircularGauge2D:
 	case PipelineType::Obj3D:
 	case PipelineType::Skinning3D:
 	case PipelineType::PrimitiveSkyBox:

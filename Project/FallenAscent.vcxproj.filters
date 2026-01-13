@@ -80,6 +80,7 @@
       <Filter>Resource\Shaders\Oshan</Filter>
     </FxCompile>
     <FxCompile Include="Resource\Shaders\3D\Ocean.CS.hlsl" />
+    <FxCompile Include="Resource\Shaders\2D\CircularGauge.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -505,6 +506,8 @@
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.cpp" />
+    <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp" />
+    <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -974,6 +977,8 @@
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.h" />
+    <ClInclude Include="application\Game\UI\Game\GameSceneUI.h" />
+    <ClInclude Include="application\Game\UI\Game\PlayerUI.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

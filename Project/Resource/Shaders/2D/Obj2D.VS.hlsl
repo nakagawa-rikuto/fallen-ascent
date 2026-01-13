@@ -17,6 +17,6 @@ VertexShaderOutput main(VertexShaderInput input)
 {
     VertexShaderOutput output;
     output.position = mul(float4(input.position.xy, 0.0f, 1.0f),gTransformationMatrix.WVP);
-    output.texcood = input.texcoord;
+    output.texcoord = input.texcoord;
     return output;
 }
