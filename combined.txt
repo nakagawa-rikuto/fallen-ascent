@@ -17259,7 +17259,7 @@ void MyGame::Initialize(const wchar_t* title) {
 	// シーンマネージャの初期化
 	sceneManager_ = std::make_unique<SceneManager>();
 	sceneManager_->Initialize(sceneFactory_.get());
-	sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
+	sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
 }
  
 ///-------------------------------------------/// 
@@ -40607,73 +40607,80 @@ void PlayerUI::Initialize() {
 		static_cast<float>(GraphicsResourceGetter::GetWindowWidth()),
 		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
 	};
+	
+	/// ===Scale=== ///
+	// 基準解像度
+	constexpr float BASE_WIDTH = 1920.0f;
+	constexpr float BASE_HEIGHT = 1080.0f;
+	// Scale
+	scale_ = { windowSize.x / BASE_WIDTH, windowSize.y / BASE_HEIGHT };
 
+	/// ===位置=== ///
 	// 基準点
 	Vector2 point = {
-		windowSize.x * (3.0f / 4.0f) - 20.0f,
+		windowSize.x * (3.0f / 4.0f) - (20.0f * scale_.x),
 		windowSize.y * (7.0f / 8.0f)
 	};
-
 	// 間隔
-	float spaceX = (windowSize.x - point.x) / 8.0f + 2.0f;
+	float spaceX = (windowSize.x - point.x) / 8.0f + (2.0f * scale_.x);
 	// コントローラーUIのY座標
-	float controllerPosY = point.y + 90.0f;
+	float controllerPosY = point.y + (90.0f * scale_.y);
 
 	// 移動UIの初期化
 	moveUI_ = std::make_shared<Sprite>();
 	moveUI_->Initialize("MoveUI");
 	moveUI_->SetPosition({ point.x + spaceX, point.y });
 	moveUIPos_ = moveUI_->GetPosition();
-	moveUI_->SetSize({ 80.0f, 80.0f });
+	moveUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	moveUI_->SetAnchorPoint({ 0.5f, 0.5f });
 	moveUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// 左スティックUIの初期化
 	leftStick_ = std::make_shared<Sprite>();
 	leftStick_->Initialize("leftStick");
 	leftStick_->SetPosition({ moveUI_->GetPosition().x, controllerPosY });
-	leftStick_->SetSize({ 50.0f, 50.0f });
+	leftStick_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
 	leftStick_->SetAnchorPoint({ 0.5f, 0.5f });
 
 	// カメラUIの初期化
 	cameraUI_ = std::make_shared<Sprite>();
 	cameraUI_->Initialize("CameraUI");
 	cameraUI_->SetPosition({ point.x + (spaceX * 3.0f), point.y });
-	cameraUI_->SetSize({ 80.0f, 80.0f });
+	cameraUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	cameraUI_->SetAnchorPoint({ 0.5f, 0.5f });
 	cameraUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// 右スティックUI初期化
 	rightStick_ = std::make_shared<Sprite>();
 	rightStick_->Initialize("rightStick");
 	rightStick_->SetPosition({ cameraUI_->GetPosition().x, controllerPosY });
-	rightStick_->SetSize({ 50.0f, 50.0f });
+	rightStick_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
 	rightStick_->SetAnchorPoint({ 0.5f, 0.5f });
 
 	// 攻撃UIの初期化
 	attackUI_ = std::make_shared<Sprite>();
 	attackUI_->Initialize("AttackUI");
 	attackUI_->SetPosition({ point.x + (spaceX * 5.0f), point.y });
-	attackUI_->SetSize({ 80.0f, 80.0f });
+	attackUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	attackUI_->SetAnchorPoint({ 0.5f, 0.5f });
 	attackUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// XボタンUIの初期化
 	xButton_ = std::make_shared<Sprite>();
 	xButton_->Initialize("xButton");
 	xButton_->SetPosition({ attackUI_->GetPosition().x,  controllerPosY });
-	xButton_->SetSize({ 50.0f, 50.0f });
+	xButton_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
 	xButton_->SetAnchorPoint({ 0.5f, 0.5f });
 
 	// 回避UIの初期化
 	avoidanceUI_ = std::make_shared<Sprite>();
 	avoidanceUI_->Initialize("AvoidanceUI");
 	avoidanceUI_->SetPosition({ point.x + (spaceX * 7.0f), point.y });
-	avoidanceUI_->SetSize({ 80.0f, 80.0f });
+	avoidanceUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	avoidanceUI_->SetAnchorPoint({ 0.5f, 0.5f });
 	avoidanceUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// AボタンUIの初期化
 	aButton_ = std::make_shared<Sprite>();
 	aButton_->Initialize("aButton");
 	aButton_->SetPosition({ avoidanceUI_->GetPosition().x, controllerPosY });
-	aButton_->SetSize({ 50.0f, 50.0f });
+	aButton_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
 	aButton_->SetAnchorPoint({ 0.5f, 0.5f });
 
 	// UIの位置の保存
@@ -40760,17 +40767,17 @@ void PlayerUI::SpriteUpdate() {
 	/// ===サイズの管理=== ///
 	if (std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f) {
 		// サイズを大きくする
-		moveUI_->SetSize({ 100.0f, 100.0f });
+		moveUI_->SetSize({ 100.0f * scale_.x, 100.0f * scale_.y });
 	} else {
 		// サイズを元に戻す
-		moveUI_->SetSize({ 80.0f, 80.0f });
+		moveUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	}
 	if (std::abs(rightStick.x) > 0.1f || std::abs(rightStick.y) > 0.1f) {
 		// サイズを大きくする
-		cameraUI_->SetSize({ 100.0f, 100.0f });
+		cameraUI_->SetSize({ 100.0f * scale_.x, 100.0f * scale_.y });
 	} else {
 		// サイズを元に戻す
-		cameraUI_->SetSize({ 80.0f, 80.0f });
+		cameraUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	}
 }
 
@@ -40866,6 +40873,9 @@ private:
 		bool avoidanceUI = false; // 回避UIアクティブフラグ
 	};
 	ColorChange colorChange_;
+
+	/// ===参照スケール倍率=== ///
+	Vector2 scale_ = { 1.0f, 1.0f }; // スケール
 
 private:
 
@@ -41922,63 +41932,72 @@ void TitleScene::Initialize() {
 	// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 	IScene::Initialize();
 
-	// ウィンドウサイズの取得
-	float windowWidth = static_cast<float>(GraphicsResourceGetter::GetWindowWidth());
-	float windowHeight = static_cast<float>(GraphicsResourceGetter::GetWindowHeight());
+	// windowサイズの取得
+	Vector2 windowSize = {
+		static_cast<float>(GraphicsResourceGetter::GetWindowWidth()),
+		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
+	};
+
+	/// ===Scale=== ///
+	// 基準解像度
+	constexpr float BASE_WIDTH = 1920.0f;
+	constexpr float BASE_HEIGHT = 1080.0f;
+	// Scale
+	scale_ = { windowSize.x / BASE_WIDTH, windowSize.y / BASE_HEIGHT };
 
 	/// ===スプライトの初期化=== ///
 	// 背景スプライト
 	bgSprite_ = std::make_unique<Sprite>();
 	bgSprite_->Initialize("TitleBG");
 	bgSprite_->SetPosition({ 0.0f, 0.0f });
-	bgSprite_->SetSize({ windowWidth, windowHeight });
+	bgSprite_->SetSize({ windowSize.x, windowSize.y });
 
 	// 背景Kiriスプライト
 	bgKiriSprite_ = std::make_unique<Sprite>();
 	bgKiriSprite_->Initialize("TitleBGKiri");
 	bgKiriSprite_->SetPosition({ 0.0f, 0.0f });
-	bgKiriSprite_->SetSize({ windowWidth, windowHeight });
+	bgKiriSprite_->SetSize({ windowSize.x, windowSize.y });
 
 	// タイトルスプライト
 	titleSprite_ = std::make_unique<Sprite>();
 	titleSprite_->Initialize("Title"); // テクスチャファイルパスは適宜変更
-	titleSprite_->SetPosition({ windowWidth / 2.0f, windowHeight / 4.0f });
-	titleSprite_->SetSize({ 1000.0f, 1000.0f });
+	titleSprite_->SetPosition({ windowSize.x / 2.0f, windowSize.y / 4.0f });
+	titleSprite_->SetSize({ 1000.0f * scale_.x, 1000.0f * scale_.y });
 	titleSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	titleSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 
 	// 開始スプライト
-	spaceY_ = windowHeight / 16.0f; // メニュー項目間の垂直スペース
-	startY_ = windowHeight / 2.0f + windowHeight / 8.0f; // 開始項目のY位置
+	spaceY_ = windowSize.y / 12.0f; // メニュー項目間の垂直スペース
+	startY_ = windowSize.y / 2.0f + windowSize.y / 8.0f; // 開始項目のY位置
 
 	startSprite_ = std::make_unique<Sprite>();
 	startSprite_->Initialize("Start");
-	startSprite_->SetPosition({ windowWidth / 2.0f, startY_ });
-	startSprite_->SetSize({ 200.0f, 50.0f });
+	startSprite_->SetPosition({ windowSize.x / 2.0f, startY_ });
+	startSprite_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
 	startSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	startSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 選択中は黄色
 
 	// オプションスプライト
 	optionSprite_ = std::make_unique<Sprite>();
 	optionSprite_->Initialize("Option");
-	optionSprite_->SetPosition({ windowWidth / 2.0f, startY_ + spaceY_ });
-	optionSprite_->SetSize({ 200.0f, 50.0f });
+	optionSprite_->SetPosition({ windowSize.x / 2.0f, startY_ + spaceY_ });
+	optionSprite_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
 	optionSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	optionSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 未選択は灰色
 
 	// 終了スプライト
 	exitSprite_ = std::make_unique<Sprite>();
 	exitSprite_->Initialize("Exit");
-	exitSprite_->SetPosition({ windowWidth / 2.0f, startY_ + spaceY_ * 2.0f });
-	exitSprite_->SetSize({ 200.0f, 50.0f });
+	exitSprite_->SetPosition({ windowSize.x / 2.0f, startY_ + spaceY_ * 2.0f });
+	exitSprite_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
 	exitSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	exitSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f });
 
 	// 選択オーバーレイスプライト
 	selectOverlay_ = std::make_unique<Sprite>();
 	selectOverlay_->Initialize("OverLay"); // テクスチャファイルパスは適宜変更
-	selectOverlay_->SetPosition({ windowWidth / 2.0f, startY_ }); // 初期位置は開始の位置
-	selectOverlay_->SetSize({ 400.0f, 80.0f }); // メニュー項目より少し大きめ
+	selectOverlay_->SetPosition({ windowSize.x / 2.0f, startY_ }); // 初期位置は開始の位置
+	selectOverlay_->SetSize({ 400.0f * scale_.x, 80.0f * scale_.y }); // メニュー項目より少し大きめ
 	selectOverlay_->SetAnchorPoint({ 0.5f, 0.5f });
 	selectOverlay_->SetColor({ 0.8f, 0.8f, 0.8f, 0.8f }); // 半透明の黄色
 
@@ -41986,14 +42005,14 @@ void TitleScene::Initialize() {
 	dimSprite_ = std::make_unique<Sprite>();
 	dimSprite_->Initialize("uvChecker");
 	dimSprite_->SetPosition({ 0.0f, 0.0f });
-	dimSprite_->SetSize({ windowWidth, windowHeight });
+	dimSprite_->SetSize({ windowSize.x, windowSize.y });
 	dimSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 0.7f }); // 半透明の黒
 
 	// オプションメニュー
 	optionMenuSprite_ = std::make_unique<Sprite>();
 	optionMenuSprite_->Initialize("uvChecker");
-	optionMenuSprite_->SetPosition({ windowWidth / 2.0f, windowHeight / 2.0f });
-	optionMenuSprite_->SetSize({ 500.0f, 400.0f });
+	optionMenuSprite_->SetPosition({ windowSize.x / 2.0f, windowSize.y / 2.0f });
+	optionMenuSprite_->SetSize({ 500.0f * scale_.x, 400.0f * scale_.y });
 	optionMenuSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	optionMenuSprite_->SetColor({ 0.3f, 0.3f, 0.5f, 1.0f }); // 青みがかった色
 
@@ -42290,6 +42309,9 @@ private:/// ===メンバ変数=== ///
 
 	/// ===入力制御=== ///
 	bool canInput_ = true; // 入力可能フラグ（連続入力防止）
+
+	/// ===参照スケール倍率=== ///
+	Vector2 scale_ = { 1.0f, 1.0f }; // スケール
 
 private:/// ===プライベート関数=== ///
 
