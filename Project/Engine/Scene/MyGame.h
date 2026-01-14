@@ -66,11 +66,6 @@ private:
 	void LoadAnimation();
 
 	/// <summary>
-	/// パーティクルの読み込み処理
-	/// </summary>
-	void LoadParticle();
-
-	/// <summary>
 	/// Jsonデータの読み込み処理
 	/// </summary>
 	void LoadJson();
