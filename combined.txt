@@ -314,6 +314,7 @@
 └── └── └── Textures/
 └── └──     ├── Animation/
 └── └──     ├── DDS/
+└── └──     ├── GameUI/
 └── └──     ├── OffScreen/
 └── └──     ├── Particle/
 └── └──     ├── TitleUI/
@@ -420,6 +421,11 @@
 └── └── └── └──     ├── StageObject.cpp
 └── └── └── └──     └── StageObject.h
 └── └── └── └── UI/
+└── └── └──     ├── Game/
+└── └── └──     └── ├── GameSceneUI.cpp
+└── └── └──     └── ├── GameSceneUI.h
+└── └── └──     └── ├── PlayerUI.cpp
+└── └── └──     └── └── PlayerUI.h
 └── └── └──     └── Title/
 └── └── └──         ├── TitleUI.cpp
 └── └── └──         └── TitleUI.h
@@ -5124,6 +5130,8 @@ enum PipelineType {
 	ForGround2D,
 	// 背景2D
 	BackGround2D,
+	// CircularGauge(Sprite)
+	CircularGauge2D,
 	// 3D
 	Obj3D,
 	// SkyBox
@@ -5168,6 +5176,7 @@ constexpr std::array<PipelineType, static_cast<size_t>(PipelineType::CountOfPipe
 		// Graphics Pipelines
 		PipelineType::ForGround2D,
 		PipelineType::BackGround2D,
+		PipelineType::CircularGauge2D,
 		PipelineType::Obj3D,
 		PipelineType::PrimitiveSkyBox,
 		PipelineType::Particle ,
@@ -5197,6 +5206,7 @@ inline bool IsComputePipeline(PipelineType type) {
 		/// ===Graphics Pipelines=== ///
 	case PipelineType::ForGround2D:
 	case PipelineType::BackGround2D:
+	case PipelineType::CircularGauge2D:
 	case PipelineType::Obj3D:
 	case PipelineType::Skinning3D:
 	case PipelineType::PrimitiveSkyBox:
@@ -14551,9 +14561,11 @@ namespace {
 		std::wstring csPath;
 	};
 
+	// テーブル本体
 	const std::unordered_map<PipelineType, ShaderInfo> kShaderTable_ = {
 	{ PipelineType::ForGround2D,	 { L"2D/Obj2D.VS.hlsl",				 L"2D/Obj2D.PS.hlsl",						 L""}},
 	{ PipelineType::BackGround2D,	 { L"2D/Obj2D.VS.hlsl",				 L"2D/Obj2D.PS.hlsl",		 				 L""}},
+	{ PipelineType::CircularGauge2D, { L"2D/Obj2D.VS.hlsl",				 L"2D/CircularGauge.PS.hlsl",		 		 L""}},
 	{ PipelineType::Obj3D,			 { L"3D/Obj3D.VS.hlsl",				 L"3D/Obj3D.PS.hlsl",						 L""}},
 	{ PipelineType::PrimitiveSkyBox, { L"3D/SkyBox.VS.hlsl",             L"3D/SkyBox.PS.hlsl",						 L""}},
 	{ PipelineType::PrimitiveOcean,  { L"3D/Ocean.VS.hlsl",              L"3D/Ocean.PS.hlsl",						 L""}},
@@ -14923,6 +14935,9 @@ namespace {
 
 		// 2D: 背景（深度無効, 書き込みなし, 比較LessEqual, ステンシル無効）
 		{ PipelineType::BackGround2D, CreateDepthDesc(false, D3D12_DEPTH_WRITE_MASK_ZERO, D3D12_COMPARISON_FUNC_LESS_EQUAL, false) },
+
+		// 2D: CircularGauge（深度無効, 書き込みなし, 比較LessEqual）
+		{ PipelineType::CircularGauge2D, CreateDepthDesc(false, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_ALWAYS) },
 
 		// 3D Object（深度有効, 書き込みあり, 比較LessEqual）
 		{ PipelineType::Obj3D, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
@@ -15989,11 +16004,12 @@ namespace {
 	/// ===マップに登録=== ///
 	using RootSigGenerator = std::function<ComPtr<ID3D12RootSignature>(ID3D12Device*)>;
 	const std::unordered_map<PipelineType, RootSigGenerator> kRootSignatureTable_ = {
+		{ PipelineType::ForGround2D,		Type2D },
+		{ PipelineType::BackGround2D,		Type2D },
+		{ PipelineType::CircularGauge2D,	Type2D },
 		{ PipelineType::Obj3D,				Type3D },
 		{ PipelineType::PrimitiveSkyBox,	Type3D },
 		{ PipelineType::PrimitiveOcean,     TypeOshan },
-		{ PipelineType::ForGround2D,		Type2D },
-		{ PipelineType::BackGround2D,		Type2D },
 		{ PipelineType::Particle,			TypeParticle },
 		{ PipelineType::Skinning3D,			TypeSkinning3D  },
 		{ PipelineType::Line3D,				TypeLine3D },
@@ -16098,6 +16114,8 @@ namespace {
 		inputElementDescs2[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 	}
 
+	/// ====== ///
+
 	/// ===Line3D用=== ///
 	static D3D12_INPUT_ELEMENT_DESC inputElementDescsLine[2] = {};
 	// デスクに対応した設定
@@ -16186,6 +16204,7 @@ namespace {
 		return std::unordered_map<PipelineType, LayoutInfo>{
 			{ PipelineType::ForGround2D,  { inputElementDescs2,      _countof(inputElementDescs2)}},
 			{ PipelineType::BackGround2D, { inputElementDescs2,      _countof(inputElementDescs2)}},
+			{ PipelineType::CircularGauge2D,  { inputElementDescs2,      _countof(inputElementDescs2)}},
 			{ PipelineType::Obj3D,        { inputElementDescs3,      _countof(inputElementDescs3)}},
 			{ PipelineType::PrimitiveSkyBox,  { inputElementDescs3,      _countof(inputElementDescs3) }},
 			{ PipelineType::PrimitiveOcean,   { inputElementDescs3,      _countof(inputElementDescs3) }},
@@ -16278,6 +16297,7 @@ File Path: Project/Engine/Graphics/Pipeline/GS/RasterizerState.cpp
 namespace {
 	const std::unordered_map<PipelineType, D3D12_CULL_MODE> kCullModeTable_ = {
 	{ PipelineType::ForGround2D,		D3D12_CULL_MODE_NONE },
+	{ PipelineType::BackGround2D,		D3D12_CULL_MODE_NONE },
 	{ PipelineType::BackGround2D,		D3D12_CULL_MODE_NONE },
 	{ PipelineType::Obj3D,				D3D12_CULL_MODE_BACK },
 	{ PipelineType::PrimitiveSkyBox,    D3D12_CULL_MODE_NONE },
@@ -17240,7 +17260,7 @@ void MyGame::Initialize(const wchar_t* title) {
 	// シーンマネージャの初期化
 	sceneManager_ = std::make_unique<SceneManager>();
 	sceneManager_->Initialize(sceneFactory_.get());
-	sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
+	sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
 }
  
 ///-------------------------------------------/// 
@@ -17320,6 +17340,16 @@ void MyGame::LoadTexture() {
 	Loader::LoadTexture("OverLay", "TitleUI/OverLay.png");
 	// GameAnimaiton
 	Loader::LoadTexture("GameOvverAnimation", "Animation/GameOverAnimation.png");
+
+	// GameUI
+	Loader::LoadTexture("MoveUI", "GameUI/MoveUI.png");
+	Loader::LoadTexture("CameraUI", "GameUI/CameraUI.png");
+	Loader::LoadTexture("AttackUI", "GameUI/AttackUI.png");
+	Loader::LoadTexture("AvoidanceUI", "GameUI/AvoidanceUI.png");
+	Loader::LoadTexture("xButton", "GameUI/xbox_button_color_x.png");
+	Loader::LoadTexture("aButton", "GameUI/xbox_button_color_a.png");
+	Loader::LoadTexture("leftStick", "GameUI/xbox_stick_l.png");
+	Loader::LoadTexture("rightStick", "GameUI/xbox_stick_r.png");
 }
 
 ///-------------------------------------------/// 
@@ -26583,6 +26613,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Animation\GameOverAnimation.cpp" />
     <ClCompile Include="application\Game\Object\GameStage.cpp" />
     <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp" />
+    <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp" />
     <ClCompile Include="Math\EasingMath.cpp" />
     <ClCompile Include="Engine\System\Managers\AnimationManager.cpp" />
     <ClCompile Include="Engine\System\Service\AudioService.cpp" />
@@ -26695,6 +26726,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp" />
+    <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Player\Editor\Data\AttackData.h" />
@@ -26750,6 +26782,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Animation\GameOverAnimation.h" />
     <ClInclude Include="application\Game\Object\GameStage.h" />
     <ClInclude Include="application\Game\Animation\GameClearAnimation.h" />
+    <ClInclude Include="application\Game\UI\Game\GameSceneUI.h" />
     <ClInclude Include="Math\EasingMath.h" />
     <ClInclude Include="Engine\System\Managers\AnimationManager.h" />
     <ClInclude Include="Engine\DataInfo\AnimationData.h" />
@@ -26870,6 +26903,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h" />
+    <ClInclude Include="application\Game\UI\Game\PlayerUI.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -26877,6 +26911,12 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Resource\Shaders\2D\CircularGauge.PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Resource\Shaders\3D\LIne3D.PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
@@ -27158,6 +27198,7 @@ File Path: Project/FallenAscent.vcxproj.filters
       <Filter>Resource\Shaders\Oshan</Filter>
     </FxCompile>
     <FxCompile Include="Resource\Shaders\3D\Ocean.CS.hlsl" />
+    <FxCompile Include="Resource\Shaders\2D\CircularGauge.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -27583,6 +27624,8 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.cpp" />
+    <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp" />
+    <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -28052,6 +28095,8 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.h" />
+    <ClInclude Include="application\Game\UI\Game\GameSceneUI.h" />
+    <ClInclude Include="application\Game\UI\Game\PlayerUI.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -36897,9 +36942,6 @@ public: /// ===Getter=== ///
 	// AvoidanceState
 	const AvoidanceState& GetState() const { return state_; }
 
-public: /// ===Setter=== ///
-	
-
 private:
 
 	/// ===情報=== ///
@@ -38616,8 +38658,15 @@ void Player::Update() {
 	}
 
 	/// ===スティックの取得=== ///
+	StickState leftStick = InputService::GetLeftStickState(0);
 	StickState rightStick = InputService::GetRightStickState(0);
-	camera_->SetStick({ rightStick.x, rightStick.y });
+	// スティック情報を保存
+	stickState_ = {
+		.leftStick = { leftStick.x, leftStick.y },
+		.rightStick = { rightStick.x, rightStick.y }
+	};
+	// カメラにスティック情報を渡す
+	camera_->SetStick(stickState_.rightStick);
 
 	/// ===タイマーを進める=== ///
 	advanceTimer();
@@ -38846,6 +38895,10 @@ public: /// ===Getter=== ///
 	PlayerAvoidanceComponent* GetAvoidanceComponent() const { return avoidanceComponent_.get(); };
 	PlayerAttackComponent* GetAttackComponent() const { return attackComponent_.get(); };
 
+	// StickState
+	Vector2 GetLeftStickState() const { return stickState_.leftStick; };
+	Vector2 GetRightStickState() const { return stickState_.rightStick; };
+
 public: /// ===Setter=== ///
 
 	// Camera
@@ -38868,8 +38921,8 @@ public: /// ===State用関数=== ///
 	void ChangState(std::unique_ptr<PlayerState> newState);
 
 private: /// ===変数の宣言=== ///
-
-	GameCamera* camera_ = nullptr; // カメラ
+	// カメラ
+	GameCamera* camera_ = nullptr; 
 
 	/// ===Weapon=== ///
 	std::unique_ptr<PlayerWeapon> weapon_;
@@ -38889,6 +38942,13 @@ private: /// ===変数の宣言=== ///
 		bool isFlag = false; // 無敵フラグ
 	};
 	InvincibleInfo invincibleInfo_;
+
+	/// ===StickState=== ///
+	struct ControllerStickState {
+		Vector2 leftStick = {0.0f, 0.0f};
+		Vector2 rightStick = {0.0f, 0.0f};
+	};
+	ControllerStickState stickState_;
 
 private:
 
@@ -39202,12 +39262,12 @@ void MoveState::Update(Player * player, GameCamera* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	/// ===左スティックの取得=== ///
-	StickState leftStick = InputService::GetLeftStickState(0);
+	/// ===スティックの取得=== ///
+	Vector2 leftStick = player_->GetLeftStickState();
 
 	/// ===移動処理=== ///
 	PlayerMoveComponent::UpdateContext context{
-		.inputDirection = { leftStick.x, 0.0f, leftStick.y },
+		.inputDirection = { leftStick.x, 0.0f, leftStick.y},
 		.currentPosition = player_->GetTransform().translate,
 		.currentRotation = player_->GetTransform().rotate,
 		.deltaTime = player_->GetDeltaTime()
@@ -40441,6 +40501,400 @@ public: /// ===OnCollision=== ///
 
 
 ============================================================
+File Path: Project/application/Game/UI/Game/GameSceneUI.cpp
+============================================================
+#include "GameSceneUI.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
+
+///-------------------------------------------/// 
+/// Setter
+///-------------------------------------------///
+void GameSceneUI::SetPlayer(Player* player) {
+	// PlayerUI
+	playerUI_->SetPalyer(player);
+}
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void GameSceneUI::Initialize() {
+	// PlayerUIの生成と初期化
+	playerUI_ = std::make_unique<PlayerUI>();
+	playerUI_->Initialize();
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void GameSceneUI::Update() {
+	// PlayerUIの更新
+	playerUI_->Update();
+}
+
+///-------------------------------------------/// 
+/// 描画処理
+///-------------------------------------------///
+void GameSceneUI::Draw() {
+	// PlayerUIの描画
+	playerUI_->Draw();
+}
+
+============================================================
+File Path: Project/application/Game/UI/Game/GameSceneUI.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "PlayerUI.h"
+
+/// ===前方宣言=== ///
+class Player;
+
+///=====================================================/// 
+/// GameSceneUI
+///=====================================================///
+class GameSceneUI {
+public:
+
+	GameSceneUI() = default;
+	~GameSceneUI() = default;
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	void Initialize();
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update();
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	void Draw();
+
+public: /// ===Setter=== ///
+	// Playerのセット
+	void SetPlayer(Player* player);
+
+private:
+
+	/// ===Class=== ///
+	// PlayerUI
+	std::unique_ptr<PlayerUI> playerUI_;
+};
+
+
+
+============================================================
+File Path: Project/application/Game/UI/Game/PlayerUI.cpp
+============================================================
+#include "PlayerUI.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
+// Service
+#include "Engine/System/Service/GraphicsResourceGetter.h"
+
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+PlayerUI::~PlayerUI() {
+	moveUI_.reset();
+	cameraUI_.reset();
+	attackUI_.reset();
+	avoidanceUI_.reset();
+	xButton_.reset();
+	aButton_.reset();
+	leftStick_.reset();
+	rightStick_.reset();
+}
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void PlayerUI::Initialize() {
+	// windowサイズの取得
+	Vector2 windowSize = {
+		static_cast<float>(GraphicsResourceGetter::GetWindowWidth()),
+		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
+	};
+
+	// 基準点
+	Vector2 point = {
+		windowSize.x * (3.0f / 4.0f) - 20.0f,
+		windowSize.y * (7.0f / 8.0f)
+	};
+
+	// 間隔
+	float spaceX = (windowSize.x - point.x) / 8.0f + 2.0f;
+	// コントローラーUIのY座標
+	float controllerPosY = point.y + 90.0f;
+
+	// 移動UIの初期化
+	moveUI_ = std::make_shared<Sprite>();
+	moveUI_->Initialize("MoveUI");
+	moveUI_->SetPosition({ point.x + spaceX, point.y });
+	moveUIPos_ = moveUI_->GetPosition();
+	moveUI_->SetSize({ 80.0f, 80.0f });
+	moveUI_->SetAnchorPoint({ 0.5f, 0.5f });
+	moveUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	// 左スティックUIの初期化
+	leftStick_ = std::make_shared<Sprite>();
+	leftStick_->Initialize("leftStick");
+	leftStick_->SetPosition({ moveUI_->GetPosition().x, controllerPosY });
+	leftStick_->SetSize({ 50.0f, 50.0f });
+	leftStick_->SetAnchorPoint({ 0.5f, 0.5f });
+
+	// カメラUIの初期化
+	cameraUI_ = std::make_shared<Sprite>();
+	cameraUI_->Initialize("CameraUI");
+	cameraUI_->SetPosition({ point.x + (spaceX * 3.0f), point.y });
+	cameraUI_->SetSize({ 80.0f, 80.0f });
+	cameraUI_->SetAnchorPoint({ 0.5f, 0.5f });
+	cameraUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	// 右スティックUI初期化
+	rightStick_ = std::make_shared<Sprite>();
+	rightStick_->Initialize("rightStick");
+	rightStick_->SetPosition({ cameraUI_->GetPosition().x, controllerPosY });
+	rightStick_->SetSize({ 50.0f, 50.0f });
+	rightStick_->SetAnchorPoint({ 0.5f, 0.5f });
+
+	// 攻撃UIの初期化
+	attackUI_ = std::make_shared<Sprite>();
+	attackUI_->Initialize("AttackUI");
+	attackUI_->SetPosition({ point.x + (spaceX * 5.0f), point.y });
+	attackUI_->SetSize({ 80.0f, 80.0f });
+	attackUI_->SetAnchorPoint({ 0.5f, 0.5f });
+	attackUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	// XボタンUIの初期化
+	xButton_ = std::make_shared<Sprite>();
+	xButton_->Initialize("xButton");
+	xButton_->SetPosition({ attackUI_->GetPosition().x,  controllerPosY });
+	xButton_->SetSize({ 50.0f, 50.0f });
+	xButton_->SetAnchorPoint({ 0.5f, 0.5f });
+
+	// 回避UIの初期化
+	avoidanceUI_ = std::make_shared<Sprite>();
+	avoidanceUI_->Initialize("AvoidanceUI");
+	avoidanceUI_->SetPosition({ point.x + (spaceX * 7.0f), point.y });
+	avoidanceUI_->SetSize({ 80.0f, 80.0f });
+	avoidanceUI_->SetAnchorPoint({ 0.5f, 0.5f });
+	avoidanceUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	// AボタンUIの初期化
+	aButton_ = std::make_shared<Sprite>();
+	aButton_->Initialize("aButton");
+	aButton_->SetPosition({ avoidanceUI_->GetPosition().x, controllerPosY });
+	aButton_->SetSize({ 50.0f, 50.0f });
+	aButton_->SetAnchorPoint({ 0.5f, 0.5f });
+
+	// UIの位置の保存
+	moveUIPos_ = moveUI_->GetPosition();
+	cameraUIPos_ = cameraUI_->GetPosition();
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void PlayerUI::Update() {
+	// フラグと色のリセット
+	if (colorChange_.attackUI) {
+		colorChange_.attackUI = false;
+		attackUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	} else if (colorChange_.avoidanceUI) {
+		colorChange_.avoidanceUI = false;
+		avoidanceUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	}
+
+	// スプライトの更新処理
+	SpriteUpdate();
+
+	// 色の更新処理
+	ColorUpdate();
+
+	// 移動UIの更新
+	moveUI_->Update();
+	// カメラUIの更新
+	cameraUI_->Update();
+	// 攻撃UIの更新
+	attackUI_->Update();
+	// 回避UIの更新
+	avoidanceUI_->Update();
+	// XボタンUiの更新
+	xButton_->Update();
+	// AボタンUIの更新
+	aButton_->Update();
+	// 左スティックUIの更新
+	leftStick_->Update();
+	// 右スティックUIの更新
+	rightStick_->Update();
+}
+
+///-------------------------------------------/// 
+/// 描画処理
+///-------------------------------------------///
+void PlayerUI::Draw() {
+	// 移動UIの描画
+	moveUI_->Draw();
+	// カメラUIの描画
+	cameraUI_->Draw();
+	// 攻撃UIの描画
+	attackUI_->Draw();
+	// 回避UIの描画
+	avoidanceUI_->Draw();
+	// XButtonUIの描画
+	xButton_->Draw();
+	// AButtonUIの描画
+	aButton_->Draw();
+	// 左スティックUIの描画
+	leftStick_->Draw();
+	// 右スティックUIの描画
+	rightStick_->Draw();
+}
+
+///-------------------------------------------/// 
+/// スプライトの更新処理
+///-------------------------------------------///
+void PlayerUI::SpriteUpdate() {
+
+	/// ===スティックの取得=== ///
+	Vector2 leftStick = player_->GetLeftStickState();
+	Vector2 rightStick = player_->GetRightStickState();
+	leftStick.y *= -1.0f;
+	rightStick.y *= -1.0f;
+
+	/// ===位置の更新=== ///
+	// 移動UI
+	moveUI_->SetPosition(moveUIPos_ + leftStick * 15.0f);
+	// カメラUI
+	cameraUI_->SetPosition(cameraUIPos_ + rightStick * 15.0f);
+
+	/// ===サイズの管理=== ///
+	if (std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f) {
+		// サイズを大きくする
+		moveUI_->SetSize({ 100.0f, 100.0f });
+	} else {
+		// サイズを元に戻す
+		moveUI_->SetSize({ 80.0f, 80.0f });
+	}
+	if (std::abs(rightStick.x) > 0.1f || std::abs(rightStick.y) > 0.1f) {
+		// サイズを大きくする
+		cameraUI_->SetSize({ 100.0f, 100.0f });
+	} else {
+		// サイズを元に戻す
+		cameraUI_->SetSize({ 80.0f, 80.0f });
+	}
+}
+
+///-------------------------------------------/// 
+/// 色の更新処理
+///-------------------------------------------///
+void PlayerUI::ColorUpdate() {
+	/// ===色変更のフラグ管理=== ///
+	if (player_->GetAttackComponent()->GetState().isActive && !colorChange_.attackUI) {
+		// 攻撃UI
+		colorChange_.attackUI = true;
+	}
+	if (player_->GetAvoidanceComponent()->GetState().isActive && !colorChange_.avoidanceUI) {
+		// 回避UI
+		colorChange_.avoidanceUI = true;
+	}
+
+	/// ===UIの色更新=== ///
+	if (colorChange_.attackUI) {
+		// 攻撃UI
+		attackUI_->SetColor(activeColor_);
+	}
+	if (colorChange_.avoidanceUI) {
+		// 回避UI
+		avoidanceUI_->SetColor(activeColor_);
+	}
+}
+
+
+============================================================
+File Path: Project/application/Game/UI/Game/PlayerUI.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "application/Drawing/2d/Sprite.h"
+
+/// ===前方宣言=== ///
+class Player;
+
+///-------------------------------------------/// 
+/// プレイヤーUI
+///-------------------------------------------///
+class PlayerUI {
+public:
+	PlayerUI() = default;
+	~PlayerUI();
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	void Initialize();
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update();
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	void Draw();
+
+public: /// ===Setter=== ///
+	// Playerのセット
+	void SetPalyer(Player* player) { player_ = player; }
+
+private:
+	// Player
+	Player* player_;
+
+	/// ===Sprite=== ///
+	// アクション
+	std::shared_ptr<Sprite> moveUI_;      // 移動UI
+	std::shared_ptr<Sprite> cameraUI_;    // カメラUI
+	std::shared_ptr<Sprite> attackUI_;    // 攻撃UI
+	std::shared_ptr<Sprite> avoidanceUI_; // 回避UI
+	// コントローラー
+	std::shared_ptr<Sprite> xButton_;	  // X
+	std::shared_ptr<Sprite> aButton_;	  // A
+	std::shared_ptr<Sprite> leftStick_;	  // 左スティック
+	std::shared_ptr<Sprite> rightStick_;  // 右スティック
+
+	/// ===位置=== ///
+	Vector2 moveUIPos_ = { 100.0f, 500.0f };      // 移動UI位置
+	Vector2 cameraUIPos_ = { 300.0f, 500.0f };    // カメラUI位置
+
+	/// ===Color=== ///
+	Vector4 activeColor_ = { 1.0f, 0.0f, 0.0f, 1.0f };   // アクティブカラー
+
+	/// ===フラグ=== ///
+	struct ColorChange {
+		bool attackUI = false;    // 攻撃UIアクティブフラグ
+		bool avoidanceUI = false; // 回避UIアクティブフラグ
+	};
+	ColorChange colorChange_;
+
+private:
+
+	/// <summary>
+	/// スプライトの更新処理
+	/// </summary>
+	void SpriteUpdate();
+
+	/// <summary>
+	/// 色の更新処理
+	/// </summary>
+	void ColorUpdate();
+};
+
+
+
+============================================================
 File Path: Project/application/Game/UI/Title/TitleUI.cpp
 ============================================================
 #include "TitleUI.h"
@@ -40981,6 +41435,13 @@ void GameScene::Initialize() {
 	/// ===GameClearAnimation=== ///
 	gameClearAnimation_ = std::make_unique<GameClearAnimation>();
 
+	/// ===GameSceneUI=== ///
+	gameSceneUI_ = std::make_unique<GameSceneUI>();
+	gameSceneUI_->Initialize();
+	// GameSceneUIにPlayerを設定
+	gameSceneUI_->SetPlayer(player_.get());
+	gameSceneUI_->Update();
+
 	// 初期フェーズをFadeInに設定
 	currentPhase_ = FadeState::FadeIn;
 	/// ===Transition=== ///
@@ -41076,6 +41537,11 @@ void GameScene::Draw() {
 #pragma endregion
 
 #pragma region 前景スプライト描画
+
+	if (currentPhase_ == FadeState::Game) {
+		/// ===GameSceneUI=== ///
+		gameSceneUI_->Draw();
+	}
 #pragma endregion
 }
 
@@ -41128,6 +41594,9 @@ void GameScene::UpdateGame() {
 	/// ===Enemy=== ///
 	enemyManager_->Update();
 	enemyManager_->SetPlayer(player_.get()); // Playerを設定
+
+	/// ===GameSceneUIの更新=== ///
+	gameSceneUI_->Update();
 
 	// Playerが死んだら
 	if (player_->GetIsDead() || InputService::TriggerKey(DIK_Q)) {
@@ -41227,6 +41696,8 @@ File Path: Project/application/Scene/GameScene.h
 #include "application/Game/Animation/StartAnimation.h"
 #include "application/Game/Animation/GameOverAnimation.h"
 #include "application/Game/Animation/GameClearAnimation.h"
+// UI
+#include "application/Game/UI/Game/GameSceneUI.h"
 
 ///=====================================================/// 
 /// ゲームシーン
@@ -41275,6 +41746,8 @@ private:/// ===メンバ変数=== ///
 	std::unique_ptr<GameOverAnimation> gameOverAnimation_;
 	// GameClearAnimation
 	std::unique_ptr<GameClearAnimation> gameClearAnimation_;
+	// UI
+	std::unique_ptr<GameSceneUI> gameSceneUI_;
 
 	/// ===変数の宣言=== ///
 	// カメラ情報
