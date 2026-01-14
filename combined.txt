@@ -17241,7 +17241,6 @@ void MyGame::Initialize(const wchar_t* title) {
 	loadingThreads.emplace_back([this] { LoadAudio(); });     // Soundの読み込み
 	loadingThreads.emplace_back([this] { LoadModel(); });	  // モデルの読み込み
 	loadingThreads.emplace_back([this] { LoadAnimation(); }); // アニメーションの読み込み
-	loadingThreads.emplace_back([this] { LoadParticle(); });  // パーティクルの読み込み
 	loadingThreads.emplace_back([this] { LoadJson(); });	  // Jsonデータの読み込み
 	// すべてのスレッドの終了を待機
 	for (auto& thread : loadingThreads) {
@@ -17313,24 +17312,25 @@ void MyGame::LoadAudio() {
 ///	テクスチャの読み込み処理
 ///-------------------------------------------///
 void MyGame::LoadTexture() {
-	// DebugSceneで使用。
+	/// ===Engine=== ///
 	Loader::LoadTexture("uvChecker", "uvChecker.png");
 	Loader::LoadTexture("monsterBall", "monsterBall.png");
 	Loader::LoadTexture("White", "WhiteTexture.png");
-	// Particleで使用。
+	// Particle
 	Loader::LoadTexture("circle", "Particle/circle.png");
 	Loader::LoadTexture("circle2", "Particle/circle2.png");
 	Loader::LoadTexture("gradationLine", "Particle/gradationLine.png");
 	Loader::LoadTexture("Spark", "Particle/Spark.png");
 	Loader::LoadTexture("FlameEye", "Particle/FlameEye.png");
 	Loader::LoadTexture("Fire", "Particle/Fire.png");
-
-	// OffScreenで使用
+	// OffScreen
 	Loader::LoadTexture("noise0", "OffScreen/noise0.png");
 	Loader::LoadTexture("noise1", "OffScreen/noise1.png");
 	// DDS
 	Loader::LoadTexture("skyBox", "DDS/rostock_laage_airport_4k.dds");
-	// Game(Title)
+
+	/// ===Game=== ///
+	// TitleUI
 	Loader::LoadTexture("TitleBG", "TitleUI/SkyBG.png");
 	Loader::LoadTexture("TitleBGKiri", "TitleUI/BGsecond.png");
 	Loader::LoadTexture("Title", "TitleUI/Title.png");
@@ -17338,9 +17338,6 @@ void MyGame::LoadTexture() {
 	Loader::LoadTexture("Option", "TitleUI/Option.png");
 	Loader::LoadTexture("Exit", "TitleUI/Exit.png");
 	Loader::LoadTexture("OverLay", "TitleUI/OverLay.png");
-	// GameAnimaiton
-	Loader::LoadTexture("GameOvverAnimation", "Animation/GameOverAnimation.png");
-
 	// GameUI
 	Loader::LoadTexture("MoveUI", "GameUI/MoveUI.png");
 	Loader::LoadTexture("CameraUI", "GameUI/CameraUI.png");
@@ -17350,21 +17347,24 @@ void MyGame::LoadTexture() {
 	Loader::LoadTexture("aButton", "GameUI/xbox_button_color_a.png");
 	Loader::LoadTexture("leftStick", "GameUI/xbox_stick_l.png");
 	Loader::LoadTexture("rightStick", "GameUI/xbox_stick_r.png");
+	// GameAnimaiton
+	Loader::LoadTexture("GameOvverAnimation", "Animation/GameOverAnimation.png");
 }
 
 ///-------------------------------------------/// 
 /// モデルの読み込み処理
 ///-------------------------------------------///
 void MyGame::LoadModel() {
-	// DebugSceneで使用
+	/// ===Engine=== ///
 	Loader::LoadModel("MonsterBall", "MonsterBall/MonsterBall.obj");
 	Loader::LoadModel("terrain", "terrain/terrain.obj");
-	// Particleで使用
+	// Particle
 	Loader::LoadModel("plane", "Particle/Plane/ParticlePlane.gltf");
 	Loader::LoadModel("sphere", "Particle/Sphere/ParticleSphere.obj");
 	Loader::LoadModel("cube", "Particle/Cube/ParticleCube.obj");
 	Loader::LoadModel("triangle", "Particle/Triangle/ParticleTriangle.obj");
-	// Game
+	
+	/// ===Game=== ///
 	Loader::LoadModel("player", "player/player.gltf");
 	Loader::LoadModel("Ground", "Ground/Ground.obj");
 	Loader::LoadModel("Object1", "Object1/Object1.obj");
@@ -17376,23 +17376,16 @@ void MyGame::LoadModel() {
 /// アニメーションモデルの読み込み処理
 ///-------------------------------------------///
 void MyGame::LoadAnimation() {
-	// DebugSceneで使用。
+	/// ===Engine=== ///
 	Loader::LoadAnimation("simpleSkin", "simpleSkin/simpleSkin.gltf");
 	Loader::LoadAnimation("human", "human/sneakWalk.gltf");
-}
-
-///-------------------------------------------/// 
-/// パーティクルの読み込み処理
-///-------------------------------------------///
-void MyGame::LoadParticle() {
-	
 }
 
 ///-------------------------------------------/// 
 /// Jsonデータの読み込み処理
 ///-------------------------------------------///
 void MyGame::LoadJson() {
-	// Jsonの読み込み
+	/// ===Game=== ///
 	Loader::LoadLevelJson("Level/StageData.json");
 	Loader::LoadLevelJson("Level/EntityData.json");
 }
@@ -17467,11 +17460,6 @@ private:
 	/// アニメーションモデルの読み込み処理
 	/// </summary>
 	void LoadAnimation();
-
-	/// <summary>
-	/// パーティクルの読み込み処理
-	/// </summary>
-	void LoadParticle();
 
 	/// <summary>
 	/// Jsonデータの読み込み処理
