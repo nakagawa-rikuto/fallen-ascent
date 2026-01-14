@@ -66,6 +66,10 @@ public: /// ===Getter=== ///
 	PlayerAvoidanceComponent* GetAvoidanceComponent() const { return avoidanceComponent_.get(); };
 	PlayerAttackComponent* GetAttackComponent() const { return attackComponent_.get(); };
 
+	// StickState
+	Vector2 GetLeftStickState() const { return stickState_.leftStick; };
+	Vector2 GetRightStickState() const { return stickState_.rightStick; };
+
 public: /// ===Setter=== ///
 
 	// Camera
@@ -88,8 +92,8 @@ public: /// ===State用関数=== ///
 	void ChangState(std::unique_ptr<PlayerState> newState);
 
 private: /// ===変数の宣言=== ///
-
-	GameCamera* camera_ = nullptr; // カメラ
+	// カメラ
+	GameCamera* camera_ = nullptr; 
 
 	/// ===Weapon=== ///
 	std::unique_ptr<PlayerWeapon> weapon_;
@@ -109,6 +113,13 @@ private: /// ===変数の宣言=== ///
 		bool isFlag = false; // 無敵フラグ
 	};
 	InvincibleInfo invincibleInfo_;
+
+	/// ===StickState=== ///
+	struct ControllerStickState {
+		Vector2 leftStick = {0.0f, 0.0f};
+		Vector2 rightStick = {0.0f, 0.0f};
+	};
+	ControllerStickState stickState_;
 
 private:
 

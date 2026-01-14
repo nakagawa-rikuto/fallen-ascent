@@ -86,6 +86,13 @@ void GameScene::Initialize() {
 	/// ===GameClearAnimation=== ///
 	gameClearAnimation_ = std::make_unique<GameClearAnimation>();
 
+	/// ===GameSceneUI=== ///
+	gameSceneUI_ = std::make_unique<GameSceneUI>();
+	gameSceneUI_->Initialize();
+	// GameSceneUIにPlayerを設定
+	gameSceneUI_->SetPlayer(player_.get());
+	gameSceneUI_->Update();
+
 	// 初期フェーズをFadeInに設定
 	currentPhase_ = FadeState::FadeIn;
 	/// ===Transition=== ///
@@ -181,6 +188,11 @@ void GameScene::Draw() {
 #pragma endregion
 
 #pragma region 前景スプライト描画
+
+	if (currentPhase_ == FadeState::Game) {
+		/// ===GameSceneUI=== ///
+		gameSceneUI_->Draw();
+	}
 #pragma endregion
 }
 
@@ -233,6 +245,9 @@ void GameScene::UpdateGame() {
 	/// ===Enemy=== ///
 	enemyManager_->Update();
 	enemyManager_->SetPlayer(player_.get()); // Playerを設定
+
+	/// ===GameSceneUIの更新=== ///
+	gameSceneUI_->Update();
 
 	// Playerが死んだら
 	if (player_->GetIsDead() || InputService::TriggerKey(DIK_Q)) {

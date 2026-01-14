@@ -108,8 +108,15 @@ void Player::Update() {
 	}
 
 	/// ===スティックの取得=== ///
+	StickState leftStick = InputService::GetLeftStickState(0);
 	StickState rightStick = InputService::GetRightStickState(0);
-	camera_->SetStick({ rightStick.x, rightStick.y });
+	// スティック情報を保存
+	stickState_ = {
+		.leftStick = { leftStick.x, leftStick.y },
+		.rightStick = { rightStick.x, rightStick.y }
+	};
+	// カメラにスティック情報を渡す
+	camera_->SetStick(stickState_.rightStick);
 
 	/// ===タイマーを進める=== ///
 	advanceTimer();

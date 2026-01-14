@@ -83,9 +83,6 @@ public: /// ===Getter=== ///
 	// AvoidanceState
 	const AvoidanceState& GetState() const { return state_; }
 
-public: /// ===Setter=== ///
-	
-
 private:
 
 	/// ===情報=== ///
