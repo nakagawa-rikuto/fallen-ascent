@@ -39,12 +39,12 @@ void MoveState::Update(Player * player, GameCamera* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	/// ===左スティックの取得=== ///
-	StickState leftStick = InputService::GetLeftStickState(0);
+	/// ===スティックの取得=== ///
+	Vector2 leftStick = player_->GetLeftStickState();
 
 	/// ===移動処理=== ///
 	PlayerMoveComponent::UpdateContext context{
-		.inputDirection = { leftStick.x, 0.0f, leftStick.y },
+		.inputDirection = { leftStick.x, 0.0f, leftStick.y},
 		.currentPosition = player_->GetTransform().translate,
 		.currentRotation = player_->GetTransform().rotate,
 		.deltaTime = player_->GetDeltaTime()

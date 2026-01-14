@@ -780,11 +780,12 @@ namespace {
 	/// ===マップに登録=== ///
 	using RootSigGenerator = std::function<ComPtr<ID3D12RootSignature>(ID3D12Device*)>;
 	const std::unordered_map<PipelineType, RootSigGenerator> kRootSignatureTable_ = {
+		{ PipelineType::ForGround2D,		Type2D },
+		{ PipelineType::BackGround2D,		Type2D },
+		{ PipelineType::CircularGauge2D,	Type2D },
 		{ PipelineType::Obj3D,				Type3D },
 		{ PipelineType::PrimitiveSkyBox,	Type3D },
 		{ PipelineType::PrimitiveOcean,     TypeOshan },
-		{ PipelineType::ForGround2D,		Type2D },
-		{ PipelineType::BackGround2D,		Type2D },
 		{ PipelineType::Particle,			TypeParticle },
 		{ PipelineType::Skinning3D,			TypeSkinning3D  },
 		{ PipelineType::Line3D,				TypeLine3D },

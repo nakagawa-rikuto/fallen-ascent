@@ -18,6 +18,9 @@ namespace {
 		// 2D: 背景（深度無効, 書き込みなし, 比較LessEqual, ステンシル無効）
 		{ PipelineType::BackGround2D, CreateDepthDesc(false, D3D12_DEPTH_WRITE_MASK_ZERO, D3D12_COMPARISON_FUNC_LESS_EQUAL, false) },
 
+		// 2D: CircularGauge（深度無効, 書き込みなし, 比較LessEqual）
+		{ PipelineType::CircularGauge2D, CreateDepthDesc(false, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_ALWAYS) },
+
 		// 3D Object（深度有効, 書き込みあり, 比較LessEqual）
 		{ PipelineType::Obj3D, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
 

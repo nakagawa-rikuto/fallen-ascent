@@ -56,7 +56,7 @@ void MyGame::Initialize(const wchar_t* title) {
 	// シーンマネージャの初期化
 	sceneManager_ = std::make_unique<SceneManager>();
 	sceneManager_->Initialize(sceneFactory_.get());
-	sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
+	sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
 }
  
 ///-------------------------------------------/// 
@@ -136,6 +136,16 @@ void MyGame::LoadTexture() {
 	Loader::LoadTexture("OverLay", "TitleUI/OverLay.png");
 	// GameAnimaiton
 	Loader::LoadTexture("GameOvverAnimation", "Animation/GameOverAnimation.png");
+
+	// GameUI
+	Loader::LoadTexture("MoveUI", "GameUI/MoveUI.png");
+	Loader::LoadTexture("CameraUI", "GameUI/CameraUI.png");
+	Loader::LoadTexture("AttackUI", "GameUI/AttackUI.png");
+	Loader::LoadTexture("AvoidanceUI", "GameUI/AvoidanceUI.png");
+	Loader::LoadTexture("xButton", "GameUI/xbox_button_color_x.png");
+	Loader::LoadTexture("aButton", "GameUI/xbox_button_color_a.png");
+	Loader::LoadTexture("leftStick", "GameUI/xbox_stick_l.png");
+	Loader::LoadTexture("rightStick", "GameUI/xbox_stick_r.png");
 }
 
 ///-------------------------------------------/// 

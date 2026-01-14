@@ -25,9 +25,11 @@ namespace {
 		std::wstring csPath;
 	};
 
+	// テーブル本体
 	const std::unordered_map<PipelineType, ShaderInfo> kShaderTable_ = {
 	{ PipelineType::ForGround2D,	 { L"2D/Obj2D.VS.hlsl",				 L"2D/Obj2D.PS.hlsl",						 L""}},
 	{ PipelineType::BackGround2D,	 { L"2D/Obj2D.VS.hlsl",				 L"2D/Obj2D.PS.hlsl",		 				 L""}},
+	{ PipelineType::CircularGauge2D, { L"2D/Obj2D.VS.hlsl",				 L"2D/CircularGauge.PS.hlsl",		 		 L""}},
 	{ PipelineType::Obj3D,			 { L"3D/Obj3D.VS.hlsl",				 L"3D/Obj3D.PS.hlsl",						 L""}},
 	{ PipelineType::PrimitiveSkyBox, { L"3D/SkyBox.VS.hlsl",             L"3D/SkyBox.PS.hlsl",						 L""}},
 	{ PipelineType::PrimitiveOcean,  { L"3D/Ocean.VS.hlsl",              L"3D/Ocean.PS.hlsl",						 L""}},
