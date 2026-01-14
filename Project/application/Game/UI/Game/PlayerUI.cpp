@@ -27,73 +27,80 @@ void PlayerUI::Initialize() {
 		static_cast<float>(GraphicsResourceGetter::GetWindowWidth()),
 		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
 	};
+	
+	/// ===Scale=== ///
+	// 基準解像度
+	constexpr float BASE_WIDTH = 1920.0f;
+	constexpr float BASE_HEIGHT = 1080.0f;
+	// Scale
+	scale_ = { windowSize.x / BASE_WIDTH, windowSize.y / BASE_HEIGHT };
 
+	/// ===位置=== ///
 	// 基準点
 	Vector2 point = {
-		windowSize.x * (3.0f / 4.0f) - 20.0f,
+		windowSize.x * (3.0f / 4.0f) - (20.0f * scale_.x),
 		windowSize.y * (7.0f / 8.0f)
 	};
-
 	// 間隔
-	float spaceX = (windowSize.x - point.x) / 8.0f + 2.0f;
+	float spaceX = (windowSize.x - point.x) / 8.0f + (2.0f * scale_.x);
 	// コントローラーUIのY座標
-	float controllerPosY = point.y + 90.0f;
+	float controllerPosY = point.y + (90.0f * scale_.y);
 
 	// 移動UIの初期化
 	moveUI_ = std::make_shared<Sprite>();
 	moveUI_->Initialize("MoveUI");
 	moveUI_->SetPosition({ point.x + spaceX, point.y });
 	moveUIPos_ = moveUI_->GetPosition();
-	moveUI_->SetSize({ 80.0f, 80.0f });
+	moveUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	moveUI_->SetAnchorPoint({ 0.5f, 0.5f });
 	moveUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// 左スティックUIの初期化
 	leftStick_ = std::make_shared<Sprite>();
 	leftStick_->Initialize("leftStick");
 	leftStick_->SetPosition({ moveUI_->GetPosition().x, controllerPosY });
-	leftStick_->SetSize({ 50.0f, 50.0f });
+	leftStick_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
 	leftStick_->SetAnchorPoint({ 0.5f, 0.5f });
 
 	// カメラUIの初期化
 	cameraUI_ = std::make_shared<Sprite>();
 	cameraUI_->Initialize("CameraUI");
 	cameraUI_->SetPosition({ point.x + (spaceX * 3.0f), point.y });
-	cameraUI_->SetSize({ 80.0f, 80.0f });
+	cameraUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	cameraUI_->SetAnchorPoint({ 0.5f, 0.5f });
 	cameraUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// 右スティックUI初期化
 	rightStick_ = std::make_shared<Sprite>();
 	rightStick_->Initialize("rightStick");
 	rightStick_->SetPosition({ cameraUI_->GetPosition().x, controllerPosY });
-	rightStick_->SetSize({ 50.0f, 50.0f });
+	rightStick_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
 	rightStick_->SetAnchorPoint({ 0.5f, 0.5f });
 
 	// 攻撃UIの初期化
 	attackUI_ = std::make_shared<Sprite>();
 	attackUI_->Initialize("AttackUI");
 	attackUI_->SetPosition({ point.x + (spaceX * 5.0f), point.y });
-	attackUI_->SetSize({ 80.0f, 80.0f });
+	attackUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	attackUI_->SetAnchorPoint({ 0.5f, 0.5f });
 	attackUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// XボタンUIの初期化
 	xButton_ = std::make_shared<Sprite>();
 	xButton_->Initialize("xButton");
 	xButton_->SetPosition({ attackUI_->GetPosition().x,  controllerPosY });
-	xButton_->SetSize({ 50.0f, 50.0f });
+	xButton_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
 	xButton_->SetAnchorPoint({ 0.5f, 0.5f });
 
 	// 回避UIの初期化
 	avoidanceUI_ = std::make_shared<Sprite>();
 	avoidanceUI_->Initialize("AvoidanceUI");
 	avoidanceUI_->SetPosition({ point.x + (spaceX * 7.0f), point.y });
-	avoidanceUI_->SetSize({ 80.0f, 80.0f });
+	avoidanceUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	avoidanceUI_->SetAnchorPoint({ 0.5f, 0.5f });
 	avoidanceUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// AボタンUIの初期化
 	aButton_ = std::make_shared<Sprite>();
 	aButton_->Initialize("aButton");
 	aButton_->SetPosition({ avoidanceUI_->GetPosition().x, controllerPosY });
-	aButton_->SetSize({ 50.0f, 50.0f });
+	aButton_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
 	aButton_->SetAnchorPoint({ 0.5f, 0.5f });
 
 	// UIの位置の保存
@@ -180,17 +187,17 @@ void PlayerUI::SpriteUpdate() {
 	/// ===サイズの管理=== ///
 	if (std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f) {
 		// サイズを大きくする
-		moveUI_->SetSize({ 100.0f, 100.0f });
+		moveUI_->SetSize({ 100.0f * scale_.x, 100.0f * scale_.y });
 	} else {
 		// サイズを元に戻す
-		moveUI_->SetSize({ 80.0f, 80.0f });
+		moveUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	}
 	if (std::abs(rightStick.x) > 0.1f || std::abs(rightStick.y) > 0.1f) {
 		// サイズを大きくする
-		cameraUI_->SetSize({ 100.0f, 100.0f });
+		cameraUI_->SetSize({ 100.0f * scale_.x, 100.0f * scale_.y });
 	} else {
 		// サイズを元に戻す
-		cameraUI_->SetSize({ 80.0f, 80.0f });
+		cameraUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	}
 }
 

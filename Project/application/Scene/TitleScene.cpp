@@ -34,63 +34,72 @@ void TitleScene::Initialize() {
 	// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 	IScene::Initialize();
 
-	// ウィンドウサイズの取得
-	float windowWidth = static_cast<float>(GraphicsResourceGetter::GetWindowWidth());
-	float windowHeight = static_cast<float>(GraphicsResourceGetter::GetWindowHeight());
+	// windowサイズの取得
+	Vector2 windowSize = {
+		static_cast<float>(GraphicsResourceGetter::GetWindowWidth()),
+		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
+	};
+
+	/// ===Scale=== ///
+	// 基準解像度
+	constexpr float BASE_WIDTH = 1920.0f;
+	constexpr float BASE_HEIGHT = 1080.0f;
+	// Scale
+	scale_ = { windowSize.x / BASE_WIDTH, windowSize.y / BASE_HEIGHT };
 
 	/// ===スプライトの初期化=== ///
 	// 背景スプライト
 	bgSprite_ = std::make_unique<Sprite>();
 	bgSprite_->Initialize("TitleBG");
 	bgSprite_->SetPosition({ 0.0f, 0.0f });
-	bgSprite_->SetSize({ windowWidth, windowHeight });
+	bgSprite_->SetSize({ windowSize.x, windowSize.y });
 
 	// 背景Kiriスプライト
 	bgKiriSprite_ = std::make_unique<Sprite>();
 	bgKiriSprite_->Initialize("TitleBGKiri");
 	bgKiriSprite_->SetPosition({ 0.0f, 0.0f });
-	bgKiriSprite_->SetSize({ windowWidth, windowHeight });
+	bgKiriSprite_->SetSize({ windowSize.x, windowSize.y });
 
 	// タイトルスプライト
 	titleSprite_ = std::make_unique<Sprite>();
 	titleSprite_->Initialize("Title"); // テクスチャファイルパスは適宜変更
-	titleSprite_->SetPosition({ windowWidth / 2.0f, windowHeight / 4.0f });
-	titleSprite_->SetSize({ 1000.0f, 1000.0f });
+	titleSprite_->SetPosition({ windowSize.x / 2.0f, windowSize.y / 4.0f });
+	titleSprite_->SetSize({ 1000.0f * scale_.x, 1000.0f * scale_.y });
 	titleSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	titleSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 
 	// 開始スプライト
-	spaceY_ = windowHeight / 16.0f; // メニュー項目間の垂直スペース
-	startY_ = windowHeight / 2.0f + windowHeight / 8.0f; // 開始項目のY位置
+	spaceY_ = windowSize.y / 12.0f; // メニュー項目間の垂直スペース
+	startY_ = windowSize.y / 2.0f + windowSize.y / 8.0f; // 開始項目のY位置
 
 	startSprite_ = std::make_unique<Sprite>();
 	startSprite_->Initialize("Start");
-	startSprite_->SetPosition({ windowWidth / 2.0f, startY_ });
-	startSprite_->SetSize({ 200.0f, 50.0f });
+	startSprite_->SetPosition({ windowSize.x / 2.0f, startY_ });
+	startSprite_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
 	startSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	startSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 選択中は黄色
 
 	// オプションスプライト
 	optionSprite_ = std::make_unique<Sprite>();
 	optionSprite_->Initialize("Option");
-	optionSprite_->SetPosition({ windowWidth / 2.0f, startY_ + spaceY_ });
-	optionSprite_->SetSize({ 200.0f, 50.0f });
+	optionSprite_->SetPosition({ windowSize.x / 2.0f, startY_ + spaceY_ });
+	optionSprite_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
 	optionSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	optionSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 未選択は灰色
 
 	// 終了スプライト
 	exitSprite_ = std::make_unique<Sprite>();
 	exitSprite_->Initialize("Exit");
-	exitSprite_->SetPosition({ windowWidth / 2.0f, startY_ + spaceY_ * 2.0f });
-	exitSprite_->SetSize({ 200.0f, 50.0f });
+	exitSprite_->SetPosition({ windowSize.x / 2.0f, startY_ + spaceY_ * 2.0f });
+	exitSprite_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
 	exitSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	exitSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f });
 
 	// 選択オーバーレイスプライト
 	selectOverlay_ = std::make_unique<Sprite>();
 	selectOverlay_->Initialize("OverLay"); // テクスチャファイルパスは適宜変更
-	selectOverlay_->SetPosition({ windowWidth / 2.0f, startY_ }); // 初期位置は開始の位置
-	selectOverlay_->SetSize({ 400.0f, 80.0f }); // メニュー項目より少し大きめ
+	selectOverlay_->SetPosition({ windowSize.x / 2.0f, startY_ }); // 初期位置は開始の位置
+	selectOverlay_->SetSize({ 400.0f * scale_.x, 80.0f * scale_.y }); // メニュー項目より少し大きめ
 	selectOverlay_->SetAnchorPoint({ 0.5f, 0.5f });
 	selectOverlay_->SetColor({ 0.8f, 0.8f, 0.8f, 0.8f }); // 半透明の黄色
 
@@ -98,14 +107,14 @@ void TitleScene::Initialize() {
 	dimSprite_ = std::make_unique<Sprite>();
 	dimSprite_->Initialize("uvChecker");
 	dimSprite_->SetPosition({ 0.0f, 0.0f });
-	dimSprite_->SetSize({ windowWidth, windowHeight });
+	dimSprite_->SetSize({ windowSize.x, windowSize.y });
 	dimSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 0.7f }); // 半透明の黒
 
 	// オプションメニュー
 	optionMenuSprite_ = std::make_unique<Sprite>();
 	optionMenuSprite_->Initialize("uvChecker");
-	optionMenuSprite_->SetPosition({ windowWidth / 2.0f, windowHeight / 2.0f });
-	optionMenuSprite_->SetSize({ 500.0f, 400.0f });
+	optionMenuSprite_->SetPosition({ windowSize.x / 2.0f, windowSize.y / 2.0f });
+	optionMenuSprite_->SetSize({ 500.0f * scale_.x, 400.0f * scale_.y });
 	optionMenuSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	optionMenuSprite_->SetColor({ 0.3f, 0.3f, 0.5f, 1.0f }); // 青みがかった色
 
