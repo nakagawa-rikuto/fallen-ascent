@@ -36,7 +36,7 @@ private:
 
 	/// ===タイマー=== ///
 	float activeTimer_ = 0.0f;	// アクティブタイマー
-	float acticeTime = 1.6f;	// アクティブ時間
+	float activeTime = 1.6f;	// アクティブ時間
 
 	/// ===攻撃方向関連=== /
 	Vector3 attackDirection_ = { 0.0f, 0.0f, 0.0f }; // 攻撃方向

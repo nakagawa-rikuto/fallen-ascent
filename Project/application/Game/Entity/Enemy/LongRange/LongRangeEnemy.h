@@ -1,7 +1,7 @@
 #pragma once
 /// ===Include=== ///
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
-#include "application/Game/Entity/Enemy/LongRange/LongRangeEnemeyBullet.h"
+#include "application/Game/Entity/Enemy/LongRange/LongRangeEnemyBullet.h"
 #include <list>
 
 ///=====================================================/// 
@@ -60,11 +60,11 @@ private: /// ===変数=== ///
 
 	/// ===Bullet情報=== ///
 	struct BulletInfo {
-		std::list<std::unique_ptr<LongRangeEnemeyBullet>> bullets_;
-		float interval = 0.0f; // インターバル
+		std::list<std::unique_ptr<LongRangeEnemyBullet>> bullets_;
+		float interval = 0.0f;   // インターバル
 		float reloadTime = 3.0f; // リロード時間
-		bool isShot; // 発射フラグ
-		bool isHit; // ヒット時のフラグ
+		bool isShot = false;	 // 発射フラグ
+		bool isHit = false;		 // ヒット時のフラグ
 	};
 	BulletInfo bulletInfo_;
 

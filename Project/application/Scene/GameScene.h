@@ -1,5 +1,5 @@
 #pragma once
-/// ===Includ=== ///
+/// ===Include=== ///
 #include "Engine/Scene/IScene.h"
 // Entity
 #include "application/Game/Entity/Player/Player.h"
@@ -108,7 +108,7 @@ private: /// ===メンバ関数=== ///
 	/// <summary>
 	/// フェードアウト時の更新処理
 	/// </summary>
-	void UpdateGameClearAnimtaion();
+	void UpdateGameClearAnimation();
 
 	/// <summary>
 	/// 配置処理

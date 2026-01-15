@@ -88,7 +88,7 @@ private:
 		bool isActive = false;					 // アクティブフラグ
 		Vector3 offset = { 0.0f, 0.0f, 0.0f };   // プレイヤーからのオフセット
 		Vector3 velocity = { 0.0f, 0.0f, 0.0f }; // 速度
-		float deltaTime;						 // デルタタイム
+		float deltaTime = 0.0f;					 // デルタタイム
 	};
 	BaseInfo baseInfo_;
 

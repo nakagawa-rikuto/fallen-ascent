@@ -16,21 +16,21 @@ public:
 	/// ウィンドウの横幅の取得
 	/// </summary>
 	/// <returns></returns>
-	const int GetWindowWidth();
-	
+	const int GetWindowWidth() const;
+
 	/// <summary>
 	/// ウィンドウの縦幅の取得
 	/// </summary>
 	/// <returns></returns>
-	const int GetWindowHeight();
+	const int GetWindowHeight() const;
 
 	/// <summary>
 	/// ウィンドウプロージャ
 	/// </summary>
 	/// <param name="hwnd"></param>
 	/// <param name="msg"></param>
-	/// <param name="wparam"></param>
-	/// <param name="lparam"></param>
+	/// <param name="WPARAM"></param>
+	/// <param name="LPARAM"></param>
 	/// <returns></returns>
 	static LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
@@ -57,23 +57,23 @@ public:
 	/// ウィンドウハンドルの取得
 	/// </summary>
 	/// <returns></returns>
-	HWND GetHwnd();
+	HWND GetHwnd() const;
 
 	/// <summary>
 	/// ウィンドウclassの取得
 	/// </summary>
 	/// <returns></returns>
-	WNDCLASS GetWNDClass();
+	WNDCLASS GetWNDClass() const;
 
 private:// メンバ変数
 
 	// ウィンドウサイズ
 	int32_t windowWidth_ = 1280;  // 横幅
-	int32_t windowHeight_ = 720; // 縦幅
+	int32_t windowHeight_ = 720;  // 縦幅
 
-	WNDCLASS wndClass_{}; // ウィンドウクラス
-	HWND hwnd_ = nullptr; // ウィンドウハンドル
-	UINT windowStyle_; // 
+	WNDCLASS wndClass_{};		// ウィンドウクラス
+	HWND hwnd_ = nullptr;		// ウィンドウハンドル
+	UINT windowStyle_;			// 
 	bool isFullScreen_ = false; // 
-	RECT windowRect_; // 
+	RECT windowRect_;			// 
 };

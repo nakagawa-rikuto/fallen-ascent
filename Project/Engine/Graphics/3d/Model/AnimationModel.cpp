@@ -18,15 +18,14 @@
 #include "Math/MatrixMath.h"
 
 ///-------------------------------------------/// 
-/// コンストラクタ、デストラクタ
+/// デストラクタ
 ///-------------------------------------------///
-AnimationModel::AnimationModel() = default;
 AnimationModel::~AnimationModel() {}
 
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
-/// ===AnimatinoName=== ///
+/// ===AnimationName=== ///
 void AnimationModel::SetAnimation(const std::string& animationName, bool isLoop) { 
 	animationName_ = animationName; 
 	isLoop_ = isLoop;
@@ -160,7 +159,7 @@ Vector3 AnimationModel::CalculateValue(const std::vector<KeyframeVector3>& keyfr
 
 
 ///-------------------------------------------/// 
-/// 任意の時刻の値を取得する関数(Quateri)
+/// 任意の時刻の値を取得する関数(Quaternion)
 ///-------------------------------------------///
 Quaternion AnimationModel::CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time) {
 	/// ===任意の時刻の値を取得する=== ///
@@ -256,7 +255,7 @@ SkinCluster AnimationModel::CreateSkinCluster(
 	const ComPtr<ID3D12Device>& device, const Skeleton& skeleton, const ModelData& modelData) {
 
 	SkinCluster skinCluster;
-	/// ===paletter用のResourceを確保=== ///
+	/// ===Palette用のResourceを確保=== ///
 	uint32_t paletteIndex = ServiceLocator::GetSRVManager()->Allocate();
 	skinCluster.paletteResource = CreateBufferResourceComPtr(device.Get(), sizeof(WellForGPU) * skeleton.joints.size());
 	WellForGPU* mappedPalette = nullptr;
@@ -298,10 +297,10 @@ SkinCluster AnimationModel::CreateSkinCluster(
 			continue;
 		}
 		// (*it).secondにはJointのIndexが入っているので、該当のIndexのinverseBindPoseMatrixを代入
-		skinCluster.inverseBindPoseMatrices[(*it).second] = jointWeight.second.inverseBindPosematrix;
+		skinCluster.inverseBindPoseMatrices[(*it).second] = jointWeight.second.inverseBindPoseMatrix;
 		for (const auto& vertexWeight : jointWeight.second.vertexWeights) {
 			auto& currentInfluence = skinCluster.mappedInfluence[vertexWeight.vertexIndex]; // 該当のvertexIndexのinfluence情報を参照しておく
-			for (uint32_t index = 0; index < kNumMaxInfluene; ++index) { // 空いているところに入れる
+			for (uint32_t index = 0; index < kNumMaxInfluence; ++index) { // 空いているところに入れる
 				if (currentInfluence.weights[index] == 0.0f) { // weight==0が空いている状態なので、その場所にweightとjointのindexを代入
 					currentInfluence.weights[index] = vertexWeight.weight;
 					currentInfluence.jointIndices[index] = (*it).second;

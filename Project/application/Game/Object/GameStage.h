@@ -2,7 +2,7 @@
 /// ===Include=== ///
 #include "application/Game/Object/StageObject/StageObject.h"
 #include "application/Game/Object/GameGround/Ground.h"
-#include "application/Game/Object/GameGround/GroundOshan.h"
+#include "application/Game/Object/GameGround/GroundOcean.h"
 //C++
 #include <string>
 #include <vector>
@@ -37,7 +37,7 @@ public:
 private:
 	// ステージオブジェクトのリスト
 	std::vector<std::shared_ptr<StageObject>> objects_; 
-	std::vector<std::shared_ptr<GroundOshan>> oshans_;
+	std::vector<std::shared_ptr<GroundOcean>> Oceans_;
 	std::vector<std::shared_ptr<Ground>> grounds_;
 
 private:

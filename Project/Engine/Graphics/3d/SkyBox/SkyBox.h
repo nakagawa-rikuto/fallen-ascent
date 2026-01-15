@@ -61,7 +61,7 @@ public: /// ===Setter=== ///
 	// LightData
 	void SetLightData(LightInfo light);
 	// 環境マップ
-	void SetEnviromentMapData(bool flag, float string);
+	void SetEnvironmentMapData(bool flag, float string);
 
 private:
 	/// ===バッファリソース=== ///
@@ -103,7 +103,7 @@ private:
 	};
 
 	/// ===環境マップ=== ///
-	EnviromentMapInfo enviromentMapInfo_;
+	EnvironmentMapInfo environmentMapInfo_;
 
 private: /// ===Functions(関数)=== ///
 
@@ -115,7 +115,7 @@ private: /// ===Functions(関数)=== ///
 	/// <summary>
 	/// MaterialDataの書き込み処理
 	/// </summary>
-	void MateialDataWrite();
+	void MaterialDataWrite();
 
 	/// <summary>
 	/// Transform情報の書き込み処理
@@ -135,6 +135,6 @@ private: /// ===Functions(関数)=== ///
 	/// <summary>
 	/// EnvironmentMapData書き込み処理
 	/// </summary>
-	void EnviromentMapDataWrite();
+	void EnvironmentMapDataWrite();
 };
 

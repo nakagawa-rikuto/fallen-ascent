@@ -8,7 +8,7 @@
 class IndexBuffer3D {
 public:
 
-	IndexBuffer3D();
+	IndexBuffer3D() = default;
 	~IndexBuffer3D();
 
 	/// <summary>

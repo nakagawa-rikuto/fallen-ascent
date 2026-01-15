@@ -12,7 +12,7 @@ class GameCamera;
 ///=====================================================///
 class StartAnimation {
 public:
-	StartAnimation();
+	StartAnimation() = default;
 	~StartAnimation();
 
 	/// <summary>
@@ -70,7 +70,7 @@ private:
 	float rotationStartTime_ = 1.5f;                   // 回転開始時刻
 
 	/// ===デルタタイム=== ///
-	float kDeltaTime_;
+	float kDeltaTime_ = 0.0f;
 
 private:
 

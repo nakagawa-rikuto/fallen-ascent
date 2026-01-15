@@ -5,11 +5,9 @@
 const uint32_t SRVManager::kMaxSRVCount_ = 512;
 
 ///-------------------------------------------/// 
-/// コンストラクタ、デストラクタ
+/// デストラクタ
 ///-------------------------------------------///
-SRVManager::SRVManager() = default;
-SRVManager::~SRVManager(){}
-
+SRVManager::~SRVManager() {}
 
 ///-------------------------------------------/// 
 /// Setter
@@ -24,13 +22,13 @@ void SRVManager::SetGraphicsRootDescriptorTable(UINT RootParameterIndex, uint32_
 ///-------------------------------------------///
 // DescriptorHeap
 ID3D12DescriptorHeap* SRVManager::GetDescriptorHeap() const { return descriptorHeap_.Get(); }
-// CPUHandl
+// CPUHandle
 D3D12_CPU_DESCRIPTOR_HANDLE SRVManager::GetCPUDescriptorHandle(uint32_t index) {
 	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap_->GetCPUDescriptorHandleForHeapStart();
 	handleCPU.ptr += (descriptorSize_ * index);
 	return handleCPU;
 }
-// GPUHandl
+// GPUHandle
 D3D12_GPU_DESCRIPTOR_HANDLE SRVManager::GetGPUDescriptorHandle(uint32_t index) {
 	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap_->GetGPUDescriptorHandleForHeapStart();
 	handleGPU.ptr += (descriptorSize_ * index);
@@ -87,7 +85,7 @@ uint32_t SRVManager::Allocate() {
 	return index + 1;
 }
 // 上限チャック
-bool SRVManager::AssertAllocate() { return useIndex_ < kMaxSRVCount_; }
+bool SRVManager::AssertAllocate() const  { return useIndex_ < kMaxSRVCount_; }
 
 
 ///-------------------------------------------/// 

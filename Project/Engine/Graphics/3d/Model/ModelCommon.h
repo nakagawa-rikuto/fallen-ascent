@@ -18,7 +18,7 @@ class GameCamera;
 ///=====================================================///
 class ModelCommon {
 public:
-	ModelCommon();
+	ModelCommon() = default;
 	~ModelCommon();
 
 	/// <summary>
@@ -80,7 +80,7 @@ public:/// ===Setter=== ///
 	// LightData
 	void SetLightData(LightInfo light);
 	// 環境マップ
-	void SetEnviromentMapData(bool flag, float string);
+	void SetEnvironmentMapData(bool flag, float string);
 
 public: /// ===Getter=== ///
 	// Transform（位置、回転、拡縮）を取得
@@ -118,7 +118,7 @@ protected: /// ===継承先で使用する変数=== ///
 	GameCamera* camera_ = nullptr;
 
 	/// ===環境マップ=== ///
-	EnviromentMapInfo enviromentMapInfo_;
+	EnvironmentMapInfo environmentMapInfo_;
 
 private:/// ===Variables(変数)=== ///
 
@@ -143,7 +143,7 @@ private:
 	/// <summary>
 	/// MaterialDataの書き込み処理
 	/// </summary>
-	void MateialDataWrite();
+	void MaterialDataWrite();
 
 	/// <summary>
 	/// Transform情報の書き込み処理
@@ -163,6 +163,6 @@ private:
 	/// <summary>
 	/// EnvironmentMapData書き込み処理
 	/// </summary>
-	void EnviromentMapDataWrite();
+	void EnvironmentMapDataWrite();
 };
 

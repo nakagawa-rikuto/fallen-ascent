@@ -1,5 +1,5 @@
 #pragma once
-/// ===Inclde=== ///
+/// ===Include=== ///
 #include "Engine/Collider/SphereCollider.h"
 
 /// ===前方宣言=== ///
@@ -8,11 +8,11 @@ class ParticleGroup;
 ///=====================================================/// 
 /// 遠距離攻撃Enemyの弾
 ///=====================================================///
-class LongRangeEnemeyBullet : public SphereCollider{
+class LongRangeEnemyBullet : public SphereCollider{
 public:
 
-	LongRangeEnemeyBullet() = default;
-	~LongRangeEnemeyBullet();
+	LongRangeEnemyBullet() = default;
+	~LongRangeEnemyBullet();
 
 	/// <summary>
 	/// 初期化処理
@@ -51,7 +51,7 @@ public: /// ===衝突判定=== ///
 
 public: /// ===Getter=== ///
 	// 生存フラグの取得
-	bool GetIsAlive();
+	bool GetIsAlive() const { return isAlive_; };
 
 private: /// ===変数=== ///
 

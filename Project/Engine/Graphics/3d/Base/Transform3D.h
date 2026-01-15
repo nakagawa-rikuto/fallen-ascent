@@ -8,7 +8,7 @@
 class Transform3D {
 public:
 
-	Transform3D();
+	Transform3D() = default;
 	~Transform3D();
 
 	/// <summary>

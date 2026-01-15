@@ -36,8 +36,6 @@ public:
 	void Draw() override;
 
 private:/// ====== ///
-	// ゲーム終了フラグ
-	bool endRequst_ = false;
 
 	/// ===シーン=== ///
 	// シーンマネージャ

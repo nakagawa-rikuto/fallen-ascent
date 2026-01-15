@@ -149,7 +149,7 @@ void GameScene::Update() {
 		break;
 	// フェードアウト
 	case FadeState::GameClearAnimation:
-		UpdateGameClearAnimtaion();
+		UpdateGameClearAnimation();
 		break;
 	}
 
@@ -283,7 +283,7 @@ void GameScene::UpdateGameOverAnimation() {
 ///-------------------------------------------/// 
 /// クリア時の更新処理
 ///-------------------------------------------///
-void GameScene::UpdateGameClearAnimtaion() {
+void GameScene::UpdateGameClearAnimation() {
 
 	// アニメーション更新
 	gameClearAnimation_->Update();
@@ -316,7 +316,7 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 			player_->Initialize();
 			player_->SetTranslate(obj.translation);
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
-			player_->SethalfSize(obbHalfSize);
+			player_->SetHalfSize(obbHalfSize);
 			break;
 		case LevelData::ClassTypeLevel::Enemy1:
 			// Enemyの座標設定

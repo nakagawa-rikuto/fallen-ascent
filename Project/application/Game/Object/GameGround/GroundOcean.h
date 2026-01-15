@@ -1,18 +1,18 @@
 #pragma once
-/// ===Indlude=== ///
+/// ===Include=== ///
 // Collider
 #include "Engine/Collider/AABBCollider.h"
-// Oshan
+// Ocean
 #include "Engine/Graphics/3d/Ocean/Ocean.h"
 
 ///=====================================================/// 
-/// GroundOshan
+/// GroundOcean
 ///=====================================================///
-class GroundOshan : public AABBCollider {
+class GroundOcean : public AABBCollider {
 public: 
 
-	GroundOshan() = default;
-	~GroundOshan();
+	GroundOcean() = default;
+	~GroundOcean();
 
 	/// <summary>
 	/// 初期化処理

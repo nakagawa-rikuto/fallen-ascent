@@ -18,7 +18,6 @@
 ///-------------------------------------------/// 
 /// コンストラクタ・デストラクタ
 ///-------------------------------------------///
-ParticleSetUp::ParticleSetUp() {}
 ParticleSetUp::~ParticleSetUp() { 
 	vertex_.reset();
 	index_.reset();
@@ -31,8 +30,8 @@ ParticleSetUp::~ParticleSetUp() {
 ///-------------------------------------------///
 // Texture
 void ParticleSetUp::SetTexture(const std::string& fileName) { modelData_.material.textureFilePath = fileName; }
-// material
-void ParticleSetUp::SetMatiarlData(const Vector4& color, const Matrix4x4& uvTransform) { common_->SetMatiarlData(color, uvTransform); }
+// Material
+void ParticleSetUp::SetMaterialData(const Vector4& color, const Matrix4x4& uvTransform) { common_->SetMatiarlData(color, uvTransform); }
 // instancing
 void ParticleSetUp::SetInstancingData(size_t index, const Vector4& color, const Matrix4x4& WVP, const Matrix4x4& World) { common_->SetInstancingData(index, color, WVP, World); }
 
@@ -40,7 +39,7 @@ void ParticleSetUp::SetInstancingData(size_t index, const Vector4& color, const 
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void ParticleSetUp::Initialze(const std::string& filename, const uint32_t kNumMaxInstance, shapeType type) {
+void ParticleSetUp::Initialize(const std::string& filename, const uint32_t kNumMaxInstance, shapeType type) {
 
 	/// ===コマンドリストのポインタの取得=== ///
 	ID3D12Device* device = GraphicsResourceGetter::GetDXDevice();
@@ -122,7 +121,7 @@ void ParticleSetUp::Initialze(const std::string& filename, const uint32_t kNumMa
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void ParticleSetUp::Darw(const uint32_t instance, BlendMode mode) {
+void ParticleSetUp::Draw(const uint32_t instance, BlendMode mode) {
 
 	/// ===コマンドリストのポインタの取得=== ///
 	ID3D12GraphicsCommandList* commandList = GraphicsResourceGetter::GetDXCommandList();

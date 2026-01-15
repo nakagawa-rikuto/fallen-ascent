@@ -96,7 +96,7 @@
     <ClCompile Include="application\Game\Entity\Enemy\CloseRange\CloseRangeEnemy.cpp">
       <Filter>application\Game\Entity\Enemy\CloseRange</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemeyBullet.cpp">
+    <ClCompile Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemyBullet.cpp">
       <Filter>application\Game\Entity\Enemy\LongRange</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemy.cpp">
@@ -465,7 +465,7 @@
     <ClCompile Include="application\Game\Object\GameGround\Ground.cpp">
       <Filter>application\Game\Object\GameGround</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Object\GameGround\GroundOshan.cpp">
+    <ClCompile Include="application\Game\Object\GameGround\GroundOcean.cpp">
       <Filter>application\Game\Object\GameGround</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp">
@@ -522,7 +522,7 @@
     <ClInclude Include="application\Game\Entity\Enemy\CloseRange\CloseRangeEnemy.h">
       <Filter>application\Game\Entity\Enemy\CloseRange</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemeyBullet.h">
+    <ClInclude Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemyBullet.h">
       <Filter>application\Game\Entity\Enemy\LongRange</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemy.h">
@@ -933,7 +933,7 @@
     <ClInclude Include="application\Game\Object\GameGround\Ground.h">
       <Filter>application\Game\Object\GameGround</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Object\GameGround\GroundOshan.h">
+    <ClInclude Include="application\Game\Object\GameGround\GroundOcean.h">
       <Filter>application\Game\Object\GameGround</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Object\StageObject\StageObject.h">
@@ -948,7 +948,7 @@
     <ClInclude Include="Engine\Graphics\3d\Ocean\OceanCommon.h">
       <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\DataInfo\OshanData.h">
+    <ClInclude Include="Engine\DataInfo\OceanData.h">
       <Filter>Engine\DataInfo</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />

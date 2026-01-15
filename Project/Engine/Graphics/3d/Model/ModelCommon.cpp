@@ -11,7 +11,6 @@
 ///-------------------------------------------/// 
 /// コンストラクタ・デストラクタ
 ///-------------------------------------------///
-ModelCommon::ModelCommon() = default;
 ModelCommon::~ModelCommon() {
 	// 親子関係の解除
 	ClearParent();
@@ -58,9 +57,9 @@ void ModelCommon::SetColor(const Vector4& color) { color_ = color; }
 void ModelCommon::SetLightType(LightType type) {common_->SetLightType(type);}
 void ModelCommon::SetLightData(LightInfo light) { light_ = light; }
 // 環境マップ
-void ModelCommon::SetEnviromentMapData(bool flag, float string) {
-	enviromentMapInfo_.isEnviromentMap = flag;
-	enviromentMapInfo_.strength = string;
+void ModelCommon::SetEnvironmentMapData(bool flag, float string) {
+	environmentMapInfo_.isEnvironmentMap = flag;
+	environmentMapInfo_.strength = string;
 }
 
 ///-------------------------------------------/// 
@@ -90,7 +89,7 @@ const Quaternion& ModelCommon::GetWorldRotate() const {
 		return cachedWorldTransform_.rotate;
 	}
 	/// ===ワールド行列から回転を取得=== ///
-	Matrix4x4 rotateMatrix; // 回転行列
+	Matrix4x4 rotateMatrix = {}; // 回転行列
 	for (int i = 0; i < 3; ++i) {
 		for (int j = 0; j < 3; ++j) {
 			rotateMatrix.m[i][j] = worldMatrix_.m[i][j];
@@ -179,7 +178,7 @@ void ModelCommon::Create(ID3D12Device* device, LightType type) {
 		{{ 1.0f, 1.0f, 1.0f, 1.0f } , { 0.0f, 0.0f, 0.0f } , 1.0f, 0.0f, 0.0f},
 		{{ 1.0f, 1.0f, 1.0f, 1.0f } , { 0.0f, 0.0f, 0.0f } , 0.0f, { 0.0f, 0.0f, 0.0f } , 0.0f, 0.0f, 0.0f}
 	};
-	enviromentMapInfo_ = {
+	environmentMapInfo_ = {
 		"skyBox",
 		false,
 		1.0f
@@ -223,7 +222,7 @@ void ModelCommon::Update() {
 	camera_ = CameraService::GetActiveCamera().get();
 
 	// MaterialDataの書き込み
-	MateialDataWrite();
+	MaterialDataWrite();
 	// Transform情報の書き込み
 	TransformDataWrite();
 	// Lightの書き込み
@@ -231,7 +230,7 @@ void ModelCommon::Update() {
 	// Cameraの書き込み
 	CameraDataWrite();
 	// 環境マップの書き込み
-	EnviromentMapDataWrite();
+	EnvironmentMapDataWrite();
 }
 
 ///-------------------------------------------/// 
@@ -245,13 +244,13 @@ void ModelCommon::Bind(ID3D12GraphicsCommandList* commandList) {
 
 	// テクスチャの設定
 	Render::SetGraphicsRootDescriptorTable(commandList, 2, modelData_.material.textureFilePath);
-	Render::SetGraphicsRootDescriptorTable(commandList, 3, enviromentMapInfo_.textureName);
+	Render::SetGraphicsRootDescriptorTable(commandList, 3, environmentMapInfo_.textureName);
 }
 
 ///-------------------------------------------/// 
 /// MaterialDataの書き込み
 ///-------------------------------------------///
-void ModelCommon::MateialDataWrite() {
+void ModelCommon::MaterialDataWrite() {
 	/// ===Matrixの作成=== ///
 	Matrix4x4 uvTransformMatrix = Math::MakeScaleMatrix(uvTransform_.scale);
 	Matrix4x4 uvTransformMatrixMultiply = Multiply(uvTransformMatrix, Math::MakeRotateZMatrix(uvTransform_.rotate.z));
@@ -346,6 +345,6 @@ void ModelCommon::CameraDataWrite() {
 ///-------------------------------------------/// 
 /// 環境マップの書き込み
 ///-------------------------------------------///
-void ModelCommon::EnviromentMapDataWrite() {
-	common_->SetEnviromentMapData(enviromentMapInfo_.isEnviromentMap, enviromentMapInfo_.strength);
+void ModelCommon::EnvironmentMapDataWrite() {
+	common_->SetEnviromentMapData(environmentMapInfo_.isEnvironmentMap, environmentMapInfo_.strength);
 }

@@ -23,15 +23,15 @@ void Collider::SetColor(const Vector4& color) { color_ = color; }
 void Collider::SetLight(LightType type) { object3d_->SetLight(type); }
 void Collider::SetLightData(LightInfo light) { object3d_->SetLightData(light); }
 // IsCollision
-void Collider::SetIsCollisison(bool flag) { isCollision_ = flag; }
+void Collider::SetIsCollision(bool flag) { isCollision_ = flag; }
 
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
 // Type
-ColliderType Collider::GetColliderType() { return type_; }
+ColliderType Collider::GetColliderType() const { return type_; }
 // Name
-ColliderName Collider::GetColliderName() { return name_; }
+ColliderName Collider::GetColliderName() const { return name_; }
 // Transform
 QuaternionTransform Collider::GetTransform() const { return transform_; }
 // Color

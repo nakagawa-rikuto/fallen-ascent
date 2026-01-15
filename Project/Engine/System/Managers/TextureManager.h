@@ -80,7 +80,7 @@ private:/// ===Variables(変数)=== ///
 
 	/// ===テクスチャデータコンテナ=== ///
 	// テクスチャデータ
-	std::unordered_map<std::string, TextureData> textureDatas_;
+	std::unordered_map<std::string, TextureData> textureDates_;
 
 private:/// ===Functions(関数)=== ///
 	

@@ -14,8 +14,8 @@
 // JSONから定義を読み込み
 void ParticleService::LoadParticleDefinition(const std::string& jsonPath) {
 	// ベースのディレクトリパス
-	const std::string& baseDirectiorPath = "./Resource/Json/Particles";
-	return ServiceLocator::GetParticleManager()->LoadParticleDefinition(baseDirectiorPath + "/" + jsonPath);
+	const std::string& baseDirectoryPath = "./Resource/Json/Particles";
+	return ServiceLocator::GetParticleManager()->LoadParticleDefinition(baseDirectoryPath + "/" + jsonPath);
 }
 
 // 定義を直接追加

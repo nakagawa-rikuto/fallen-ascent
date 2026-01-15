@@ -216,16 +216,16 @@ private:/// ===関数=== ///
 	/// <summary>
 	/// ビューポートの生成処理
 	/// </summary>
-	/// <param name="kClientWindth">クライアント領域の幅（ピクセル）。</param>
+	/// <param name="kClientWidth">クライアント領域の幅（ピクセル）。</param>
 	/// <param name="kClientHeight">クライアント領域の高さ（ピクセル）。</param>
-	void CreateViewport(const int32_t kClientWindth, const int32_t kClientHeight);
+	void CreateViewport(const int32_t kClientWidth, const int32_t kClientHeight);
 
 	/// <summary>
 	/// シザー矩形の生成処理
 	/// </summary>
-	/// <param name="kClientWindth">クライアント領域の幅（int32_t、ピクセル単位）。関数内で使用される読み取り専用の値です。</param>
+	/// <param name="kClientWidth">クライアント領域の幅（int32_t、ピクセル単位）。関数内で使用される読み取り専用の値です。</param>
 	/// <param name="kClientHeight">クライアント領域の高さ（int32_t、ピクセル単位）。関数内で使用される読み取り専用の値です。</param>
-	void CreateScissor(const int32_t kClientWindth, const int32_t kClientHeight);
+	void CreateScissor(const int32_t kClientWidth, const int32_t kClientHeight);
 
 	/// <summary>
 	/// FPS固定の初期化処理

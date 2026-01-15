@@ -78,7 +78,7 @@ Quaternion Math::Inverse(const Quaternion& quaternion) {
 }
 // 任意軸回転Quaternionを返す
 Quaternion Math::MakeRotateAxisAngle(const Vector3& axis, float angle) {
-    Quaternion result;
+    Quaternion result = {};
     float halfAngle = angle / 2.0f;
     float sinHalfAngle = sinf(halfAngle);
     result.x = axis.x * sinHalfAngle;
@@ -89,7 +89,7 @@ Quaternion Math::MakeRotateAxisAngle(const Vector3& axis, float angle) {
 }
 // Quaternionの回転結果をベクトルで返す
 Vector3 Math::RotateVector(const Vector3& vector, const Quaternion& quaternion) {
-    Vector3 result;
+    Vector3 result = {};
     Quaternion q = quaternion;
     Quaternion v = { vector.x,vector.y,vector.z,0.0f };
     Quaternion qConjugate = Conjugate(q);
@@ -116,7 +116,7 @@ float Math::GetYAngle(const Quaternion& quaternion) {
 }
 // QuaternionをEulerAngles(Vector3)に変換する関数
 Vector3 Math::QuaternionToEuler(const Quaternion& quaternion) {
-    Vector3 euler;
+    Vector3 euler = {};
 
     // Yaw (ヨー: Y軸回転)
     euler.y = std::atan2(2.0f * (quaternion.w * quaternion.y + quaternion.x * quaternion.z), 1.0f - 2.0f * (quaternion.y * quaternion.y + quaternion.z * quaternion.z));
@@ -142,7 +142,7 @@ Quaternion Math::QuaternionFromVector(const Vector3& vector) {
     float cz = std::cos(vector.z * 0.5f);
     float sz = std::sin(vector.z * 0.5f);
 
-    Quaternion q;
+    Quaternion q = {};
     q.w = cx * cy * cz + sx * sy * sz;
     q.x = sx * cy * cz - cx * sy * sz;
     q.y = cx * sy * cz + sx * cy * sz;
@@ -210,14 +210,14 @@ Quaternion Math::RotateZ(float angle) {
 Quaternion Math::ApplyPitchToCurrentRotation(const Quaternion& currentYRotation, float pitchAngleDegrees) {
     // X軸周りの回転クォータニオンを作成
     float halfAngle = pitchAngleDegrees * 0.5f * (Pi() / 180.0f); // ラジアンに変換
-    Quaternion pitchRotation;
+    Quaternion pitchRotation = {};
     pitchRotation.x = sinf(halfAngle);
     pitchRotation.y = 0.0f;
     pitchRotation.z = 0.0f;
     pitchRotation.w = cosf(halfAngle);
 
     // 現在のY軸回転に、X軸回転を合成
-    Quaternion result;
+    Quaternion result = {};
 
     float w1 = currentYRotation.w, x1 = currentYRotation.x;
     float y1 = currentYRotation.y, z1 = currentYRotation.z;
@@ -241,7 +241,7 @@ float Math::Lerp(float start, float end, float t) {
 }
 // Vector3
 Vector3 Math::Lerp(const Vector3& start, const Vector3& end, float t) {
-    Vector3 result;
+    Vector3 result = {};
 
     result.x = (1.0f - t) * start.x + t * end.x;
     result.y = (1.0f - t) * start.y + t * end.y;
@@ -251,7 +251,7 @@ Vector3 Math::Lerp(const Vector3& start, const Vector3& end, float t) {
 }
 // Quaternion
 Quaternion Math::Lerp(const Quaternion& start, const Quaternion& end, float t) {
-    Quaternion result;
+    Quaternion result = {};
 
     result.x = (1.0f - t) * start.x + t * end.x;
     result.y = (1.0f - t) * start.y + t * end.y;
@@ -270,15 +270,15 @@ Vector3 Math::SLerp(const Vector3& start, const Vector3& end, float t) {
     float angle = std::cosf(Dot(start, end));
 
     // 線形補間を計算する
-    float scalestart = std::sinf((1.0f - t) * angle) / std::sinf(angle);
+    float scaleStart = std::sinf((1.0f - t) * angle) / std::sinf(angle);
 
-    float scaleend = std::sinf(t * angle) / std::sinf(angle);
+    float scaleEnd = std::sinf(t * angle) / std::sinf(angle);
 
-    Vector3 result;
+    Vector3 result = {};
 
-    result.x = scalestart * start.x + scaleend * end.x;
-    result.y = scalestart * start.y + scaleend * end.y;
-    result.z = scalestart * start.z + scaleend * end.z;
+    result.x = scaleStart * start.x + scaleEnd * end.x;
+    result.y = scaleStart * start.y + scaleEnd * end.y;
+    result.z = scaleStart * start.z + scaleEnd * end.z;
 
     return result;
 }

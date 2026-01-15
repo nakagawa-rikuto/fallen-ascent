@@ -10,10 +10,10 @@ class EnemyMoveComponent {
 private:
 	/// ===状態の構造体=== ///
 	struct MoveState {
-		float timer = 0.0f;		 // タイマー
-		Vector3 rangeCenter; // 移動範囲の中心
-		Vector3 direction;	 // 移動方向
-		bool isWaiting = false;		 // 待機フラグ	
+		float timer = 0.0f;			// タイマー
+		Vector3 rangeCenter{};		// 移動範囲の中心
+		Vector3 direction{};		// 移動方向
+		bool isWaiting = false;		// 待機フラグ	
 	};
 public:
 	/// ===設定パラメータの構造体=== ///
@@ -27,17 +27,17 @@ public:
 
 	/// ===更新用コンテキスト=== ///
 	struct UpdateContext {
-		Vector3 currentPosition; // 現在の位置
-		float deltaTime;         // デルタタイム
-		bool isRotationComplete; // 回転完了フラグ
+		Vector3 currentPosition{};		 // 現在の位置
+		float deltaTime = 0.0f;			 // デルタタイム
+		bool isRotationComplete = false; // 回転完了フラグ
 	};
 
 	/// ===更新結果=== ///
 	struct UpdateResult {
-		Vector3 velocity;		       // 移動ベクトル
-		Vector3 targetDirection;	   // 目標方向
-		bool needsRotation;			   // 回転が必要かどうか
-		bool shouldResetRotationFlag;  // 回転完了フラグをリセットする必要があるか
+		Vector3 velocity{};					   // 移動ベクトル
+		Vector3 targetDirection{};			   // 目標方向
+		bool needsRotation = false;			   // 回転が必要かどうか
+		bool shouldResetRotationFlag = false;  // 回転完了フラグをリセットする必要があるか
 	};
 
 public:

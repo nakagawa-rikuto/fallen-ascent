@@ -1,9 +1,10 @@
 /// ===include=== ///
 #include "Engine/Scene/Framework.h"
 #include "Engine/Scene/MyGame.h"
+#include <windows.h>
 
 /// ===ゲームタイトル=== ///
-const wchar_t kWindowTitle[] = L"MiiEngine";
+const wchar_t kWindowTitle[] = L"Fallen Ascent";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {

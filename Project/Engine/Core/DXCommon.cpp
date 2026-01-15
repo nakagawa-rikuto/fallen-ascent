@@ -133,8 +133,8 @@ void DXCommon::PreDrawImGui(RTVManager* rtv) {
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandel = rtv->GetCPUDescriptorHandle(backBufferIndex);
 	commandList_->OMSetRenderTargets(1, &rtvHandel, false, nullptr);
 	// RTVのクリア
-	const float cleaerColor[] = { 0.1f, 0.25f, 0.5f, 1.0f }; // 青色っっぽい色、RGBAの順
-	rtv->ClearRenderTargetView(commandList_.Get(), backBufferIndex, cleaerColor);
+	const float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f }; // 青色っっぽい色、RGBAの順
+	rtv->ClearRenderTargetView(commandList_.Get(), backBufferIndex, clearColor);
 }
 
 ///-------------------------------------------/// 
@@ -159,7 +159,7 @@ void DXCommon::TransitionRenderTarget() {
 	barrierRenderTexture_.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	// 遷移後のResourceState
 	barrierRenderTexture_.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-	// Subresourceを明示的に設定
+	// SubResourceを明示的に設定
 	barrierRenderTexture_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	// TransitionBarrierを張る
 	commandList_->ResourceBarrier(1, &barrierRenderTexture_);
@@ -170,7 +170,7 @@ void DXCommon::TransitionEffectTexture() {
 	barrierEffectTexture_.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	// 遷移後のResourceState
 	barrierEffectTexture_.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-	// Subresourceを明示的に設定
+	// SubResourceを明示的に設定
 	barrierEffectTexture_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	// TransitionBarrierを張る
 	commandList_->ResourceBarrier(1, &barrierEffectTexture_);
@@ -359,7 +359,7 @@ void DXCommon::InitializeDXGIDevice() {
 		if (!(adapterDesc.Flags & DXGI_ADAPTER_FLAG3_SOFTWARE)) {
 
 			// 採用したアダプタの情報をログに出力。wstringの方なので注意
-			Log(std::format(L"Use Adapater:{}\n", adapterDesc.Description));
+			Log(std::format(L"Use Adapter:{}\n", adapterDesc.Description));
 			break;
 		}
 

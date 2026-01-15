@@ -11,7 +11,7 @@
 class AnimationModel : public ModelCommon {
 public:
 
-	AnimationModel();
+	AnimationModel() = default;
 	~AnimationModel();
 
 	/// <summary>

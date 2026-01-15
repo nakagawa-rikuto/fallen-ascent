@@ -37,11 +37,11 @@ void PipelineManager::Initialize(DXCommon* dxCommon) {
 				auto key = std::make_pair(type, mode);
 
 				// パイプラインの作成
-				auto GSpipeline = std::make_unique<GSPSOCommon>();
-				GSpipeline->Create(dxCommon, compiler_[type].get(), type, mode);
+				auto GSPipeline = std::make_unique<GSPSOCommon>();
+				GSPipeline->Create(dxCommon, compiler_[type].get(), type, mode);
 
 				// パイプラインの追加
-				graphicsPipelines_[key] = std::move(GSpipeline);
+				graphicsPipelines_[key] = std::move(GSPipeline);
 			}
 		}
 	}

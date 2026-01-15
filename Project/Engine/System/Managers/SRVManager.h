@@ -17,7 +17,7 @@ class DXCommon;
 class SRVManager {
 public:
 
-	SRVManager();
+	SRVManager() = default;
 	~SRVManager();
 
 	/// <summary>
@@ -49,7 +49,7 @@ public:
 	/// メモリ割り当ての成否を検証
 	/// </summary>
 	/// <returns>アロケーションが成功した場合は true、失敗した場合は false を返します。</returns>
-	bool AssertAllocate();
+	bool AssertAllocate() const;
 
 	/// <summary>
 	/// 2D テクスチャ用の SRV（Shader Resource View）を作成

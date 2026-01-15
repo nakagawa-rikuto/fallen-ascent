@@ -26,7 +26,7 @@ void Line::DrawOBB(const OBB& obb, const Vector4& color) {
 	};
 
 	// ワールド座標に変換（回転適用 & 平行移動）
-	Vector3 worldVertices[8];
+	Vector3 worldVertices[8] = {};
 	for (int i = 0; i < 8; i++) {
 		worldVertices[i] =
 			obb.center +
@@ -368,7 +368,7 @@ Vector3 Line::CalculateQuadraticBezier(const Vector3& p0, const Vector3& p1, con
 	float tt = t * t;
 
 	// (1-t)^2 * P0 + 2(1-t) * t * P1 + t^2 * P2
-	Vector3 point;
+	Vector3 point = {};
 	point.x = uu * p0.x + 2.0f * u * t * p1.x + tt * p2.x;
 	point.y = uu * p0.y + 2.0f * u * t * p1.y + tt * p2.y;
 	point.z = uu * p0.z + 2.0f * u * t * p1.z + tt * p2.z;
@@ -387,7 +387,7 @@ Vector3 Line::CalculateCubicBezier(const Vector3& p0, const Vector3& p1, const V
 	float ttt = tt * t;
 
 	// (1-t)^3 * P0 + 3(1-t)^2 * t * P1 + 3(1-t) * t^2 * P2 + t^3 * P3
-	Vector3 point;
+	Vector3 point = {};
 	point.x = uuu * p0.x + 3.0f * uu * t * p1.x + 3.0f * u * tt * p2.x + ttt * p3.x;
 	point.y = uuu * p0.y + 3.0f * uu * t * p1.y + 3.0f * u * tt * p2.y + ttt * p3.y;
 	point.z = uuu * p0.z + 3.0f * uu * t * p1.z + 3.0f * u * tt * p2.z + ttt * p3.z;

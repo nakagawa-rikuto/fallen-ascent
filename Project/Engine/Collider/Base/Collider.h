@@ -71,13 +71,13 @@ public: /// ===Setter=== ///
     void SetLight(LightType type);
     void SetLightData(LightInfo light);
     // IsCollision
-    void SetIsCollisison(bool flag);
+    void SetIsCollision(bool flag);
 
 public: /// ===Getter=== ///
     // Type
-    ColliderType GetColliderType();
-    // CollsisionName
-    ColliderName GetColliderName();
+    ColliderType GetColliderType() const;
+    // CollisionName
+    ColliderName GetColliderName() const;
     // Transform
     QuaternionTransform GetTransform() const;
     // Color

@@ -3,10 +3,10 @@
 ///-------------------------------------------/// 
 /// UAVの生成処理
 ///-------------------------------------------///
-void UAV::Create(ID3D12Device* device, ID3D12Resource* targetResorce, UINT numElements, UINT structureByteStride, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle) {
+void UAV::Create(ID3D12Device* device, ID3D12Resource* targetResource, UINT numElements, UINT structureByteStride, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle) {
 
 	// リソースを保存
-	resource_ = targetResorce;
+	resource_ = targetResource;
 
 	// デスクの設定
 	desc_.Format = DXGI_FORMAT_UNKNOWN;

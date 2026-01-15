@@ -29,7 +29,7 @@ void GameOverAnimation::Initialize(GameCamera* camera) {
 
     // スプライトの初期化
     gameOverSprite_ = std::make_unique<Sprite>();
-    gameOverSprite_->Initialize("GameOvverAnimation");
+    gameOverSprite_->Initialize("GameOverAnimation");
 
     // ウィンドウサイズの取得
     float windowWidth = static_cast<float>(GraphicsResourceGetter::GetWindowWidth());

@@ -23,13 +23,13 @@ class Compiler;
 class CSPSOCommon {
 public:
 
-	CSPSOCommon();
+	CSPSOCommon() = default;
 	~CSPSOCommon();
 
 	/// <summary>
 	/// PSOの生成処理
 	/// </summary>
-	/// <param name="dxcommon">DirectX に関連する共通リソース、デバイス、コンテキストを保持するオブジェクトへのポインタ。パイプライン作成に必要な環境情報を提供します。</param>
+	/// <param name="DXCommon">DirectX に関連する共通リソース、デバイス、コンテキストを保持するオブジェクトへのポインタ。パイプライン作成に必要な環境情報を提供します。</param>
 	/// <param name="compiler">シェーダやパイプラインステージをコンパイルするためのコンパイラオブジェクトへのポインタ。</param>
 	/// <param name="Type">作成するパイプラインの種類を指定する列挙型（PipelineType）の値。</param>
 	void Create(DXCommon* dxcommon, Compiler* compiler, PipelineType Type);

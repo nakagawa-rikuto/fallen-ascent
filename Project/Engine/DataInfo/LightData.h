@@ -43,9 +43,9 @@ struct LightInfo {
 	PointLightInfo point; 			  // ポイントライトの情報
 	SpotLightInfo spot; 			  // スポットライトの情報
 };
-/// ===EnviromentMapInfo=== ///
-struct EnviromentMapInfo {
+/// ===EnvironmentMapInfo=== ///
+struct EnvironmentMapInfo {
 	std::string textureName; // 環境マップのテクスチャ名
-	bool isEnviromentMap; // 環境マップの有効/無効
+	bool isEnvironmentMap; // 環境マップの有効/無効
 	float strength;      // 環境マップの強度
 };

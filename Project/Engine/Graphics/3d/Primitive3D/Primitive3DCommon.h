@@ -18,7 +18,7 @@ class GameCamera;
 ///=====================================================///
 class Primitive3DCommon {
 public:
-	Primitive3DCommon();
+	Primitive3DCommon() = default;
 	~Primitive3DCommon();
 
 	/// <summary>
@@ -70,7 +70,7 @@ protected: /// ===継承先で使用する変数=== ///
 	VertexData3D* vertexData_ = nullptr;
 	uint32_t* indexData_ = nullptr;
 
-	/// ===Primitiv情報=== ///
+	/// ===プリミティブ情報=== ///
 	EulerTransform uvTransform_;
 	QuaternionTransform worldTransform_;
 	Vector4 color_;
@@ -85,7 +85,7 @@ protected: /// ===継承先で使用する変数=== ///
 	GameCamera* camera_ = nullptr;
 
 	/// ===環境マップ=== ///
-	EnviromentMapInfo enviromentMapInfo_;
+	EnvironmentMapInfo environmentMapInfo_;
 
 private:/// ===Variables(変数)=== ///
 
@@ -96,7 +96,7 @@ private:
 	/// <summary>
 	/// MaterialDataの書き込み処理
 	/// </summary>
-	void MateialDataWrite();
+	void MaterialDataWrite();
 
 	/// <summary>
 	/// Transform情報の書き込み処理
@@ -116,6 +116,6 @@ private:
 	/// <summary>
 	/// EnvironmentMapData書き込み処理
 	/// </summary>
-	void EnviromentMapDataWrite();
+	void EnvironmentMapDataWrite();
 };
 

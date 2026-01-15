@@ -96,8 +96,8 @@ void ColliderManager::CheckPairCollision(Collider* colliderA, Collider* collider
 
 
 	// Colliderが持っているフラグを変更
-	colliderA->SetIsCollisison(isHit);
-	colliderB->SetIsCollisison(isHit);
+	colliderA->SetIsCollision(isHit);
+	colliderB->SetIsCollision(isHit);
 
 	if (isHit) {
 		colliderA->OnCollision(colliderB);
@@ -168,19 +168,19 @@ bool ColliderManager::OBBToOBBCollision(OBBCollider* a, OBBCollider* b) {
 }
 // 球とAABB
 bool ColliderManager::SphereToAABBCollision(SphereCollider* sphere, AABBCollider* aabb) {
-	Sphere spherecol = sphere->GetSphere();
-	AABB aabbcol = aabb->GetAABB();
+	Sphere sphereCol = sphere->GetSphere();
+	AABB aabbCol = aabb->GetAABB();
 
 	Vector3 closestPoint = {
-		std::clamp(spherecol.center.x, aabbcol.min.x, aabbcol.max.x),
-		std::clamp(spherecol.center.y, aabbcol.min.y, aabbcol.max.y),
-		std::clamp(spherecol.center.z, aabbcol.min.z, aabbcol.max.z)
+		std::clamp(sphereCol.center.x, aabbCol.min.x, aabbCol.max.x),
+		std::clamp(sphereCol.center.y, aabbCol.min.y, aabbCol.max.y),
+		std::clamp(sphereCol.center.z, aabbCol.min.z, aabbCol.max.z)
 	};
 
-	Vector3 diff = spherecol.center - closestPoint;
+	Vector3 diff = sphereCol.center - closestPoint;
 
 	// 衝突の判定
-	if (Dot(diff) <= (spherecol.radius * spherecol.radius)) {
+	if (Dot(diff) <= (sphereCol.radius * sphereCol.radius)) {
 		return true;
 	} else {
 		return false;
@@ -189,17 +189,17 @@ bool ColliderManager::SphereToAABBCollision(SphereCollider* sphere, AABBCollider
 // AABBとOBB
 bool ColliderManager::AABBToOBBCollision(AABBCollider* aabb, OBBCollider* obb) {
 	AABB aabbCol = aabb->GetAABB();
-	OBB oobbColbb = obb->GetOBB();
+	OBB obbCol = obb->GetOBB();
 
 	// AABBをOBBに変換
-	OBB fakeAABB;
+	OBB fakeAABB = {};
 	fakeAABB.center = (aabbCol.min + aabbCol.max) * 0.5f;
 	fakeAABB.halfSize = (aabbCol.max - aabbCol.min) * 0.5f;
 	fakeAABB.axis[0] = { 1.0f, 0.0f, 0.0f };
 	fakeAABB.axis[1] = { 0.0f, 1.0f, 0.0f };
 	fakeAABB.axis[2] = { 0.0f, 0.0f, 1.0f };
 
-	return OBBSATCollision(fakeAABB, oobbColbb);
+	return OBBSATCollision(fakeAABB, obbCol);
 }
 // 球とOBB
 bool ColliderManager::SphereToOBBCollision(SphereCollider* sphere, OBBCollider* obb) {
@@ -239,7 +239,7 @@ bool ColliderManager::SphereToOBBCollision(SphereCollider* sphere, OBBCollider* 
 bool ColliderManager::OBBSATCollision(const OBB& a, const OBB& b) {
 	const float EPSILON = 1e-6f;
 
-	Vector3 axes[15];
+	Vector3 axes[15] = {};
 	int axisCount = 0;
 
 	// 3軸 + 3軸
