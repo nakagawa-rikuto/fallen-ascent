@@ -72,7 +72,7 @@ void SpriteCommon::Initialize(const std::string textureFilePath) {
 void SpriteCommon::Update() {
 
 	// Data書き込み(更新)
-	MateialDataWrite();
+	MaterialDataWrite();
 	TransformDataWrite();
 	UpdateVertexDataWrite();
 	SpecifyRange();
@@ -97,7 +97,7 @@ void SpriteCommon::Draw(GroundType type, BlendMode mode) {
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
 	// IndexBufferViewの設定
 	commandList->IASetIndexBuffer(&indexBufferView_);
-	// Matrial・WVPの設定
+	// Material・WVPの設定
 	common_->Bind(commandList);
 	// テクスチャの設定
 	Render::SetGraphicsRootDescriptorTable(commandList, 2, filePath_);
@@ -137,9 +137,9 @@ void SpriteCommon::IndexDataWrite() {
 }
 
 ///-------------------------------------------/// 
-/// MateialDataへの書き込み
+/// MaterialDataへの書き込み
 ///-------------------------------------------///
-void SpriteCommon::MateialDataWrite() {
+void SpriteCommon::MaterialDataWrite() {
 	common_->SetMateiralData(
 		color_,
 		Math::MakeIdentity4x4()

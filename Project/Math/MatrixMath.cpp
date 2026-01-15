@@ -88,7 +88,7 @@ Matrix4x4 Math::MakeRotateQuaternionMatrix(const Quaternion q) {
 	float wy = q.w * q.y;
 	float wz = q.w * q.z;
 
-	Matrix4x4 result;
+	Matrix4x4 result = {};
 	result.m[0][0] = 1.0f - 2.0f * (yy + zz);
 	result.m[0][1] = 2.0f * (xy + wz);
 	result.m[0][2] = 2.0f * (xz - wy);
@@ -362,7 +362,7 @@ Matrix4x4 Math::Inverse4x4(const Matrix4x4& matrix) {
 ///=====================================================///
 // 座標変換（平行移動を加味する）
 Vector3 Math::TransformCoordinates(const Vector3& vector, const Matrix4x4& matrix) {
-	Vector3 result;
+	Vector3 result = {};
 	result.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0] + 1.0f * matrix.m[3][0];
 	result.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1] + 1.0f * matrix.m[3][1];
 	result.z = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2] + 1.0f * matrix.m[3][2];
@@ -378,7 +378,7 @@ Vector3 Math::TransformCoordinates(const Vector3& vector, const Matrix4x4& matri
 }
 // ベクトル変換（平行移動を加味しない）
 Vector3 Math::TransformVector(const Vector3& vector, const Matrix4x4& matrix) {
-	Vector3 result;
+	Vector3 result = {};
 	result.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0];
 	result.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1];
 	result.z = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2];
@@ -397,7 +397,7 @@ Vector3 Math::TransformNormal(const Vector3& normal, const Matrix4x4& matrix) {
 ///=====================================================///
 // Quaternion
 Quaternion Math::MatrixToQuaternion(const Matrix4x4& m) {
-	Quaternion q;
+	Quaternion q = {};
 	float trace = m.m[0][0] + m.m[1][1] + m.m[2][2];
 
 	if (trace > 0.0f) {

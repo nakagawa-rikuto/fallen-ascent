@@ -5,7 +5,7 @@
 ///=====================================================///
 Matrix3x3 Add(const Matrix3x3& m1, const Matrix3x3& m2) {
 
-	Matrix3x3 result;
+	Matrix3x3 result{};
 
 	result.m[0][0] = m1.m[0][0] + m2.m[0][0];
 	result.m[0][1] = m1.m[0][1] + m2.m[0][1];
@@ -25,7 +25,7 @@ Matrix3x3 Add(const Matrix3x3& m1, const Matrix3x3& m2) {
 ///=====================================================///
 Matrix3x3 Subject(const Matrix3x3& m1, const Matrix3x3& m2) {
 
-	Matrix3x3 result;
+	Matrix3x3 result{};
 
 	result.m[0][0] = m1.m[0][0] - m2.m[0][0];
 	result.m[0][1] = m1.m[0][1] - m2.m[0][1];

@@ -3,7 +3,7 @@
 #include "Engine/Core/ComPtr.h"
 // Vector4
 #include "Math/Vector4.h"
-// DIrectX
+// DirectX
 #include <d3d12.h>
 // uint32_t
 #include <cstdint>

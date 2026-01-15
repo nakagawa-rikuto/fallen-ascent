@@ -67,11 +67,11 @@ protected:
 
     /// ===基本情報=== ///
     struct BaseInfo {
-        Vector3 velocity; // 速度
-        float deltaTime;  // 時間
-		float gravity;    // 重力
-		uint32_t HP;      // 体力
-        bool isDead;      // 死亡フラグ
+        Vector3 velocity{};     // 速度
+        float deltaTime = 0.0f; // 時間
+		float gravity = -9.8f;  // 重力
+		uint32_t HP = 10;       // 体力
+        bool isDead = false;    // 死亡フラグ
     };
     BaseInfo baseInfo_;
 
@@ -79,10 +79,10 @@ private: /// ===地面との衝突処理=== ///
 
     /// ===GroundInfo=== ///
     struct GroundInfo {
-		Vector3 currentGroundCenter;     // 現在の地面の中心位置
-		Vector3 currentGroundHalfSize;   // 現在の地面の半サイズ
-		bool hasGroundCollision = false; // 地面との衝突フラグ
-		bool isGrounded;				 // 地面接地フラグ
+        Vector3 currentGroundCenter{};     // 現在の地面の中心位置
+        Vector3 currentGroundHalfSize{};   // 現在の地面の半サイズ
+        bool hasGroundCollision = false;   // 地面との衝突フラグ
+        bool isGrounded = false;		   // 地面接地フラグ
     };
 	GroundInfo groundInfo_;
 

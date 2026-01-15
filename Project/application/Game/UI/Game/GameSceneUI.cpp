@@ -7,7 +7,7 @@
 ///-------------------------------------------///
 void GameSceneUI::SetPlayer(Player* player) {
 	// PlayerUI
-	playerUI_->SetPalyer(player);
+	playerUI_->SetPlayer(player);
 }
 
 ///-------------------------------------------/// 

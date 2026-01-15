@@ -19,7 +19,7 @@ template void GameCharacterCollision::ProcessCollision<OBBCollider, SphereCollid
 ///-------------------------------------------/// 
 /// 球体GameCharacter同士の衝突処理
 ///-------------------------------------------///
-void GameCharacterCollision::HandleSphereSphereCollision(GameCharacter<SphereCollider>* characterA, GameCharacter<SphereCollider>* characterB, float pushBackRatio) {
+void GameCharacterCollision::HandleSphereSphereCollision(GameCharacter<SphereCollider>* characterA, GameCharacter<SphereCollider>* characterB, const float pushBackRatio) {
 
 	Vector3 posA = characterA->GetTransform().translate;
 	Vector3 posB = characterB->GetTransform().translate;
@@ -59,7 +59,7 @@ void GameCharacterCollision::HandleSphereSphereCollision(GameCharacter<SphereCol
 ///-------------------------------------------/// 
 /// OBBGameCharacter同士の衝突処理
 ///-------------------------------------------///
-void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<OBBCollider>* characterA, GameCharacter<OBBCollider>* characterB, float pushBackRatio) {
+void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<OBBCollider>* characterA, GameCharacter<OBBCollider>* characterB, const float pushBackRatio) {
 
 	Vector3 posA = characterA->GetTransform().translate;
 	Vector3 posB = characterB->GetTransform().translate;
@@ -101,7 +101,7 @@ void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<OBBCollider>* c
 /// 球体とOBBのGameCharacter衝突処理
 ///-------------------------------------------///
 template<typename TColliderA, typename TColliderB>
-void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, float pushBackRatio) {
+void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio) {
 
 	GameCharacter<OBBCollider>* obbCharacter = nullptr;
 	GameCharacter<SphereCollider>* sphereCharacter = nullptr;
@@ -160,7 +160,7 @@ void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>*
 /// 汎用衝突処理（自動判定）
 ///-------------------------------------------///
 template<typename TColliderA, typename TColliderB>
-void GameCharacterCollision::ProcessCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, float pushBackRatio) {
+void GameCharacterCollision::ProcessCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio) {
 
 	ColliderType typeA = GetColliderTypeFromCharacter(characterA);
 	ColliderType typeB = GetColliderTypeFromCharacter(characterB);
@@ -188,14 +188,14 @@ void GameCharacterCollision::ProcessCollision(GameCharacter<TColliderA>* charact
 /// コライダー型の判定
 ///-------------------------------------------///
 template<typename TCollider>
-ColliderType GameCharacterCollision::GetColliderTypeFromCharacter(GameCharacter<TCollider>* character) {
+ColliderType GameCharacterCollision::GetColliderTypeFromCharacter(GameCharacter<TCollider>* character) const {
 	return character->GetColliderType();
 }
 
 ///-------------------------------------------/// 
 /// OBB上の最近点計算（GameCharacter用）
 ///-------------------------------------------///
-Vector3 GameCharacterCollision::CalculateClosestPointOnOBBFromCharacter(const Vector3& point, GameCharacter<OBBCollider>* obbCharacter) {
+Vector3 GameCharacterCollision::CalculateClosestPointOnOBBFromCharacter(const Vector3& point, GameCharacter<OBBCollider>* obbCharacter) const {
 	if (obbCharacter->GetColliderType() != ColliderType::OBB) {
 		return point; // OBBでない場合は元の点を返す
 	}
@@ -209,7 +209,7 @@ Vector3 GameCharacterCollision::CalculateClosestPointOnOBBFromCharacter(const Ve
 ///-------------------------------------------/// 
 /// OBB上の最近点計算
 ///-------------------------------------------///
-Vector3 GameCharacterCollision::CalculateClosestPointOnOBB(const Vector3& point, const OBB& obb) {
+Vector3 GameCharacterCollision::CalculateClosestPointOnOBB(const Vector3& point, const OBB& obb) const {
 	Vector3 dir = point - obb.center;
 	Vector3 closest = obb.center;
 
@@ -233,7 +233,7 @@ Vector3 GameCharacterCollision::CalculateClosestPointOnOBB(const Vector3& point,
 ///-------------------------------------------/// 
 /// OBBの軸上での重なりを計算
 ///-------------------------------------------///
-float GameCharacterCollision::CalculateOverlapOnAxis(const OBB& obb1, const OBB& obb2, const Vector3& axis) {
+float GameCharacterCollision::CalculateOverlapOnAxis(const OBB& obb1, const OBB& obb2, const Vector3& axis) const {
 	// 各OBBの軸への射影の半径を計算
 	float r1 = 0.0f;
 	for (int i = 0; i < 3; ++i) {

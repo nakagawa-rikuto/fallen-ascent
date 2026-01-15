@@ -101,7 +101,7 @@ void ParticleGroup::Update() {
 ///-------------------------------------------///
 void ParticleGroup::Draw(BlendMode mode) {
     if (group_.numInstance > 0) {
-        group_.particle->Darw(group_.numInstance, mode);
+        group_.particle->Draw(group_.numInstance, mode);
     }
 }
 
@@ -282,7 +282,7 @@ const Vector3& ParticleGroup::GetEmitterPosition() const {return group_.transfor
 void ParticleGroup::InstancingInit(const std::string& modelName, const Vector3& translate, const uint32_t maxInstance, shapeType type) {
     /// ===パーティクルグループの初期化=== ///
     group_.particle = std::make_unique<ParticleSetUp>();
-    group_.particle->Initialze(modelName, maxInstance, type);
+    group_.particle->Initialize(modelName, maxInstance, type);
     translate;
 }
 

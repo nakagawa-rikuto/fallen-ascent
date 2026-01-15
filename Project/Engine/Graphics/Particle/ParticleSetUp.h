@@ -1,10 +1,10 @@
 #pragma once
-/// ===Icnlde=== ///
+/// ===Include=== ///
 // Buffer
 #include "Engine/Graphics/3d/Base/VertexBuffer3D.h"
 #include "Engine/Graphics/3d/Base/IndexBuffer3D.h"
 #include "ParticleCommon.h"
-// Pipleine
+// Pipeline
 #include "Engine/DataInfo/PipelineStateObjectType.h"
 // c++
 #include <memory>
@@ -19,7 +19,7 @@ class SRVManager;
 class ParticleSetUp {
 public:
 
-	ParticleSetUp();
+	ParticleSetUp() = default;
 	~ParticleSetUp();
 
 	/// <summary>
@@ -28,21 +28,21 @@ public:
 	/// <param name="filename">初期化に使用するファイルのパスまたは名前（const std::string&）。</param>
 	/// <param name="kNumMaxInstance">許可される最大インスタンス数（const uint32_t）。</param>
 	/// <param name="type">初期化対象の形状の種類を示す shapeType 値。</param>
-	void Initialze(const std::string& filename, const uint32_t kNumMaxInstance, shapeType type);
+	void Initialize(const std::string& filename, const uint32_t kNumMaxInstance, shapeType type);
 
 	/// <summary>
 	/// 描画処理
 	/// </summary>
 	/// <param name="instance">描画対象を示す uint32_t 型の識別子。関数内で変更されない（const）。</param>
 	/// <param name="mode">描画時に使用するブレンドモードを指定する（BlendMode 型の値）。</param>
-	void Darw(const uint32_t instance, BlendMode mode);
+	void Draw(const uint32_t instance, BlendMode mode);
 
 public: /// ===Setter=== ///
 
 	// テクスチャ
 	void SetTexture(const std::string& fileName);
 	// Material
-	void SetMatiarlData(const Vector4& color, const Matrix4x4& uvTransform);
+	void SetMaterialData(const Vector4& color, const Matrix4x4& uvTransform);
 	// Instancing
 	void SetInstancingData(size_t index, const Vector4& color, const Matrix4x4& WVP, const Matrix4x4& World);
 

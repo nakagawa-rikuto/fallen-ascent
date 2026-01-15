@@ -8,7 +8,7 @@
 class VertexBuffer2D {
 public:
 
-	VertexBuffer2D();
+	VertexBuffer2D() = default;
 	~VertexBuffer2D();
 
 	/// <summary>

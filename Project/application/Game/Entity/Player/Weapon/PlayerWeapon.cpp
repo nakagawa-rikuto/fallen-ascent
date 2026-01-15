@@ -33,7 +33,7 @@ void PlayerWeapon::Initialize() {
 	/// ===OBBCollider=== ///
 	OBBCollider::Initialize();
 	name_ = ColliderName::PlayerWeapon;
-	OBBCollider::SethalfSize({ 0.5f, 0.5f, 3.0f });
+	OBBCollider::SetHalfSize({ 0.5f, 0.5f, 3.0f });
 
 	// DeltaTime初期化
 	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
@@ -224,7 +224,7 @@ Vector3 PlayerWeapon::CalculateBezierPoint(const std::vector<BezierControlPointD
 		float uu = u * u;
 		float tt = t * t;
 
-		Vector3 point;
+		Vector3 point = {};
 		point.x = uu * controlPoints[0].position.x +
 			2.0f * u * t * controlPoints[1].position.x +
 			tt * controlPoints[2].position.x;
@@ -246,7 +246,7 @@ Vector3 PlayerWeapon::CalculateBezierPoint(const std::vector<BezierControlPointD
 		float tt = t * t;
 		float ttt = tt * t;
 
-		Vector3 point;
+		Vector3 point = {};
 		point.x = uuu * controlPoints[0].position.x +
 			3.0f * uu * t * controlPoints[1].position.x +
 			3.0f * u * tt * controlPoints[2].position.x +

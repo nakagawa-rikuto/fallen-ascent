@@ -9,14 +9,14 @@
 // Pipeline
 #include "Engine/DataInfo/PipelineStateObjectType.h"
 // Data
-#include "Engine/DataInfo/OshanData.h"
+#include "Engine/DataInfo/OceanData.h"
 // c++
 #include <vector>
 #include <array>
 #include <algorithm>
 
 ///=====================================================/// 
-/// Oshan
+/// Ocean
 ///=====================================================///
 class Ocean : public OceanCommon {
 public:

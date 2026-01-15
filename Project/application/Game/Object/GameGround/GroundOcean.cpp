@@ -1,4 +1,4 @@
-#include "GroundOshan.h"
+#include "GroundOcean.h"
 // Service
 #include "Engine/System/Service/InputService.h"
 
@@ -6,14 +6,14 @@
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
-GroundOshan::~GroundOshan() {
+GroundOcean::~GroundOcean() {
 	ocean_.reset();
 }
 
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void GroundOshan::Initialize() {
+void GroundOcean::Initialize() {
 
 	// AABBコライダーの初期化と設定
 	AABBCollider::Initialize();
@@ -31,7 +31,7 @@ void GroundOshan::Initialize() {
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
-void GroundOshan::Update() {
+void GroundOcean::Update() {
 
 #ifdef _DEBUG
 
@@ -50,7 +50,7 @@ void GroundOshan::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void GroundOshan::Draw(BlendMode mode) {
+void GroundOcean::Draw(BlendMode mode) {
 
 #ifdef _DEBUG
 #endif // _DEBUG
@@ -62,7 +62,7 @@ void GroundOshan::Draw(BlendMode mode) {
 ///-------------------------------------------/// 
 /// ImGui情報の表示
 ///-------------------------------------------///
-void GroundOshan::ShowImGui() {
+void GroundOcean::ShowImGui() {
 #ifdef USE_IMGUI
 	ocean_->ShowImGui();
 #endif // USE_IMGUI
@@ -71,7 +71,7 @@ void GroundOshan::ShowImGui() {
 ///-------------------------------------------/// 
 /// 衝突判定
 ///-------------------------------------------///
-void GroundOshan::OnCollision(Collider* collider) {
+void GroundOcean::OnCollision(Collider* collider) {
 	// オーシャンに波紋を追加
 	Vector3 collisionPos = collider->GetTransform().translate;
 	ocean_->AddCircularRipple(collisionPos, 2.0f, 1.0f, 4.0f);

@@ -54,6 +54,9 @@ struct NodeAnimation {
 	AnimationCurve<Vector3> scale;
 };
 
+/// <summary>
+/// アニメーションの構造体
+/// </summary>
 struct Animation {
 	float duration; // アニメーション全体の尺(単位は秒)
 	// NodeAnimationの集合。Node名で引けるようにしておく
@@ -64,13 +67,13 @@ struct Animation {
 /// Jointの構造体
 /// </summary>
 struct Joint {
-	QuaternionTransform transform; // Transform情報
-	Matrix4x4 localMatrix; // localMatrix
-	Matrix4x4 skeletonSpaceMatrix; // skeletonSpaceでの変換行列
-	std::string name; // 名前
-	std::vector<int32_t> children; // 子JointのIndexのリスト。いなければ空
-	int32_t index; // 自身のIndex
-	std::optional<int32_t> parent; // 親JointのIndex。いなければnull
+	QuaternionTransform transform;	// Transform情報
+	Matrix4x4 localMatrix;			// localMatrix
+	Matrix4x4 skeletonSpaceMatrix;	// skeletonSpaceでの変換行列
+	std::string name;				// 名前
+	std::vector<int32_t> children;	// 子JointのIndexのリスト。いなければ空
+	int32_t index;					// 自身のIndex
+	std::optional<int32_t> parent;	// 親JointのIndex。いなければnull
 };
 
 /// <summary>
@@ -85,10 +88,10 @@ struct Skeleton {
 /// <summary>
 /// Influence(インフルエンス)
 /// </summary>
-const uint32_t kNumMaxInfluene = 4;
+const uint32_t kNumMaxInfluence = 4;
 struct VertexInfluence {
-	std::array<float, kNumMaxInfluene> weights;
-	std::array<int32_t, kNumMaxInfluene> jointIndices;
+	std::array<float, kNumMaxInfluence> weights;
+	std::array<int32_t, kNumMaxInfluence> jointIndices;
 };
 
 /// <summary>

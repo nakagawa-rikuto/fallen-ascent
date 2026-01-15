@@ -33,7 +33,7 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 		// 初期化
 		e->InitGameScene(pos);		// 出現位置を渡してゲームシーン用初期化
 		e->SetRotate(rot);			// 回転を設定
-		e->SethalfSize(halfSize);	// サイズを設定
+		e->SetHalfSize(halfSize);	// サイズを設定
 		enemy = std::move(e);		// 所有権移動
 		break;
 	}
@@ -45,7 +45,7 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 		// 初期化
 		e->InitGameScene(pos);
 		e->SetRotate(rot); 
-		e->SethalfSize(halfSize);
+		e->SetHalfSize(halfSize);
 		enemy = std::move(e);
 		break;
 	}

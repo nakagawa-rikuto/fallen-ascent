@@ -4,7 +4,7 @@
 #include "Engine/Graphics/2d/Base/Object2DCommon.h"
 #include "Engine/Graphics/2d/Base/VertexBuffer2D.h"
 #include "Engine/Graphics/2d/Base/IndexBuffer2D.h"
-// Pipline
+// Pipeline
 #include "Engine/DataInfo/PipelineStateObjectType.h"
 
 enum class GroundType {
@@ -89,9 +89,9 @@ private:/// ===Functions(関数)=== ///
 	void IndexDataWrite();
 
 	/// <summary>
-	/// MateialDataへの書き込み処理
+	/// MaterialDataへの書き込み処理
 	/// </summary>
-	void MateialDataWrite();
+	void MaterialDataWrite();
 
 	/// <summary>
 	/// Transform情報の書き込み処理

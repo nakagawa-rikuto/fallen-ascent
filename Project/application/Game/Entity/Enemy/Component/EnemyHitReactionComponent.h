@@ -16,7 +16,7 @@ private:
 	};
 	/// ===色の状態構造体=== ///
 	struct ColorState {
-		float colorTImer = 0.0f;    // 色変化用タイマー
+		float colorTimer = 0.0f;    // 色変化用タイマー
 		float colorInterval = 0.0f; // 色変化の間隔
 		bool isColorChange = false; // 色変化フラグ
 	};
@@ -119,6 +119,6 @@ private:
 	/// </summary>
 	/// <param name="color">更新の基となる色。参照渡しされた const Vector4 オブジェクト。</param>
 	/// <returns>更新された色を表す Vector4 オブジェクト。</returns>
-	Vector4 UpdateColor(const Vector4& color);
+	Vector4 UpdateColor(const Vector4& color) const;
 };
 

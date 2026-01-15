@@ -1,4 +1,4 @@
-#include "LongRangeEnemeyBullet.h"
+#include "LongRangeEnemyBullet.h"
 // Service
 #include "Engine/System/Service/ParticleService.h"
 #include "Engine/System/Service/ColliderService.h"
@@ -6,21 +6,14 @@
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
-LongRangeEnemeyBullet::~LongRangeEnemeyBullet() {
+LongRangeEnemyBullet::~LongRangeEnemyBullet() {
 	ColliderService::RemoveCollider(this);
-}
-
-///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-bool LongRangeEnemeyBullet::GetIsAlive() {
-	return isAlive_;
 }
 
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void LongRangeEnemeyBullet::Initialize() {
+void LongRangeEnemyBullet::Initialize() {
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
 	object3d_->Init(ObjectType::Model, "player");
@@ -41,7 +34,7 @@ void LongRangeEnemeyBullet::Initialize() {
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
-void LongRangeEnemeyBullet::Update() {
+void LongRangeEnemyBullet::Update() {
 	if (isAlive_) {
 		/// ===移動処理=== ///
 		Move();
@@ -65,7 +58,7 @@ void LongRangeEnemeyBullet::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void LongRangeEnemeyBullet::Draw(BlendMode mode) {
+void LongRangeEnemyBullet::Draw(BlendMode mode) {
 	if (isAlive_) {
 		SphereCollider::Draw(mode);
 	}
@@ -74,7 +67,7 @@ void LongRangeEnemeyBullet::Draw(BlendMode mode) {
 ///-------------------------------------------/// 
 /// 生成
 ///-------------------------------------------///
-void LongRangeEnemeyBullet::Create(const Vector3& pos, const Vector3& vel) {
+void LongRangeEnemyBullet::Create(const Vector3& pos, const Vector3& vel) {
 	// 初期化処理
 	Initialize();
 	// 位置と方向の設定
@@ -99,21 +92,21 @@ void LongRangeEnemeyBullet::Create(const Vector3& pos, const Vector3& vel) {
 ///-------------------------------------------///  
 /// 衝突判定
 ///-------------------------------------------///
-void LongRangeEnemeyBullet::OnCollision(Collider* collider) {
+void LongRangeEnemyBullet::OnCollision(Collider* collider) {
 	collider;
 }
 
 ///-------------------------------------------/// 
 /// 移動処理
 ///-------------------------------------------///
-void LongRangeEnemeyBullet::Move() {
+void LongRangeEnemyBullet::Move() {
 	info_.velocity = info_.direction * speed_;
 }
 
 ///-------------------------------------------/// 
 /// タイマーを進める
 ///-------------------------------------------///
-void LongRangeEnemeyBullet::PromoteTimer() {
+void LongRangeEnemyBullet::PromoteTimer() {
 	// ライフタイマーの減少
 	lifeTimer_ -= 1.0f / 60.0f;
 	if (lifeTimer_ <= 0.0f) {

@@ -35,7 +35,7 @@ void EnemyHitReactionState::Update(BaseEnemy* enemy) {
 
 	/// ===ヒットリアクションが終了したらMoveStateへ遷移=== ///
 	float slowdownTimer = enemy_->GetHitReactionComponent().GetKnockBackState().slowdownTimer;
-	float colorTimer = enemy_->GetHitReactionComponent().GetColorState().colorTImer;
+	float colorTimer = enemy_->GetHitReactionComponent().GetColorState().colorTimer;
 	if (slowdownTimer <= 0.0f && colorTimer <= 0.0f) {
 		enemy_->ChangeState(std::make_unique<EnemyMoveState>());
 	}

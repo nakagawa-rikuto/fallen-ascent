@@ -23,18 +23,18 @@ class DXCommon;
 class Compiler;
 
 ///=====================================================/// 
-/// GrapicsPipelineStateObjectCommon
+/// GraphicsPipelineStateObjectCommon
 ///=====================================================///
 class GSPSOCommon {
 public:
 
-	GSPSOCommon();
+	GSPSOCommon() = default;
 	~GSPSOCommon();
 
 	/// <summary>
 	/// PSOの生成処理
 	/// </summary>
-	/// <param name="dxcommon">DirectX に関連する共通リソース、デバイス、コンテキストを保持するオブジェクトへのポインタ。パイプライン作成に必要な環境情報を提供します。</param>
+	/// <param name="DXCommon">DirectX に関連する共通リソース、デバイス、コンテキストを保持するオブジェクトへのポインタ。パイプライン作成に必要な環境情報を提供します。</param>
 	/// <param name="compiler">シェーダやパイプラインステージをコンパイルするためのコンパイラオブジェクトへのポインタ。</param>
 	/// <param name="Type">作成するパイプラインの種類を指定する列挙型（PipelineType）の値。</param>
 	/// <param name="Mode">使用するブレンド動作を指定する列挙型（BlendMode）の値。</param>

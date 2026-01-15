@@ -30,7 +30,7 @@ void GameStage::Update() {
 	}
 
 	// Groundの更新
-	for (const auto& ocean : oshans_) {
+	for (const auto& ocean : Oceans_) {
 		if (ocean) {
 #ifdef USE_IMGUI
 			ocean->ShowImGui();
@@ -60,7 +60,7 @@ void GameStage::Draw(BlendMode mode) {
 	}
 
 	// GroundOceanの更新
-	for (const auto& ocean : oshans_) {
+	for (const auto& ocean : Oceans_) {
 		if (ocean) {
 			ocean->Draw(mode);
 		}

@@ -39,9 +39,9 @@ void SkyBox::SetLight(LightType type) { common_->SetLightType(type); }
 // LightInfo
 void SkyBox::SetLightData(LightInfo light) { light_ = light; }
 // 環境マップ
-void SkyBox::SetEnviromentMapData(bool flag, float string) {
-	enviromentMapInfo_.isEnviromentMap = flag;
-	enviromentMapInfo_.strength = string;
+void SkyBox::SetEnvironmentMapData(bool flag, float string) {
+	environmentMapInfo_.isEnvironmentMap = flag;
+	environmentMapInfo_.strength = string;
 }
 
 ///-------------------------------------------/// 
@@ -106,11 +106,11 @@ void SkyBox::Update() {
 
 	/// ===データの書き込み=== ///
 	VertexDataWrite();
-	MateialDataWrite();
+	MaterialDataWrite();
 	TransformDataWrite();
 	LightDataWrite();
 	CameraDataWrite(); 
-	EnviromentMapDataWrite();
+	EnvironmentMapDataWrite();
 }
 
 ///-------------------------------------------/// 
@@ -135,7 +135,7 @@ void SkyBox::Draw(BlendMode mode) {
 }
 
 ///-------------------------------------------/// 
-/// VertrexDataの書き込み
+/// VertexDataの書き込み
 ///-------------------------------------------///
 void SkyBox::VertexDataWrite() {
 	// 右面。描画インデックスは[0,1,2][2,1,3]で内側を向く
@@ -173,7 +173,7 @@ void SkyBox::VertexDataWrite() {
 ///-------------------------------------------/// 
 /// MaterialDataの書き込み
 ///-------------------------------------------///
-void SkyBox::MateialDataWrite() {
+void SkyBox::MaterialDataWrite() {
 	/// ===Matrixの作成=== ///
 	Matrix4x4 uvTransformMatrix = Math::MakeScaleMatrix(uvTransform_.scale);
 	Matrix4x4 uvTransformMatrixMultiply = Multiply(uvTransformMatrix, Math::MakeRotateZMatrix(uvTransform_.rotate.z));
@@ -242,6 +242,6 @@ void SkyBox::CameraDataWrite() {
 ///-------------------------------------------/// 
 /// 環境マップの書き込み
 ///-------------------------------------------///
-void SkyBox::EnviromentMapDataWrite() {
-	common_->SetEnviromentMapData(enviromentMapInfo_.isEnviromentMap, enviromentMapInfo_.strength);
+void SkyBox::EnvironmentMapDataWrite() {
+	common_->SetEnviromentMapData(environmentMapInfo_.isEnvironmentMap, environmentMapInfo_.strength);
 }

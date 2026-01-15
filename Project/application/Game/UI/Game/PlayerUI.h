@@ -10,6 +10,7 @@ class Player;
 ///-------------------------------------------///
 class PlayerUI {
 public:
+
 	PlayerUI() = default;
 	~PlayerUI();
 
@@ -30,7 +31,7 @@ public:
 
 public: /// ===Setter=== ///
 	// Playerのセット
-	void SetPalyer(Player* player) { player_ = player; }
+	void SetPlayer(Player* player) { player_ = player; }
 
 private:
 	// Player

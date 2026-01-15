@@ -18,7 +18,7 @@ uint32_t TextureManager::kSRVIndexTop_ = 1;
 /// デストラクタ
 ///-------------------------------------------///
 TextureManager::~TextureManager() {
-	textureDatas_.clear();
+	textureDates_.clear();
 }
 
 ///-------------------------------------------/// 
@@ -26,12 +26,12 @@ TextureManager::~TextureManager() {
 ///-------------------------------------------///
 // メタデータの取得
 const DirectX::TexMetadata& TextureManager::GetMetaData(const std::string& Key) {
-	TextureData& textureData = textureDatas_[Key];
+	TextureData& textureData = textureDates_[Key];
 	return textureData.metadata;
 }
 // GPUハンドルの取得
 D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSRVHandleGPU(const std::string& Key) {
-	TextureData& textureData = textureDatas_[Key];
+	TextureData& textureData = textureDates_[Key];
 	return textureData.srvHandleGPU;
 }
 
@@ -41,7 +41,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSRVHandleGPU(const std::string& K
 // テクスチャの設定
 void TextureManager::SetGraphicsRootDescriptorTable(
 	ID3D12GraphicsCommandList* commandList, UINT rootParameterIndex, std::string Key) {
-	commandList->SetGraphicsRootDescriptorTable(rootParameterIndex, textureDatas_[Key].srvHandleGPU);
+	commandList->SetGraphicsRootDescriptorTable(rootParameterIndex, textureDates_[Key].srvHandleGPU);
 }
 
 ///-------------------------------------------/// 
@@ -56,7 +56,7 @@ void TextureManager::Initialize(DXCommon* dxCommon, SRVManager* srvManager) {
 	srvManager_ = srvManager;
 
 	// SRVの数と同数
-	textureDatas_.reserve(SRVManager::kMaxSRVCount_);
+	textureDates_.reserve(SRVManager::kMaxSRVCount_);
 }
 
 ///-------------------------------------------/// 
@@ -65,7 +65,7 @@ void TextureManager::Initialize(DXCommon* dxCommon, SRVManager* srvManager) {
 void TextureManager::LoadTexture(const std::string& key, const std::string& filePath) {
 
 	// 読み込み済みのテクスチャを検索
-	if (textureDatas_.contains(key)) {
+	if (textureDates_.contains(key)) {
 		assert(srvManager_->AssertAllocate());
 		return;
 	}
@@ -74,7 +74,7 @@ void TextureManager::LoadTexture(const std::string& key, const std::string& file
 	assert(srvManager_->Allocate());
 
 	// テクスチャデータを追加して書き込む
-	TextureData& textureData = textureDatas_[key];
+	TextureData& textureData = textureDates_[key];
 	// テクスチャデータの読み込み
 	textureData.filePath = filePath;
 	DirectX::ScratchImage mipImages = Load(key, filePath); // ミップマップの作成
@@ -190,20 +190,20 @@ ComPtr<ID3D12Resource> TextureManager::CreateTextureResource(const DirectX::TexM
 ComPtr<ID3D12Resource> TextureManager::UploadTextureData(ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages) {
 
 	/// ===IntermediateResource(中間リソース)=== ///
-	std::vector<D3D12_SUBRESOURCE_DATA> subresources;
+	std::vector<D3D12_SUBRESOURCE_DATA> subResources;
 	// PrepareUploadを利用して、読み込んだデータからDirectX12用のサブリソースの配列を作成
-	DirectX::PrepareUpload(dxCommon_->GetDevice(), mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subresources);
-	// Subresourceの数を元に、コピー元となるIntermediateRewsourceに必要なサイズを計算
-	uint64_t intermediateSize = GetRequiredIntermediateSize(texture.Get(), 0, UINT(subresources.size()));
+	DirectX::PrepareUpload(dxCommon_->GetDevice(), mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subResources);
+	// SubResourceの数を元に、コピー元となるIntermediateResourceに必要なサイズを計算
+	uint64_t intermediateSize = GetRequiredIntermediateSize(texture.Get(), 0, UINT(subResources.size()));
 	// 計算したサイズでIntermediateResourceを作成　
 	ComPtr<ID3D12Resource> intermediateResource = nullptr;
 	intermediateResource = CreateBufferResourceComPtr(dxCommon_->GetDevice(), intermediateSize);
 
 	/// ===データ転送コマンドに積む=== ///
-	UpdateSubresources(dxCommon_->GetCommandList(), texture.Get(), intermediateResource.Get(), 0, 0, UINT(subresources.size()), subresources.data());
+	UpdateSubresources(dxCommon_->GetCommandList(), texture.Get(), intermediateResource.Get(), 0, 0, UINT(subResources.size()), subResources.data());
 
 	/// ===ResourceStateを変更し、IntermediateResourceを返す=== ///
-	// Tetrueへの転送後は利用できるようにD3D12_RESOURCE_STATE_COPY_DESTからD3D12_RESOURCE_STATE_GENERIC_READへResourceStateを変更
+	// Textureへの転送後は利用できるようにD3D12_RESOURCE_STATE_COPY_DESTからD3D12_RESOURCE_STATE_GENERIC_READへResourceStateを変更
 	D3D12_RESOURCE_BARRIER barrier{};
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;

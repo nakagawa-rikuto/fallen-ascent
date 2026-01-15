@@ -8,7 +8,7 @@
 class Transform2D {
 public:
 
-	Transform2D();
+	Transform2D() = default;
 	~Transform2D();
 
 	/// <summary>

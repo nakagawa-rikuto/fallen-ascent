@@ -10,7 +10,6 @@
 ///-------------------------------------------/// 
 /// コンストラクタ・デストラクタ
 ///-------------------------------------------///
-Primitive3DCommon::Primitive3DCommon() = default;
 Primitive3DCommon::~Primitive3DCommon() {
 	vertex_.reset();
 	index_.reset();
@@ -35,7 +34,7 @@ void Primitive3DCommon::Create(ID3D12Device* device, LightType type) {
 		{{ 1.0f, 1.0f, 1.0f, 1.0f } , { 0.0f, 0.0f, 0.0f } , 1.0f, 0.0f, 0.0f},
 		{{ 1.0f, 1.0f, 1.0f, 1.0f } , { 0.0f, 0.0f, 0.0f } , 0.0f, { 0.0f, 0.0f, 0.0f } , 0.0f, 0.0f, 0.0f}
 	};
-	enviromentMapInfo_ = {
+	environmentMapInfo_ = {
 		"skyBox",
 		false,
 		1.0f
@@ -57,7 +56,7 @@ void Primitive3DCommon::Update() {
 	camera_ = CameraService::GetActiveCamera().get();
 
 	// MaterialDataの書き込み
-	MateialDataWrite();
+	MaterialDataWrite();
 	// Transform情報の書き込み
 	TransformDataWrite();
 	// Lightの書き込み
@@ -65,7 +64,7 @@ void Primitive3DCommon::Update() {
 	// Cameraの書き込み
 	CameraDataWrite();
 	// 環境マップの書き込み
-	EnviromentMapDataWrite();
+	EnvironmentMapDataWrite();
 }
 
 ///-------------------------------------------/// 
@@ -81,7 +80,7 @@ void Primitive3DCommon::Bind(ID3D12GraphicsCommandList* commandList) {
 ///-------------------------------------------/// 
 /// MaterialDataの書き込み
 ///-------------------------------------------///
-void Primitive3DCommon::MateialDataWrite() {
+void Primitive3DCommon::MaterialDataWrite() {
 	/// ===Matrixの作成=== ///
 	Matrix4x4 uvTransformMatrix = Math::MakeScaleMatrix(uvTransform_.scale);
 	Matrix4x4 uvTransformMatrixMultiply = Multiply(uvTransformMatrix, Math::MakeRotateZMatrix(uvTransform_.rotate.z));
@@ -159,6 +158,6 @@ void Primitive3DCommon::CameraDataWrite() {
 ///-------------------------------------------/// 
 /// 環境マップの書き込み
 ///-------------------------------------------///
-void Primitive3DCommon::EnviromentMapDataWrite() {
-	common_->SetEnviromentMapData(enviromentMapInfo_.isEnviromentMap, enviromentMapInfo_.strength);
+void Primitive3DCommon::EnvironmentMapDataWrite() {
+	common_->SetEnviromentMapData(environmentMapInfo_.isEnvironmentMap, environmentMapInfo_.strength);
 }

@@ -58,7 +58,7 @@ void Mii::Initialize(const wchar_t* title, int width, int height) {
 	// AnimationManagerの生成
 	animationManager_ = std::make_unique<AnimationManager>();
 
-	// Audiomanagerの生成
+	// AudioManagerの生成
 	audioManager_ = std::make_unique<AudioManager>();
 	audioManager_->Initialze();
 
@@ -133,14 +133,14 @@ void Mii::Finalize() {
 	csvManager_.reset();		// CSVManager
 	audioManager_.reset();		// AudioManager
 	animationManager_.reset();	// AnimationManager
-	modelManager_.reset();		// Modelmanager
-	textureManager_.reset();	// TextrureManager
+	modelManager_.reset();		// ModelManager
+	textureManager_.reset();	// TextureManager
 	
 	// SceneView
 	sceneView_.reset();
 	// OffScreen
 	offScreenRenderer_.reset();
-	// Pipline
+	// PipelineManager
 	pipelineManager_.reset();
 	// ImGui
 	imGuiManager_.reset();
@@ -237,7 +237,7 @@ SRVManager* Mii::GetSRVManager() {return srvManager_.get();}
 RTVManager* Mii::GetRTVManager() { return rtvManager_.get(); }
 // DSVManager
 DSVManager* Mii::GetDSVManager() { return dsvManager_.get(); }
-// PiplelineManager
+// PipelineManager
 PipelineManager* Mii::GetPipelineManager() { return pipelineManager_.get(); }
 // TextureManager
 TextureManager* Mii::GetTextureManager() { return textureManager_.get(); }

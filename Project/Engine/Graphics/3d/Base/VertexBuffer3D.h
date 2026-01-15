@@ -8,7 +8,7 @@
 class VertexBuffer3D {
 public:
 
-	VertexBuffer3D();
+	VertexBuffer3D() = default;
 	~VertexBuffer3D();
 
 	// Resourceの生成

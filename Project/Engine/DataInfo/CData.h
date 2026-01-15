@@ -79,7 +79,7 @@ struct VertexWeightData {
 };
 /// ===JointWeightData=== ///
 struct jointWeightData {
-	Matrix4x4 inverseBindPosematrix;
+	Matrix4x4 inverseBindPoseMatrix;
 	std::vector<VertexWeightData> vertexWeights;
 };
 /// ===マテリアルデータ=== ///

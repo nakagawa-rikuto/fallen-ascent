@@ -3,9 +3,8 @@
 #include "Engine/Core/DXCommon.h"
 
 ///-------------------------------------------/// 
-/// コンストラクタ・デストラクタ
+/// デストラクタ
 ///-------------------------------------------///
-RTVManager::RTVManager() = default;
 RTVManager::~RTVManager() {
 	descriptorHeap_.Reset();
 }
@@ -74,7 +73,7 @@ uint32_t RTVManager::Allocate() {
 	// 上で記録した番号をreturn(0番はImGuiだから+1)
 	return index;
 }
-bool RTVManager::AssertAllocate() { return useIndex_ < kMaxRTVCount_; }
+bool RTVManager::AssertAllocate() const { return useIndex_ < kMaxRTVCount_; }
 
 ///-------------------------------------------/// 
 /// 作成

@@ -9,7 +9,7 @@
 class Material3D {
 public:
 	
-	Material3D();
+	Material3D() = default;
 	~Material3D();
 
 	/// <summary>

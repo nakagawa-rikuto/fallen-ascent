@@ -8,7 +8,7 @@
 class Material2D {
 public:
 
-	Material2D();
+	Material2D() = default;
 	~Material2D();
 
 	/// <summary>

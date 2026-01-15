@@ -16,19 +16,19 @@ const wchar_t WinApp::kWindowClassName[] = L"DeathsDoor";
 ///-------------------------------------------/// 
 /// ウィンドウの横幅の取得
 ///-------------------------------------------///
-const int WinApp::GetWindowWidth() { return windowWidth_; }
+const int WinApp::GetWindowWidth() const { return windowWidth_; }
 
 ///-------------------------------------------/// 
 /// ウィンドウの縦幅の取得
 ///-------------------------------------------///
-const int WinApp::GetWindowHeight() { return windowHeight_; }
+const int WinApp::GetWindowHeight() const { return windowHeight_; }
 
 ///-------------------------------------------/// 
 /// ウィンドウプロージャ
 ///-------------------------------------------///
-LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM WPARAM, LPARAM LPARAM) {
 #ifdef USE_IMGUI
-	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, WPARAM, LPARAM)) {
 		return true;
 	}
 #endif // USE_IMGUI
@@ -45,7 +45,7 @@ LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	}
 
 	// 標準のメッセージ処理を行う
-	return DefWindowProc(hwnd, msg, wparam, lparam);
+	return DefWindowProc(hwnd, msg, WPARAM, LPARAM);
 }
 
 ///-------------------------------------------/// 
@@ -60,7 +60,13 @@ void WinApp::CreateGameWindow(const wchar_t* title, int32_t kClientWidth, int32_
 	/* /////////////////////////////////////
 					COMの初期化
 	*/ /////////////////////////////////////
-	CoInitializeEx(0, COINIT_MULTITHREADED);
+	// COMの初期化
+	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
+	if (FAILED(hr)) {
+		// 初期化失敗時のエラーハンドリング
+		MessageBox(nullptr, L"COMの初期化に失敗しました。", L"エラー", MB_OK | MB_ICONERROR);
+		return;
+	}
 
 	/* /////////////////////////////////////
 				ウィンドウクラスの登録
@@ -137,10 +143,10 @@ bool WinApp::ProcessMessage() {
 /// <summary>
 /// ウィンドウハンドルの取得
 /// </summary>
-HWND WinApp::GetHwnd() { return hwnd_; }
+HWND WinApp::GetHwnd() const { return hwnd_; }
 
 /// <summary>
 /// ウィンドウクラスの取得
 /// </summary>
 /// <returns></returns>
-WNDCLASS WinApp::GetWNDClass() { return wndClass_; }
+WNDCLASS WinApp::GetWNDClass() const { return wndClass_; }

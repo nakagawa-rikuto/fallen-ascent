@@ -210,12 +210,12 @@ void Object3d::SetLight(LightType type) {
 	}
 }
 // 環境マップ
-void Object3d::SetEnviromentMapData(bool flag, float string) {
+void Object3d::SetEnvironmentMapData(bool flag, float string) {
 	// タイプで分岐
 	if (type_ == ObjectType::Model) {
-		model_->SetEnviromentMapData(flag, string);
+		model_->SetEnvironmentMapData(flag, string);
 	} else {
-		animationModel_->SetEnviromentMapData(flag, string);
+		animationModel_->SetEnvironmentMapData(flag, string);
 	}
 }
 // Animation

@@ -1,5 +1,5 @@
 #pragma once
-/// ===Includ=== ///
+/// ===Include=== ///
 #include "Engine/Collider/Base/Collider.h"
 
 ///-------------------------------------------/// 
@@ -8,7 +8,7 @@
 class OBBCollider : public Collider {
 public:
 
-	OBBCollider() = default;
+    OBBCollider() = default;
 	~OBBCollider() = default;
 
     /// <summary>
@@ -41,7 +41,7 @@ public: /// ===衝突=== ///
 
 public: /// ===Setter=== ///
     // OBBの設定
-	void SethalfSize(const Vector3& halfSize);
+	void SetHalfSize(const Vector3& halfSize);
 
 public: /// ===Getter=== ///
 	// OBBの取得

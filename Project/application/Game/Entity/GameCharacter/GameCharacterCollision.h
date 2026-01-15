@@ -27,7 +27,7 @@ public:
     /// <param name="sphereCharacterA">衝突する1つ目のゲームキャラクター（SphereCollider を持つ）へのポインタ。</param>
     /// <param name="sphereCharacterB">衝突する2つ目のゲームキャラクター（SphereCollider を持つ）へのポインタ。</param>
     /// <param name="pushBackRatio">衝突時の押し戻しに適用する比率。既定値は 1.0f。</param>
-    void HandleSphereSphereCollision(GameCharacter<SphereCollider>* sphereCharacterA, GameCharacter<SphereCollider>* sphereCharacterB, float pushBackRatio = 1.0f);
+    void HandleSphereSphereCollision(GameCharacter<SphereCollider>* sphereCharacterA, GameCharacter<SphereCollider>* sphereCharacterB, const float pushBackRatio = 1.0f);
 
     /// <summary>
     /// 2つのOBBコライダーを持つゲームキャラクター間の衝突処理
@@ -35,7 +35,7 @@ public:
     /// <param name="obbCharacterA">衝突の対象となる1つ目のOBBコライダーを持つゲームキャラクターへのポインター。</param>
     /// <param name="obbCharacterB">衝突の対象となる2つ目のOBBコライダーを持つゲームキャラクターへのポインター。</param>
     /// <param name="pushBackRatio">衝突時に適用する押し戻しの強さを示す係数（既定値は1.0f）。値が大きいほど強く押し戻します。</param>
-    void HandleOBBOBBCollision(GameCharacter<OBBCollider>* obbCharacterA, GameCharacter<OBBCollider>* obbCharacterB, float pushBackRatio = 1.0f);
+    void HandleOBBOBBCollision(GameCharacter<OBBCollider>* obbCharacterA, GameCharacter<OBBCollider>* obbCharacterB, const float pushBackRatio = 1.0f);
 
     /// <summary>
     /// 球とOBB間の衝突処理
@@ -46,7 +46,7 @@ public:
     /// <param name="characterB">衝突対象の二番目のキャラクター。コライダ型 TColliderB を持つ GameCharacter へのポインタ。</param>
     /// <param name="pushBackRatio">衝突解決時に適用する押し戻し（push-back）の倍率。デフォルトは 1.0f。値を小さくすると押し戻しが弱くなり、0 にすると押し戻しを行わない。</param>
     template<typename TColliderA, typename TColliderB>
-    void HandleSphereOBBCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, float pushBackRatio = 1.0f);
+    void HandleSphereOBBCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio = 1.0f);
 
     /// <summary>
     /// 2つのGameCharacter間の衝突処理
@@ -57,7 +57,7 @@ public:
     /// <param name="characterB">衝突する2番目のGameCharacterへのポインタ。</param>
     /// <param name="pushBackRatio">衝突時に適用する押し戻し量の比率。既定値は1.0f。</param>
     template<typename TColliderA, typename TColliderB>
-    void ProcessCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, float pushBackRatio = 1.0f);
+    void ProcessCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio = 1.0f);
 
 private:
 
@@ -71,7 +71,7 @@ private:
     /// <param name="character">TCollider 型のコライダーを持つ GameCharacter へのポインター。対象のキャラクターを指定します。</param>
     /// <returns>指定したキャラクターに関連付けられた ColliderType を返します。</returns>
     template<typename TCollider>
-    ColliderType GetColliderTypeFromCharacter(GameCharacter<TCollider>* character);
+    ColliderType GetColliderTypeFromCharacter(GameCharacter<TCollider>* character) const;
 
     /// <summary>
     /// 与えられた点から、OBBコライダーを持つキャラクター上の最も近い点（最接近点）を計算して返す処理
@@ -79,7 +79,7 @@ private:
     /// <param name="point">基準となる点（入力、参照渡し）。この点から OBB への最短点を求めます。</param>
     /// <param name="obbCharacter">OBBCollider を持つ GameCharacter へのポインター。計算対象となる OBB の位置・向き・半径などの情報を提供します。</param>
     /// <returns>OBB 上の最も近い点を表す Vector3。</returns>
-    Vector3 CalculateClosestPointOnOBBFromCharacter(const Vector3& point, GameCharacter<OBBCollider>* obbCharacter);
+    Vector3 CalculateClosestPointOnOBBFromCharacter(const Vector3& point, GameCharacter<OBBCollider>* obbCharacter) const;
 
     /// <summary>
     /// 与えられた点からOBB上の最も近い点を計算
@@ -87,7 +87,7 @@ private:
     /// <param name="point">基準となる点。</param>
     /// <param name="obb">計算対象のOBB。</param>
     /// <returns>OBB上の最も近い点を表すVector3。</returns>
-    Vector3 CalculateClosestPointOnOBB(const Vector3& point, const OBB& obb);
+    Vector3 CalculateClosestPointOnOBB(const Vector3& point, const OBB& obb) const;
 
     /// <summary>
     /// OBBの指定軸上での重なり量を計算
@@ -96,5 +96,5 @@ private:
     /// <param name="obb2">2つ目のOBB。</param>
     /// <param name="axis">分離軸。</param>
     /// <returns>重なり量（正の値なら重なっている）。</returns>
-    float CalculateOverlapOnAxis(const OBB& obb1, const OBB& obb2, const Vector3& axis);
+    float CalculateOverlapOnAxis(const OBB& obb1, const OBB& obb2, const Vector3& axis) const;
 };

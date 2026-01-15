@@ -21,7 +21,7 @@ void EnemyPrePareAttackState::Enter(BaseEnemy* enemy) {
 	// 色の設定
 	enemy_->SetColor({ 0.0f, 0.0f, 1.0f, 1.0f });
 	// 実行時間の設定
-	activeTimer_ = acticeTime;
+	activeTimer_ = activeTime;
 	// 向きの初期化
 	attackDirection_ = { 0.0f, 0.0f, 0.0f };
 	playerPos_ = { 0.0f, 0.0f, 0.0f };

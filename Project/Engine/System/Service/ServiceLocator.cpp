@@ -15,7 +15,7 @@ void ServiceLocator::ProvideAll(const ServiceRegister& registry) {
 	assert(registry.srvManager);
 	assert(registry.dsvManager);
 	assert(registry.rtvManager);
-	// PiplineManager
+	// PipelineManager
 	assert(registry.pipelineManager);
 	// TextureManager
 	assert(registry.textureManager);
@@ -55,7 +55,7 @@ void ServiceLocator::ProvideAll(const ServiceRegister& registry) {
 	srvManager_ = registry.srvManager;
 	rtvManager_ = registry.rtvManager;
 	dsvManager_ = registry.dsvManager;
-	// Pipline
+	// PipelineManager
 	pipelineManager_ = registry.pipelineManager;
 	// Texture
 	textureManager_ = registry.textureManager;

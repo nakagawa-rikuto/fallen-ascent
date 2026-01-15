@@ -24,7 +24,7 @@ namespace {
 
 	/// ===2D=== ///
 	ComPtr<ID3D12RootSignature> Type2D(ID3D12Device* device) {
-		// DescriptroRangeの生成
+		// DescriptorRangeの生成
 		D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 		descriptorRange[0].BaseShaderRegister = 0; // 0から始める
 		descriptorRange[0].NumDescriptors = 1; // 数は1つ
@@ -120,7 +120,7 @@ namespace {
 
 	/// ===3D=== ///
 	ComPtr<ID3D12RootSignature> Type3D(ID3D12Device* device) {
-		// DescriptroRangeの生成				
+		// DescriptorRangeの生成				
 		// t0用
 		D3D12_DESCRIPTOR_RANGE descriptorRange0 = {};
 		descriptorRange0.BaseShaderRegister = 0; // t0
@@ -219,7 +219,7 @@ namespace {
 
 	/// ===Particle=== ///
 	ComPtr<ID3D12RootSignature> TypeParticle(ID3D12Device* device) {
-		// DescriptroRangeの生成
+		// DescriptorRangeの生成
 		D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 		descriptorRange[0].BaseShaderRegister = 0; // 0から始める
 		descriptorRange[0].NumDescriptors = 1; // 数は1つ
@@ -287,7 +287,7 @@ namespace {
 
 	/// ===Skinning3D=== ///
 	ComPtr<ID3D12RootSignature> TypeSkinning3D(ID3D12Device* device) {
-		// DescriptroRangeの生成
+		// DescriptorRangeの生成
 		// t0用
 		D3D12_DESCRIPTOR_RANGE descriptorRange0 = {};
 		descriptorRange0.BaseShaderRegister = 0; // t0
@@ -390,7 +390,7 @@ namespace {
 
 	/// ===OffScreen=== ///
 	ComPtr<ID3D12RootSignature> TypeOffScreen(ID3D12Device* device) {
-		// DescriptroRangeの生成
+		// DescriptorRangeの生成
 		D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 		descriptorRange[0].BaseShaderRegister = 0; // 0から始める
 		descriptorRange[0].NumDescriptors = 1; // 数は1つ
@@ -446,7 +446,7 @@ namespace {
 
 	/// ===OffScreen(Vignette)=== ///
 	ComPtr<ID3D12RootSignature> TypeOffScreenOneBuffer(ID3D12Device* device) {
-		// DescriptroRangeの生成
+		// DescriptorRangeの生成
 		D3D12_DESCRIPTOR_RANGE descriptorRange = {};
 		descriptorRange.BaseShaderRegister = 0; // 0から始める
 		descriptorRange.NumDescriptors = 1; // 数は1つ
@@ -505,7 +505,7 @@ namespace {
 
 	/// ===OffScreen(Dissolve)=== ///
 	ComPtr<ID3D12RootSignature> TypeOffScreenDissolve(ID3D12Device* device) {
-		// DescriptroRangeの生成
+		// DescriptorRangeの生成
 		D3D12_DESCRIPTOR_RANGE descriptorRange0 = {};
 		descriptorRange0.BaseShaderRegister = 0; // 0から始める
 		descriptorRange0.NumDescriptors = 1; // 数は1つ
@@ -577,7 +577,7 @@ namespace {
 
 	/// ===OffScreen(ShatterGlass)=== ///
 	ComPtr<ID3D12RootSignature> TypeOffScreenShatterGlass(ID3D12Device* device) {
-		// DescriptroRangeの生成
+		// DescriptorRangeの生成
 		D3D12_DESCRIPTOR_RANGE descriptorRange0 = {};
 		descriptorRange0.BaseShaderRegister = 0; // 0から始める
 		descriptorRange0.NumDescriptors = 1; // 数は1つ
@@ -654,7 +654,7 @@ namespace {
 
 	/// ===SkyBox=== ///
 	ComPtr<ID3D12RootSignature> TypeSkyBox(ID3D12Device* device) {
-		// DescriptroRangeの生成				
+		// DescriptorRangeの生成				
 		// t0用
 		D3D12_DESCRIPTOR_RANGE descriptorRange0 = {};
 		descriptorRange0.BaseShaderRegister = 0; // t0
@@ -718,8 +718,8 @@ namespace {
 		return rootSignature;
 	}
 
-	/// ===Oshan=== ///
-	ComPtr<ID3D12RootSignature> TypeOshan(ID3D12Device* device) {
+	/// ===Ocean=== ///
+	ComPtr<ID3D12RootSignature> TypeOcean(ID3D12Device* device) {
 		// ルートシグネチャの作成
 		D3D12_ROOT_PARAMETER rootParameters[5] = {};
 
@@ -785,7 +785,7 @@ namespace {
 		{ PipelineType::CircularGauge2D,	Type2D },
 		{ PipelineType::Obj3D,				Type3D },
 		{ PipelineType::PrimitiveSkyBox,	Type3D },
-		{ PipelineType::PrimitiveOcean,     TypeOshan },
+		{ PipelineType::PrimitiveOcean,     TypeOcean },
 		{ PipelineType::Particle,			TypeParticle },
 		{ PipelineType::Skinning3D,			TypeSkinning3D  },
 		{ PipelineType::Line3D,				TypeLine3D },

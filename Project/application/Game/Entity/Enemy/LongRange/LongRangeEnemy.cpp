@@ -68,7 +68,7 @@ void LongRangeEnemy::Update() {
 
 	// 死んだ弾をリストから削除
 	bulletInfo_.bullets_.remove_if(
-		[](const std::unique_ptr<LongRangeEnemeyBullet>& b) {
+		[](const std::unique_ptr<LongRangeEnemyBullet>& b) {
 			return !b || !b->GetIsAlive();
 		}
 	);
@@ -122,7 +122,7 @@ void LongRangeEnemy::StartAttack() {
 void LongRangeEnemy::Attack() {
 
 	// 弾の生成
-	auto bullet = std::make_unique<LongRangeEnemeyBullet>();
+	auto bullet = std::make_unique<LongRangeEnemyBullet>();
 	bullet->Create(transform_.translate, attackInfo_.direction);
 	bulletInfo_.bullets_.push_back(std::move(bullet));
 

@@ -76,7 +76,7 @@ public: /// ===Setter=== ///
 	// LightData
 	void SetLightData(LightInfo light);
 	// 環境マップ
-	void SetEnviromentMapData(bool flag, float string);
+	void SetEnvironmentMapData(bool flag, float string);
 	// Animation
 	void SetAnimation(const std::string& animationName, bool isLoop = true);
 

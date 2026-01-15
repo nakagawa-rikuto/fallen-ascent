@@ -5,7 +5,7 @@
 // c++
 #include <cstdint>
 #include <cassert>
-// Engien
+// Engine
 #include "Engine/Core/ComPtr.h"
 
 /// ===前方宣言=== ///
@@ -17,7 +17,7 @@ class DXCommon;
 class RTVManager {
 public:
 
-	RTVManager();
+	RTVManager() = default;
 	~RTVManager();
 
 	/// <summary>
@@ -42,7 +42,6 @@ public:
 	/// <param name="color">RGBA 順の 4 要素配列で指定するクリア色。各要素は通常 0.0 から 1.0 の浮動小数点値です。</param>
 	void ClearRenderTargetView(ID3D12GraphicsCommandList* commandList, uint32_t index, const float color[4]);
 
-
 	/// <summary>
 	/// リソースの割り当てを行い、割り当てられた識別子を返す
 	/// </summary>
@@ -53,7 +52,7 @@ public:
 	/// メモリ割り当ての成否を検証
 	/// </summary>
 	/// <returns>アロケーションが成功した場合は true、失敗した場合は false を返します。</returns>
-	bool AssertAllocate();
+	bool AssertAllocate() const;
 
 	/// <summary>
 	/// スワップチェーン用のレンダーターゲットを作成

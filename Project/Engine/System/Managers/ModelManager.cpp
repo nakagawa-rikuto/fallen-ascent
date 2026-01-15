@@ -66,7 +66,7 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directorP
 	assert(file.is_open()); // とりあえず開けなかったら止める
 	//materialData.textureFilePath = directorPath + "/" + filename; // テクスチャファイルパスを入れる
 
-	/// ===ファイルを読み、MateiralDataを構築=== ///
+	/// ===ファイルを読み、MaterialDataを構築=== ///
 	while (std::getline(file, line)) {
 		std::string identifier;
 		std::istringstream s(line);
@@ -89,7 +89,7 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directorP
 ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std::string& filename) {
 	ModelData modelData; // 構築するModelData
 
-	/// ===assimpでobjを読む=== ///
+	/// ===Assimpでobjを読む=== ///
 	Assimp::Importer importer;
 	std::string filePath = directoryPath + "/" + filename;
 	const aiScene* scene = importer.ReadFile(filePath.c_str(), aiProcess_FlipWindingOrder | aiProcess_FlipUVs);
@@ -136,15 +136,15 @@ ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std:
 				std::string jointName = bone->mName.C_Str();
 				jointWeightData& jointWeightData = modelData.skinClusterData[jointName];
 				/// ===InverseBindPoseMatrixの抽出=== ///
-				aiMatrix4x4 bindPoseMatrixAsimp = bone->mOffsetMatrix.Inverse(); // BindePoseMatrxに戻す
+				aiMatrix4x4 bindPoseMatrixAssimp = bone->mOffsetMatrix.Inverse(); // BindPoseMatrixに戻す
 				aiVector3D scale, translate;
 				aiQuaternion rotate;
-				bindPoseMatrixAsimp.Decompose(scale, rotate, translate); // 成分を抽出
+				bindPoseMatrixAssimp.Decompose(scale, rotate, translate); // 成分を抽出
 				// 左手系のBindPoseMatrixを作成
 				Matrix4x4 bindPoseMatrix = Math::MakeAffineQuaternionMatrix(
 					{ scale.x, scale.y, scale.z }, { rotate.x, -rotate.y, -rotate.z, rotate.w }, { -translate.x, translate.y, translate.z });
 				// InverseBindMatrixにする
-				jointWeightData.inverseBindPosematrix = Math::Inverse4x4(bindPoseMatrix);
+				jointWeightData.inverseBindPoseMatrix = Math::Inverse4x4(bindPoseMatrix);
 				/// ===Weight情報を取り出す=== ///
 				for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex) {
 					jointWeightData.vertexWeights.push_back({ bone->mWeights[weightIndex].mWeight, bone->mWeights[weightIndex].mVertexId });

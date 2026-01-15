@@ -36,7 +36,7 @@ void EnemyHitReactionComponent::Initialize(const KnockBackConfig& config) {
 	state_.isHit = false;
 
 	// 色の状態を初期化
-	colorState_.colorTImer = 0.0f;
+	colorState_.colorTimer = 0.0f;
 	colorState_.colorInterval = 0.0f;
 	colorState_.isColorChange = false;
 
@@ -100,7 +100,7 @@ void EnemyHitReactionComponent::Information() {
 		ImGui::Separator();
 		ImGui::Text("状態");
 		ImGui::Text("減速タイマー: %.2f", state_.slowdownTimer);
-		ImGui::Text("色変化タイマー: %.2f", colorState_.colorTImer);
+		ImGui::Text("色変化タイマー: %.2f", colorState_.colorTimer);
 		ImGui::Text("ヒットしたかどうか: %s", state_.isHit ? "true" : "false");
 		ImGui::Text("色変化中: %s", colorState_.isColorChange ? "true" : "false");
 		ImGui::TreePop();
@@ -119,7 +119,7 @@ void EnemyHitReactionComponent::OnHit(const Vector3& hitParentDirection) {
 	// 減速タイマーを設定
 	state_.slowdownTimer = config_.slowdownDuration;
 	// 色変化のタイマーを設定
-	colorState_.colorTImer = config_.alphaDuration;
+	colorState_.colorTimer = config_.alphaDuration;
 	colorState_.colorInterval = 0.0f;
 	colorState_.isColorChange = true;
 }
@@ -138,12 +138,12 @@ void EnemyHitReactionComponent::TimerUpdate(const float deltaTime) {
 	}
 
 	// 色変化タイマーの更新
-	if (colorState_.colorTImer > 0.0f) {
-		colorState_.colorTImer -= deltaTime;
+	if (colorState_.colorTimer > 0.0f) {
+		colorState_.colorTimer -= deltaTime;
 		colorState_.colorInterval += deltaTime;
 
-		if (colorState_.colorTImer < 0.0f) {
-			colorState_.colorTImer = 0.0f;
+		if (colorState_.colorTimer < 0.0f) {
+			colorState_.colorTimer = 0.0f;
 			colorState_.colorInterval = 0.0f;
 			colorState_.isColorChange = false;
 		}
@@ -168,10 +168,10 @@ void EnemyHitReactionComponent::UpdateSlowdownMultiplier() {
 ///-------------------------------------------/// 
 /// 色の更新処理
 ///-------------------------------------------///
-Vector4 EnemyHitReactionComponent::UpdateColor(const Vector4& currentColor) {
+Vector4 EnemyHitReactionComponent::UpdateColor(const Vector4& currentColor) const {
 	Vector4 color = currentColor;
 
-	if (colorState_.isColorChange && colorState_.colorTImer > 0.0f) {
+	if (colorState_.isColorChange && colorState_.colorTimer > 0.0f) {
 		// サイン波を使って点滅効果を生成
 		float wave = std::sin(colorState_.colorInterval * config_.flashSpeed * 2.0f * std::numbers::pi_v<float>);
 

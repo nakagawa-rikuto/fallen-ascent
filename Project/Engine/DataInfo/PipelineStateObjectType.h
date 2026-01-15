@@ -17,7 +17,7 @@ enum PipelineType {
 	Obj3D,
 	// SkyBox
 	PrimitiveSkyBox,
-	// Oshan
+	// Ocean
 	PrimitiveOcean,
 	// Particle
 	Particle,

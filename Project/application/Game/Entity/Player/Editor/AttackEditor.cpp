@@ -233,7 +233,7 @@ void AttackEditor::DrawPreview() {
     std::vector<BezierControlPointData> worldPoints;
 
     for (const auto& point : currentAttack.trajectoryPoints) {
-        BezierControlPointData worldPoint;
+        BezierControlPointData worldPoint = {};
         worldPoint.position = weaponPos + point.position;
         worldPoint.time = point.time;
         worldPoints.push_back(worldPoint);
@@ -627,7 +627,7 @@ void AttackEditor::RenderTrajectorySettings(AttackData& data) {
     }
 
     if (ImGui::Button("+ 制御点を追加")) {
-        BezierControlPointData newPoint;
+        BezierControlPointData newPoint = {};
         newPoint.position = Vector3{ 0.0f, 0.0f, 0.0f };
         newPoint.time = 0.5f;
         data.trajectoryPoints.push_back(newPoint);
@@ -799,7 +799,7 @@ void AttackEditor::RenderPreviewControl() {
                 // 全ての制御点にオフセットを適用
                 std::vector<BezierControlPointData> worldPoints;
                 for (const auto& point : currentAttack.trajectoryPoints) {
-                    BezierControlPointData worldPoint;
+                    BezierControlPointData worldPoint = {};
                     worldPoint.position = previewWeaponPosition_ + point.position;
                     worldPoint.time = point.time;
                     worldPoints.push_back(worldPoint);
