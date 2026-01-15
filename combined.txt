@@ -43,8 +43,8 @@
 └── └── └── ├── LevelData.h
 └── └── └── ├── LightData.h
 └── └── └── ├── LineObjectData.h
+└── └── └── ├── OceanData.h
 └── └── └── ├── OffScreenData.h
-└── └── └── ├── OshanData.h
 └── └── └── ├── ParticleData.h
 └── └── └── ├── PipelineStateObjectType.h
 └── └── └── └── SceneType.h
@@ -353,10 +353,10 @@
 └── └── └── └── └── └── ├── EnemyMoveComponent.cpp
 └── └── └── └── └── └── └── EnemyMoveComponent.h
 └── └── └── └── └── ├── LongRange/
-└── └── └── └── └── └── ├── LongRangeEnemeyBullet.cpp
-└── └── └── └── └── └── ├── LongRangeEnemeyBullet.h
 └── └── └── └── └── └── ├── LongRangeEnemy.cpp
-└── └── └── └── └── └── └── LongRangeEnemy.h
+└── └── └── └── └── └── ├── LongRangeEnemy.h
+└── └── └── └── └── └── ├── LongRangeEnemyBullet.cpp
+└── └── └── └── └── └── └── LongRangeEnemyBullet.h
 └── └── └── └── └── ├── Manager/
 └── └── └── └── └── └── ├── EnemyManager.cpp
 └── └── └── └── └── └── └── EnemyManager.h
@@ -413,8 +413,8 @@
 └── └── └── └── ├── GameGround/
 └── └── └── └── └── ├── Ground.cpp
 └── └── └── └── └── ├── Ground.h
-└── └── └── └── └── ├── GroundOshan.cpp
-└── └── └── └── └── └── GroundOshan.h
+└── └── └── └── └── ├── GroundOcean.cpp
+└── └── └── └── └── └── GroundOcean.h
 └── └── └── └── ├── GameStage.cpp
 └── └── └── └── ├── GameStage.h
 └── └── └── └── └── StageObject/
@@ -1300,15 +1300,15 @@ void Collider::SetColor(const Vector4& color) { color_ = color; }
 void Collider::SetLight(LightType type) { object3d_->SetLight(type); }
 void Collider::SetLightData(LightInfo light) { object3d_->SetLightData(light); }
 // IsCollision
-void Collider::SetIsCollisison(bool flag) { isCollision_ = flag; }
+void Collider::SetIsCollision(bool flag) { isCollision_ = flag; }
 
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
 // Type
-ColliderType Collider::GetColliderType() { return type_; }
+ColliderType Collider::GetColliderType() const { return type_; }
 // Name
-ColliderName Collider::GetColliderName() { return name_; }
+ColliderName Collider::GetColliderName() const { return name_; }
 // Transform
 QuaternionTransform Collider::GetTransform() const { return transform_; }
 // Color
@@ -1449,13 +1449,13 @@ public: /// ===Setter=== ///
     void SetLight(LightType type);
     void SetLightData(LightInfo light);
     // IsCollision
-    void SetIsCollisison(bool flag);
+    void SetIsCollision(bool flag);
 
 public: /// ===Getter=== ///
     // Type
-    ColliderType GetColliderType();
-    // CollsisionName
-    ColliderName GetColliderName();
+    ColliderType GetColliderType() const;
+    // CollisionName
+    ColliderName GetColliderName() const;
     // Transform
     QuaternionTransform GetTransform() const;
     // Color
@@ -2114,7 +2114,7 @@ void OBBCollider::Information() {
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
-void OBBCollider::SethalfSize(const Vector3& halfSize) {
+void OBBCollider::SetHalfSize(const Vector3& halfSize) {
 	obb_.halfSize = halfSize;
 }
 
@@ -2165,7 +2165,7 @@ void OBBCollider::SetOBBAxisFromQuaternion(OBB& obb, const Quaternion& rotate) {
 File Path: Project/Engine/Collider/OBBCollider.h
 ============================================================
 #pragma once
-/// ===Includ=== ///
+/// ===Include=== ///
 #include "Engine/Collider/Base/Collider.h"
 
 ///-------------------------------------------/// 
@@ -2174,7 +2174,7 @@ File Path: Project/Engine/Collider/OBBCollider.h
 class OBBCollider : public Collider {
 public:
 
-	OBBCollider() = default;
+    OBBCollider() = default;
 	~OBBCollider() = default;
 
     /// <summary>
@@ -2207,7 +2207,7 @@ public: /// ===衝突=== ///
 
 public: /// ===Setter=== ///
     // OBBの設定
-	void SethalfSize(const Vector3& halfSize);
+	void SetHalfSize(const Vector3& halfSize);
 
 public: /// ===Getter=== ///
 	// OBBの取得
@@ -2511,8 +2511,8 @@ void DXCommon::PreDrawImGui(RTVManager* rtv) {
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandel = rtv->GetCPUDescriptorHandle(backBufferIndex);
 	commandList_->OMSetRenderTargets(1, &rtvHandel, false, nullptr);
 	// RTVのクリア
-	const float cleaerColor[] = { 0.1f, 0.25f, 0.5f, 1.0f }; // 青色っっぽい色、RGBAの順
-	rtv->ClearRenderTargetView(commandList_.Get(), backBufferIndex, cleaerColor);
+	const float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f }; // 青色っっぽい色、RGBAの順
+	rtv->ClearRenderTargetView(commandList_.Get(), backBufferIndex, clearColor);
 }
 
 ///-------------------------------------------/// 
@@ -2537,7 +2537,7 @@ void DXCommon::TransitionRenderTarget() {
 	barrierRenderTexture_.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	// 遷移後のResourceState
 	barrierRenderTexture_.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-	// Subresourceを明示的に設定
+	// SubResourceを明示的に設定
 	barrierRenderTexture_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	// TransitionBarrierを張る
 	commandList_->ResourceBarrier(1, &barrierRenderTexture_);
@@ -2548,7 +2548,7 @@ void DXCommon::TransitionEffectTexture() {
 	barrierEffectTexture_.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	// 遷移後のResourceState
 	barrierEffectTexture_.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-	// Subresourceを明示的に設定
+	// SubResourceを明示的に設定
 	barrierEffectTexture_.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	// TransitionBarrierを張る
 	commandList_->ResourceBarrier(1, &barrierEffectTexture_);
@@ -2737,7 +2737,7 @@ void DXCommon::InitializeDXGIDevice() {
 		if (!(adapterDesc.Flags & DXGI_ADAPTER_FLAG3_SOFTWARE)) {
 
 			// 採用したアダプタの情報をログに出力。wstringの方なので注意
-			Log(std::format(L"Use Adapater:{}\n", adapterDesc.Description));
+			Log(std::format(L"Use Adapter:{}\n", adapterDesc.Description));
 			break;
 		}
 
@@ -3233,16 +3233,16 @@ private:/// ===関数=== ///
 	/// <summary>
 	/// ビューポートの生成処理
 	/// </summary>
-	/// <param name="kClientWindth">クライアント領域の幅（ピクセル）。</param>
+	/// <param name="kClientWidth">クライアント領域の幅（ピクセル）。</param>
 	/// <param name="kClientHeight">クライアント領域の高さ（ピクセル）。</param>
-	void CreateViewport(const int32_t kClientWindth, const int32_t kClientHeight);
+	void CreateViewport(const int32_t kClientWidth, const int32_t kClientHeight);
 
 	/// <summary>
 	/// シザー矩形の生成処理
 	/// </summary>
-	/// <param name="kClientWindth">クライアント領域の幅（int32_t、ピクセル単位）。関数内で使用される読み取り専用の値です。</param>
+	/// <param name="kClientWidth">クライアント領域の幅（int32_t、ピクセル単位）。関数内で使用される読み取り専用の値です。</param>
 	/// <param name="kClientHeight">クライアント領域の高さ（int32_t、ピクセル単位）。関数内で使用される読み取り専用の値です。</param>
-	void CreateScissor(const int32_t kClientWindth, const int32_t kClientHeight);
+	void CreateScissor(const int32_t kClientWidth, const int32_t kClientHeight);
 
 	/// <summary>
 	/// FPS固定の初期化処理
@@ -3414,7 +3414,7 @@ void Mii::Initialize(const wchar_t* title, int width, int height) {
 	// AnimationManagerの生成
 	animationManager_ = std::make_unique<AnimationManager>();
 
-	// Audiomanagerの生成
+	// AudioManagerの生成
 	audioManager_ = std::make_unique<AudioManager>();
 	audioManager_->Initialze();
 
@@ -3489,14 +3489,14 @@ void Mii::Finalize() {
 	csvManager_.reset();		// CSVManager
 	audioManager_.reset();		// AudioManager
 	animationManager_.reset();	// AnimationManager
-	modelManager_.reset();		// Modelmanager
-	textureManager_.reset();	// TextrureManager
+	modelManager_.reset();		// ModelManager
+	textureManager_.reset();	// TextureManager
 	
 	// SceneView
 	sceneView_.reset();
 	// OffScreen
 	offScreenRenderer_.reset();
-	// Pipline
+	// PipelineManager
 	pipelineManager_.reset();
 	// ImGui
 	imGuiManager_.reset();
@@ -3593,7 +3593,7 @@ SRVManager* Mii::GetSRVManager() {return srvManager_.get();}
 RTVManager* Mii::GetRTVManager() { return rtvManager_.get(); }
 // DSVManager
 DSVManager* Mii::GetDSVManager() { return dsvManager_.get(); }
-// PiplelineManager
+// PipelineManager
 PipelineManager* Mii::GetPipelineManager() { return pipelineManager_.get(); }
 // TextureManager
 TextureManager* Mii::GetTextureManager() { return textureManager_.get(); }
@@ -3877,19 +3877,19 @@ const wchar_t WinApp::kWindowClassName[] = L"DeathsDoor";
 ///-------------------------------------------/// 
 /// ウィンドウの横幅の取得
 ///-------------------------------------------///
-const int WinApp::GetWindowWidth() { return windowWidth_; }
+const int WinApp::GetWindowWidth() const { return windowWidth_; }
 
 ///-------------------------------------------/// 
 /// ウィンドウの縦幅の取得
 ///-------------------------------------------///
-const int WinApp::GetWindowHeight() { return windowHeight_; }
+const int WinApp::GetWindowHeight() const { return windowHeight_; }
 
 ///-------------------------------------------/// 
 /// ウィンドウプロージャ
 ///-------------------------------------------///
-LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM WPARAM, LPARAM LPARAM) {
 #ifdef USE_IMGUI
-	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, WPARAM, LPARAM)) {
 		return true;
 	}
 #endif // USE_IMGUI
@@ -3906,7 +3906,7 @@ LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	}
 
 	// 標準のメッセージ処理を行う
-	return DefWindowProc(hwnd, msg, wparam, lparam);
+	return DefWindowProc(hwnd, msg, WPARAM, LPARAM);
 }
 
 ///-------------------------------------------/// 
@@ -3921,7 +3921,13 @@ void WinApp::CreateGameWindow(const wchar_t* title, int32_t kClientWidth, int32_
 	/* /////////////////////////////////////
 					COMの初期化
 	*/ /////////////////////////////////////
-	CoInitializeEx(0, COINIT_MULTITHREADED);
+	// COMの初期化
+	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
+	if (FAILED(hr)) {
+		// 初期化失敗時のエラーハンドリング
+		MessageBox(nullptr, L"COMの初期化に失敗しました。", L"エラー", MB_OK | MB_ICONERROR);
+		return;
+	}
 
 	/* /////////////////////////////////////
 				ウィンドウクラスの登録
@@ -3998,13 +4004,13 @@ bool WinApp::ProcessMessage() {
 /// <summary>
 /// ウィンドウハンドルの取得
 /// </summary>
-HWND WinApp::GetHwnd() { return hwnd_; }
+HWND WinApp::GetHwnd() const { return hwnd_; }
 
 /// <summary>
 /// ウィンドウクラスの取得
 /// </summary>
 /// <returns></returns>
-WNDCLASS WinApp::GetWNDClass() { return wndClass_; }
+WNDCLASS WinApp::GetWNDClass() const { return wndClass_; }
 
 
 ============================================================
@@ -4028,21 +4034,21 @@ public:
 	/// ウィンドウの横幅の取得
 	/// </summary>
 	/// <returns></returns>
-	const int GetWindowWidth();
-	
+	const int GetWindowWidth() const;
+
 	/// <summary>
 	/// ウィンドウの縦幅の取得
 	/// </summary>
 	/// <returns></returns>
-	const int GetWindowHeight();
+	const int GetWindowHeight() const;
 
 	/// <summary>
 	/// ウィンドウプロージャ
 	/// </summary>
 	/// <param name="hwnd"></param>
 	/// <param name="msg"></param>
-	/// <param name="wparam"></param>
-	/// <param name="lparam"></param>
+	/// <param name="WPARAM"></param>
+	/// <param name="LPARAM"></param>
 	/// <returns></returns>
 	static LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
@@ -4069,25 +4075,25 @@ public:
 	/// ウィンドウハンドルの取得
 	/// </summary>
 	/// <returns></returns>
-	HWND GetHwnd();
+	HWND GetHwnd() const;
 
 	/// <summary>
 	/// ウィンドウclassの取得
 	/// </summary>
 	/// <returns></returns>
-	WNDCLASS GetWNDClass();
+	WNDCLASS GetWNDClass() const;
 
 private:// メンバ変数
 
 	// ウィンドウサイズ
 	int32_t windowWidth_ = 1280;  // 横幅
-	int32_t windowHeight_ = 720; // 縦幅
+	int32_t windowHeight_ = 720;  // 縦幅
 
-	WNDCLASS wndClass_{}; // ウィンドウクラス
-	HWND hwnd_ = nullptr; // ウィンドウハンドル
-	UINT windowStyle_; // 
+	WNDCLASS wndClass_{};		// ウィンドウクラス
+	HWND hwnd_ = nullptr;		// ウィンドウハンドル
+	UINT windowStyle_;			// 
 	bool isFullScreen_ = false; // 
-	RECT windowRect_; // 
+	RECT windowRect_;			// 
 };
 
 ============================================================
@@ -4149,6 +4155,9 @@ struct NodeAnimation {
 	AnimationCurve<Vector3> scale;
 };
 
+/// <summary>
+/// アニメーションの構造体
+/// </summary>
 struct Animation {
 	float duration; // アニメーション全体の尺(単位は秒)
 	// NodeAnimationの集合。Node名で引けるようにしておく
@@ -4159,13 +4168,13 @@ struct Animation {
 /// Jointの構造体
 /// </summary>
 struct Joint {
-	QuaternionTransform transform; // Transform情報
-	Matrix4x4 localMatrix; // localMatrix
-	Matrix4x4 skeletonSpaceMatrix; // skeletonSpaceでの変換行列
-	std::string name; // 名前
-	std::vector<int32_t> children; // 子JointのIndexのリスト。いなければ空
-	int32_t index; // 自身のIndex
-	std::optional<int32_t> parent; // 親JointのIndex。いなければnull
+	QuaternionTransform transform;	// Transform情報
+	Matrix4x4 localMatrix;			// localMatrix
+	Matrix4x4 skeletonSpaceMatrix;	// skeletonSpaceでの変換行列
+	std::string name;				// 名前
+	std::vector<int32_t> children;	// 子JointのIndexのリスト。いなければ空
+	int32_t index;					// 自身のIndex
+	std::optional<int32_t> parent;	// 親JointのIndex。いなければnull
 };
 
 /// <summary>
@@ -4180,10 +4189,10 @@ struct Skeleton {
 /// <summary>
 /// Influence(インフルエンス)
 /// </summary>
-const uint32_t kNumMaxInfluene = 4;
+const uint32_t kNumMaxInfluence = 4;
 struct VertexInfluence {
-	std::array<float, kNumMaxInfluene> weights;
-	std::array<int32_t, kNumMaxInfluene> jointIndices;
+	std::array<float, kNumMaxInfluence> weights;
+	std::array<int32_t, kNumMaxInfluence> jointIndices;
 };
 
 /// <summary>
@@ -4330,7 +4339,7 @@ struct VertexWeightData {
 };
 /// ===JointWeightData=== ///
 struct jointWeightData {
-	Matrix4x4 inverseBindPosematrix;
+	Matrix4x4 inverseBindPoseMatrix;
 	std::vector<VertexWeightData> vertexWeights;
 };
 /// ===マテリアルデータ=== ///
@@ -4786,10 +4795,10 @@ struct LightInfo {
 	PointLightInfo point; 			  // ポイントライトの情報
 	SpotLightInfo spot; 			  // スポットライトの情報
 };
-/// ===EnviromentMapInfo=== ///
-struct EnviromentMapInfo {
+/// ===EnvironmentMapInfo=== ///
+struct EnvironmentMapInfo {
 	std::string textureName; // 環境マップのテクスチャ名
-	bool isEnviromentMap; // 環境マップの有効/無効
+	bool isEnvironmentMap; // 環境マップの有効/無効
 	float strength;      // 環境マップの強度
 };
 
@@ -4818,24 +4827,7 @@ struct BezierControlPointData {
 
 
 ============================================================
-File Path: Project/Engine/DataInfo/OffScreenData.h
-============================================================
-#pragma once
-/// ===タイプ=== ///
-enum class OffScreenType {
-	CopyImage,
-	Grayscale,
-	Vignette,
-	BoxFilter3x3,
-	BoxFilter5x5,
-	RadiusBlur,
-	OutLine,
-	Dissolve,
-	ShatterGlass,
-};
-
-============================================================
-File Path: Project/Engine/DataInfo/OshanData.h
+File Path: Project/Engine/DataInfo/OceanData.h
 ============================================================
 #pragma once
 #include "Math/Vector2.h"
@@ -4922,6 +4914,23 @@ struct WaveVertexData {
     Vector3 normal;     // 計算された法線
     Vector2 worldXZ;    // ワールド座標のXZ
     float padding;      // アライメント用
+};
+
+============================================================
+File Path: Project/Engine/DataInfo/OffScreenData.h
+============================================================
+#pragma once
+/// ===タイプ=== ///
+enum class OffScreenType {
+	CopyImage,
+	Grayscale,
+	Vignette,
+	BoxFilter3x3,
+	BoxFilter5x5,
+	RadiusBlur,
+	OutLine,
+	Dissolve,
+	ShatterGlass,
 };
 
 ============================================================
@@ -5136,7 +5145,7 @@ enum PipelineType {
 	Obj3D,
 	// SkyBox
 	PrimitiveSkyBox,
-	// Oshan
+	// Ocean
 	PrimitiveOcean,
 	// Particle
 	Particle,
@@ -5253,7 +5262,9 @@ File Path: Project/Engine/Graphics/2d/Base/IndexBuffer2D.cpp
 
 #include <cassert>
 
-IndexBuffer2D::IndexBuffer2D() {}
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
 IndexBuffer2D::~IndexBuffer2D() { buffer_.Reset(); }
 
 ///-------------------------------------------/// 
@@ -5283,7 +5294,7 @@ File Path: Project/Engine/Graphics/2d/Base/IndexBuffer2D.h
 class IndexBuffer2D {
 public:
 
-	IndexBuffer2D();
+	IndexBuffer2D() = default;
 	~IndexBuffer2D();
 
 	/// <summary>
@@ -5322,9 +5333,8 @@ File Path: Project/Engine/Graphics/2d/Base/Material2D.cpp
 #include "Math/sMath.h"
 
 ///-------------------------------------------/// 
-/// コンストラクタ、デストラクタ
+/// デストラクタ
 ///-------------------------------------------///
-Material2D::Material2D() {}
 Material2D::~Material2D() { buffer_.Reset(); }
 
 ///-------------------------------------------/// 
@@ -5354,7 +5364,7 @@ File Path: Project/Engine/Graphics/2d/Base/Material2D.h
 class Material2D {
 public:
 
-	Material2D();
+	Material2D() = default;
 	~Material2D();
 
 	/// <summary>
@@ -5512,10 +5522,11 @@ private:/// ===Variables(変数)=== ///
 File Path: Project/Engine/Graphics/2d/Base/Transform2D.cpp
 ============================================================
 #include "Transform2D.h"
-
 #include <cassert>
 
-Transform2D::Transform2D() {}
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
 Transform2D::~Transform2D() { buffer_.Reset(); }
 
 ///-------------------------------------------/// 
@@ -5562,7 +5573,7 @@ File Path: Project/Engine/Graphics/2d/Base/Transform2D.h
 class Transform2D {
 public:
 
-	Transform2D();
+	Transform2D() = default;
 	~Transform2D();
 
 	/// <summary>
@@ -5609,7 +5620,6 @@ File Path: Project/Engine/Graphics/2d/Base/VertexBuffer2D.cpp
 
 #include <cassert>
 
-VertexBuffer2D::VertexBuffer2D() {}
 VertexBuffer2D::~VertexBuffer2D() { buffer_.Reset(); }
 
 ///-------------------------------------------/// 
@@ -5656,7 +5666,7 @@ File Path: Project/Engine/Graphics/2d/Base/VertexBuffer2D.h
 class VertexBuffer2D {
 public:
 
-	VertexBuffer2D();
+	VertexBuffer2D() = default;
 	~VertexBuffer2D();
 
 	/// <summary>
@@ -5775,7 +5785,7 @@ void SpriteCommon::Initialize(const std::string textureFilePath) {
 void SpriteCommon::Update() {
 
 	// Data書き込み(更新)
-	MateialDataWrite();
+	MaterialDataWrite();
 	TransformDataWrite();
 	UpdateVertexDataWrite();
 	SpecifyRange();
@@ -5800,7 +5810,7 @@ void SpriteCommon::Draw(GroundType type, BlendMode mode) {
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
 	// IndexBufferViewの設定
 	commandList->IASetIndexBuffer(&indexBufferView_);
-	// Matrial・WVPの設定
+	// Material・WVPの設定
 	common_->Bind(commandList);
 	// テクスチャの設定
 	Render::SetGraphicsRootDescriptorTable(commandList, 2, filePath_);
@@ -5840,9 +5850,9 @@ void SpriteCommon::IndexDataWrite() {
 }
 
 ///-------------------------------------------/// 
-/// MateialDataへの書き込み
+/// MaterialDataへの書き込み
 ///-------------------------------------------///
-void SpriteCommon::MateialDataWrite() {
+void SpriteCommon::MaterialDataWrite() {
 	common_->SetMateiralData(
 		color_,
 		Math::MakeIdentity4x4()
@@ -5949,7 +5959,7 @@ File Path: Project/Engine/Graphics/2d/Sprite/SpriteCommon.h
 #include "Engine/Graphics/2d/Base/Object2DCommon.h"
 #include "Engine/Graphics/2d/Base/VertexBuffer2D.h"
 #include "Engine/Graphics/2d/Base/IndexBuffer2D.h"
-// Pipline
+// Pipeline
 #include "Engine/DataInfo/PipelineStateObjectType.h"
 
 enum class GroundType {
@@ -6034,9 +6044,9 @@ private:/// ===Functions(関数)=== ///
 	void IndexDataWrite();
 
 	/// <summary>
-	/// MateialDataへの書き込み処理
+	/// MaterialDataへの書き込み処理
 	/// </summary>
-	void MateialDataWrite();
+	void MaterialDataWrite();
 
 	/// <summary>
 	/// Transform情報の書き込み処理
@@ -6069,7 +6079,9 @@ File Path: Project/Engine/Graphics/3d/Base/IndexBuffer3D.cpp
 
 #include <cassert>
 
-IndexBuffer3D::IndexBuffer3D() {}
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
 IndexBuffer3D::~IndexBuffer3D() { buffer_.Reset(); }
 
 ///-------------------------------------------/// 
@@ -6098,7 +6110,7 @@ File Path: Project/Engine/Graphics/3d/Base/IndexBuffer3D.h
 class IndexBuffer3D {
 public:
 
-	IndexBuffer3D();
+	IndexBuffer3D() = default;
 	~IndexBuffer3D();
 
 	/// <summary>
@@ -6136,7 +6148,9 @@ File Path: Project/Engine/Graphics/3d/Base/Material3D.cpp
 
 #include <cassert>
 
-Material3D::Material3D() {}
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
 Material3D::~Material3D() { buffer_.Reset(); }
 
 ///-------------------------------------------/// 
@@ -6178,7 +6192,7 @@ File Path: Project/Engine/Graphics/3d/Base/Material3D.h
 class Material3D {
 public:
 	
-	Material3D();
+	Material3D() = default;
 	~Material3D();
 
 	/// <summary>
@@ -6492,9 +6506,8 @@ File Path: Project/Engine/Graphics/3d/Base/Transform3D.cpp
 #include <cassert>
 
 ///-------------------------------------------/// 
-/// コンストラクタ、デストラクタ
+/// デストラクタ
 ///-------------------------------------------///
-Transform3D::Transform3D() {}
 Transform3D::~Transform3D() { buffer_.Reset(); }
 
 ///-------------------------------------------/// 
@@ -6523,7 +6536,7 @@ File Path: Project/Engine/Graphics/3d/Base/Transform3D.h
 class Transform3D {
 public:
 
-	Transform3D();
+	Transform3D() = default;
 	~Transform3D();
 
 	/// <summary>
@@ -6559,7 +6572,9 @@ File Path: Project/Engine/Graphics/3d/Base/VertexBuffer3D.cpp
 
 #include <cassert>
 
-VertexBuffer3D::VertexBuffer3D() {}
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
 VertexBuffer3D::~VertexBuffer3D() { buffer_.Reset(); }
 
 ///-------------------------------------------/// 
@@ -6588,7 +6603,7 @@ File Path: Project/Engine/Graphics/3d/Base/VertexBuffer3D.h
 class VertexBuffer3D {
 public:
 
-	VertexBuffer3D();
+	VertexBuffer3D() = default;
 	~VertexBuffer3D();
 
 	// Resourceの生成
@@ -6948,15 +6963,14 @@ File Path: Project/Engine/Graphics/3d/Model/AnimationModel.cpp
 #include "Math/MatrixMath.h"
 
 ///-------------------------------------------/// 
-/// コンストラクタ、デストラクタ
+/// デストラクタ
 ///-------------------------------------------///
-AnimationModel::AnimationModel() = default;
 AnimationModel::~AnimationModel() {}
 
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
-/// ===AnimatinoName=== ///
+/// ===AnimationName=== ///
 void AnimationModel::SetAnimation(const std::string& animationName, bool isLoop) { 
 	animationName_ = animationName; 
 	isLoop_ = isLoop;
@@ -7090,7 +7104,7 @@ Vector3 AnimationModel::CalculateValue(const std::vector<KeyframeVector3>& keyfr
 
 
 ///-------------------------------------------/// 
-/// 任意の時刻の値を取得する関数(Quateri)
+/// 任意の時刻の値を取得する関数(Quaternion)
 ///-------------------------------------------///
 Quaternion AnimationModel::CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time) {
 	/// ===任意の時刻の値を取得する=== ///
@@ -7186,7 +7200,7 @@ SkinCluster AnimationModel::CreateSkinCluster(
 	const ComPtr<ID3D12Device>& device, const Skeleton& skeleton, const ModelData& modelData) {
 
 	SkinCluster skinCluster;
-	/// ===paletter用のResourceを確保=== ///
+	/// ===Palette用のResourceを確保=== ///
 	uint32_t paletteIndex = ServiceLocator::GetSRVManager()->Allocate();
 	skinCluster.paletteResource = CreateBufferResourceComPtr(device.Get(), sizeof(WellForGPU) * skeleton.joints.size());
 	WellForGPU* mappedPalette = nullptr;
@@ -7228,10 +7242,10 @@ SkinCluster AnimationModel::CreateSkinCluster(
 			continue;
 		}
 		// (*it).secondにはJointのIndexが入っているので、該当のIndexのinverseBindPoseMatrixを代入
-		skinCluster.inverseBindPoseMatrices[(*it).second] = jointWeight.second.inverseBindPosematrix;
+		skinCluster.inverseBindPoseMatrices[(*it).second] = jointWeight.second.inverseBindPoseMatrix;
 		for (const auto& vertexWeight : jointWeight.second.vertexWeights) {
 			auto& currentInfluence = skinCluster.mappedInfluence[vertexWeight.vertexIndex]; // 該当のvertexIndexのinfluence情報を参照しておく
-			for (uint32_t index = 0; index < kNumMaxInfluene; ++index) { // 空いているところに入れる
+			for (uint32_t index = 0; index < kNumMaxInfluence; ++index) { // 空いているところに入れる
 				if (currentInfluence.weights[index] == 0.0f) { // weight==0が空いている状態なので、その場所にweightとjointのindexを代入
 					currentInfluence.weights[index] = vertexWeight.weight;
 					currentInfluence.jointIndices[index] = (*it).second;
@@ -7274,7 +7288,7 @@ File Path: Project/Engine/Graphics/3d/Model/AnimationModel.h
 class AnimationModel : public ModelCommon {
 public:
 
-	AnimationModel();
+	AnimationModel() = default;
 	~AnimationModel();
 
 	/// <summary>
@@ -7497,7 +7511,6 @@ File Path: Project/Engine/Graphics/3d/Model/ModelCommon.cpp
 ///-------------------------------------------/// 
 /// コンストラクタ・デストラクタ
 ///-------------------------------------------///
-ModelCommon::ModelCommon() = default;
 ModelCommon::~ModelCommon() {
 	// 親子関係の解除
 	ClearParent();
@@ -7544,9 +7557,9 @@ void ModelCommon::SetColor(const Vector4& color) { color_ = color; }
 void ModelCommon::SetLightType(LightType type) {common_->SetLightType(type);}
 void ModelCommon::SetLightData(LightInfo light) { light_ = light; }
 // 環境マップ
-void ModelCommon::SetEnviromentMapData(bool flag, float string) {
-	enviromentMapInfo_.isEnviromentMap = flag;
-	enviromentMapInfo_.strength = string;
+void ModelCommon::SetEnvironmentMapData(bool flag, float string) {
+	environmentMapInfo_.isEnvironmentMap = flag;
+	environmentMapInfo_.strength = string;
 }
 
 ///-------------------------------------------/// 
@@ -7576,7 +7589,7 @@ const Quaternion& ModelCommon::GetWorldRotate() const {
 		return cachedWorldTransform_.rotate;
 	}
 	/// ===ワールド行列から回転を取得=== ///
-	Matrix4x4 rotateMatrix; // 回転行列
+	Matrix4x4 rotateMatrix = {}; // 回転行列
 	for (int i = 0; i < 3; ++i) {
 		for (int j = 0; j < 3; ++j) {
 			rotateMatrix.m[i][j] = worldMatrix_.m[i][j];
@@ -7665,7 +7678,7 @@ void ModelCommon::Create(ID3D12Device* device, LightType type) {
 		{{ 1.0f, 1.0f, 1.0f, 1.0f } , { 0.0f, 0.0f, 0.0f } , 1.0f, 0.0f, 0.0f},
 		{{ 1.0f, 1.0f, 1.0f, 1.0f } , { 0.0f, 0.0f, 0.0f } , 0.0f, { 0.0f, 0.0f, 0.0f } , 0.0f, 0.0f, 0.0f}
 	};
-	enviromentMapInfo_ = {
+	environmentMapInfo_ = {
 		"skyBox",
 		false,
 		1.0f
@@ -7709,7 +7722,7 @@ void ModelCommon::Update() {
 	camera_ = CameraService::GetActiveCamera().get();
 
 	// MaterialDataの書き込み
-	MateialDataWrite();
+	MaterialDataWrite();
 	// Transform情報の書き込み
 	TransformDataWrite();
 	// Lightの書き込み
@@ -7717,7 +7730,7 @@ void ModelCommon::Update() {
 	// Cameraの書き込み
 	CameraDataWrite();
 	// 環境マップの書き込み
-	EnviromentMapDataWrite();
+	EnvironmentMapDataWrite();
 }
 
 ///-------------------------------------------/// 
@@ -7731,13 +7744,13 @@ void ModelCommon::Bind(ID3D12GraphicsCommandList* commandList) {
 
 	// テクスチャの設定
 	Render::SetGraphicsRootDescriptorTable(commandList, 2, modelData_.material.textureFilePath);
-	Render::SetGraphicsRootDescriptorTable(commandList, 3, enviromentMapInfo_.textureName);
+	Render::SetGraphicsRootDescriptorTable(commandList, 3, environmentMapInfo_.textureName);
 }
 
 ///-------------------------------------------/// 
 /// MaterialDataの書き込み
 ///-------------------------------------------///
-void ModelCommon::MateialDataWrite() {
+void ModelCommon::MaterialDataWrite() {
 	/// ===Matrixの作成=== ///
 	Matrix4x4 uvTransformMatrix = Math::MakeScaleMatrix(uvTransform_.scale);
 	Matrix4x4 uvTransformMatrixMultiply = Multiply(uvTransformMatrix, Math::MakeRotateZMatrix(uvTransform_.rotate.z));
@@ -7832,8 +7845,8 @@ void ModelCommon::CameraDataWrite() {
 ///-------------------------------------------/// 
 /// 環境マップの書き込み
 ///-------------------------------------------///
-void ModelCommon::EnviromentMapDataWrite() {
-	common_->SetEnviromentMapData(enviromentMapInfo_.isEnviromentMap, enviromentMapInfo_.strength);
+void ModelCommon::EnvironmentMapDataWrite() {
+	common_->SetEnviromentMapData(environmentMapInfo_.isEnvironmentMap, environmentMapInfo_.strength);
 }
 
 ============================================================
@@ -7859,7 +7872,7 @@ class GameCamera;
 ///=====================================================///
 class ModelCommon {
 public:
-	ModelCommon();
+	ModelCommon() = default;
 	~ModelCommon();
 
 	/// <summary>
@@ -7921,7 +7934,7 @@ public:/// ===Setter=== ///
 	// LightData
 	void SetLightData(LightInfo light);
 	// 環境マップ
-	void SetEnviromentMapData(bool flag, float string);
+	void SetEnvironmentMapData(bool flag, float string);
 
 public: /// ===Getter=== ///
 	// Transform（位置、回転、拡縮）を取得
@@ -7959,7 +7972,7 @@ protected: /// ===継承先で使用する変数=== ///
 	GameCamera* camera_ = nullptr;
 
 	/// ===環境マップ=== ///
-	EnviromentMapInfo enviromentMapInfo_;
+	EnvironmentMapInfo environmentMapInfo_;
 
 private:/// ===Variables(変数)=== ///
 
@@ -7984,7 +7997,7 @@ private:
 	/// <summary>
 	/// MaterialDataの書き込み処理
 	/// </summary>
-	void MateialDataWrite();
+	void MaterialDataWrite();
 
 	/// <summary>
 	/// Transform情報の書き込み処理
@@ -8004,7 +8017,7 @@ private:
 	/// <summary>
 	/// EnvironmentMapData書き込み処理
 	/// </summary>
-	void EnviromentMapDataWrite();
+	void EnvironmentMapDataWrite();
 };
 
 
@@ -8480,14 +8493,14 @@ File Path: Project/Engine/Graphics/3d/Ocean/Ocean.h
 // Pipeline
 #include "Engine/DataInfo/PipelineStateObjectType.h"
 // Data
-#include "Engine/DataInfo/OshanData.h"
+#include "Engine/DataInfo/OceanData.h"
 // c++
 #include <vector>
 #include <array>
 #include <algorithm>
 
 ///=====================================================/// 
-/// Oshan
+/// Ocean
 ///=====================================================///
 class Ocean : public OceanCommon {
 public:
@@ -9145,7 +9158,7 @@ File Path: Project/Engine/Graphics/3d/Ocean/OceanWaveCompute.h
 #include "Engine/Graphics/Base/BufferBase.h"
 #include "Engine/Graphics/Base/UAV.h"
 // Data
-#include "Engine/DataInfo/OshanData.h"
+#include "Engine/DataInfo/OceanData.h"
 // c++
 #include <d3d12.h>
 #include <memory>
@@ -9272,7 +9285,6 @@ File Path: Project/Engine/Graphics/3d/Primitive3D/Primitive3DCommon.cpp
 ///-------------------------------------------/// 
 /// コンストラクタ・デストラクタ
 ///-------------------------------------------///
-Primitive3DCommon::Primitive3DCommon() = default;
 Primitive3DCommon::~Primitive3DCommon() {
 	vertex_.reset();
 	index_.reset();
@@ -9297,7 +9309,7 @@ void Primitive3DCommon::Create(ID3D12Device* device, LightType type) {
 		{{ 1.0f, 1.0f, 1.0f, 1.0f } , { 0.0f, 0.0f, 0.0f } , 1.0f, 0.0f, 0.0f},
 		{{ 1.0f, 1.0f, 1.0f, 1.0f } , { 0.0f, 0.0f, 0.0f } , 0.0f, { 0.0f, 0.0f, 0.0f } , 0.0f, 0.0f, 0.0f}
 	};
-	enviromentMapInfo_ = {
+	environmentMapInfo_ = {
 		"skyBox",
 		false,
 		1.0f
@@ -9319,7 +9331,7 @@ void Primitive3DCommon::Update() {
 	camera_ = CameraService::GetActiveCamera().get();
 
 	// MaterialDataの書き込み
-	MateialDataWrite();
+	MaterialDataWrite();
 	// Transform情報の書き込み
 	TransformDataWrite();
 	// Lightの書き込み
@@ -9327,7 +9339,7 @@ void Primitive3DCommon::Update() {
 	// Cameraの書き込み
 	CameraDataWrite();
 	// 環境マップの書き込み
-	EnviromentMapDataWrite();
+	EnvironmentMapDataWrite();
 }
 
 ///-------------------------------------------/// 
@@ -9343,7 +9355,7 @@ void Primitive3DCommon::Bind(ID3D12GraphicsCommandList* commandList) {
 ///-------------------------------------------/// 
 /// MaterialDataの書き込み
 ///-------------------------------------------///
-void Primitive3DCommon::MateialDataWrite() {
+void Primitive3DCommon::MaterialDataWrite() {
 	/// ===Matrixの作成=== ///
 	Matrix4x4 uvTransformMatrix = Math::MakeScaleMatrix(uvTransform_.scale);
 	Matrix4x4 uvTransformMatrixMultiply = Multiply(uvTransformMatrix, Math::MakeRotateZMatrix(uvTransform_.rotate.z));
@@ -9421,8 +9433,8 @@ void Primitive3DCommon::CameraDataWrite() {
 ///-------------------------------------------/// 
 /// 環境マップの書き込み
 ///-------------------------------------------///
-void Primitive3DCommon::EnviromentMapDataWrite() {
-	common_->SetEnviromentMapData(enviromentMapInfo_.isEnviromentMap, enviromentMapInfo_.strength);
+void Primitive3DCommon::EnvironmentMapDataWrite() {
+	common_->SetEnviromentMapData(environmentMapInfo_.isEnvironmentMap, environmentMapInfo_.strength);
 }
 
 ============================================================
@@ -9448,7 +9460,7 @@ class GameCamera;
 ///=====================================================///
 class Primitive3DCommon {
 public:
-	Primitive3DCommon();
+	Primitive3DCommon() = default;
 	~Primitive3DCommon();
 
 	/// <summary>
@@ -9500,7 +9512,7 @@ protected: /// ===継承先で使用する変数=== ///
 	VertexData3D* vertexData_ = nullptr;
 	uint32_t* indexData_ = nullptr;
 
-	/// ===Primitiv情報=== ///
+	/// ===プリミティブ情報=== ///
 	EulerTransform uvTransform_;
 	QuaternionTransform worldTransform_;
 	Vector4 color_;
@@ -9515,7 +9527,7 @@ protected: /// ===継承先で使用する変数=== ///
 	GameCamera* camera_ = nullptr;
 
 	/// ===環境マップ=== ///
-	EnviromentMapInfo enviromentMapInfo_;
+	EnvironmentMapInfo environmentMapInfo_;
 
 private:/// ===Variables(変数)=== ///
 
@@ -9526,7 +9538,7 @@ private:
 	/// <summary>
 	/// MaterialDataの書き込み処理
 	/// </summary>
-	void MateialDataWrite();
+	void MaterialDataWrite();
 
 	/// <summary>
 	/// Transform情報の書き込み処理
@@ -9546,7 +9558,7 @@ private:
 	/// <summary>
 	/// EnvironmentMapData書き込み処理
 	/// </summary>
-	void EnviromentMapDataWrite();
+	void EnvironmentMapDataWrite();
 };
 
 
@@ -9595,9 +9607,9 @@ void SkyBox::SetLight(LightType type) { common_->SetLightType(type); }
 // LightInfo
 void SkyBox::SetLightData(LightInfo light) { light_ = light; }
 // 環境マップ
-void SkyBox::SetEnviromentMapData(bool flag, float string) {
-	enviromentMapInfo_.isEnviromentMap = flag;
-	enviromentMapInfo_.strength = string;
+void SkyBox::SetEnvironmentMapData(bool flag, float string) {
+	environmentMapInfo_.isEnvironmentMap = flag;
+	environmentMapInfo_.strength = string;
 }
 
 ///-------------------------------------------/// 
@@ -9662,11 +9674,11 @@ void SkyBox::Update() {
 
 	/// ===データの書き込み=== ///
 	VertexDataWrite();
-	MateialDataWrite();
+	MaterialDataWrite();
 	TransformDataWrite();
 	LightDataWrite();
 	CameraDataWrite(); 
-	EnviromentMapDataWrite();
+	EnvironmentMapDataWrite();
 }
 
 ///-------------------------------------------/// 
@@ -9691,7 +9703,7 @@ void SkyBox::Draw(BlendMode mode) {
 }
 
 ///-------------------------------------------/// 
-/// VertrexDataの書き込み
+/// VertexDataの書き込み
 ///-------------------------------------------///
 void SkyBox::VertexDataWrite() {
 	// 右面。描画インデックスは[0,1,2][2,1,3]で内側を向く
@@ -9729,7 +9741,7 @@ void SkyBox::VertexDataWrite() {
 ///-------------------------------------------/// 
 /// MaterialDataの書き込み
 ///-------------------------------------------///
-void SkyBox::MateialDataWrite() {
+void SkyBox::MaterialDataWrite() {
 	/// ===Matrixの作成=== ///
 	Matrix4x4 uvTransformMatrix = Math::MakeScaleMatrix(uvTransform_.scale);
 	Matrix4x4 uvTransformMatrixMultiply = Multiply(uvTransformMatrix, Math::MakeRotateZMatrix(uvTransform_.rotate.z));
@@ -9798,8 +9810,8 @@ void SkyBox::CameraDataWrite() {
 ///-------------------------------------------/// 
 /// 環境マップの書き込み
 ///-------------------------------------------///
-void SkyBox::EnviromentMapDataWrite() {
-	common_->SetEnviromentMapData(enviromentMapInfo_.isEnviromentMap, enviromentMapInfo_.strength);
+void SkyBox::EnvironmentMapDataWrite() {
+	common_->SetEnviromentMapData(environmentMapInfo_.isEnvironmentMap, environmentMapInfo_.strength);
 }
 
 ============================================================
@@ -9868,7 +9880,7 @@ public: /// ===Setter=== ///
 	// LightData
 	void SetLightData(LightInfo light);
 	// 環境マップ
-	void SetEnviromentMapData(bool flag, float string);
+	void SetEnvironmentMapData(bool flag, float string);
 
 private:
 	/// ===バッファリソース=== ///
@@ -9910,7 +9922,7 @@ private:
 	};
 
 	/// ===環境マップ=== ///
-	EnviromentMapInfo enviromentMapInfo_;
+	EnvironmentMapInfo environmentMapInfo_;
 
 private: /// ===Functions(関数)=== ///
 
@@ -9922,7 +9934,7 @@ private: /// ===Functions(関数)=== ///
 	/// <summary>
 	/// MaterialDataの書き込み処理
 	/// </summary>
-	void MateialDataWrite();
+	void MaterialDataWrite();
 
 	/// <summary>
 	/// Transform情報の書き込み処理
@@ -9942,7 +9954,7 @@ private: /// ===Functions(関数)=== ///
 	/// <summary>
 	/// EnvironmentMapData書き込み処理
 	/// </summary>
-	void EnviromentMapDataWrite();
+	void EnvironmentMapDataWrite();
 };
 
 
@@ -10022,10 +10034,10 @@ File Path: Project/Engine/Graphics/Base/UAV.cpp
 ///-------------------------------------------/// 
 /// UAVの生成処理
 ///-------------------------------------------///
-void UAV::Create(ID3D12Device* device, ID3D12Resource* targetResorce, UINT numElements, UINT structureByteStride, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle) {
+void UAV::Create(ID3D12Device* device, ID3D12Resource* targetResource, UINT numElements, UINT structureByteStride, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle) {
 
 	// リソースを保存
-	resource_ = targetResorce;
+	resource_ = targetResource;
 
 	// デスクの設定
 	desc_.Format = DXGI_FORMAT_UNKNOWN;
@@ -10050,7 +10062,7 @@ ID3D12Resource* UAV::GetResource() const { return resource_; }
 File Path: Project/Engine/Graphics/Base/UAV.h
 ============================================================
 /// ===Include=== ///
-// Engien
+// Engine
 #include "Engine/Core/ComPtr.h"
 // directX
 #include <d3d12.h>
@@ -11791,7 +11803,7 @@ File Path: Project/Engine/Graphics/OffScreen/RenderTexture.h
 #include "Engine/Core/ComPtr.h"
 // Vector4
 #include "Math/Vector4.h"
-// DIrectX
+// DirectX
 #include <d3d12.h>
 // uint32_t
 #include <cstdint>
@@ -12988,7 +13000,7 @@ void ParticleGroup::Update() {
 ///-------------------------------------------///
 void ParticleGroup::Draw(BlendMode mode) {
     if (group_.numInstance > 0) {
-        group_.particle->Darw(group_.numInstance, mode);
+        group_.particle->Draw(group_.numInstance, mode);
     }
 }
 
@@ -13169,7 +13181,7 @@ const Vector3& ParticleGroup::GetEmitterPosition() const {return group_.transfor
 void ParticleGroup::InstancingInit(const std::string& modelName, const Vector3& translate, const uint32_t maxInstance, shapeType type) {
     /// ===パーティクルグループの初期化=== ///
     group_.particle = std::make_unique<ParticleSetUp>();
-    group_.particle->Initialze(modelName, maxInstance, type);
+    group_.particle->Initialize(modelName, maxInstance, type);
     translate;
 }
 
@@ -13845,7 +13857,6 @@ File Path: Project/Engine/Graphics/Particle/ParticleSetUp.cpp
 ///-------------------------------------------/// 
 /// コンストラクタ・デストラクタ
 ///-------------------------------------------///
-ParticleSetUp::ParticleSetUp() {}
 ParticleSetUp::~ParticleSetUp() { 
 	vertex_.reset();
 	index_.reset();
@@ -13858,8 +13869,8 @@ ParticleSetUp::~ParticleSetUp() {
 ///-------------------------------------------///
 // Texture
 void ParticleSetUp::SetTexture(const std::string& fileName) { modelData_.material.textureFilePath = fileName; }
-// material
-void ParticleSetUp::SetMatiarlData(const Vector4& color, const Matrix4x4& uvTransform) { common_->SetMatiarlData(color, uvTransform); }
+// Material
+void ParticleSetUp::SetMaterialData(const Vector4& color, const Matrix4x4& uvTransform) { common_->SetMatiarlData(color, uvTransform); }
 // instancing
 void ParticleSetUp::SetInstancingData(size_t index, const Vector4& color, const Matrix4x4& WVP, const Matrix4x4& World) { common_->SetInstancingData(index, color, WVP, World); }
 
@@ -13867,7 +13878,7 @@ void ParticleSetUp::SetInstancingData(size_t index, const Vector4& color, const 
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void ParticleSetUp::Initialze(const std::string& filename, const uint32_t kNumMaxInstance, shapeType type) {
+void ParticleSetUp::Initialize(const std::string& filename, const uint32_t kNumMaxInstance, shapeType type) {
 
 	/// ===コマンドリストのポインタの取得=== ///
 	ID3D12Device* device = GraphicsResourceGetter::GetDXDevice();
@@ -13949,7 +13960,7 @@ void ParticleSetUp::Initialze(const std::string& filename, const uint32_t kNumMa
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void ParticleSetUp::Darw(const uint32_t instance, BlendMode mode) {
+void ParticleSetUp::Draw(const uint32_t instance, BlendMode mode) {
 
 	/// ===コマンドリストのポインタの取得=== ///
 	ID3D12GraphicsCommandList* commandList = GraphicsResourceGetter::GetDXCommandList();
@@ -14114,12 +14125,12 @@ void ParticleSetUp::SetVertexBufferCylinder() {
 File Path: Project/Engine/Graphics/Particle/ParticleSetUp.h
 ============================================================
 #pragma once
-/// ===Icnlde=== ///
+/// ===Include=== ///
 // Buffer
 #include "Engine/Graphics/3d/Base/VertexBuffer3D.h"
 #include "Engine/Graphics/3d/Base/IndexBuffer3D.h"
 #include "ParticleCommon.h"
-// Pipleine
+// Pipeline
 #include "Engine/DataInfo/PipelineStateObjectType.h"
 // c++
 #include <memory>
@@ -14134,7 +14145,7 @@ class SRVManager;
 class ParticleSetUp {
 public:
 
-	ParticleSetUp();
+	ParticleSetUp() = default;
 	~ParticleSetUp();
 
 	/// <summary>
@@ -14143,21 +14154,21 @@ public:
 	/// <param name="filename">初期化に使用するファイルのパスまたは名前（const std::string&）。</param>
 	/// <param name="kNumMaxInstance">許可される最大インスタンス数（const uint32_t）。</param>
 	/// <param name="type">初期化対象の形状の種類を示す shapeType 値。</param>
-	void Initialze(const std::string& filename, const uint32_t kNumMaxInstance, shapeType type);
+	void Initialize(const std::string& filename, const uint32_t kNumMaxInstance, shapeType type);
 
 	/// <summary>
 	/// 描画処理
 	/// </summary>
 	/// <param name="instance">描画対象を示す uint32_t 型の識別子。関数内で変更されない（const）。</param>
 	/// <param name="mode">描画時に使用するブレンドモードを指定する（BlendMode 型の値）。</param>
-	void Darw(const uint32_t instance, BlendMode mode);
+	void Draw(const uint32_t instance, BlendMode mode);
 
 public: /// ===Setter=== ///
 
 	// テクスチャ
 	void SetTexture(const std::string& fileName);
 	// Material
-	void SetMatiarlData(const Vector4& color, const Matrix4x4& uvTransform);
+	void SetMaterialData(const Vector4& color, const Matrix4x4& uvTransform);
 	// Instancing
 	void SetInstancingData(size_t index, const Vector4& color, const Matrix4x4& WVP, const Matrix4x4& World);
 
@@ -14215,11 +14226,6 @@ File Path: Project/Engine/Graphics/Pipeline/CS/CSPSOCommon.cpp
 #include "Engine/Core/DXCommon.h"
 // c++
 #include <cassert>
-
-///-------------------------------------------/// 
-/// コンストラクタ
-///-------------------------------------------///
-CSPSOCommon::CSPSOCommon() = default;
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -14302,13 +14308,13 @@ class Compiler;
 class CSPSOCommon {
 public:
 
-	CSPSOCommon();
+	CSPSOCommon() = default;
 	~CSPSOCommon();
 
 	/// <summary>
 	/// PSOの生成処理
 	/// </summary>
-	/// <param name="dxcommon">DirectX に関連する共通リソース、デバイス、コンテキストを保持するオブジェクトへのポインタ。パイプライン作成に必要な環境情報を提供します。</param>
+	/// <param name="DXCommon">DirectX に関連する共通リソース、デバイス、コンテキストを保持するオブジェクトへのポインタ。パイプライン作成に必要な環境情報を提供します。</param>
 	/// <param name="compiler">シェーダやパイプラインステージをコンパイルするためのコンパイラオブジェクトへのポインタ。</param>
 	/// <param name="Type">作成するパイプラインの種類を指定する列挙型（PipelineType）の値。</param>
 	void Create(DXCommon* dxcommon, Compiler* compiler, PipelineType Type);
@@ -14945,7 +14951,7 @@ namespace {
 		// SkyBox（深度有効, 書き込みなし, 比較LessEqual）
 		{ PipelineType::PrimitiveSkyBox, CreateDepthDesc(true,  D3D12_DEPTH_WRITE_MASK_ZERO, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
 
-		// Oshan (深度有効、書き込み無し、比較LessEqual)
+		// Ocean (深度有効、書き込み無し、比較LessEqual)
 		{ PipelineType::PrimitiveOcean, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL)},
 
 		// Particle（深度有効, 書き込みなし, 比較LessEqual）
@@ -15036,11 +15042,6 @@ File Path: Project/Engine/Graphics/Pipeline/GS/GSPSOCommon.cpp
 #include "Engine/Core/DXCommon.h"
 // c++
 #include <cassert>
-
-///-------------------------------------------/// 
-/// コンストラクタ
-///-------------------------------------------///
-GSPSOCommon::GSPSOCommon() = default;
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -15173,18 +15174,18 @@ class DXCommon;
 class Compiler;
 
 ///=====================================================/// 
-/// GrapicsPipelineStateObjectCommon
+/// GraphicsPipelineStateObjectCommon
 ///=====================================================///
 class GSPSOCommon {
 public:
 
-	GSPSOCommon();
+	GSPSOCommon() = default;
 	~GSPSOCommon();
 
 	/// <summary>
 	/// PSOの生成処理
 	/// </summary>
-	/// <param name="dxcommon">DirectX に関連する共通リソース、デバイス、コンテキストを保持するオブジェクトへのポインタ。パイプライン作成に必要な環境情報を提供します。</param>
+	/// <param name="DXCommon">DirectX に関連する共通リソース、デバイス、コンテキストを保持するオブジェクトへのポインタ。パイプライン作成に必要な環境情報を提供します。</param>
 	/// <param name="compiler">シェーダやパイプラインステージをコンパイルするためのコンパイラオブジェクトへのポインタ。</param>
 	/// <param name="Type">作成するパイプラインの種類を指定する列挙型（PipelineType）の値。</param>
 	/// <param name="Mode">使用するブレンド動作を指定する列挙型（BlendMode）の値。</param>
@@ -15248,7 +15249,7 @@ namespace {
 
 	/// ===2D=== ///
 	ComPtr<ID3D12RootSignature> Type2D(ID3D12Device* device) {
-		// DescriptroRangeの生成
+		// DescriptorRangeの生成
 		D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 		descriptorRange[0].BaseShaderRegister = 0; // 0から始める
 		descriptorRange[0].NumDescriptors = 1; // 数は1つ
@@ -15344,7 +15345,7 @@ namespace {
 
 	/// ===3D=== ///
 	ComPtr<ID3D12RootSignature> Type3D(ID3D12Device* device) {
-		// DescriptroRangeの生成				
+		// DescriptorRangeの生成				
 		// t0用
 		D3D12_DESCRIPTOR_RANGE descriptorRange0 = {};
 		descriptorRange0.BaseShaderRegister = 0; // t0
@@ -15443,7 +15444,7 @@ namespace {
 
 	/// ===Particle=== ///
 	ComPtr<ID3D12RootSignature> TypeParticle(ID3D12Device* device) {
-		// DescriptroRangeの生成
+		// DescriptorRangeの生成
 		D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 		descriptorRange[0].BaseShaderRegister = 0; // 0から始める
 		descriptorRange[0].NumDescriptors = 1; // 数は1つ
@@ -15511,7 +15512,7 @@ namespace {
 
 	/// ===Skinning3D=== ///
 	ComPtr<ID3D12RootSignature> TypeSkinning3D(ID3D12Device* device) {
-		// DescriptroRangeの生成
+		// DescriptorRangeの生成
 		// t0用
 		D3D12_DESCRIPTOR_RANGE descriptorRange0 = {};
 		descriptorRange0.BaseShaderRegister = 0; // t0
@@ -15614,7 +15615,7 @@ namespace {
 
 	/// ===OffScreen=== ///
 	ComPtr<ID3D12RootSignature> TypeOffScreen(ID3D12Device* device) {
-		// DescriptroRangeの生成
+		// DescriptorRangeの生成
 		D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 		descriptorRange[0].BaseShaderRegister = 0; // 0から始める
 		descriptorRange[0].NumDescriptors = 1; // 数は1つ
@@ -15670,7 +15671,7 @@ namespace {
 
 	/// ===OffScreen(Vignette)=== ///
 	ComPtr<ID3D12RootSignature> TypeOffScreenOneBuffer(ID3D12Device* device) {
-		// DescriptroRangeの生成
+		// DescriptorRangeの生成
 		D3D12_DESCRIPTOR_RANGE descriptorRange = {};
 		descriptorRange.BaseShaderRegister = 0; // 0から始める
 		descriptorRange.NumDescriptors = 1; // 数は1つ
@@ -15729,7 +15730,7 @@ namespace {
 
 	/// ===OffScreen(Dissolve)=== ///
 	ComPtr<ID3D12RootSignature> TypeOffScreenDissolve(ID3D12Device* device) {
-		// DescriptroRangeの生成
+		// DescriptorRangeの生成
 		D3D12_DESCRIPTOR_RANGE descriptorRange0 = {};
 		descriptorRange0.BaseShaderRegister = 0; // 0から始める
 		descriptorRange0.NumDescriptors = 1; // 数は1つ
@@ -15801,7 +15802,7 @@ namespace {
 
 	/// ===OffScreen(ShatterGlass)=== ///
 	ComPtr<ID3D12RootSignature> TypeOffScreenShatterGlass(ID3D12Device* device) {
-		// DescriptroRangeの生成
+		// DescriptorRangeの生成
 		D3D12_DESCRIPTOR_RANGE descriptorRange0 = {};
 		descriptorRange0.BaseShaderRegister = 0; // 0から始める
 		descriptorRange0.NumDescriptors = 1; // 数は1つ
@@ -15878,7 +15879,7 @@ namespace {
 
 	/// ===SkyBox=== ///
 	ComPtr<ID3D12RootSignature> TypeSkyBox(ID3D12Device* device) {
-		// DescriptroRangeの生成				
+		// DescriptorRangeの生成				
 		// t0用
 		D3D12_DESCRIPTOR_RANGE descriptorRange0 = {};
 		descriptorRange0.BaseShaderRegister = 0; // t0
@@ -15942,8 +15943,8 @@ namespace {
 		return rootSignature;
 	}
 
-	/// ===Oshan=== ///
-	ComPtr<ID3D12RootSignature> TypeOshan(ID3D12Device* device) {
+	/// ===Ocean=== ///
+	ComPtr<ID3D12RootSignature> TypeOcean(ID3D12Device* device) {
 		// ルートシグネチャの作成
 		D3D12_ROOT_PARAMETER rootParameters[5] = {};
 
@@ -16009,7 +16010,7 @@ namespace {
 		{ PipelineType::CircularGauge2D,	Type2D },
 		{ PipelineType::Obj3D,				Type3D },
 		{ PipelineType::PrimitiveSkyBox,	Type3D },
-		{ PipelineType::PrimitiveOcean,     TypeOshan },
+		{ PipelineType::PrimitiveOcean,     TypeOcean },
 		{ PipelineType::Particle,			TypeParticle },
 		{ PipelineType::Skinning3D,			TypeSkinning3D  },
 		{ PipelineType::Line3D,				TypeLine3D },
@@ -17347,8 +17348,8 @@ void MyGame::LoadTexture() {
 	Loader::LoadTexture("aButton", "GameUI/xbox_button_color_a.png");
 	Loader::LoadTexture("leftStick", "GameUI/xbox_stick_l.png");
 	Loader::LoadTexture("rightStick", "GameUI/xbox_stick_r.png");
-	// GameAnimaiton
-	Loader::LoadTexture("GameOvverAnimation", "Animation/GameOverAnimation.png");
+	// GameAnimation
+	Loader::LoadTexture("GameOverAnimation", "Animation/GameOverAnimation.png");
 }
 
 ///-------------------------------------------/// 
@@ -17432,8 +17433,6 @@ public:
 	void Draw() override;
 
 private:/// ====== ///
-	// ゲーム終了フラグ
-	bool endRequst_ = false;
 
 	/// ===シーン=== ///
 	// シーンマネージャ
@@ -21579,8 +21578,8 @@ void ColliderManager::CheckPairCollision(Collider* colliderA, Collider* collider
 
 
 	// Colliderが持っているフラグを変更
-	colliderA->SetIsCollisison(isHit);
-	colliderB->SetIsCollisison(isHit);
+	colliderA->SetIsCollision(isHit);
+	colliderB->SetIsCollision(isHit);
 
 	if (isHit) {
 		colliderA->OnCollision(colliderB);
@@ -21651,19 +21650,19 @@ bool ColliderManager::OBBToOBBCollision(OBBCollider* a, OBBCollider* b) {
 }
 // 球とAABB
 bool ColliderManager::SphereToAABBCollision(SphereCollider* sphere, AABBCollider* aabb) {
-	Sphere spherecol = sphere->GetSphere();
-	AABB aabbcol = aabb->GetAABB();
+	Sphere sphereCol = sphere->GetSphere();
+	AABB aabbCol = aabb->GetAABB();
 
 	Vector3 closestPoint = {
-		std::clamp(spherecol.center.x, aabbcol.min.x, aabbcol.max.x),
-		std::clamp(spherecol.center.y, aabbcol.min.y, aabbcol.max.y),
-		std::clamp(spherecol.center.z, aabbcol.min.z, aabbcol.max.z)
+		std::clamp(sphereCol.center.x, aabbCol.min.x, aabbCol.max.x),
+		std::clamp(sphereCol.center.y, aabbCol.min.y, aabbCol.max.y),
+		std::clamp(sphereCol.center.z, aabbCol.min.z, aabbCol.max.z)
 	};
 
-	Vector3 diff = spherecol.center - closestPoint;
+	Vector3 diff = sphereCol.center - closestPoint;
 
 	// 衝突の判定
-	if (Dot(diff) <= (spherecol.radius * spherecol.radius)) {
+	if (Dot(diff) <= (sphereCol.radius * sphereCol.radius)) {
 		return true;
 	} else {
 		return false;
@@ -21672,17 +21671,17 @@ bool ColliderManager::SphereToAABBCollision(SphereCollider* sphere, AABBCollider
 // AABBとOBB
 bool ColliderManager::AABBToOBBCollision(AABBCollider* aabb, OBBCollider* obb) {
 	AABB aabbCol = aabb->GetAABB();
-	OBB oobbColbb = obb->GetOBB();
+	OBB obbCol = obb->GetOBB();
 
 	// AABBをOBBに変換
-	OBB fakeAABB;
+	OBB fakeAABB = {};
 	fakeAABB.center = (aabbCol.min + aabbCol.max) * 0.5f;
 	fakeAABB.halfSize = (aabbCol.max - aabbCol.min) * 0.5f;
 	fakeAABB.axis[0] = { 1.0f, 0.0f, 0.0f };
 	fakeAABB.axis[1] = { 0.0f, 1.0f, 0.0f };
 	fakeAABB.axis[2] = { 0.0f, 0.0f, 1.0f };
 
-	return OBBSATCollision(fakeAABB, oobbColbb);
+	return OBBSATCollision(fakeAABB, obbCol);
 }
 // 球とOBB
 bool ColliderManager::SphereToOBBCollision(SphereCollider* sphere, OBBCollider* obb) {
@@ -21722,7 +21721,7 @@ bool ColliderManager::SphereToOBBCollision(SphereCollider* sphere, OBBCollider* 
 bool ColliderManager::OBBSATCollision(const OBB& a, const OBB& b) {
 	const float EPSILON = 1e-6f;
 
-	Vector3 axes[15];
+	Vector3 axes[15] = {};
 	int axisCount = 0;
 
 	// 3軸 + 3軸
@@ -22772,7 +22771,7 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directorP
 	assert(file.is_open()); // とりあえず開けなかったら止める
 	//materialData.textureFilePath = directorPath + "/" + filename; // テクスチャファイルパスを入れる
 
-	/// ===ファイルを読み、MateiralDataを構築=== ///
+	/// ===ファイルを読み、MaterialDataを構築=== ///
 	while (std::getline(file, line)) {
 		std::string identifier;
 		std::istringstream s(line);
@@ -22795,7 +22794,7 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& directorP
 ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std::string& filename) {
 	ModelData modelData; // 構築するModelData
 
-	/// ===assimpでobjを読む=== ///
+	/// ===Assimpでobjを読む=== ///
 	Assimp::Importer importer;
 	std::string filePath = directoryPath + "/" + filename;
 	const aiScene* scene = importer.ReadFile(filePath.c_str(), aiProcess_FlipWindingOrder | aiProcess_FlipUVs);
@@ -22842,15 +22841,15 @@ ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std:
 				std::string jointName = bone->mName.C_Str();
 				jointWeightData& jointWeightData = modelData.skinClusterData[jointName];
 				/// ===InverseBindPoseMatrixの抽出=== ///
-				aiMatrix4x4 bindPoseMatrixAsimp = bone->mOffsetMatrix.Inverse(); // BindePoseMatrxに戻す
+				aiMatrix4x4 bindPoseMatrixAssimp = bone->mOffsetMatrix.Inverse(); // BindPoseMatrixに戻す
 				aiVector3D scale, translate;
 				aiQuaternion rotate;
-				bindPoseMatrixAsimp.Decompose(scale, rotate, translate); // 成分を抽出
+				bindPoseMatrixAssimp.Decompose(scale, rotate, translate); // 成分を抽出
 				// 左手系のBindPoseMatrixを作成
 				Matrix4x4 bindPoseMatrix = Math::MakeAffineQuaternionMatrix(
 					{ scale.x, scale.y, scale.z }, { rotate.x, -rotate.y, -rotate.z, rotate.w }, { -translate.x, translate.y, translate.z });
 				// InverseBindMatrixにする
-				jointWeightData.inverseBindPosematrix = Math::Inverse4x4(bindPoseMatrix);
+				jointWeightData.inverseBindPoseMatrix = Math::Inverse4x4(bindPoseMatrix);
 				/// ===Weight情報を取り出す=== ///
 				for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex) {
 					jointWeightData.vertexWeights.push_back({ bone->mWeights[weightIndex].mWeight, bone->mWeights[weightIndex].mVertexId });
@@ -23514,11 +23513,11 @@ void PipelineManager::Initialize(DXCommon* dxCommon) {
 				auto key = std::make_pair(type, mode);
 
 				// パイプラインの作成
-				auto GSpipeline = std::make_unique<GSPSOCommon>();
-				GSpipeline->Create(dxCommon, compiler_[type].get(), type, mode);
+				auto GSPipeline = std::make_unique<GSPSOCommon>();
+				GSPipeline->Create(dxCommon, compiler_[type].get(), type, mode);
 
 				// パイプラインの追加
-				graphicsPipelines_[key] = std::move(GSpipeline);
+				graphicsPipelines_[key] = std::move(GSPipeline);
 			}
 		}
 	}
@@ -23664,9 +23663,8 @@ File Path: Project/Engine/System/Managers/RTVManager.cpp
 #include "Engine/Core/DXCommon.h"
 
 ///-------------------------------------------/// 
-/// コンストラクタ・デストラクタ
+/// デストラクタ
 ///-------------------------------------------///
-RTVManager::RTVManager() = default;
 RTVManager::~RTVManager() {
 	descriptorHeap_.Reset();
 }
@@ -23735,7 +23733,7 @@ uint32_t RTVManager::Allocate() {
 	// 上で記録した番号をreturn(0番はImGuiだから+1)
 	return index;
 }
-bool RTVManager::AssertAllocate() { return useIndex_ < kMaxRTVCount_; }
+bool RTVManager::AssertAllocate() const { return useIndex_ < kMaxRTVCount_; }
 
 ///-------------------------------------------/// 
 /// 作成
@@ -23771,7 +23769,7 @@ File Path: Project/Engine/System/Managers/RTVManager.h
 // c++
 #include <cstdint>
 #include <cassert>
-// Engien
+// Engine
 #include "Engine/Core/ComPtr.h"
 
 /// ===前方宣言=== ///
@@ -23783,7 +23781,7 @@ class DXCommon;
 class RTVManager {
 public:
 
-	RTVManager();
+	RTVManager() = default;
 	~RTVManager();
 
 	/// <summary>
@@ -23808,7 +23806,6 @@ public:
 	/// <param name="color">RGBA 順の 4 要素配列で指定するクリア色。各要素は通常 0.0 から 1.0 の浮動小数点値です。</param>
 	void ClearRenderTargetView(ID3D12GraphicsCommandList* commandList, uint32_t index, const float color[4]);
 
-
 	/// <summary>
 	/// リソースの割り当てを行い、割り当てられた識別子を返す
 	/// </summary>
@@ -23819,7 +23816,7 @@ public:
 	/// メモリ割り当ての成否を検証
 	/// </summary>
 	/// <returns>アロケーションが成功した場合は true、失敗した場合は false を返します。</returns>
-	bool AssertAllocate();
+	bool AssertAllocate() const;
 
 	/// <summary>
 	/// スワップチェーン用のレンダーターゲットを作成
@@ -23864,11 +23861,9 @@ File Path: Project/Engine/System/Managers/SRVManager.cpp
 const uint32_t SRVManager::kMaxSRVCount_ = 512;
 
 ///-------------------------------------------/// 
-/// コンストラクタ、デストラクタ
+/// デストラクタ
 ///-------------------------------------------///
-SRVManager::SRVManager() = default;
-SRVManager::~SRVManager(){}
-
+SRVManager::~SRVManager() {}
 
 ///-------------------------------------------/// 
 /// Setter
@@ -23883,13 +23878,13 @@ void SRVManager::SetGraphicsRootDescriptorTable(UINT RootParameterIndex, uint32_
 ///-------------------------------------------///
 // DescriptorHeap
 ID3D12DescriptorHeap* SRVManager::GetDescriptorHeap() const { return descriptorHeap_.Get(); }
-// CPUHandl
+// CPUHandle
 D3D12_CPU_DESCRIPTOR_HANDLE SRVManager::GetCPUDescriptorHandle(uint32_t index) {
 	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap_->GetCPUDescriptorHandleForHeapStart();
 	handleCPU.ptr += (descriptorSize_ * index);
 	return handleCPU;
 }
-// GPUHandl
+// GPUHandle
 D3D12_GPU_DESCRIPTOR_HANDLE SRVManager::GetGPUDescriptorHandle(uint32_t index) {
 	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap_->GetGPUDescriptorHandleForHeapStart();
 	handleGPU.ptr += (descriptorSize_ * index);
@@ -23946,7 +23941,7 @@ uint32_t SRVManager::Allocate() {
 	return index + 1;
 }
 // 上限チャック
-bool SRVManager::AssertAllocate() { return useIndex_ < kMaxSRVCount_; }
+bool SRVManager::AssertAllocate() const  { return useIndex_ < kMaxSRVCount_; }
 
 
 ///-------------------------------------------/// 
@@ -24015,7 +24010,7 @@ class DXCommon;
 class SRVManager {
 public:
 
-	SRVManager();
+	SRVManager() = default;
 	~SRVManager();
 
 	/// <summary>
@@ -24047,7 +24042,7 @@ public:
 	/// メモリ割り当ての成否を検証
 	/// </summary>
 	/// <returns>アロケーションが成功した場合は true、失敗した場合は false を返します。</returns>
-	bool AssertAllocate();
+	bool AssertAllocate() const;
 
 	/// <summary>
 	/// 2D テクスチャ用の SRV（Shader Resource View）を作成
@@ -24431,7 +24426,7 @@ uint32_t TextureManager::kSRVIndexTop_ = 1;
 /// デストラクタ
 ///-------------------------------------------///
 TextureManager::~TextureManager() {
-	textureDatas_.clear();
+	textureDates_.clear();
 }
 
 ///-------------------------------------------/// 
@@ -24439,12 +24434,12 @@ TextureManager::~TextureManager() {
 ///-------------------------------------------///
 // メタデータの取得
 const DirectX::TexMetadata& TextureManager::GetMetaData(const std::string& Key) {
-	TextureData& textureData = textureDatas_[Key];
+	TextureData& textureData = textureDates_[Key];
 	return textureData.metadata;
 }
 // GPUハンドルの取得
 D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSRVHandleGPU(const std::string& Key) {
-	TextureData& textureData = textureDatas_[Key];
+	TextureData& textureData = textureDates_[Key];
 	return textureData.srvHandleGPU;
 }
 
@@ -24454,7 +24449,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSRVHandleGPU(const std::string& K
 // テクスチャの設定
 void TextureManager::SetGraphicsRootDescriptorTable(
 	ID3D12GraphicsCommandList* commandList, UINT rootParameterIndex, std::string Key) {
-	commandList->SetGraphicsRootDescriptorTable(rootParameterIndex, textureDatas_[Key].srvHandleGPU);
+	commandList->SetGraphicsRootDescriptorTable(rootParameterIndex, textureDates_[Key].srvHandleGPU);
 }
 
 ///-------------------------------------------/// 
@@ -24469,7 +24464,7 @@ void TextureManager::Initialize(DXCommon* dxCommon, SRVManager* srvManager) {
 	srvManager_ = srvManager;
 
 	// SRVの数と同数
-	textureDatas_.reserve(SRVManager::kMaxSRVCount_);
+	textureDates_.reserve(SRVManager::kMaxSRVCount_);
 }
 
 ///-------------------------------------------/// 
@@ -24478,7 +24473,7 @@ void TextureManager::Initialize(DXCommon* dxCommon, SRVManager* srvManager) {
 void TextureManager::LoadTexture(const std::string& key, const std::string& filePath) {
 
 	// 読み込み済みのテクスチャを検索
-	if (textureDatas_.contains(key)) {
+	if (textureDates_.contains(key)) {
 		assert(srvManager_->AssertAllocate());
 		return;
 	}
@@ -24487,7 +24482,7 @@ void TextureManager::LoadTexture(const std::string& key, const std::string& file
 	assert(srvManager_->Allocate());
 
 	// テクスチャデータを追加して書き込む
-	TextureData& textureData = textureDatas_[key];
+	TextureData& textureData = textureDates_[key];
 	// テクスチャデータの読み込み
 	textureData.filePath = filePath;
 	DirectX::ScratchImage mipImages = Load(key, filePath); // ミップマップの作成
@@ -24603,20 +24598,20 @@ ComPtr<ID3D12Resource> TextureManager::CreateTextureResource(const DirectX::TexM
 ComPtr<ID3D12Resource> TextureManager::UploadTextureData(ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages) {
 
 	/// ===IntermediateResource(中間リソース)=== ///
-	std::vector<D3D12_SUBRESOURCE_DATA> subresources;
+	std::vector<D3D12_SUBRESOURCE_DATA> subResources;
 	// PrepareUploadを利用して、読み込んだデータからDirectX12用のサブリソースの配列を作成
-	DirectX::PrepareUpload(dxCommon_->GetDevice(), mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subresources);
-	// Subresourceの数を元に、コピー元となるIntermediateRewsourceに必要なサイズを計算
-	uint64_t intermediateSize = GetRequiredIntermediateSize(texture.Get(), 0, UINT(subresources.size()));
+	DirectX::PrepareUpload(dxCommon_->GetDevice(), mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subResources);
+	// SubResourceの数を元に、コピー元となるIntermediateResourceに必要なサイズを計算
+	uint64_t intermediateSize = GetRequiredIntermediateSize(texture.Get(), 0, UINT(subResources.size()));
 	// 計算したサイズでIntermediateResourceを作成　
 	ComPtr<ID3D12Resource> intermediateResource = nullptr;
 	intermediateResource = CreateBufferResourceComPtr(dxCommon_->GetDevice(), intermediateSize);
 
 	/// ===データ転送コマンドに積む=== ///
-	UpdateSubresources(dxCommon_->GetCommandList(), texture.Get(), intermediateResource.Get(), 0, 0, UINT(subresources.size()), subresources.data());
+	UpdateSubresources(dxCommon_->GetCommandList(), texture.Get(), intermediateResource.Get(), 0, 0, UINT(subResources.size()), subResources.data());
 
 	/// ===ResourceStateを変更し、IntermediateResourceを返す=== ///
-	// Tetrueへの転送後は利用できるようにD3D12_RESOURCE_STATE_COPY_DESTからD3D12_RESOURCE_STATE_GENERIC_READへResourceStateを変更
+	// Textureへの転送後は利用できるようにD3D12_RESOURCE_STATE_COPY_DESTからD3D12_RESOURCE_STATE_GENERIC_READへResourceStateを変更
 	D3D12_RESOURCE_BARRIER barrier{};
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
@@ -24714,7 +24709,7 @@ private:/// ===Variables(変数)=== ///
 
 	/// ===テクスチャデータコンテナ=== ///
 	// テクスチャデータ
-	std::unordered_map<std::string, TextureData> textureDatas_;
+	std::unordered_map<std::string, TextureData> textureDates_;
 
 private:/// ===Functions(関数)=== ///
 	
@@ -25821,8 +25816,8 @@ File Path: Project/Engine/System/Service/ParticleService.cpp
 // JSONから定義を読み込み
 void ParticleService::LoadParticleDefinition(const std::string& jsonPath) {
 	// ベースのディレクトリパス
-	const std::string& baseDirectiorPath = "./Resource/Json/Particles";
-	return ServiceLocator::GetParticleManager()->LoadParticleDefinition(baseDirectiorPath + "/" + jsonPath);
+	const std::string& baseDirectoryPath = "./Resource/Json/Particles";
+	return ServiceLocator::GetParticleManager()->LoadParticleDefinition(baseDirectoryPath + "/" + jsonPath);
 }
 
 // 定義を直接追加
@@ -26093,7 +26088,7 @@ void ServiceLocator::ProvideAll(const ServiceRegister& registry) {
 	assert(registry.srvManager);
 	assert(registry.dsvManager);
 	assert(registry.rtvManager);
-	// PiplineManager
+	// PipelineManager
 	assert(registry.pipelineManager);
 	// TextureManager
 	assert(registry.textureManager);
@@ -26133,7 +26128,7 @@ void ServiceLocator::ProvideAll(const ServiceRegister& registry) {
 	srvManager_ = registry.srvManager;
 	rtvManager_ = registry.rtvManager;
 	dsvManager_ = registry.dsvManager;
-	// Pipline
+	// PipelineManager
 	pipelineManager_ = registry.pipelineManager;
 	// Texture
 	textureManager_ = registry.textureManager;
@@ -26593,11 +26588,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\GrayScaleEffect.cpp" />
     <ClCompile Include="application\Game\Object\GameGround\Ground.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemy.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemeyBullet.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemyBullet.cpp" />
     <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacter.cpp" />
     <ClCompile Include="Engine\Camera\FollowCamera.cpp" />
     <ClCompile Include="application\Game\Camera\GameCamera.cpp" />
-    <ClCompile Include="application\Game\Object\GameGround\GroundOshan.cpp" />
+    <ClCompile Include="application\Game\Object\GameGround\GroundOcean.cpp" />
     <ClCompile Include="application\Game\Animation\GameOverAnimation.cpp" />
     <ClCompile Include="application\Game\Object\GameStage.cpp" />
     <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp" />
@@ -26735,7 +26730,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
     <ClInclude Include="Engine\System\Service\DeltaTimeSevice.h" />
     <ClInclude Include="Engine\System\DeltraTime\DeltaTime.h" />
-    <ClInclude Include="Engine\DataInfo\OshanData.h" />
+    <ClInclude Include="Engine\DataInfo\OceanData.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\BoxFilter3x3Effect.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\BoxFilter5x5Effect.h" />
@@ -26762,11 +26757,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\GrayScaleEffect.h" />
     <ClInclude Include="application\Game\Object\GameGround\Ground.h" />
     <ClInclude Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemy.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemeyBullet.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemyBullet.h" />
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h" />
     <ClInclude Include="Engine\Camera\FollowCamera.h" />
     <ClInclude Include="application\Game\Camera\GameCamera.h" />
-    <ClInclude Include="application\Game\Object\GameGround\GroundOshan.h" />
+    <ClInclude Include="application\Game\Object\GameGround\GroundOcean.h" />
     <ClInclude Include="application\Game\Animation\GameOverAnimation.h" />
     <ClInclude Include="application\Game\Object\GameStage.h" />
     <ClInclude Include="application\Game\Animation\GameClearAnimation.h" />
@@ -27202,7 +27197,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Enemy\CloseRange\CloseRangeEnemy.cpp">
       <Filter>application\Game\Entity\Enemy\CloseRange</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemeyBullet.cpp">
+    <ClCompile Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemyBullet.cpp">
       <Filter>application\Game\Entity\Enemy\LongRange</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemy.cpp">
@@ -27571,7 +27566,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Object\GameGround\Ground.cpp">
       <Filter>application\Game\Object\GameGround</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Object\GameGround\GroundOshan.cpp">
+    <ClCompile Include="application\Game\Object\GameGround\GroundOcean.cpp">
       <Filter>application\Game\Object\GameGround</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp">
@@ -27628,7 +27623,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Enemy\CloseRange\CloseRangeEnemy.h">
       <Filter>application\Game\Entity\Enemy\CloseRange</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemeyBullet.h">
+    <ClInclude Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemyBullet.h">
       <Filter>application\Game\Entity\Enemy\LongRange</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemy.h">
@@ -28039,7 +28034,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Object\GameGround\Ground.h">
       <Filter>application\Game\Object\GameGround</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Object\GameGround\GroundOshan.h">
+    <ClInclude Include="application\Game\Object\GameGround\GroundOcean.h">
       <Filter>application\Game\Object\GameGround</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Object\StageObject\StageObject.h">
@@ -28054,7 +28049,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\Graphics\3d\Ocean\OceanCommon.h">
       <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\DataInfo\OshanData.h">
+    <ClInclude Include="Engine\DataInfo\OceanData.h">
       <Filter>Engine\DataInfo</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
@@ -28734,7 +28729,7 @@ File Path: Project/Math/Matrix3x3.cpp
 ///=====================================================///
 Matrix3x3 Add(const Matrix3x3& m1, const Matrix3x3& m2) {
 
-	Matrix3x3 result;
+	Matrix3x3 result{};
 
 	result.m[0][0] = m1.m[0][0] + m2.m[0][0];
 	result.m[0][1] = m1.m[0][1] + m2.m[0][1];
@@ -28754,7 +28749,7 @@ Matrix3x3 Add(const Matrix3x3& m1, const Matrix3x3& m2) {
 ///=====================================================///
 Matrix3x3 Subject(const Matrix3x3& m1, const Matrix3x3& m2) {
 
-	Matrix3x3 result;
+	Matrix3x3 result{};
 
 	result.m[0][0] = m1.m[0][0] - m2.m[0][0];
 	result.m[0][1] = m1.m[0][1] - m2.m[0][1];
@@ -28838,7 +28833,7 @@ File Path: Project/Math/Matrix4x4.cpp
 ///=====================================================///
 Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2) {
 
-	Matrix4x4 result;
+	Matrix4x4 result = {};
 
 	result.m[0][0] = m1.m[0][0] + m2.m[0][0];
 	result.m[0][1] = m1.m[0][1] + m2.m[0][1];
@@ -28865,7 +28860,7 @@ Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2) {
 ///=====================================================///
 Matrix4x4 Subject(const Matrix4x4& m1, const Matrix4x4& m2) {
 
-	Matrix4x4 result;
+	Matrix4x4 result = {};
 
 	result.m[0][0] = m1.m[0][0] - m2.m[0][0];
 	result.m[0][1] = m1.m[0][1] - m2.m[0][1];
@@ -29033,7 +29028,7 @@ Matrix4x4 Math::MakeRotateQuaternionMatrix(const Quaternion q) {
 	float wy = q.w * q.y;
 	float wz = q.w * q.z;
 
-	Matrix4x4 result;
+	Matrix4x4 result = {};
 	result.m[0][0] = 1.0f - 2.0f * (yy + zz);
 	result.m[0][1] = 2.0f * (xy + wz);
 	result.m[0][2] = 2.0f * (xz - wy);
@@ -29307,7 +29302,7 @@ Matrix4x4 Math::Inverse4x4(const Matrix4x4& matrix) {
 ///=====================================================///
 // 座標変換（平行移動を加味する）
 Vector3 Math::TransformCoordinates(const Vector3& vector, const Matrix4x4& matrix) {
-	Vector3 result;
+	Vector3 result = {};
 	result.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0] + 1.0f * matrix.m[3][0];
 	result.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1] + 1.0f * matrix.m[3][1];
 	result.z = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2] + 1.0f * matrix.m[3][2];
@@ -29323,7 +29318,7 @@ Vector3 Math::TransformCoordinates(const Vector3& vector, const Matrix4x4& matri
 }
 // ベクトル変換（平行移動を加味しない）
 Vector3 Math::TransformVector(const Vector3& vector, const Matrix4x4& matrix) {
-	Vector3 result;
+	Vector3 result = {};
 	result.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0];
 	result.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1];
 	result.z = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2];
@@ -29342,7 +29337,7 @@ Vector3 Math::TransformNormal(const Vector3& normal, const Matrix4x4& matrix) {
 ///=====================================================///
 // Quaternion
 Quaternion Math::MatrixToQuaternion(const Matrix4x4& m) {
-	Quaternion q;
+	Quaternion q = {};
 	float trace = m.m[0][0] + m.m[1][1] + m.m[2][2];
 
 	if (trace > 0.0f) {
@@ -30246,7 +30241,7 @@ Quaternion Math::Inverse(const Quaternion& quaternion) {
 }
 // 任意軸回転Quaternionを返す
 Quaternion Math::MakeRotateAxisAngle(const Vector3& axis, float angle) {
-    Quaternion result;
+    Quaternion result = {};
     float halfAngle = angle / 2.0f;
     float sinHalfAngle = sinf(halfAngle);
     result.x = axis.x * sinHalfAngle;
@@ -30257,7 +30252,7 @@ Quaternion Math::MakeRotateAxisAngle(const Vector3& axis, float angle) {
 }
 // Quaternionの回転結果をベクトルで返す
 Vector3 Math::RotateVector(const Vector3& vector, const Quaternion& quaternion) {
-    Vector3 result;
+    Vector3 result = {};
     Quaternion q = quaternion;
     Quaternion v = { vector.x,vector.y,vector.z,0.0f };
     Quaternion qConjugate = Conjugate(q);
@@ -30284,7 +30279,7 @@ float Math::GetYAngle(const Quaternion& quaternion) {
 }
 // QuaternionをEulerAngles(Vector3)に変換する関数
 Vector3 Math::QuaternionToEuler(const Quaternion& quaternion) {
-    Vector3 euler;
+    Vector3 euler = {};
 
     // Yaw (ヨー: Y軸回転)
     euler.y = std::atan2(2.0f * (quaternion.w * quaternion.y + quaternion.x * quaternion.z), 1.0f - 2.0f * (quaternion.y * quaternion.y + quaternion.z * quaternion.z));
@@ -30310,7 +30305,7 @@ Quaternion Math::QuaternionFromVector(const Vector3& vector) {
     float cz = std::cos(vector.z * 0.5f);
     float sz = std::sin(vector.z * 0.5f);
 
-    Quaternion q;
+    Quaternion q = {};
     q.w = cx * cy * cz + sx * sy * sz;
     q.x = sx * cy * cz - cx * sy * sz;
     q.y = cx * sy * cz + sx * cy * sz;
@@ -30378,14 +30373,14 @@ Quaternion Math::RotateZ(float angle) {
 Quaternion Math::ApplyPitchToCurrentRotation(const Quaternion& currentYRotation, float pitchAngleDegrees) {
     // X軸周りの回転クォータニオンを作成
     float halfAngle = pitchAngleDegrees * 0.5f * (Pi() / 180.0f); // ラジアンに変換
-    Quaternion pitchRotation;
+    Quaternion pitchRotation = {};
     pitchRotation.x = sinf(halfAngle);
     pitchRotation.y = 0.0f;
     pitchRotation.z = 0.0f;
     pitchRotation.w = cosf(halfAngle);
 
     // 現在のY軸回転に、X軸回転を合成
-    Quaternion result;
+    Quaternion result = {};
 
     float w1 = currentYRotation.w, x1 = currentYRotation.x;
     float y1 = currentYRotation.y, z1 = currentYRotation.z;
@@ -30409,7 +30404,7 @@ float Math::Lerp(float start, float end, float t) {
 }
 // Vector3
 Vector3 Math::Lerp(const Vector3& start, const Vector3& end, float t) {
-    Vector3 result;
+    Vector3 result = {};
 
     result.x = (1.0f - t) * start.x + t * end.x;
     result.y = (1.0f - t) * start.y + t * end.y;
@@ -30419,7 +30414,7 @@ Vector3 Math::Lerp(const Vector3& start, const Vector3& end, float t) {
 }
 // Quaternion
 Quaternion Math::Lerp(const Quaternion& start, const Quaternion& end, float t) {
-    Quaternion result;
+    Quaternion result = {};
 
     result.x = (1.0f - t) * start.x + t * end.x;
     result.y = (1.0f - t) * start.y + t * end.y;
@@ -30438,15 +30433,15 @@ Vector3 Math::SLerp(const Vector3& start, const Vector3& end, float t) {
     float angle = std::cosf(Dot(start, end));
 
     // 線形補間を計算する
-    float scalestart = std::sinf((1.0f - t) * angle) / std::sinf(angle);
+    float scaleStart = std::sinf((1.0f - t) * angle) / std::sinf(angle);
 
-    float scaleend = std::sinf(t * angle) / std::sinf(angle);
+    float scaleEnd = std::sinf(t * angle) / std::sinf(angle);
 
-    Vector3 result;
+    Vector3 result = {};
 
-    result.x = scalestart * start.x + scaleend * end.x;
-    result.y = scalestart * start.y + scaleend * end.y;
-    result.z = scalestart * start.z + scaleend * end.z;
+    result.x = scaleStart * start.x + scaleEnd * end.x;
+    result.y = scaleStart * start.y + scaleEnd * end.y;
+    result.z = scaleStart * start.z + scaleEnd * end.z;
 
     return result;
 }
@@ -30864,7 +30859,7 @@ void Line::DrawOBB(const OBB& obb, const Vector4& color) {
 	};
 
 	// ワールド座標に変換（回転適用 & 平行移動）
-	Vector3 worldVertices[8];
+	Vector3 worldVertices[8] = {};
 	for (int i = 0; i < 8; i++) {
 		worldVertices[i] =
 			obb.center +
@@ -31206,7 +31201,7 @@ Vector3 Line::CalculateQuadraticBezier(const Vector3& p0, const Vector3& p1, con
 	float tt = t * t;
 
 	// (1-t)^2 * P0 + 2(1-t) * t * P1 + t^2 * P2
-	Vector3 point;
+	Vector3 point = {};
 	point.x = uu * p0.x + 2.0f * u * t * p1.x + tt * p2.x;
 	point.y = uu * p0.y + 2.0f * u * t * p1.y + tt * p2.y;
 	point.z = uu * p0.z + 2.0f * u * t * p1.z + tt * p2.z;
@@ -31225,7 +31220,7 @@ Vector3 Line::CalculateCubicBezier(const Vector3& p0, const Vector3& p1, const V
 	float ttt = tt * t;
 
 	// (1-t)^3 * P0 + 3(1-t)^2 * t * P1 + 3(1-t) * t^2 * P2 + t^3 * P3
-	Vector3 point;
+	Vector3 point = {};
 	point.x = uuu * p0.x + 3.0f * uu * t * p1.x + 3.0f * u * tt * p2.x + ttt * p3.x;
 	point.y = uuu * p0.y + 3.0f * uu * t * p1.y + 3.0f * u * tt * p2.y + ttt * p3.y;
 	point.z = uuu * p0.z + 3.0f * uu * t * p1.z + 3.0f * u * tt * p2.z + ttt * p3.z;
@@ -31594,12 +31589,12 @@ void Object3d::SetLight(LightType type) {
 	}
 }
 // 環境マップ
-void Object3d::SetEnviromentMapData(bool flag, float string) {
+void Object3d::SetEnvironmentMapData(bool flag, float string) {
 	// タイプで分岐
 	if (type_ == ObjectType::Model) {
-		model_->SetEnviromentMapData(flag, string);
+		model_->SetEnvironmentMapData(flag, string);
 	} else {
-		animationModel_->SetEnviromentMapData(flag, string);
+		animationModel_->SetEnvironmentMapData(flag, string);
 	}
 }
 // Animation
@@ -31695,7 +31690,7 @@ public: /// ===Setter=== ///
 	// LightData
 	void SetLightData(LightInfo light);
 	// 環境マップ
-	void SetEnviromentMapData(bool flag, float string);
+	void SetEnvironmentMapData(bool flag, float string);
 	// Animation
 	void SetAnimation(const std::string& animationName, bool isLoop = true);
 
@@ -32032,7 +32027,7 @@ void GameOverAnimation::Initialize(GameCamera* camera) {
 
     // スプライトの初期化
     gameOverSprite_ = std::make_unique<Sprite>();
-    gameOverSprite_->Initialize("GameOvverAnimation");
+    gameOverSprite_->Initialize("GameOverAnimation");
 
     // ウィンドウサイズの取得
     float windowWidth = static_cast<float>(GraphicsResourceGetter::GetWindowWidth());
@@ -32342,11 +32337,6 @@ File Path: Project/application/Game/Animation/StartAnimation.cpp
 #undef max
 
 ///-------------------------------------------/// 
-/// コンストラクタ
-///-------------------------------------------///
-StartAnimation::StartAnimation() {}
-
-///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
 StartAnimation::~StartAnimation() {
@@ -32499,7 +32489,7 @@ class GameCamera;
 ///=====================================================///
 class StartAnimation {
 public:
-	StartAnimation();
+	StartAnimation() = default;
 	~StartAnimation();
 
 	/// <summary>
@@ -32557,7 +32547,7 @@ private:
 	float rotationStartTime_ = 1.5f;                   // 回転開始時刻
 
 	/// ===デルタタイム=== ///
-	float kDeltaTime_;
+	float kDeltaTime_ = 0.0f;
 
 private:
 
@@ -33783,7 +33773,7 @@ void EnemyHitReactionComponent::Initialize(const KnockBackConfig& config) {
 	state_.isHit = false;
 
 	// 色の状態を初期化
-	colorState_.colorTImer = 0.0f;
+	colorState_.colorTimer = 0.0f;
 	colorState_.colorInterval = 0.0f;
 	colorState_.isColorChange = false;
 
@@ -33847,7 +33837,7 @@ void EnemyHitReactionComponent::Information() {
 		ImGui::Separator();
 		ImGui::Text("状態");
 		ImGui::Text("減速タイマー: %.2f", state_.slowdownTimer);
-		ImGui::Text("色変化タイマー: %.2f", colorState_.colorTImer);
+		ImGui::Text("色変化タイマー: %.2f", colorState_.colorTimer);
 		ImGui::Text("ヒットしたかどうか: %s", state_.isHit ? "true" : "false");
 		ImGui::Text("色変化中: %s", colorState_.isColorChange ? "true" : "false");
 		ImGui::TreePop();
@@ -33866,7 +33856,7 @@ void EnemyHitReactionComponent::OnHit(const Vector3& hitParentDirection) {
 	// 減速タイマーを設定
 	state_.slowdownTimer = config_.slowdownDuration;
 	// 色変化のタイマーを設定
-	colorState_.colorTImer = config_.alphaDuration;
+	colorState_.colorTimer = config_.alphaDuration;
 	colorState_.colorInterval = 0.0f;
 	colorState_.isColorChange = true;
 }
@@ -33885,12 +33875,12 @@ void EnemyHitReactionComponent::TimerUpdate(const float deltaTime) {
 	}
 
 	// 色変化タイマーの更新
-	if (colorState_.colorTImer > 0.0f) {
-		colorState_.colorTImer -= deltaTime;
+	if (colorState_.colorTimer > 0.0f) {
+		colorState_.colorTimer -= deltaTime;
 		colorState_.colorInterval += deltaTime;
 
-		if (colorState_.colorTImer < 0.0f) {
-			colorState_.colorTImer = 0.0f;
+		if (colorState_.colorTimer < 0.0f) {
+			colorState_.colorTimer = 0.0f;
 			colorState_.colorInterval = 0.0f;
 			colorState_.isColorChange = false;
 		}
@@ -33915,10 +33905,10 @@ void EnemyHitReactionComponent::UpdateSlowdownMultiplier() {
 ///-------------------------------------------/// 
 /// 色の更新処理
 ///-------------------------------------------///
-Vector4 EnemyHitReactionComponent::UpdateColor(const Vector4& currentColor) {
+Vector4 EnemyHitReactionComponent::UpdateColor(const Vector4& currentColor) const {
 	Vector4 color = currentColor;
 
-	if (colorState_.isColorChange && colorState_.colorTImer > 0.0f) {
+	if (colorState_.isColorChange && colorState_.colorTimer > 0.0f) {
 		// サイン波を使って点滅効果を生成
 		float wave = std::sin(colorState_.colorInterval * config_.flashSpeed * 2.0f * std::numbers::pi_v<float>);
 
@@ -33958,7 +33948,7 @@ private:
 	};
 	/// ===色の状態構造体=== ///
 	struct ColorState {
-		float colorTImer = 0.0f;    // 色変化用タイマー
+		float colorTimer = 0.0f;    // 色変化用タイマー
 		float colorInterval = 0.0f; // 色変化の間隔
 		bool isColorChange = false; // 色変化フラグ
 	};
@@ -34061,7 +34051,7 @@ private:
 	/// </summary>
 	/// <param name="color">更新の基となる色。参照渡しされた const Vector4 オブジェクト。</param>
 	/// <returns>更新された色を表す Vector4 オブジェクト。</returns>
-	Vector4 UpdateColor(const Vector4& color);
+	Vector4 UpdateColor(const Vector4& color) const;
 };
 
 
@@ -34252,10 +34242,10 @@ class EnemyMoveComponent {
 private:
 	/// ===状態の構造体=== ///
 	struct MoveState {
-		float timer = 0.0f;		 // タイマー
-		Vector3 rangeCenter; // 移動範囲の中心
-		Vector3 direction;	 // 移動方向
-		bool isWaiting = false;		 // 待機フラグ	
+		float timer = 0.0f;			// タイマー
+		Vector3 rangeCenter{};		// 移動範囲の中心
+		Vector3 direction{};		// 移動方向
+		bool isWaiting = false;		// 待機フラグ	
 	};
 public:
 	/// ===設定パラメータの構造体=== ///
@@ -34269,17 +34259,17 @@ public:
 
 	/// ===更新用コンテキスト=== ///
 	struct UpdateContext {
-		Vector3 currentPosition; // 現在の位置
-		float deltaTime;         // デルタタイム
-		bool isRotationComplete; // 回転完了フラグ
+		Vector3 currentPosition{};		 // 現在の位置
+		float deltaTime = 0.0f;			 // デルタタイム
+		bool isRotationComplete = false; // 回転完了フラグ
 	};
 
 	/// ===更新結果=== ///
 	struct UpdateResult {
-		Vector3 velocity;		       // 移動ベクトル
-		Vector3 targetDirection;	   // 目標方向
-		bool needsRotation;			   // 回転が必要かどうか
-		bool shouldResetRotationFlag;  // 回転完了フラグをリセットする必要があるか
+		Vector3 velocity{};					   // 移動ベクトル
+		Vector3 targetDirection{};			   // 目標方向
+		bool needsRotation = false;			   // 回転が必要かどうか
+		bool shouldResetRotationFlag = false;  // 回転完了フラグをリセットする必要があるか
 	};
 
 public:
@@ -34340,227 +34330,6 @@ private:
 	/// </summary>
 	/// <param name="vector">設定する方向のベクトル</param>
 	void PreparNextMove(const Vector3& vector);
-};
-
-
-
-============================================================
-File Path: Project/application/Game/Entity/Enemy/LongRange/LongRangeEnemeyBullet.cpp
-============================================================
-#include "LongRangeEnemeyBullet.h"
-// Service
-#include "Engine/System/Service/ParticleService.h"
-#include "Engine/System/Service/ColliderService.h"
-
-///-------------------------------------------/// 
-/// デストラクタ
-///-------------------------------------------///
-LongRangeEnemeyBullet::~LongRangeEnemeyBullet() {
-	ColliderService::RemoveCollider(this);
-}
-
-///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-bool LongRangeEnemeyBullet::GetIsAlive() {
-	return isAlive_;
-}
-
-///-------------------------------------------/// 
-/// 初期化
-///-------------------------------------------///
-void LongRangeEnemeyBullet::Initialize() {
-	// Object3dの初期化
-	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "player");
-	// Object3dの初期設定
-	object3d_->SetTranslate(transform_.translate);
-
-	// Sphereの設定
-	SphereCollider::Initialize();
-	name_ = ColliderName::EnemyBullet;
-	SphereCollider::SetRadius(0.5f);
-
-	// コライダーに追加
-	ColliderService::AddCollider(this);
-
-	object3d_->Update();
-}
-
-///-------------------------------------------/// 
-/// 更新
-///-------------------------------------------///
-void LongRangeEnemeyBullet::Update() {
-	if (isAlive_) {
-		/// ===移動処理=== ///
-		Move();
-
-		/// ===タイマー=== ///
-		PromoteTimer();
-
-		// 位置更新
-		transform_.translate += info_.velocity;
-		
-		// Particleの位置更新
-		if (bulletParticle_) {
-			bulletParticle_->SetEmitterPosition(transform_.translate);
-		}
-
-		// コライダーの更新
-		SphereCollider::Update();
-	}
-}
-
-///-------------------------------------------/// 
-/// 描画
-///-------------------------------------------///
-void LongRangeEnemeyBullet::Draw(BlendMode mode) {
-	if (isAlive_) {
-		SphereCollider::Draw(mode);
-	}
-}
-
-///-------------------------------------------/// 
-/// 生成
-///-------------------------------------------///
-void LongRangeEnemeyBullet::Create(const Vector3& pos, const Vector3& vel) {
-	// 初期化処理
-	Initialize();
-	// 位置と方向の設定
-	transform_.translate = pos;
-	info_.direction = vel;
-
-	// 生存フラグをtrue
-	isAlive_ = true;
-	// 生存時間の設定
-	lifeTimer_ = lifeTime_;
-
-	// パーティクル停止
-	if (bulletParticle_) {
-		bulletParticle_->Stop();
-		bulletParticle_ = nullptr;
-	}
-	// パーティクルの再生
-	bulletParticle_ = ParticleService::Emit("LongEnemyAttack", transform_.translate);
-	bulletParticle_->SetEmitterPosition(transform_.translate);
-}
-
-///-------------------------------------------///  
-/// 衝突判定
-///-------------------------------------------///
-void LongRangeEnemeyBullet::OnCollision(Collider* collider) {
-	collider;
-}
-
-///-------------------------------------------/// 
-/// 移動処理
-///-------------------------------------------///
-void LongRangeEnemeyBullet::Move() {
-	info_.velocity = info_.direction * speed_;
-}
-
-///-------------------------------------------/// 
-/// タイマーを進める
-///-------------------------------------------///
-void LongRangeEnemeyBullet::PromoteTimer() {
-	// ライフタイマーの減少
-	lifeTimer_ -= 1.0f / 60.0f;
-	if (lifeTimer_ <= 0.0f) {
-		// 生存時間が0.0fになったら削除。
-		isAlive_ = false;
-	}
-}
-
-============================================================
-File Path: Project/application/Game/Entity/Enemy/LongRange/LongRangeEnemeyBullet.h
-============================================================
-#pragma once
-/// ===Inclde=== ///
-#include "Engine/Collider/SphereCollider.h"
-
-/// ===前方宣言=== ///
-class ParticleGroup;
-
-///=====================================================/// 
-/// 遠距離攻撃Enemyの弾
-///=====================================================///
-class LongRangeEnemeyBullet : public SphereCollider{
-public:
-
-	LongRangeEnemeyBullet() = default;
-	~LongRangeEnemeyBullet();
-
-	/// <summary>
-	/// 初期化処理
-	/// </summary>
-	void Initialize()override;
-
-	/// <summary>
-	/// 更新処理
-	/// </summary>
-	void Update()override;
-
-	/// <summary>
-	/// 描画処理
-	/// </summary>
-	/// <param name="mode">描画時に使用するブレンドモード。省略時は BlendMode::KBlendModeNormal が使われます。</param>
-	void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
-
-	/// <summary>
-	/// 生成処理
-	/// </summary>
-	/// <param name="pos">作成するオブジェクトの位置を表す 3 次元ベクトル（const 参照）。</param>
-	/// <param name="direction">オブジェクトの向きまたは進行方向を表す 3 次元ベクトル（const 参照）。</param>
-	void Create(const Vector3& pos, const Vector3& direction);
-
-	/// <summary>
-	/// ImGui情報の表示
-	/// </summary>
-	void Information() override {};
-
-public: /// ===衝突判定=== ///
-	/// <summary>
-	/// 衝突処理
-	/// </summary>
-	/// <param name="collider">衝突したオブジェクトを表す Collider へのポインタ。衝突処理に使用される対象を示します。</param>
-	void OnCollision(Collider* collider) override;
-
-public: /// ===Getter=== ///
-	// 生存フラグの取得
-	bool GetIsAlive();
-
-private: /// ===変数=== ///
-
-	/// ===基本情報=== ///
-	struct BaseInfo {
-		Vector3 direction = { 0.0f, 0.0f, 0.0f }; // 方向
-		Vector3 velocity = { 0.0f, 0.0f, 0.0f }; // ベクトル
-	};
-	BaseInfo info_;
-
-	// ParticleGroup
-	ParticleGroup* bulletParticle_ = nullptr;
-
-	// 速度
-	float speed_ = 1.5f;
-	// 生存タイマー
-	float lifeTimer_ = 0.0f;
-	// 生存時間
-	float lifeTime_ = 3.0f;
-	// 生存フラグ
-	bool isAlive_ = true;
-
-private:
-
-	/// <summary>
-	/// 移動処理
-	/// </summary>
-	void Move();
-
-	/// <summary>
-	/// タイマーの更新処理
-	/// </summary>
-	void PromoteTimer();
 };
 
 
@@ -34638,7 +34407,7 @@ void LongRangeEnemy::Update() {
 
 	// 死んだ弾をリストから削除
 	bulletInfo_.bullets_.remove_if(
-		[](const std::unique_ptr<LongRangeEnemeyBullet>& b) {
+		[](const std::unique_ptr<LongRangeEnemyBullet>& b) {
 			return !b || !b->GetIsAlive();
 		}
 	);
@@ -34692,7 +34461,7 @@ void LongRangeEnemy::StartAttack() {
 void LongRangeEnemy::Attack() {
 
 	// 弾の生成
-	auto bullet = std::make_unique<LongRangeEnemeyBullet>();
+	auto bullet = std::make_unique<LongRangeEnemyBullet>();
 	bullet->Create(transform_.translate, attackInfo_.direction);
 	bulletInfo_.bullets_.push_back(std::move(bullet));
 
@@ -34722,7 +34491,7 @@ File Path: Project/application/Game/Entity/Enemy/LongRange/LongRangeEnemy.h
 #pragma once
 /// ===Include=== ///
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
-#include "application/Game/Entity/Enemy/LongRange/LongRangeEnemeyBullet.h"
+#include "application/Game/Entity/Enemy/LongRange/LongRangeEnemyBullet.h"
 #include <list>
 
 ///=====================================================/// 
@@ -34781,11 +34550,11 @@ private: /// ===変数=== ///
 
 	/// ===Bullet情報=== ///
 	struct BulletInfo {
-		std::list<std::unique_ptr<LongRangeEnemeyBullet>> bullets_;
-		float interval = 0.0f; // インターバル
+		std::list<std::unique_ptr<LongRangeEnemyBullet>> bullets_;
+		float interval = 0.0f;   // インターバル
 		float reloadTime = 3.0f; // リロード時間
-		bool isShot; // 発射フラグ
-		bool isHit; // ヒット時のフラグ
+		bool isShot = false;	 // 発射フラグ
+		bool isHit = false;		 // ヒット時のフラグ
 	};
 	BulletInfo bulletInfo_;
 
@@ -34798,6 +34567,220 @@ protected:
 	void CopyTypeTuningFromThisTo(BaseEnemy* dst) const override;
 #endif // USE_IMGUI
 };
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/LongRange/LongRangeEnemyBullet.cpp
+============================================================
+#include "LongRangeEnemyBullet.h"
+// Service
+#include "Engine/System/Service/ParticleService.h"
+#include "Engine/System/Service/ColliderService.h"
+
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+LongRangeEnemyBullet::~LongRangeEnemyBullet() {
+	ColliderService::RemoveCollider(this);
+}
+
+///-------------------------------------------/// 
+/// 初期化
+///-------------------------------------------///
+void LongRangeEnemyBullet::Initialize() {
+	// Object3dの初期化
+	object3d_ = std::make_unique<Object3d>();
+	object3d_->Init(ObjectType::Model, "player");
+	// Object3dの初期設定
+	object3d_->SetTranslate(transform_.translate);
+
+	// Sphereの設定
+	SphereCollider::Initialize();
+	name_ = ColliderName::EnemyBullet;
+	SphereCollider::SetRadius(0.5f);
+
+	// コライダーに追加
+	ColliderService::AddCollider(this);
+
+	object3d_->Update();
+}
+
+///-------------------------------------------/// 
+/// 更新
+///-------------------------------------------///
+void LongRangeEnemyBullet::Update() {
+	if (isAlive_) {
+		/// ===移動処理=== ///
+		Move();
+
+		/// ===タイマー=== ///
+		PromoteTimer();
+
+		// 位置更新
+		transform_.translate += info_.velocity;
+		
+		// Particleの位置更新
+		if (bulletParticle_) {
+			bulletParticle_->SetEmitterPosition(transform_.translate);
+		}
+
+		// コライダーの更新
+		SphereCollider::Update();
+	}
+}
+
+///-------------------------------------------/// 
+/// 描画
+///-------------------------------------------///
+void LongRangeEnemyBullet::Draw(BlendMode mode) {
+	if (isAlive_) {
+		SphereCollider::Draw(mode);
+	}
+}
+
+///-------------------------------------------/// 
+/// 生成
+///-------------------------------------------///
+void LongRangeEnemyBullet::Create(const Vector3& pos, const Vector3& vel) {
+	// 初期化処理
+	Initialize();
+	// 位置と方向の設定
+	transform_.translate = pos;
+	info_.direction = vel;
+
+	// 生存フラグをtrue
+	isAlive_ = true;
+	// 生存時間の設定
+	lifeTimer_ = lifeTime_;
+
+	// パーティクル停止
+	if (bulletParticle_) {
+		bulletParticle_->Stop();
+		bulletParticle_ = nullptr;
+	}
+	// パーティクルの再生
+	bulletParticle_ = ParticleService::Emit("LongEnemyAttack", transform_.translate);
+	bulletParticle_->SetEmitterPosition(transform_.translate);
+}
+
+///-------------------------------------------///  
+/// 衝突判定
+///-------------------------------------------///
+void LongRangeEnemyBullet::OnCollision(Collider* collider) {
+	collider;
+}
+
+///-------------------------------------------/// 
+/// 移動処理
+///-------------------------------------------///
+void LongRangeEnemyBullet::Move() {
+	info_.velocity = info_.direction * speed_;
+}
+
+///-------------------------------------------/// 
+/// タイマーを進める
+///-------------------------------------------///
+void LongRangeEnemyBullet::PromoteTimer() {
+	// ライフタイマーの減少
+	lifeTimer_ -= 1.0f / 60.0f;
+	if (lifeTimer_ <= 0.0f) {
+		// 生存時間が0.0fになったら削除。
+		isAlive_ = false;
+	}
+}
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/LongRange/LongRangeEnemyBullet.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Engine/Collider/SphereCollider.h"
+
+/// ===前方宣言=== ///
+class ParticleGroup;
+
+///=====================================================/// 
+/// 遠距離攻撃Enemyの弾
+///=====================================================///
+class LongRangeEnemyBullet : public SphereCollider{
+public:
+
+	LongRangeEnemyBullet() = default;
+	~LongRangeEnemyBullet();
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	void Initialize()override;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update()override;
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	/// <param name="mode">描画時に使用するブレンドモード。省略時は BlendMode::KBlendModeNormal が使われます。</param>
+	void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
+
+	/// <summary>
+	/// 生成処理
+	/// </summary>
+	/// <param name="pos">作成するオブジェクトの位置を表す 3 次元ベクトル（const 参照）。</param>
+	/// <param name="direction">オブジェクトの向きまたは進行方向を表す 3 次元ベクトル（const 参照）。</param>
+	void Create(const Vector3& pos, const Vector3& direction);
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
+	void Information() override {};
+
+public: /// ===衝突判定=== ///
+	/// <summary>
+	/// 衝突処理
+	/// </summary>
+	/// <param name="collider">衝突したオブジェクトを表す Collider へのポインタ。衝突処理に使用される対象を示します。</param>
+	void OnCollision(Collider* collider) override;
+
+public: /// ===Getter=== ///
+	// 生存フラグの取得
+	bool GetIsAlive() const { return isAlive_; };
+
+private: /// ===変数=== ///
+
+	/// ===基本情報=== ///
+	struct BaseInfo {
+		Vector3 direction = { 0.0f, 0.0f, 0.0f }; // 方向
+		Vector3 velocity = { 0.0f, 0.0f, 0.0f }; // ベクトル
+	};
+	BaseInfo info_;
+
+	// ParticleGroup
+	ParticleGroup* bulletParticle_ = nullptr;
+
+	// 速度
+	float speed_ = 1.5f;
+	// 生存タイマー
+	float lifeTimer_ = 0.0f;
+	// 生存時間
+	float lifeTime_ = 3.0f;
+	// 生存フラグ
+	bool isAlive_ = true;
+
+private:
+
+	/// <summary>
+	/// 移動処理
+	/// </summary>
+	void Move();
+
+	/// <summary>
+	/// タイマーの更新処理
+	/// </summary>
+	void PromoteTimer();
+};
+
 
 
 ============================================================
@@ -34838,7 +34821,7 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 		// 初期化
 		e->InitGameScene(pos);		// 出現位置を渡してゲームシーン用初期化
 		e->SetRotate(rot);			// 回転を設定
-		e->SethalfSize(halfSize);	// サイズを設定
+		e->SetHalfSize(halfSize);	// サイズを設定
 		enemy = std::move(e);		// 所有権移動
 		break;
 	}
@@ -34850,7 +34833,7 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 		// 初期化
 		e->InitGameScene(pos);
 		e->SetRotate(rot); 
-		e->SethalfSize(halfSize);
+		e->SetHalfSize(halfSize);
 		enemy = std::move(e);
 		break;
 	}
@@ -35389,7 +35372,7 @@ void EnemyHitReactionState::Update(BaseEnemy* enemy) {
 
 	/// ===ヒットリアクションが終了したらMoveStateへ遷移=== ///
 	float slowdownTimer = enemy_->GetHitReactionComponent().GetKnockBackState().slowdownTimer;
-	float colorTimer = enemy_->GetHitReactionComponent().GetColorState().colorTImer;
+	float colorTimer = enemy_->GetHitReactionComponent().GetColorState().colorTimer;
 	if (slowdownTimer <= 0.0f && colorTimer <= 0.0f) {
 		enemy_->ChangeState(std::make_unique<EnemyMoveState>());
 	}
@@ -35565,7 +35548,7 @@ void EnemyPrePareAttackState::Enter(BaseEnemy* enemy) {
 	// 色の設定
 	enemy_->SetColor({ 0.0f, 0.0f, 1.0f, 1.0f });
 	// 実行時間の設定
-	activeTimer_ = acticeTime;
+	activeTimer_ = activeTime;
 	// 向きの初期化
 	attackDirection_ = { 0.0f, 0.0f, 0.0f };
 	playerPos_ = { 0.0f, 0.0f, 0.0f };
@@ -35681,7 +35664,7 @@ private:
 
 	/// ===タイマー=== ///
 	float activeTimer_ = 0.0f;	// アクティブタイマー
-	float acticeTime = 1.6f;	// アクティブ時間
+	float activeTime = 1.6f;	// アクティブ時間
 
 	/// ===攻撃方向関連=== /
 	Vector3 attackDirection_ = { 0.0f, 0.0f, 0.0f }; // 攻撃方向
@@ -35982,11 +35965,11 @@ protected:
 
     /// ===基本情報=== ///
     struct BaseInfo {
-        Vector3 velocity; // 速度
-        float deltaTime;  // 時間
-		float gravity;    // 重力
-		uint32_t HP;      // 体力
-        bool isDead;      // 死亡フラグ
+        Vector3 velocity{};     // 速度
+        float deltaTime = 0.0f; // 時間
+		float gravity = -9.8f;  // 重力
+		uint32_t HP = 10;       // 体力
+        bool isDead = false;    // 死亡フラグ
     };
     BaseInfo baseInfo_;
 
@@ -35994,10 +35977,10 @@ private: /// ===地面との衝突処理=== ///
 
     /// ===GroundInfo=== ///
     struct GroundInfo {
-		Vector3 currentGroundCenter;     // 現在の地面の中心位置
-		Vector3 currentGroundHalfSize;   // 現在の地面の半サイズ
-		bool hasGroundCollision = false; // 地面との衝突フラグ
-		bool isGrounded;				 // 地面接地フラグ
+        Vector3 currentGroundCenter{};     // 現在の地面の中心位置
+        Vector3 currentGroundHalfSize{};   // 現在の地面の半サイズ
+        bool hasGroundCollision = false;   // 地面との衝突フラグ
+        bool isGrounded = false;		   // 地面接地フラグ
     };
 	GroundInfo groundInfo_;
 
@@ -36034,7 +36017,7 @@ template void GameCharacterCollision::ProcessCollision<OBBCollider, SphereCollid
 ///-------------------------------------------/// 
 /// 球体GameCharacter同士の衝突処理
 ///-------------------------------------------///
-void GameCharacterCollision::HandleSphereSphereCollision(GameCharacter<SphereCollider>* characterA, GameCharacter<SphereCollider>* characterB, float pushBackRatio) {
+void GameCharacterCollision::HandleSphereSphereCollision(GameCharacter<SphereCollider>* characterA, GameCharacter<SphereCollider>* characterB, const float pushBackRatio) {
 
 	Vector3 posA = characterA->GetTransform().translate;
 	Vector3 posB = characterB->GetTransform().translate;
@@ -36074,7 +36057,7 @@ void GameCharacterCollision::HandleSphereSphereCollision(GameCharacter<SphereCol
 ///-------------------------------------------/// 
 /// OBBGameCharacter同士の衝突処理
 ///-------------------------------------------///
-void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<OBBCollider>* characterA, GameCharacter<OBBCollider>* characterB, float pushBackRatio) {
+void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<OBBCollider>* characterA, GameCharacter<OBBCollider>* characterB, const float pushBackRatio) {
 
 	Vector3 posA = characterA->GetTransform().translate;
 	Vector3 posB = characterB->GetTransform().translate;
@@ -36116,7 +36099,7 @@ void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<OBBCollider>* c
 /// 球体とOBBのGameCharacter衝突処理
 ///-------------------------------------------///
 template<typename TColliderA, typename TColliderB>
-void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, float pushBackRatio) {
+void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio) {
 
 	GameCharacter<OBBCollider>* obbCharacter = nullptr;
 	GameCharacter<SphereCollider>* sphereCharacter = nullptr;
@@ -36175,7 +36158,7 @@ void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>*
 /// 汎用衝突処理（自動判定）
 ///-------------------------------------------///
 template<typename TColliderA, typename TColliderB>
-void GameCharacterCollision::ProcessCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, float pushBackRatio) {
+void GameCharacterCollision::ProcessCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio) {
 
 	ColliderType typeA = GetColliderTypeFromCharacter(characterA);
 	ColliderType typeB = GetColliderTypeFromCharacter(characterB);
@@ -36203,14 +36186,14 @@ void GameCharacterCollision::ProcessCollision(GameCharacter<TColliderA>* charact
 /// コライダー型の判定
 ///-------------------------------------------///
 template<typename TCollider>
-ColliderType GameCharacterCollision::GetColliderTypeFromCharacter(GameCharacter<TCollider>* character) {
+ColliderType GameCharacterCollision::GetColliderTypeFromCharacter(GameCharacter<TCollider>* character) const {
 	return character->GetColliderType();
 }
 
 ///-------------------------------------------/// 
 /// OBB上の最近点計算（GameCharacter用）
 ///-------------------------------------------///
-Vector3 GameCharacterCollision::CalculateClosestPointOnOBBFromCharacter(const Vector3& point, GameCharacter<OBBCollider>* obbCharacter) {
+Vector3 GameCharacterCollision::CalculateClosestPointOnOBBFromCharacter(const Vector3& point, GameCharacter<OBBCollider>* obbCharacter) const {
 	if (obbCharacter->GetColliderType() != ColliderType::OBB) {
 		return point; // OBBでない場合は元の点を返す
 	}
@@ -36224,7 +36207,7 @@ Vector3 GameCharacterCollision::CalculateClosestPointOnOBBFromCharacter(const Ve
 ///-------------------------------------------/// 
 /// OBB上の最近点計算
 ///-------------------------------------------///
-Vector3 GameCharacterCollision::CalculateClosestPointOnOBB(const Vector3& point, const OBB& obb) {
+Vector3 GameCharacterCollision::CalculateClosestPointOnOBB(const Vector3& point, const OBB& obb) const {
 	Vector3 dir = point - obb.center;
 	Vector3 closest = obb.center;
 
@@ -36248,7 +36231,7 @@ Vector3 GameCharacterCollision::CalculateClosestPointOnOBB(const Vector3& point,
 ///-------------------------------------------/// 
 /// OBBの軸上での重なりを計算
 ///-------------------------------------------///
-float GameCharacterCollision::CalculateOverlapOnAxis(const OBB& obb1, const OBB& obb2, const Vector3& axis) {
+float GameCharacterCollision::CalculateOverlapOnAxis(const OBB& obb1, const OBB& obb2, const Vector3& axis) const {
 	// 各OBBの軸への射影の半径を計算
 	float r1 = 0.0f;
 	for (int i = 0; i < 3; ++i) {
@@ -36300,7 +36283,7 @@ public:
     /// <param name="sphereCharacterA">衝突する1つ目のゲームキャラクター（SphereCollider を持つ）へのポインタ。</param>
     /// <param name="sphereCharacterB">衝突する2つ目のゲームキャラクター（SphereCollider を持つ）へのポインタ。</param>
     /// <param name="pushBackRatio">衝突時の押し戻しに適用する比率。既定値は 1.0f。</param>
-    void HandleSphereSphereCollision(GameCharacter<SphereCollider>* sphereCharacterA, GameCharacter<SphereCollider>* sphereCharacterB, float pushBackRatio = 1.0f);
+    void HandleSphereSphereCollision(GameCharacter<SphereCollider>* sphereCharacterA, GameCharacter<SphereCollider>* sphereCharacterB, const float pushBackRatio = 1.0f);
 
     /// <summary>
     /// 2つのOBBコライダーを持つゲームキャラクター間の衝突処理
@@ -36308,7 +36291,7 @@ public:
     /// <param name="obbCharacterA">衝突の対象となる1つ目のOBBコライダーを持つゲームキャラクターへのポインター。</param>
     /// <param name="obbCharacterB">衝突の対象となる2つ目のOBBコライダーを持つゲームキャラクターへのポインター。</param>
     /// <param name="pushBackRatio">衝突時に適用する押し戻しの強さを示す係数（既定値は1.0f）。値が大きいほど強く押し戻します。</param>
-    void HandleOBBOBBCollision(GameCharacter<OBBCollider>* obbCharacterA, GameCharacter<OBBCollider>* obbCharacterB, float pushBackRatio = 1.0f);
+    void HandleOBBOBBCollision(GameCharacter<OBBCollider>* obbCharacterA, GameCharacter<OBBCollider>* obbCharacterB, const float pushBackRatio = 1.0f);
 
     /// <summary>
     /// 球とOBB間の衝突処理
@@ -36319,7 +36302,7 @@ public:
     /// <param name="characterB">衝突対象の二番目のキャラクター。コライダ型 TColliderB を持つ GameCharacter へのポインタ。</param>
     /// <param name="pushBackRatio">衝突解決時に適用する押し戻し（push-back）の倍率。デフォルトは 1.0f。値を小さくすると押し戻しが弱くなり、0 にすると押し戻しを行わない。</param>
     template<typename TColliderA, typename TColliderB>
-    void HandleSphereOBBCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, float pushBackRatio = 1.0f);
+    void HandleSphereOBBCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio = 1.0f);
 
     /// <summary>
     /// 2つのGameCharacter間の衝突処理
@@ -36330,7 +36313,7 @@ public:
     /// <param name="characterB">衝突する2番目のGameCharacterへのポインタ。</param>
     /// <param name="pushBackRatio">衝突時に適用する押し戻し量の比率。既定値は1.0f。</param>
     template<typename TColliderA, typename TColliderB>
-    void ProcessCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, float pushBackRatio = 1.0f);
+    void ProcessCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio = 1.0f);
 
 private:
 
@@ -36344,7 +36327,7 @@ private:
     /// <param name="character">TCollider 型のコライダーを持つ GameCharacter へのポインター。対象のキャラクターを指定します。</param>
     /// <returns>指定したキャラクターに関連付けられた ColliderType を返します。</returns>
     template<typename TCollider>
-    ColliderType GetColliderTypeFromCharacter(GameCharacter<TCollider>* character);
+    ColliderType GetColliderTypeFromCharacter(GameCharacter<TCollider>* character) const;
 
     /// <summary>
     /// 与えられた点から、OBBコライダーを持つキャラクター上の最も近い点（最接近点）を計算して返す処理
@@ -36352,7 +36335,7 @@ private:
     /// <param name="point">基準となる点（入力、参照渡し）。この点から OBB への最短点を求めます。</param>
     /// <param name="obbCharacter">OBBCollider を持つ GameCharacter へのポインター。計算対象となる OBB の位置・向き・半径などの情報を提供します。</param>
     /// <returns>OBB 上の最も近い点を表す Vector3。</returns>
-    Vector3 CalculateClosestPointOnOBBFromCharacter(const Vector3& point, GameCharacter<OBBCollider>* obbCharacter);
+    Vector3 CalculateClosestPointOnOBBFromCharacter(const Vector3& point, GameCharacter<OBBCollider>* obbCharacter) const;
 
     /// <summary>
     /// 与えられた点からOBB上の最も近い点を計算
@@ -36360,7 +36343,7 @@ private:
     /// <param name="point">基準となる点。</param>
     /// <param name="obb">計算対象のOBB。</param>
     /// <returns>OBB上の最も近い点を表すVector3。</returns>
-    Vector3 CalculateClosestPointOnOBB(const Vector3& point, const OBB& obb);
+    Vector3 CalculateClosestPointOnOBB(const Vector3& point, const OBB& obb) const;
 
     /// <summary>
     /// OBBの指定軸上での重なり量を計算
@@ -36369,7 +36352,7 @@ private:
     /// <param name="obb2">2つ目のOBB。</param>
     /// <param name="axis">分離軸。</param>
     /// <returns>重なり量（正の値なら重なっている）。</returns>
-    float CalculateOverlapOnAxis(const OBB& obb1, const OBB& obb2, const Vector3& axis);
+    float CalculateOverlapOnAxis(const OBB& obb1, const OBB& obb2, const Vector3& axis) const;
 };
 
 ============================================================
@@ -37554,7 +37537,7 @@ void AttackEditor::DrawPreview() {
     std::vector<BezierControlPointData> worldPoints;
 
     for (const auto& point : currentAttack.trajectoryPoints) {
-        BezierControlPointData worldPoint;
+        BezierControlPointData worldPoint = {};
         worldPoint.position = weaponPos + point.position;
         worldPoint.time = point.time;
         worldPoints.push_back(worldPoint);
@@ -37948,7 +37931,7 @@ void AttackEditor::RenderTrajectorySettings(AttackData& data) {
     }
 
     if (ImGui::Button("+ 制御点を追加")) {
-        BezierControlPointData newPoint;
+        BezierControlPointData newPoint = {};
         newPoint.position = Vector3{ 0.0f, 0.0f, 0.0f };
         newPoint.time = 0.5f;
         data.trajectoryPoints.push_back(newPoint);
@@ -38120,7 +38103,7 @@ void AttackEditor::RenderPreviewControl() {
                 // 全ての制御点にオフセットを適用
                 std::vector<BezierControlPointData> worldPoints;
                 for (const auto& point : currentAttack.trajectoryPoints) {
-                    BezierControlPointData worldPoint;
+                    BezierControlPointData worldPoint = {};
                     worldPoint.position = previewWeaponPosition_ + point.position;
                     worldPoint.time = point.time;
                     worldPoints.push_back(worldPoint);
@@ -39519,7 +39502,7 @@ void PlayerWeapon::Initialize() {
 	/// ===OBBCollider=== ///
 	OBBCollider::Initialize();
 	name_ = ColliderName::PlayerWeapon;
-	OBBCollider::SethalfSize({ 0.5f, 0.5f, 3.0f });
+	OBBCollider::SetHalfSize({ 0.5f, 0.5f, 3.0f });
 
 	// DeltaTime初期化
 	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
@@ -39710,7 +39693,7 @@ Vector3 PlayerWeapon::CalculateBezierPoint(const std::vector<BezierControlPointD
 		float uu = u * u;
 		float tt = t * t;
 
-		Vector3 point;
+		Vector3 point = {};
 		point.x = uu * controlPoints[0].position.x +
 			2.0f * u * t * controlPoints[1].position.x +
 			tt * controlPoints[2].position.x;
@@ -39732,7 +39715,7 @@ Vector3 PlayerWeapon::CalculateBezierPoint(const std::vector<BezierControlPointD
 		float tt = t * t;
 		float ttt = tt * t;
 
-		Vector3 point;
+		Vector3 point = {};
 		point.x = uuu * controlPoints[0].position.x +
 			3.0f * uu * t * controlPoints[1].position.x +
 			3.0f * u * tt * controlPoints[2].position.x +
@@ -39878,7 +39861,7 @@ private:
 		bool isActive = false;					 // アクティブフラグ
 		Vector3 offset = { 0.0f, 0.0f, 0.0f };   // プレイヤーからのオフセット
 		Vector3 velocity = { 0.0f, 0.0f, 0.0f }; // 速度
-		float deltaTime;						 // デルタタイム
+		float deltaTime = 0.0f;					 // デルタタイム
 	};
 	BaseInfo baseInfo_;
 
@@ -40022,9 +40005,9 @@ public:
 
 
 ============================================================
-File Path: Project/application/Game/Object/GameGround/GroundOshan.cpp
+File Path: Project/application/Game/Object/GameGround/GroundOcean.cpp
 ============================================================
-#include "GroundOshan.h"
+#include "GroundOcean.h"
 // Service
 #include "Engine/System/Service/InputService.h"
 
@@ -40032,14 +40015,14 @@ File Path: Project/application/Game/Object/GameGround/GroundOshan.cpp
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
-GroundOshan::~GroundOshan() {
+GroundOcean::~GroundOcean() {
 	ocean_.reset();
 }
 
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void GroundOshan::Initialize() {
+void GroundOcean::Initialize() {
 
 	// AABBコライダーの初期化と設定
 	AABBCollider::Initialize();
@@ -40057,7 +40040,7 @@ void GroundOshan::Initialize() {
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
-void GroundOshan::Update() {
+void GroundOcean::Update() {
 
 #ifdef _DEBUG
 
@@ -40076,7 +40059,7 @@ void GroundOshan::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void GroundOshan::Draw(BlendMode mode) {
+void GroundOcean::Draw(BlendMode mode) {
 
 #ifdef _DEBUG
 #endif // _DEBUG
@@ -40088,7 +40071,7 @@ void GroundOshan::Draw(BlendMode mode) {
 ///-------------------------------------------/// 
 /// ImGui情報の表示
 ///-------------------------------------------///
-void GroundOshan::ShowImGui() {
+void GroundOcean::ShowImGui() {
 #ifdef USE_IMGUI
 	ocean_->ShowImGui();
 #endif // USE_IMGUI
@@ -40097,7 +40080,7 @@ void GroundOshan::ShowImGui() {
 ///-------------------------------------------/// 
 /// 衝突判定
 ///-------------------------------------------///
-void GroundOshan::OnCollision(Collider* collider) {
+void GroundOcean::OnCollision(Collider* collider) {
 	// オーシャンに波紋を追加
 	Vector3 collisionPos = collider->GetTransform().translate;
 	ocean_->AddCircularRipple(collisionPos, 2.0f, 1.0f, 4.0f);
@@ -40105,23 +40088,23 @@ void GroundOshan::OnCollision(Collider* collider) {
 
 
 ============================================================
-File Path: Project/application/Game/Object/GameGround/GroundOshan.h
+File Path: Project/application/Game/Object/GameGround/GroundOcean.h
 ============================================================
 #pragma once
-/// ===Indlude=== ///
+/// ===Include=== ///
 // Collider
 #include "Engine/Collider/AABBCollider.h"
-// Oshan
+// Ocean
 #include "Engine/Graphics/3d/Ocean/Ocean.h"
 
 ///=====================================================/// 
-/// GroundOshan
+/// GroundOcean
 ///=====================================================///
-class GroundOshan : public AABBCollider {
+class GroundOcean : public AABBCollider {
 public: 
 
-	GroundOshan() = default;
-	~GroundOshan();
+	GroundOcean() = default;
+	~GroundOcean();
 
 	/// <summary>
 	/// 初期化処理
@@ -40195,7 +40178,7 @@ void GameStage::Update() {
 	}
 
 	// Groundの更新
-	for (const auto& ocean : oshans_) {
+	for (const auto& ocean : Oceans_) {
 		if (ocean) {
 #ifdef USE_IMGUI
 			ocean->ShowImGui();
@@ -40225,7 +40208,7 @@ void GameStage::Draw(BlendMode mode) {
 	}
 
 	// GroundOceanの更新
-	for (const auto& ocean : oshans_) {
+	for (const auto& ocean : Oceans_) {
 		if (ocean) {
 			ocean->Draw(mode);
 		}
@@ -40327,7 +40310,7 @@ File Path: Project/application/Game/Object/GameStage.h
 /// ===Include=== ///
 #include "application/Game/Object/StageObject/StageObject.h"
 #include "application/Game/Object/GameGround/Ground.h"
-#include "application/Game/Object/GameGround/GroundOshan.h"
+#include "application/Game/Object/GameGround/GroundOcean.h"
 //C++
 #include <string>
 #include <vector>
@@ -40362,7 +40345,7 @@ public:
 private:
 	// ステージオブジェクトのリスト
 	std::vector<std::shared_ptr<StageObject>> objects_; 
-	std::vector<std::shared_ptr<GroundOshan>> oshans_;
+	std::vector<std::shared_ptr<GroundOcean>> Oceans_;
 	std::vector<std::shared_ptr<Ground>> grounds_;
 
 private:
@@ -40500,7 +40483,7 @@ File Path: Project/application/Game/UI/Game/GameSceneUI.cpp
 ///-------------------------------------------///
 void GameSceneUI::SetPlayer(Player* player) {
 	// PlayerUI
-	playerUI_->SetPalyer(player);
+	playerUI_->SetPlayer(player);
 }
 
 ///-------------------------------------------/// 
@@ -40822,6 +40805,7 @@ class Player;
 ///-------------------------------------------///
 class PlayerUI {
 public:
+
 	PlayerUI() = default;
 	~PlayerUI();
 
@@ -40842,7 +40826,7 @@ public:
 
 public: /// ===Setter=== ///
 	// Playerのセット
-	void SetPalyer(Player* player) { player_ = player; }
+	void SetPlayer(Player* player) { player_ = player; }
 
 private:
 	// Player
@@ -41496,7 +41480,7 @@ void GameScene::Update() {
 		break;
 	// フェードアウト
 	case FadeState::GameClearAnimation:
-		UpdateGameClearAnimtaion();
+		UpdateGameClearAnimation();
 		break;
 	}
 
@@ -41630,7 +41614,7 @@ void GameScene::UpdateGameOverAnimation() {
 ///-------------------------------------------/// 
 /// クリア時の更新処理
 ///-------------------------------------------///
-void GameScene::UpdateGameClearAnimtaion() {
+void GameScene::UpdateGameClearAnimation() {
 
 	// アニメーション更新
 	gameClearAnimation_->Update();
@@ -41663,7 +41647,7 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 			player_->Initialize();
 			player_->SetTranslate(obj.translation);
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
-			player_->SethalfSize(obbHalfSize);
+			player_->SetHalfSize(obbHalfSize);
 			break;
 		case LevelData::ClassTypeLevel::Enemy1:
 			// Enemyの座標設定
@@ -41681,7 +41665,7 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 File Path: Project/application/Scene/GameScene.h
 ============================================================
 #pragma once
-/// ===Includ=== ///
+/// ===Include=== ///
 #include "Engine/Scene/IScene.h"
 // Entity
 #include "application/Game/Entity/Player/Player.h"
@@ -41790,7 +41774,7 @@ private: /// ===メンバ関数=== ///
 	/// <summary>
 	/// フェードアウト時の更新処理
 	/// </summary>
-	void UpdateGameClearAnimtaion();
+	void UpdateGameClearAnimation();
 
 	/// <summary>
 	/// 配置処理
@@ -42357,9 +42341,10 @@ File Path: Project/main.cpp
 /// ===include=== ///
 #include "Engine/Scene/Framework.h"
 #include "Engine/Scene/MyGame.h"
+#include <windows.h>
 
 /// ===ゲームタイトル=== ///
-const wchar_t kWindowTitle[] = L"MiiEngine";
+const wchar_t kWindowTitle[] = L"Fallen Ascent";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
