@@ -473,6 +473,7 @@ void DXCommon::CreateSwapChain() {
 	swapChainDesc_.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // 描画のターゲットとして利用する
 	swapChainDesc_.BufferCount = 2;  // ダブルバッファ
 	swapChainDesc_.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;  // モニタに移したら、中身を破棄
+	swapChainDesc_.Scaling = DXGI_SCALING_NONE;	// ウィンドウサイズに合わせて伸縮
 
 	// コマンドキュー、ウィンドウハンドル、設定を渡して生成する
 	hr = dxgiFactory_->CreateSwapChainForHwnd(

@@ -4,7 +4,6 @@
 
 #include "Math/Vector3.h"
 
-
 /// ===LevelData=== ///
 struct LevelData {
 

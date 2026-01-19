@@ -9,6 +9,7 @@
 #include "Math/EasingMath.h"
 // c++
 #include <algorithm>
+#include <functional>
 #undef max
 
 ///-------------------------------------------/// 
@@ -26,21 +27,33 @@ void StartAnimation::Initialize(Player* player, GameCamera* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	// 初期状態の設定
+	/// ===値の初期化=== ///
+	// タイマーとフラグ
 	timer_ = 0.0f;
 	isCompleted_ = false;
-	currentPhase_ = AnimationPhase::PlayerDescent;
+	currentPhase_ = AnimationPhase::Falling;
 	kDeltaTime_ = DeltaTimeSevice::GetDeltaTime();
+	// 落下アニメーション情報
+	fallInfo_.playerStartPos = { 0.0f, 50.0f, 0.0f };
+	fallInfo_.playerEndPos = { 0.0f, 1.0f, 0.0f };
+	fallInfo_.FallingDuration = 1.5f;
+	// カメラ回転アニメーション情報
+	cameraRotInfo_.cameraStartPos = { 0.0f, 5.0f, 15.0f };
+	cameraRotInfo_.cameraEndPos = { 0.0f, 70.0f, -60.0f };
+	cameraRotInfo_.cameraStartRot = { 0.0f, 0.0f, 0.0f, 1.0f };
+	cameraRotInfo_.cameraEndRot = { 0.5f, 0.0f, 0.0f, 1.1f };
+	cameraRotInfo_.rotationDuration = 1.5f;
+	cameraRotInfo_.rotationStartTime = 1.5f;
 
-	// プレイヤーの初期位置設定
+	/// ===Playerの初期位置を設定=== ///
 	/*if (player_) {
 		player_->SetTranslate(playerStartPos_);
 	}*/
 
-	// カメラの初期位置設定
+	/// ===カメラの初期位置を設定=== ///
 	if (camera_) {
-		camera_->SetTranslate(cameraStartPos_);
-		camera_->SetRotate(cameraStartRot_);
+		camera_->SetTranslate(cameraRotInfo_.cameraStartPos);
+		camera_->SetRotate(cameraRotInfo_.cameraStartRot);
 	}
 }
 
@@ -48,51 +61,49 @@ void StartAnimation::Initialize(Player* player, GameCamera* camera) {
 /// 更新
 ///-------------------------------------------///
 void StartAnimation::Update() {
-	if (isCompleted_) {
-		return;
-	}
+	// 早期リターン
+	if (isCompleted_ && !player_ && !camera_) return;
 
-	// デルタタイム取得
+	/// ===デルタタイム取得=== ///
 	kDeltaTime_ = DeltaTimeSevice::GetDeltaTime();
 
-	// タイマーを進める
+	/// ===タイマーを進める=== ///
 	timer_ += kDeltaTime_;
 
-	// フェーズ管理
-	if (timer_ < rotationStartTime_) {
-		currentPhase_ = AnimationPhase::PlayerDescent;
-		//UpdatePlayerDescent();
-	} else if (timer_ < rotationStartTime_ + rotationDuration_) {
+	/// ===フェーズ管理=== ///
+	if (timer_ < cameraRotInfo_.rotationStartTime) {
+		currentPhase_ = AnimationPhase::Falling;
+		//UpdateFalling();
+	} else if (timer_ < cameraRotInfo_.rotationStartTime + cameraRotInfo_.rotationDuration) {
 		currentPhase_ = AnimationPhase::CameraRotation;
 		UpdateCameraRotation();
 	} else if (timer_ < totalDuration_) {
 		currentPhase_ = AnimationPhase::FinalSetup;
 	} else {
-		CompleteAnimation();
+		// フラグを立てる
+		isCompleted_ = true;
 	}
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void StartAnimation::Draw() {
-}
+void StartAnimation::Draw() {}
 
 ///-------------------------------------------/// 
 /// プレイヤー降下アニメーション
 ///-------------------------------------------///
-void StartAnimation::UpdatePlayerDescent() {
-	if (!player_) return;
+void StartAnimation::UpdateFalling() {
 
 	// 正規化された時間（0.0 ~ 1.0）
-	float t = timer_ / descentDuration_;
+	float t = timer_ / fallInfo_.FallingDuration;
 	t = std::clamp(t, 0.0f, 1.0f);
 
-	// イージング適用（EaseOutBounce で着地感を演出）
+	// イージング適用
 	float easedT = Easing::EaseOutBounce(t);
 
 	// 補間してプレイヤーの位置を更新
-	Vector3 currentPos = Math::Lerp(playerStartPos_, playerEndPos_, easedT);
+	Vector3 currentPos = Math::Lerp(fallInfo_.playerStartPos, fallInfo_.playerEndPos, easedT);
 	player_->SetTranslate(currentPos);
 }
 
@@ -100,49 +111,37 @@ void StartAnimation::UpdatePlayerDescent() {
 /// カメラ回転アニメーション
 ///-------------------------------------------///
 void StartAnimation::UpdateCameraRotation() {
-	if (!camera_) return;
 
 	// 回転フェーズでの経過時間
-	float rotationTime = timer_ - rotationStartTime_;
-	float t = rotationTime / rotationDuration_;
+	float rotationTime = timer_ - cameraRotInfo_.rotationStartTime;
+	float t = rotationTime / cameraRotInfo_.rotationDuration;
 	t = std::clamp(t, 0.0f, 1.0f);
 
-	// イージング適用（EaseInOutCubic でスムーズに）
+	// イージング適用
 	float easedT = Easing::EaseInOutCubic(t);
 
-	// カメラ位置の補間（前方から後方上空へ円弧を描くように移動）
-	// 中間点を経由して自然な軌道を作る
+	// カメラ位置の補間
 	Vector3 midPoint = {
-		(cameraStartPos_.x + cameraEndPos_.x) * 0.5f,
-		std::max(cameraStartPos_.y, cameraEndPos_.y) + 10.0f, // 少し高めに
-		(cameraStartPos_.z + cameraEndPos_.z) * 0.5f
+		(cameraRotInfo_.cameraStartPos.x + cameraRotInfo_.cameraEndPos.x) * 0.5f,
+		std::max(cameraRotInfo_.cameraStartPos.y, cameraRotInfo_.cameraEndPos.y) + 10.0f, // 少し高めに
+		(cameraRotInfo_.cameraStartPos.z + cameraRotInfo_.cameraEndPos.z) * 0.5f
 	};
 
 	Vector3 currentPos;
 	if (easedT < 0.5f) {
-		// 前半：開始位置から中間点へ
+		// 開始位置から中間点へ
 		float t1 = easedT * 2.0f;
-		currentPos = Math::Lerp(cameraStartPos_, midPoint, t1);
+		currentPos = Math::Lerp(cameraRotInfo_.cameraStartPos, midPoint, t1);
 	} else {
-		// 後半：中間点から終了位置へ
+		// 中間点から終了位置へ
 		float t2 = (easedT - 0.5f) * 2.0f;
-		currentPos = Math::Lerp(midPoint, cameraEndPos_, t2);
+		currentPos = Math::Lerp(midPoint, cameraRotInfo_.cameraEndPos, t2);
 	}
 
-	// カメラ回転の補間（Slerp でスムーズに）
-	Quaternion currentRot = Math::SLerp(cameraStartRot_, cameraEndRot_, easedT);
+	// カメラ回転の補間
+	Quaternion currentRot = Math::SLerp(cameraRotInfo_.cameraStartRot, cameraRotInfo_.cameraEndRot, easedT);
 
 	// カメラ更新
 	camera_->SetTranslate(currentPos);
 	camera_->SetRotate(currentRot);
-}
-
-///-------------------------------------------/// 
-/// アニメーション完了処理
-///-------------------------------------------///
-void StartAnimation::CompleteAnimation() {
-	if (isCompleted_) return;
-
-	// フラグを立てる
-	isCompleted_ = true;
 }

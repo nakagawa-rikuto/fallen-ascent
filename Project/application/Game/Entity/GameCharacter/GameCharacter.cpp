@@ -38,7 +38,6 @@ void GameCharacter<TCollider>::Initialize() {
 
 	/// ===GroundInfo=== ///
 	groundInfo_.isGrounded = false;
-	groundInfo_.hasGroundCollision = false;
 
 	/// ===TCollider=== ///
 	TCollider::Initialize();
@@ -50,22 +49,27 @@ void GameCharacter<TCollider>::Initialize() {
 template<typename TCollider>
 void GameCharacter<TCollider>::Update() {
 
-	/// ===デルタタイムの取得=== ///
-	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
-
-	/// ===地面との衝突処理=== ///
-	GroundCollision();
-
-	/// ===位置の更新=== ///
-	this->transform_.translate += baseInfo_.velocity;
-
 	/// ===死亡処理=== ///
 	if (baseInfo_.HP <= 0 || this->transform_.translate.y < -50.0f) {
 		baseInfo_.isDead = true;
 	}
 
+	/// ===デルタタイムの取得=== ///
+	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+
+	/// ===位置の更新=== ///
+	this->transform_.translate += baseInfo_.velocity;
+
+	/// ===地面との衝突処理=== ///
+	GroundCollision();
+
 	/// ===TCollider=== ///
 	TCollider::Update();
+
+	/// ===フラグのリセット=== ///
+	if (this->transform_.translate.y > groundInfo_.currentGroundYPos) {
+		groundInfo_.isGrounded = false;
+	}
 }
 
 ///-------------------------------------------/// 
@@ -98,37 +102,20 @@ void GameCharacter<TCollider>::Information() {
 ///-------------------------------------------///
 template<typename TCollider>
 void GameCharacter<TCollider>::OnCollision(Collider* collider) {
-
 	// === 早期リターン === //
 	if (!collider) return;
 
 	/// ===Colliderとの衝突処理=== ///
 	if (collider->GetColliderName() == ColliderName::Ground) {
 
-		// isGroundedがfalseなら
+		// isGroundがfalseの場合のみ処理を実行
 		if (!groundInfo_.isGrounded) {
-			// 地面に接地したとみなす
+			
+			// 地面に接地
 			groundInfo_.isGrounded = true;
-			groundInfo_.hasGroundCollision = true;
 
-			// 地面の情報を保存
-			if (collider->GetColliderType() == ColliderType::AABB) {
-				// 中心点と半径サイズを取得
-				AABBCollider* aabbCollider = dynamic_cast<AABBCollider*>(collider);
-				if (aabbCollider) {
-					AABB groundAABB = aabbCollider->GetAABB();
-					groundInfo_.currentGroundCenter = (groundAABB.min + groundAABB.max) * 0.5f;
-					groundInfo_.currentGroundHalfSize = (groundAABB.max - groundAABB.min) * 0.5f;
-				}
-			} else if (collider->GetColliderType() == ColliderType::OBB) {
-				// 中心点と半径サイズを取得
-				OBBCollider* obbCollider = dynamic_cast<OBBCollider*>(collider);
-				if (obbCollider) {
-					OBB groundOBB = obbCollider->GetOBB();
-					groundInfo_.currentGroundCenter = groundOBB.center;
-					groundInfo_.currentGroundHalfSize = groundOBB.halfSize;
-				}
-			}
+			// 地面に衝突した際の処理
+			GroundOnCollision(collider);
 		}
 
 	} else if (collider->GetColliderName() == ColliderName::Object) {
@@ -153,39 +140,25 @@ void GameCharacter<TCollider>::GroundCollision() {
 	/// ===地面から離れている場合の処理=== ///
 	if (!groundInfo_.isGrounded) {
 		// 重力の適用
-		//baseInfo_.velocity.y += baseInfo_.gravity * baseInfo_.deltaTime;
+		baseInfo_.velocity.y += baseInfo_.gravity * baseInfo_.deltaTime;
 
 		// Y方向の速度の最大値を制限
-		const float kMaxFollSpeed = -10.0f;
+		const float kMaxFullSpeed = -10.0f;
 		// 下方向への速度を制限
-		baseInfo_.velocity.y = std::clamp(baseInfo_.velocity.y, kMaxFollSpeed, 0.0f);
+		baseInfo_.velocity.y = std::clamp(baseInfo_.velocity.y, kMaxFullSpeed, 0.0f);
+
+		// 早期リターン
+		return;
 	}
 
-	/// ===早期リターン=== ///
-	if (!groundInfo_.hasGroundCollision) return;
+	/// ===地面より下に行かないようにする=== ///
+	if (this->transform_.translate.y < groundInfo_.currentGroundYPos) {
 
-	/// ===Y座標が地面を下回っているかををチェック=== ///
-	float groundY = 0.0f;
-	float characterHalfHeight = 0.0f;
-
-	if (this->GetColliderType() == ColliderType::OBB) {
-		OBB obb = dynamic_cast<OBBCollider*>(this)->GetOBB();
-		characterHalfHeight = obb.halfSize.y;
-		groundY = groundInfo_.currentGroundCenter.y + groundInfo_.currentGroundHalfSize.y + characterHalfHeight;
-	} else if (this->GetColliderType() == ColliderType::Sphere) {
-		Sphere sphere = dynamic_cast<SphereCollider*>(this)->GetSphere();
-		characterHalfHeight = sphere.radius;
-		groundY = groundInfo_.currentGroundCenter.y + groundInfo_.currentGroundHalfSize.y + characterHalfHeight;
-	}
-
-	// はみ出し分を計算
-	float overlap = groundY - this->transform_.translate.y;
-
-	// 地面より下に行かないようにする
-	if (this->transform_.translate.y < groundY) {
+		// はみ出し分を計算
+		//float overlap = groundInfo_.currentGroundYPos - this->transform_.translate.y;
 
 		// はみ出し分を押し戻す
-		this->transform_.translate.y += overlap;
+		this->transform_.translate.y = groundInfo_.currentGroundYPos;
 
 		// 下降中なら速度を0にする
 		if (baseInfo_.velocity.y < 0.0f) {
@@ -193,20 +166,85 @@ void GameCharacter<TCollider>::GroundCollision() {
 		}
 	}
 
-	/// ===地面の範囲を出たら=== ///
-	// X方向の範囲チェック
-	if (this->transform_.translate.x > (groundInfo_.currentGroundCenter.x + groundInfo_.currentGroundHalfSize.x + characterHalfHeight) ||
-		this->transform_.translate.x < (groundInfo_.currentGroundCenter.x - groundInfo_.currentGroundHalfSize.x - characterHalfHeight)) {
-		// 地面の範囲から出たらfalseにする
-		groundInfo_.isGrounded = false;
-		groundInfo_.hasGroundCollision = false;
+	/// ===地面の範囲を出たかチェック=== ///
+	bool isOutOfRange = false;
+
+	if (groundInfo_.currentGroundType == ColliderType::AABB) {
+		// min～maxの範囲
+		float minX = groundInfo_.currentGroundFirst.x;
+		float maxX = groundInfo_.currentGroundSecond.x;
+		float minZ = groundInfo_.currentGroundFirst.z;
+		float maxZ = groundInfo_.currentGroundSecond.z;
+
+		isOutOfRange = (this->transform_.translate.x > maxX || this->transform_.translate.x < minX ||
+			this->transform_.translate.z > maxZ || this->transform_.translate.z < minZ);
+
+	} else if (groundInfo_.currentGroundType == ColliderType::OBB) {
+		// center +- halfSize
+		float centerX = groundInfo_.currentGroundFirst.x;
+		float halfSizeX = groundInfo_.currentGroundSecond.x;
+		float centerZ = groundInfo_.currentGroundFirst.z;
+		float halfSizeZ = groundInfo_.currentGroundSecond.z;
+
+		isOutOfRange = (this->transform_.translate.x > centerX + halfSizeX || this->transform_.translate.x < centerX - halfSizeX ||
+			this->transform_.translate.z > centerZ + halfSizeZ || this->transform_.translate.z < centerZ - halfSizeZ);
 	}
 
-	// Z方向の範囲チェック
-	if (this->transform_.translate.z > (groundInfo_.currentGroundCenter.z + groundInfo_.currentGroundHalfSize.z + characterHalfHeight) ||
-		this->transform_.translate.z < (groundInfo_.currentGroundCenter.z - groundInfo_.currentGroundHalfSize.z - characterHalfHeight)) {
-		// 地面の範囲から出たらfalseにする
+	// 地面の範囲から出たらフラグをリセット
+	if (isOutOfRange) {
 		groundInfo_.isGrounded = false;
-		groundInfo_.hasGroundCollision = false;
 	}
+}
+
+///-------------------------------------------/// 
+/// 地面に衝突した際の処理
+///-------------------------------------------///
+template<typename TCollider>
+void GameCharacter<TCollider>::GroundOnCollision(Collider* collider) {
+
+	// タイプの取得
+	groundInfo_.currentGroundType = collider->GetColliderType();
+
+	/// ===タイプ別の地面情報の取得=== ///
+	if (groundInfo_.currentGroundType == ColliderType::AABB) { // AABBの場合
+		AABBCollider* aabbCollider = dynamic_cast<AABBCollider*>(collider);
+		if (aabbCollider) {
+			AABB groundAABB = aabbCollider->GetAABB();
+			// 地面の情報を保存(Min, Max)
+			groundInfo_.currentGroundFirst = groundAABB.min;
+			groundInfo_.currentGroundSecond = groundAABB.max;
+		}
+	} else if (groundInfo_.currentGroundType == ColliderType::OBB) { // OBBの場合
+		OBBCollider* obbCollider = dynamic_cast<OBBCollider*>(collider);
+		if (obbCollider) {
+			OBB groundOBB = obbCollider->GetOBB();
+			// 地面の情報を保存(Center, HalfSize)
+			groundInfo_.currentGroundFirst = groundOBB.center;
+			groundInfo_.currentGroundSecond = groundOBB.halfSize;
+		}
+	}
+
+	/// ===GameCharacterの情報を取得=== ///
+	if (this->GetColliderType() == ColliderType::OBB) {
+		OBB obb = dynamic_cast<OBBCollider*>(this)->GetOBB();
+		characterHalfSize_ = obb.halfSize;
+		
+	} else if (this->GetColliderType() == ColliderType::Sphere) {
+		Sphere sphere = dynamic_cast<SphereCollider*>(this)->GetSphere();
+		characterHalfSize_ = { sphere.radius, sphere.radius, sphere.radius };
+	}
+
+	/// ===地面のY座標を計算（地面タイプに応じて）=== ///
+	float groundTopY = 0.0f;
+	if (groundInfo_.currentGroundType == ColliderType::AABB) {
+		// AABBの場合: maxがそのまま上端
+		groundTopY = groundInfo_.currentGroundSecond.y;
+
+	} else if (groundInfo_.currentGroundType == ColliderType::OBB) {
+		// OBBの場合: center + halfSize
+		groundTopY = groundInfo_.currentGroundFirst.y + groundInfo_.currentGroundSecond.y;
+	}
+
+	/// ===押し戻し後のY座標を計算=== ///
+	groundInfo_.currentGroundYPos = groundTopY + characterHalfSize_.y;
 }
