@@ -76,13 +76,13 @@ void FollowCamera::Update() {
 ///-------------------------------------------///
 void FollowCamera::ImGuiUpdate() {
 #ifdef USE_IMGUI
-	NormalCamera::ImGuiUpdate();
 	ImGui::Begin("FollowCamera");
 	ImGui::DragFloat3("Offset", &offset_.x, 0.01f);
 	ImGui::DragFloat3("OrbitingOffset_", &OrbitingOffset_.x, 0.01f);
 	ImGui::DragFloat("followSpeed_", &followSpeed_, 0.01f);
 	ImGui::DragFloat("rotationLerpSpeed_", &rotationLerpSpeed_, 0.01f);
 	ImGui::End();
+	NormalCamera::ImGuiUpdate();
 #endif // USE_IMGUI
 }
 

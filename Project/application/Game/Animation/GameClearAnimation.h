@@ -49,29 +49,40 @@ private:
 	Player* player_ = nullptr;      // プレイヤーへの参照
 	GameCamera* camera_ = nullptr;  // カメラへの参照
 
+	// 現在のフェーズ
 	ClearAnimationPhase currentPhase_ = ClearAnimationPhase::CameraRotation;
 
 	/// ===カメラ回転用=== ///
-	float cameraRotationTimer_ = 0.0f;      // カメラ回転タイマー
-	float cameraRotationDuration_ = 3.0f;   // カメラ回転時間
-	float startAngle_ = 0.0f;                // 初期角度（ラジアン）
-	float targetAngle_ = 0.0f;               // 目標角度（ラジアン）
-	float cameraHeight_ = 0.120f;            // カメラの高さ（補間用）
-	float cameraDistance_ = 94.0f;           // カメラとプレイヤーの距離（補間用）
-	Quaternion startCameraRotation_;         // 初期カメラ回転
-	Quaternion targetCameraRotation_;        // 目標カメラ回転
+	struct CameraRotationInfo {
+		float timer = 0.0f;			  // カメラ回転タイマー
+		float duration = 3.0f;		  // カメラ回転時間
+		float startAngle = 0.0f;      // 初期角度（ラジアン）
+		float targetAngle = 0.0f;     // 目標角度（ラジアン）
+		float height = 0.120f;		  // カメラの高さ（補間用）
+		float distance = 94.0f;		  // カメラとプレイヤーの距離（補間用）
+		Quaternion startRotation;     // 初期カメラ回転
+		Quaternion targetRotation;    // 目標カメラ回転
+		Vector3 playerForward;		  // プレイヤーの前方向ベクトル
+	};
+	CameraRotationInfo cameraInfo_;
 
-	/// ===プレイヤージャンプ用（カメラ回転中）=== ///
-	float jumpTimer_ = 0.0f;                 // ジャンプタイマー
-	float jumpInterval_ = 0.5f;              // ジャンプの間隔
-	Vector3 basePlayerPosition_;             // プレイヤーの基準位置
-	float smallJumpHeight_ = 6.0f;           // 小ジャンプの高さ
-	int jumpCount_ = 0;                      // ジャンプ回数
+	/// ===プレイヤージャンプ用=== ///
+	struct PlayerSmallJumpInfo {
+		float timer = 0.0f;           // ジャンプタイマー
+		float interval = 0.5f;        // ジャンプの間隔
+		Vector3 basePlayerPosition;   // プレイヤーの基準位置
+		float height = 6.0f;          // 小ジャンプの高さ
+		int count = 0;                // ジャンプ回数
+	};
+	PlayerSmallJumpInfo smallJumpInfo_;
 
 	/// ===最終ジャンプ用=== ///
-	float finalJumpTimer_ = 0.0f;            // 最終ジャンプタイマー
-	float finalJumpDuration_ = 1.0f;         // 最終ジャンプ時間
-	float finalJumpHeight_ = 7.0f;           // 最終ジャンプの高さ
+	struct FinalJumpInfo {
+		float timer = 0.0f;      // 最終ジャンプタイマー
+		float duration = 1.0f;   // 最終ジャンプ時間
+		float height = 7.0f;     // 最終ジャンプの高さ
+	};
+	FinalJumpInfo finalJumpInfo_;
 
 	float deltaTime_ = 0.0f; // deltaTime
 

@@ -110,8 +110,8 @@ void GameScene::Update() {
 	ImGui::End();
 
 	// Camera
-	defaultCamera_->ImGuiUpdate();
-	defaultCamera_->DebugUpdate();
+	camera_->ImGuiUpdate();
+	camera_->DebugUpdate();
 
 	// Player
 	player_->Information();

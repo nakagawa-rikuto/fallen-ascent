@@ -76,9 +76,9 @@ void NormalCamera::Update() {
 ///-------------------------------------------///
 void NormalCamera::ImGuiUpdate() {
 #ifdef USE_IMGUI
-	ImGui::Begin("Caemra");
-	ImGui::DragFloat3("Translate", &transform_.translate.x, 0.01f);
-	ImGui::DragFloat4("Rotate", &transform_.rotate.x, 0.001f);
+	ImGui::Begin("カメラ");
+	ImGui::DragFloat3("位置", &transform_.translate.x, 0.01f);
+	ImGui::DragFloat4("回転", &transform_.rotate.x, 0.001f);
 	ImGui::DragFloat("Horizontal View", &horizontalView_, 0.01f);
 	ImGui::DragFloat("Aspect Ratio", &aspect_, 0.01f);
 	ImGui::DragFloat("Near Clip", &nearClip_, 0.01f);
