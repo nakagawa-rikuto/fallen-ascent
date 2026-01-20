@@ -16,7 +16,6 @@
 └── └── └── ├── Collision/
 └── └── └── └── ├── ColliderCollision.cpp
 └── └── └── └── └── ColliderCollision.h
-└── └── └── ├── GameColliderConcepts.h
 └── └── └── ├── OBBCollider.cpp
 └── └── └── ├── OBBCollider.h
 └── └── └── ├── SphereCollider.cpp
@@ -1204,6 +1203,11 @@ void AABBCollider::Information() {
 }
 
 ///-------------------------------------------/// 
+/// 衝突処理
+///-------------------------------------------///
+void AABBCollider::OnCollision(Collider* collider) { collider; }
+
+///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
 void AABBCollider::SetAABB(const AABB& aabb) { aabb_ = aabb; }
@@ -1258,7 +1262,7 @@ public: /// ===衝突=== ///
 	/// 衝突処理
 	/// </summary>
 	/// <param name="collider">衝突した相手の Collider オブジェクトへのポインター。衝突に関する情報を取得・処理するために使用します。</param>
-	virtual void OnCollision(Collider* collider) override = 0;
+	virtual void OnCollision(Collider* collider) override;
 
 public: /// ===Setter=== ///
 	// AABBの設定
@@ -2044,20 +2048,6 @@ private:
 };
 
 ============================================================
-File Path: Project/Engine/Collider/GameColliderConcepts.h
-============================================================
-#pragma once
-/// ===Include=== ///
-// Collider
-#include "Base/Collider.h"
-// C++
-#include <type_traits>
-
-/// ===Concepts=== ///
-template<typename T>
-concept IsCollider = std::is_base_of_v<Collider, T>;
-
-============================================================
 File Path: Project/Engine/Collider/OBBCollider.cpp
 ============================================================
 #include "OBBCollider.h"
@@ -2126,6 +2116,11 @@ void OBBCollider::Information() {
 	ImGui::SliderFloat3("HalfSize", &obb_.halfSize.x, 0.1f, 10.0f);
 #endif // USE_IMGUI
 }
+
+///-------------------------------------------/// 
+/// 衝突処理
+///-------------------------------------------///
+void OBBCollider::OnCollision(Collider* collider) { collider; }
 
 ///-------------------------------------------/// 
 /// Setter
@@ -2219,7 +2214,7 @@ public: /// ===衝突=== ///
     /// 衝突処理
     /// </summary>
     /// <param name="collider">衝突した相手の Collider へのポインタ。衝突対象に関する情報を表します。</param>
-    virtual void OnCollision(Collider* collider) override = 0;
+    virtual void OnCollision(Collider* collider) override;
 
 public: /// ===Setter=== ///
     // OBBの設定
@@ -2308,6 +2303,11 @@ void SphereCollider::Information() {
 }
 
 ///-------------------------------------------/// 
+/// 衝突処理
+///-------------------------------------------///
+void SphereCollider::OnCollision(Collider* collider) { collider; }
+
+///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
 void SphereCollider::SetRadius(const float& radius) { sphere_.radius = radius; }
@@ -2363,7 +2363,7 @@ public: /// ===衝突=== ///
 	/// 衝突処理
 	/// </summary>
 	/// <param name="collider">衝突対象のコライダへのポインタ。衝突したオブジェクトの情報にアクセスするために使用される。</param>
-	virtual void OnCollision(Collider* collider) override = 0;
+	virtual void OnCollision(Collider* collider) override;
 
 public: /// ===Setter=== ///
 	// Sphereの設定
@@ -26742,7 +26742,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Player\Editor\AttackEditor.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.h" />
-    <ClInclude Include="Engine\Collider\GameColliderConcepts.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.h" />
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
@@ -28099,7 +28098,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\UI\Game\GameSceneUI.h" />
     <ClInclude Include="application\Game\UI\Game\PlayerUI.h" />
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterConcepts.h" />
-    <ClInclude Include="Engine\Collider\GameColliderConcepts.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -35720,7 +35718,7 @@ template class GameCharacter<SphereCollider>;
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 GameCharacter<TCollider>::~GameCharacter() {
 	this->object3d_.reset();
 }
@@ -35728,7 +35726,7 @@ GameCharacter<TCollider>::~GameCharacter() {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::Initialize() {
 	/// ===ColliderCollision=== ///
 	collision_ = std::make_unique<ColliderCollision>();
@@ -35750,7 +35748,7 @@ void GameCharacter<TCollider>::Initialize() {
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::Update() {
 
 	/// ===死亡処理=== ///
@@ -35779,7 +35777,7 @@ void GameCharacter<TCollider>::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::Draw(BlendMode mode) {
 	/// ===TCollider=== ///
 	TCollider::Draw(mode);
@@ -35788,7 +35786,7 @@ void GameCharacter<TCollider>::Draw(BlendMode mode) {
 ///-------------------------------------------/// 
 /// ImGui
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::Information() {
 #ifdef USE_IMGUI
 	TCollider::Information();
@@ -35804,7 +35802,7 @@ void GameCharacter<TCollider>::Information() {
 ///-------------------------------------------/// 
 /// 衝突
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::OnCollision(Collider* collider) {
 	// === 早期リターン === //
 	if (!collider) return;
@@ -35838,7 +35836,7 @@ void GameCharacter<TCollider>::OnCollision(Collider* collider) {
 ///-------------------------------------------/// 
 /// 地面との衝突処理
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::GroundCollision() {
 
 	/// ===地面から離れている場合の処理=== ///
@@ -35903,7 +35901,7 @@ void GameCharacter<TCollider>::GroundCollision() {
 ///-------------------------------------------/// 
 /// 地面に衝突した際の処理
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::GroundOnCollision(Collider* collider) {
 
 	// タイプの取得
@@ -35962,13 +35960,14 @@ File Path: Project/application/Game/Entity/GameCharacter/GameCharacter.h
 // Collider
 #include "Engine/Collider/OBBCollider.h"
 #include "Engine/Collider/SphereCollider.h"
+#include "GameCharacterConcepts.h"
 
 #include "GameCharacterCollision.h"
 
 ///-------------------------------------------/// 
 /// GameCharacterBase
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 class GameCharacter : public TCollider {
 public:
 
@@ -36068,10 +36067,12 @@ private: /// ===地面との衝突処理=== ///
 File Path: Project/application/Game/Entity/GameCharacter/GameCharacterCollision.cpp
 ============================================================
 #include "GameCharacterCollision.h"
+// GameCharacter
 #include "GameCharacter.h"
-#include "Engine/Collider/SphereCollider.h"
-#include "Engine/Collider/OBBCollider.h"
+// C++
 #include <algorithm>
+// Math
+#include "Math/sMath.h"
 
 ///-------------------------------------------/// 
 /// テンプレート候補の明示的インスタンス化
@@ -36169,7 +36170,7 @@ void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<OBBCollider>* c
 ///-------------------------------------------/// 
 /// 球体とOBBのGameCharacter衝突処理
 ///-------------------------------------------///
-template<typename TColliderA, typename TColliderB>
+template<typename TColliderA, typename TColliderB> requires IsCollider<TColliderA>&& IsCollider<TColliderB>
 void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio) {
 
 	GameCharacter<OBBCollider>* obbCharacter = nullptr;
@@ -36228,7 +36229,7 @@ void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>*
 ///-------------------------------------------/// 
 /// 汎用衝突処理（自動判定）
 ///-------------------------------------------///
-template<typename TColliderA, typename TColliderB>
+template<typename TColliderA, typename TColliderB> requires IsCollider<TColliderA>&& IsCollider<TColliderB>
 void GameCharacterCollision::ProcessCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio) {
 
 	ColliderType typeA = GetColliderTypeFromCharacter(characterA);
@@ -36256,7 +36257,7 @@ void GameCharacterCollision::ProcessCollision(GameCharacter<TColliderA>* charact
 ///-------------------------------------------/// 
 /// コライダー型の判定
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 ColliderType GameCharacterCollision::GetColliderTypeFromCharacter(GameCharacter<TCollider>* character) const {
 	return character->GetColliderType();
 }
@@ -36327,15 +36328,14 @@ File Path: Project/application/Game/Entity/GameCharacter/GameCharacterCollision.
 ============================================================
 #pragma once
 /// ===Include=== ///
-#include "Engine/Collider/Base/Collider.h"
-#include "Engine/DataInfo/ColliderData.h"
-#include "Math/sMath.h"
+// Collider
+#include "GameCharacterConcepts.h"
+#include "Engine/Collider/OBBCollider.h"
+#include "Engine/Collider/SphereCollider.h"
 
 /// ===前方宣言=== ///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 class GameCharacter;
-class SphereCollider;
-class OBBCollider;
 
 ///=====================================================/// 
 /// GameCharacterCollision - GameCharacter専用の衝突処理クラス
@@ -36372,7 +36372,7 @@ public:
     /// <param name="characterA">衝突対象の最初のキャラクター。コライダ型 TColliderA を持つ GameCharacter へのポインタ。</param>
     /// <param name="characterB">衝突対象の二番目のキャラクター。コライダ型 TColliderB を持つ GameCharacter へのポインタ。</param>
     /// <param name="pushBackRatio">衝突解決時に適用する押し戻し（push-back）の倍率。デフォルトは 1.0f。値を小さくすると押し戻しが弱くなり、0 にすると押し戻しを行わない。</param>
-    template<typename TColliderA, typename TColliderB>
+    template<typename TColliderA, typename TColliderB> requires IsCollider<TColliderA>&& IsCollider<TColliderB>
     void HandleSphereOBBCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio = 1.0f);
 
     /// <summary>
@@ -36383,7 +36383,7 @@ public:
     /// <param name="characterA">衝突する最初のGameCharacterへのポインタ。</param>
     /// <param name="characterB">衝突する2番目のGameCharacterへのポインタ。</param>
     /// <param name="pushBackRatio">衝突時に適用する押し戻し量の比率。既定値は1.0f。</param>
-    template<typename TColliderA, typename TColliderB>
+	template<typename TColliderA, typename TColliderB> requires IsCollider<TColliderA>&& IsCollider<TColliderB>
     void ProcessCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio = 1.0f);
 
 private:
@@ -36397,7 +36397,7 @@ private:
     /// <typeparam name="TCollider">キャラクターが使用するコライダーの型。</typeparam>
     /// <param name="character">TCollider 型のコライダーを持つ GameCharacter へのポインター。対象のキャラクターを指定します。</param>
     /// <returns>指定したキャラクターに関連付けられた ColliderType を返します。</returns>
-    template<typename TCollider>
+    template<typename TCollider> requires IsCollider<TCollider>
     ColliderType GetColliderTypeFromCharacter(GameCharacter<TCollider>* character) const;
 
     /// <summary>
@@ -36439,10 +36439,7 @@ File Path: Project/application/Game/Entity/GameCharacter/GameCharacterConcepts.h
 
 /// ===Concepts=== ///
 template<typename T>
-concept IsCollider = 
-std::is_base_of_v<Collider, T> 
-&& !std::is_abstract_v<T>
-&& std::is_default_constructible_v<T>;
+concept IsCollider = std::is_base_of_v<Collider, T> && !std::is_abstract_v<T> && std::is_default_constructible_v<T>;
 
 ============================================================
 File Path: Project/application/Game/Entity/Player/Component/PlayerAttackComponent.cpp
