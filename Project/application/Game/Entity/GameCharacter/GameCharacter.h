@@ -3,13 +3,14 @@
 // Collider
 #include "Engine/Collider/OBBCollider.h"
 #include "Engine/Collider/SphereCollider.h"
+#include "Engine/Collider/GameColliderConcepts.h"
 
 #include "GameCharacterCollision.h"
 
 ///-------------------------------------------/// 
 /// GameCharacterBase
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 class GameCharacter : public TCollider {
 public:
 
