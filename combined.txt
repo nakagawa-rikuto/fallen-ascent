@@ -529,13 +529,13 @@ void FollowCamera::Update() {
 ///-------------------------------------------///
 void FollowCamera::ImGuiUpdate() {
 #ifdef USE_IMGUI
-	NormalCamera::ImGuiUpdate();
 	ImGui::Begin("FollowCamera");
 	ImGui::DragFloat3("Offset", &offset_.x, 0.01f);
 	ImGui::DragFloat3("OrbitingOffset_", &OrbitingOffset_.x, 0.01f);
 	ImGui::DragFloat("followSpeed_", &followSpeed_, 0.01f);
 	ImGui::DragFloat("rotationLerpSpeed_", &rotationLerpSpeed_, 0.01f);
 	ImGui::End();
+	NormalCamera::ImGuiUpdate();
 #endif // USE_IMGUI
 }
 
@@ -884,9 +884,9 @@ void NormalCamera::Update() {
 ///-------------------------------------------///
 void NormalCamera::ImGuiUpdate() {
 #ifdef USE_IMGUI
-	ImGui::Begin("Caemra");
-	ImGui::DragFloat3("Translate", &transform_.translate.x, 0.01f);
-	ImGui::DragFloat4("Rotate", &transform_.rotate.x, 0.001f);
+	ImGui::Begin("カメラ");
+	ImGui::DragFloat3("位置", &transform_.translate.x, 0.01f);
+	ImGui::DragFloat4("回転", &transform_.rotate.x, 0.001f);
 	ImGui::DragFloat("Horizontal View", &horizontalView_, 0.01f);
 	ImGui::DragFloat("Aspect Ratio", &aspect_, 0.01f);
 	ImGui::DragFloat("Near Clip", &nearClip_, 0.01f);
@@ -31735,6 +31735,7 @@ File Path: Project/application/Game/Animation/GameClearAnimation.cpp
 // Math
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
+#include "Math/MatrixMath.h"
 // Service
 #include "Engine/System/Service/DeltaTimeSevice.h"
 
@@ -31745,58 +31746,68 @@ void GameClearAnimation::Initialize(Player* player, GameCamera* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	// カメラを回転可能型に設定
-	camera_->SetFollowCamera(FollowCameraType::Orbiting);
-
-	// 初期フェーズを設定
-	currentPhase_ = ClearAnimationPhase::CameraRotation;
-
-	/// ===カメラ回転の初期設定=== ///
-	cameraRotationTimer_ = 0.0f;
-
-	// プレイヤーの基準位置を保存
-	basePlayerPosition_ = player_->GetTransform().translate;
+	// プレイヤーの回転を保存
 	Quaternion playerRotation = player_->GetTransform().rotate;
 
-	// カメラのターゲットを設定
-	camera_->SetTarget(&basePlayerPosition_, &playerRotation);
-
-	// 開始位置のオフセット（画像の情報）
+	/// ===カメラ回転の初期設定=== ///
+	cameraInfo_.timer = 0.0f;
+	// プレイヤーの前方向ベクトルを取得
+	cameraInfo_.playerForward = Math::TransformNormal({ 0.0f, 0.0f, 1.0f }, Math::MakeRotateQuaternionMatrix(playerRotation));
+	// 開始位置のオフセット
 	Vector3 startOffset = { 0.0f, 0.120f, -94.0f };
-	// 終了位置のオフセット（画像の情報）
-	Vector3 endOffset = { 0.0f, -0.080f, -30.000f };
-
+	// 終了位置のオフセット
+	float finalDistance = 30.0f;
+	float finalHeight = 0.08f;
+	//Vector3 endOffset = {
+	//	-cameraInfo_.playerForward.x * finalDistance,
+	//	finalHeight,
+	//	-cameraInfo_.playerForward.z * finalDistance
+	//};
+	Vector3 endOffset = { 0.0f, -finalHeight, -finalDistance };
 	// 開始角度と距離を計算
-	startAngle_ = atan2f(startOffset.x, startOffset.z);
-	cameraDistance_ = sqrtf(startOffset.x * startOffset.x + startOffset.z * startOffset.z);
-	cameraHeight_ = startOffset.y;
-
+	cameraInfo_.startAngle = atan2f(startOffset.x, startOffset.z);
+	cameraInfo_.distance = sqrtf(startOffset.x * startOffset.x + startOffset.z * startOffset.z);
+	cameraInfo_.height = startOffset.y;
 	// 終了角度を計算
-	targetAngle_ = atan2f(endOffset.x, endOffset.z);
-
+	cameraInfo_.targetAngle = atan2f(endOffset.x, endOffset.z);
 	// カメラの回転情報は画像から取得不可のため、現在の回転を使用
-	startCameraRotation_ = camera_->GetRotate();
+	cameraInfo_.startRotation = camera_->GetRotate();
 	// 終了時の回転も現在の回転を維持
-	targetCameraRotation_ = { 0.0f, -0.98f, 0.2f, 0.0f };
+	cameraInfo_.targetRotation = { 0.0f, -0.98f, 0.2f, 0.0f };
 
 	/// ===ジャンプの初期設定=== ///
-	jumpTimer_ = 0.0f;
-	jumpCount_ = 0;
+	smallJumpInfo_.timer = 0.0f;
+	smallJumpInfo_.count = 0;
+	smallJumpInfo_.basePlayerPosition = player_->GetTransform().translate;
 
 	/// ===最終ジャンプの初期設定=== ///
-	finalJumpTimer_ = 0.0f;
+	finalJumpInfo_.timer = 0.0f;
 
-	// カメラのオフセットを設定
-	camera_->SetOrbitingOffset(startOffset);
+	/// ===カメラの設定=== ///
+	// 回転可能型に設定
+	camera_->SetFollowCamera(FollowCameraType::Orbiting); 
+	// カメラのターゲットを設定
+	camera_->SetTarget(&smallJumpInfo_.basePlayerPosition, &playerRotation); 
+	// 初期オフセットを設定
+	camera_->SetOrbitingOffset(startOffset); 
 
-	/// ===Playerの重力を変更=== ///
-	player_->SetGravity(-4.9f); // 重力を半分にしてジャンプを緩やかに
+	/// ===Playerの設定=== ///
+	player_->SetGravity(-2.9f); 
+	// 初期速度をリセット
+	player_->SetVelocity({ 0.0f, 0.0f, 0.0f }); 
+
+	/// ===初期フェーズを設定=== ///
+	currentPhase_ = ClearAnimationPhase::CameraRotation;
 }
 
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
 void GameClearAnimation::Update() {
+	/// ===DeltaTimeの取得=== ///
+	deltaTime_ = DeltaTimeSevice::GetDeltaTime();
+
+	/// ===フェーズごとの更新=== ///
 	switch (currentPhase_) {
 	case ClearAnimationPhase::CameraRotation:
 		UpdateCameraRotation();
@@ -31813,37 +31824,35 @@ void GameClearAnimation::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void GameClearAnimation::Draw() {
-	// 必要に応じてクリア演出用のエフェクトなどを描画
-}
+void GameClearAnimation::Draw() {}
 
 ///-------------------------------------------/// 
 /// 完了フラグの取得
 ///-------------------------------------------///
-bool GameClearAnimation::IsCompleted() const {
-	return currentPhase_ == ClearAnimationPhase::Completed;
-}
+bool GameClearAnimation::IsCompleted() const {return currentPhase_ == ClearAnimationPhase::Completed;}
 
 ///-------------------------------------------/// 
 /// カメラ回転フェーズの更新
 ///-------------------------------------------///
 void GameClearAnimation::UpdateCameraRotation() {
 	// タイマーを進める
-	cameraRotationTimer_ += DeltaTimeSevice::GetDeltaTime();
+	cameraInfo_.timer += deltaTime_;
 
 	// 進行度を計算(0.0 ~ 1.0)
-	float t = cameraRotationTimer_ / cameraRotationDuration_;
+	float t = cameraInfo_.timer / cameraInfo_.duration;
 	t = (std::min)(t, 1.0f);
 
 	// Easingを適用（滑らかな回転）
 	float easedT = Easing::EaseInOutCubic(t);
 
 	// 現在の角度を補間
-	float currentAngle = Math::Lerp(startAngle_, targetAngle_, easedT);
+	float currentAngle = Math::Lerp(cameraInfo_.startAngle, cameraInfo_.targetAngle, easedT);
 
-	// 距離と高さも補間（94.0 -> 30.0, 0.120 -> -0.080）
-	float currentDistance = Math::Lerp(94.0f, 30.0f, easedT);
-	float currentHeight = Math::Lerp(0.120f, -0.080f, easedT);
+	// 距離と高さも補間
+	float finalDistance = 30.0f;
+	float finalHeight = 0.08f;
+	float currentDistance = Math::Lerp(94.0f, finalDistance, easedT);
+	float currentHeight = Math::Lerp(0.120f, -finalHeight, easedT);
 
 	// 円周上のカメラ位置を計算
 	Vector3 newOffset;
@@ -31851,22 +31860,20 @@ void GameClearAnimation::UpdateCameraRotation() {
 	newOffset.y = currentHeight;
 	newOffset.z = cosf(currentAngle) * currentDistance;
 
-	// カメラのオフセットを更新（Orbitingカメラは自動的にプレイヤーを見る）
+	// カメラのオフセットを更新
 	camera_->SetOrbitingOffset(newOffset);
 
-	// カメラの回転を補間（Orbitingカメラが自動調整するため、必要に応じて使用）
-	Quaternion currentRotation = Math::SLerp(startCameraRotation_, targetCameraRotation_, easedT);
+	// カメラの回転を補間
+	Quaternion currentRotation = Math::SLerp(cameraInfo_.startRotation, cameraInfo_.targetRotation, easedT);
 	camera_->SetRotate(currentRotation);
 
 	// プレイヤーの小ジャンプ更新
 	UpdatePlayerSmallJump();
 
 	// 回転完了で最終ジャンプフェーズへ
-	if (cameraRotationTimer_ >= cameraRotationDuration_) {
+	if (cameraInfo_.timer >= cameraInfo_.duration) {
 		currentPhase_ = ClearAnimationPhase::FinalJump;
-		finalJumpTimer_ = 0.0f;
-		// プレイヤーを基準位置に戻す
-		player_->SetTranslate(basePlayerPosition_);
+		finalJumpInfo_.timer = 0.0f;
 	}
 }
 
@@ -31875,25 +31882,25 @@ void GameClearAnimation::UpdateCameraRotation() {
 ///-------------------------------------------///
 void GameClearAnimation::UpdatePlayerSmallJump() {
 	// ジャンプタイマーを進める
-	jumpTimer_ += DeltaTimeSevice::GetDeltaTime();
+	smallJumpInfo_.timer += deltaTime_;
 
 	// ジャンプ間隔ごとに新しいジャンプ開始
-	if (jumpTimer_ >= jumpInterval_) {
-		jumpTimer_ = 0.0f;
-		jumpCount_++;
+	if (smallJumpInfo_.timer >= smallJumpInfo_.interval) {
+		smallJumpInfo_.timer = 0.0f;
+		smallJumpInfo_.count++;
 	}
 
 	// 現在のジャンプ進行度を計算
-	float localT = jumpTimer_ / jumpInterval_;
+	float localT = smallJumpInfo_.timer / smallJumpInfo_.interval;
 	localT = (std::min)(localT, 1.0f);
 
-	// 放物線を描くジャンプ（0.0 -> 1.0 -> 0.0）
-	float jumpProgress = -4.0f * smallJumpHeight_ * (localT - 0.5f) * (localT - 0.5f) + smallJumpHeight_;
+	// 放物線を描くジャンプ
+	float jumpProgress = -4.0f * smallJumpInfo_.height * (localT - 0.5f) * (localT - 0.5f) + smallJumpInfo_.height;
 
-	// プレイヤーの位置を更新
-	Vector3 currentPosition = basePlayerPosition_;
-	currentPosition.y += jumpProgress;
-	player_->SetTranslate(currentPosition);
+	// プレイヤーのVelocityを更新
+	Vector3 playerCurrentVelocity = player_->GetVelocity();
+	playerCurrentVelocity.y += jumpProgress * deltaTime_;
+	player_->SetVelocity(playerCurrentVelocity);
 }
 
 ///-------------------------------------------/// 
@@ -31901,19 +31908,19 @@ void GameClearAnimation::UpdatePlayerSmallJump() {
 ///-------------------------------------------///
 void GameClearAnimation::UpdateFinalJump() {
 	// タイマーを進める
-	finalJumpTimer_ += DeltaTimeSevice::GetDeltaTime();
+	finalJumpInfo_.timer += deltaTime_;
 
 	// 進行度を計算(0.0 ~ 1.0)
-	float t = finalJumpTimer_ / finalJumpDuration_;
+	float t = finalJumpInfo_.timer / finalJumpInfo_.duration;
 
 	if (t <= 1.0f) {
 		// 大きな放物線を描くジャンプ
-		float jumpProgress = -4.0f * finalJumpHeight_ * (t - 0.5f) * (t - 0.5f) + finalJumpHeight_;
+		float jumpProgress = -4.0f * finalJumpInfo_.height * (t - 0.5f) * (t - 0.5f) + finalJumpInfo_.height;
 
-		// プレイヤーの位置を更新
-		Vector3 currentPosition = basePlayerPosition_;
-		currentPosition.y += jumpProgress;
-		player_->SetTranslate(currentPosition);
+		// プレイヤーのVelocityを更新
+		Vector3 playerCurrentVelocity = player_->GetVelocity();
+		playerCurrentVelocity.y += jumpProgress * deltaTime_;
+		player_->SetVelocity(playerCurrentVelocity);
 	} else {
 		// ジャンプ完了
 		currentPhase_ = ClearAnimationPhase::Completed;
@@ -31974,29 +31981,42 @@ private:
 	Player* player_ = nullptr;      // プレイヤーへの参照
 	GameCamera* camera_ = nullptr;  // カメラへの参照
 
+	// 現在のフェーズ
 	ClearAnimationPhase currentPhase_ = ClearAnimationPhase::CameraRotation;
 
 	/// ===カメラ回転用=== ///
-	float cameraRotationTimer_ = 0.0f;      // カメラ回転タイマー
-	float cameraRotationDuration_ = 3.0f;   // カメラ回転時間
-	float startAngle_ = 0.0f;                // 初期角度（ラジアン）
-	float targetAngle_ = 0.0f;               // 目標角度（ラジアン）
-	float cameraHeight_ = 0.120f;            // カメラの高さ（補間用）
-	float cameraDistance_ = 94.0f;           // カメラとプレイヤーの距離（補間用）
-	Quaternion startCameraRotation_;         // 初期カメラ回転
-	Quaternion targetCameraRotation_;        // 目標カメラ回転
+	struct CameraRotationInfo {
+		float timer = 0.0f;			  // カメラ回転タイマー
+		float duration = 3.0f;		  // カメラ回転時間
+		float startAngle = 0.0f;      // 初期角度（ラジアン）
+		float targetAngle = 0.0f;     // 目標角度（ラジアン）
+		float height = 0.120f;		  // カメラの高さ（補間用）
+		float distance = 94.0f;		  // カメラとプレイヤーの距離（補間用）
+		Quaternion startRotation;     // 初期カメラ回転
+		Quaternion targetRotation;    // 目標カメラ回転
+		Vector3 playerForward;		  // プレイヤーの前方向ベクトル
+	};
+	CameraRotationInfo cameraInfo_;
 
-	/// ===プレイヤージャンプ用（カメラ回転中）=== ///
-	float jumpTimer_ = 0.0f;                 // ジャンプタイマー
-	float jumpInterval_ = 0.5f;              // ジャンプの間隔
-	Vector3 basePlayerPosition_;             // プレイヤーの基準位置
-	float smallJumpHeight_ = 1.5f;           // 小ジャンプの高さ
-	int jumpCount_ = 0;                      // ジャンプ回数
+	/// ===プレイヤージャンプ用=== ///
+	struct PlayerSmallJumpInfo {
+		float timer = 0.0f;           // ジャンプタイマー
+		float interval = 0.5f;        // ジャンプの間隔
+		Vector3 basePlayerPosition;   // プレイヤーの基準位置
+		float height = 6.0f;          // 小ジャンプの高さ
+		int count = 0;                // ジャンプ回数
+	};
+	PlayerSmallJumpInfo smallJumpInfo_;
 
 	/// ===最終ジャンプ用=== ///
-	float finalJumpTimer_ = 0.0f;            // 最終ジャンプタイマー
-	float finalJumpDuration_ = 1.0f;         // 最終ジャンプ時間
-	float finalJumpHeight_ = 5.0f;           // 最終ジャンプの高さ
+	struct FinalJumpInfo {
+		float timer = 0.0f;      // 最終ジャンプタイマー
+		float duration = 1.0f;   // 最終ジャンプ時間
+		float height = 7.0f;     // 最終ジャンプの高さ
+	};
+	FinalJumpInfo finalJumpInfo_;
+
+	float deltaTime_ = 0.0f; // deltaTime
 
 private:
 	/// <summary>
@@ -41529,8 +41549,8 @@ void GameScene::Update() {
 	ImGui::End();
 
 	// Camera
-	defaultCamera_->ImGuiUpdate();
-	defaultCamera_->DebugUpdate();
+	camera_->ImGuiUpdate();
+	camera_->DebugUpdate();
 
 	// Player
 	player_->Information();
