@@ -60,6 +60,11 @@ void SphereCollider::Information() {
 }
 
 ///-------------------------------------------/// 
+/// 衝突処理
+///-------------------------------------------///
+void SphereCollider::OnCollision(Collider* collider) { collider; }
+
+///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
 void SphereCollider::SetRadius(const float& radius) { sphere_.radius = radius; }

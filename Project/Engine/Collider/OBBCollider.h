@@ -37,7 +37,7 @@ public: /// ===衝突=== ///
     /// 衝突処理
     /// </summary>
     /// <param name="collider">衝突した相手の Collider へのポインタ。衝突対象に関する情報を表します。</param>
-    virtual void OnCollision(Collider* collider) override = 0;
+    virtual void OnCollision(Collider* collider) override;
 
 public: /// ===Setter=== ///
     // OBBの設定

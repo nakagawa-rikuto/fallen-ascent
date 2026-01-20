@@ -980,7 +980,6 @@
     <ClInclude Include="application\Game\UI\Game\GameSceneUI.h" />
     <ClInclude Include="application\Game\UI\Game\PlayerUI.h" />
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterConcepts.h" />
-    <ClInclude Include="Engine\Collider\GameColliderConcepts.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
