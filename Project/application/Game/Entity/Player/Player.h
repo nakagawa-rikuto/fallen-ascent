@@ -76,6 +76,8 @@ public: /// ===Setter=== ///
 	void SetCameraTargetPlayer();
 	// 無敵時間の設定
 	void SetInvincibleTime(const float& time);
+	// Gravityの設定
+	void SetGravity(const float& gravity) { baseInfo_.gravity = gravity; };
 
 public: /// ===State用関数=== ///
 

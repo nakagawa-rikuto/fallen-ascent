@@ -1,7 +1,6 @@
 #pragma once
 /// ===Include=== ///
 #include "Engine/DataInfo/CData.h"
-#include <functional>
 
 /// ===前方宣言=== ///
 class Player;
@@ -45,29 +44,35 @@ private:
 
 	/// ===アニメーション制御=== ///
 	float timer_ = 0.0f;              // アニメーション用タイマー
-	float totalDuration_ = 3.5f;      // 全体の長さ（秒）
+	float totalDuration_ = 3.5f;      // 全体の長さ
 	bool isCompleted_ = false;        // 完了フラグ
 
 	/// ===フェーズ管理=== ///
 	enum class AnimationPhase {
-		PlayerDescent,   // プレイヤー降下フェーズ（0.0 ~ 1.5秒）
-		CameraRotation,  // カメラ回転フェーズ（1.5 ~ 3.0秒）
-		FinalSetup       // 最終調整フェーズ（3.0 ~ 3.5秒）
+		Falling,		 // プレイヤー降下フェーズ
+		CameraRotation,  // カメラ回転フェーズ
+		FinalSetup       // 最終調整フェーズ
 	};
-	AnimationPhase currentPhase_ = AnimationPhase::PlayerDescent;
+	AnimationPhase currentPhase_ = AnimationPhase::Falling;
 
-	/// ===プレイヤー関連=== ///
-	Vector3 playerStartPos_ = { 0.0f, 50.0f, 0.0f };  // 開始位置（上空）
-	Vector3 playerEndPos_ = { 0.0f, 1.0f, 0.0f };     // 終了位置（地面）
-	float descentDuration_ = 1.5f;                     // 降下時間
+	/// ===落下アニメーション情報=== ///
+	struct FallingAnimationInfo {
+		Vector3 playerStartPos;  // 開始位置
+		Vector3 playerEndPos;    // 終了位置
+		float FallingDuration;   // 降下時間
+	};
+	FallingAnimationInfo fallInfo_;
 
-	/// ===カメラ関連=== ///
-	Vector3 cameraStartPos_ = { 0.0f, 5.0f, 15.0f };  // 開始位置（前方）
-	Vector3 cameraEndPos_ = { 0.0f, 70.0f, -60.0f };  // 終了位置（後方上空）
-	Quaternion cameraStartRot_ = { 0.0f, 0.0f, 0.0f, 1.0f };  // 開始回転
-	Quaternion cameraEndRot_ = { 0.5f, 0.0f, 0.0f, 1.1f }; // 終了回転
-	float rotationDuration_ = 1.5f;                    // 回転時間
-	float rotationStartTime_ = 1.5f;                   // 回転開始時刻
+	/// ===カメラ回転アニメーション情報=== ///
+	struct CameraRotationAnimationInfo {
+		Vector3 cameraStartPos;      // 開始位置
+		Vector3 cameraEndPos;        // 終了位置
+		Quaternion cameraStartRot;   // 開始回転
+		Quaternion cameraEndRot;     // 終了回転
+		float rotationDuration;      // 回転時間
+		float rotationStartTime;     // 回転開始時刻
+	};
+	CameraRotationAnimationInfo cameraRotInfo_;
 
 	/// ===デルタタイム=== ///
 	float kDeltaTime_ = 0.0f;
@@ -77,15 +82,10 @@ private:
 	/// <summary>
 	/// プレイヤーの降下アニメーション更新処理
 	/// </summary>
-	void UpdatePlayerDescent();
+	void UpdateFalling();
 
 	/// <summary>
 	/// カメラの回転アニメーション更新処理
 	/// </summary>
 	void UpdateCameraRotation();
-
-	/// <summary>
-	/// アニメーション完了処理
-	/// </summary>
-	void CompleteAnimation();
 };

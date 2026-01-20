@@ -79,17 +79,27 @@ private: /// ===地面との衝突処理=== ///
 
     /// ===GroundInfo=== ///
     struct GroundInfo {
-        Vector3 currentGroundCenter{};     // 現在の地面の中心位置
-        Vector3 currentGroundHalfSize{};   // 現在の地面の半サイズ
-        bool hasGroundCollision = false;   // 地面との衝突フラグ
+		ColliderType currentGroundType;    // 現在の地面のコライダータイプ
+        Vector3 currentGroundFirst{};      // 現在の地面の情報1
+		Vector3 currentGroundSecond{};     // 現在の地面の情報2
+        float currentGroundYPos = 0.0f;    // 現在の地面のY軸
         bool isGrounded = false;		   // 地面接地フラグ
     };
 	GroundInfo groundInfo_;
+
+    // キャラクターの半サイズY軸
+    Vector3 characterHalfSize_{};
 
     /// <summary>
     /// 指定した中心位置と半サイズを持つオブジェクトの地面との衝突を検出して処理します。
     /// </summary>
     void GroundCollision();
+  
+    /// <summary>
+    ///  地面に衝突した際の処理
+    /// </summary>
+    /// <param name="collider">衝突したコライダーへのポインタ。</param>
+    void GroundOnCollision(Collider* collider);
 
 };
 
