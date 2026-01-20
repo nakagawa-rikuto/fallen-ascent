@@ -1,14 +1,13 @@
 #pragma once
 /// ===Include=== ///
-#include "Engine/Collider/Base/Collider.h"
-#include "Engine/DataInfo/ColliderData.h"
-#include "Math/sMath.h"
+// Collider
+#include "GameCharacterConcepts.h"
+#include "Engine/Collider/OBBCollider.h"
+#include "Engine/Collider/SphereCollider.h"
 
 /// ===前方宣言=== ///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 class GameCharacter;
-class SphereCollider;
-class OBBCollider;
 
 ///=====================================================/// 
 /// GameCharacterCollision - GameCharacter専用の衝突処理クラス
@@ -45,7 +44,7 @@ public:
     /// <param name="characterA">衝突対象の最初のキャラクター。コライダ型 TColliderA を持つ GameCharacter へのポインタ。</param>
     /// <param name="characterB">衝突対象の二番目のキャラクター。コライダ型 TColliderB を持つ GameCharacter へのポインタ。</param>
     /// <param name="pushBackRatio">衝突解決時に適用する押し戻し（push-back）の倍率。デフォルトは 1.0f。値を小さくすると押し戻しが弱くなり、0 にすると押し戻しを行わない。</param>
-    template<typename TColliderA, typename TColliderB>
+    template<typename TColliderA, typename TColliderB> requires IsCollider<TColliderA>&& IsCollider<TColliderB>
     void HandleSphereOBBCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio = 1.0f);
 
     /// <summary>
@@ -56,7 +55,7 @@ public:
     /// <param name="characterA">衝突する最初のGameCharacterへのポインタ。</param>
     /// <param name="characterB">衝突する2番目のGameCharacterへのポインタ。</param>
     /// <param name="pushBackRatio">衝突時に適用する押し戻し量の比率。既定値は1.0f。</param>
-    template<typename TColliderA, typename TColliderB>
+	template<typename TColliderA, typename TColliderB> requires IsCollider<TColliderA>&& IsCollider<TColliderB>
     void ProcessCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio = 1.0f);
 
 private:
@@ -70,7 +69,7 @@ private:
     /// <typeparam name="TCollider">キャラクターが使用するコライダーの型。</typeparam>
     /// <param name="character">TCollider 型のコライダーを持つ GameCharacter へのポインター。対象のキャラクターを指定します。</param>
     /// <returns>指定したキャラクターに関連付けられた ColliderType を返します。</returns>
-    template<typename TCollider>
+    template<typename TCollider> requires IsCollider<TCollider>
     ColliderType GetColliderTypeFromCharacter(GameCharacter<TCollider>* character) const;
 
     /// <summary>

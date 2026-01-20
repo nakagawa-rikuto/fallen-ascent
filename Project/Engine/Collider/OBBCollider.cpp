@@ -66,6 +66,11 @@ void OBBCollider::Information() {
 }
 
 ///-------------------------------------------/// 
+/// 衝突処理
+///-------------------------------------------///
+void OBBCollider::OnCollision(Collider* collider) { collider; }
+
+///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
 void OBBCollider::SetHalfSize(const Vector3& halfSize) {

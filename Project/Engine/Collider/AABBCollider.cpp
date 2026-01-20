@@ -58,6 +58,11 @@ void AABBCollider::Information() {
 }
 
 ///-------------------------------------------/// 
+/// 衝突処理
+///-------------------------------------------///
+void AABBCollider::OnCollision(Collider* collider) { collider; }
+
+///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
 void AABBCollider::SetAABB(const AABB& aabb) { aabb_ = aabb; }

@@ -1,8 +1,10 @@
 #include "GameCharacterCollision.h"
+// GameCharacter
 #include "GameCharacter.h"
-#include "Engine/Collider/SphereCollider.h"
-#include "Engine/Collider/OBBCollider.h"
+// C++
 #include <algorithm>
+// Math
+#include "Math/sMath.h"
 
 ///-------------------------------------------/// 
 /// テンプレート候補の明示的インスタンス化
@@ -100,7 +102,7 @@ void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<OBBCollider>* c
 ///-------------------------------------------/// 
 /// 球体とOBBのGameCharacter衝突処理
 ///-------------------------------------------///
-template<typename TColliderA, typename TColliderB>
+template<typename TColliderA, typename TColliderB> requires IsCollider<TColliderA>&& IsCollider<TColliderB>
 void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio) {
 
 	GameCharacter<OBBCollider>* obbCharacter = nullptr;
@@ -159,7 +161,7 @@ void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>*
 ///-------------------------------------------/// 
 /// 汎用衝突処理（自動判定）
 ///-------------------------------------------///
-template<typename TColliderA, typename TColliderB>
+template<typename TColliderA, typename TColliderB> requires IsCollider<TColliderA>&& IsCollider<TColliderB>
 void GameCharacterCollision::ProcessCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio) {
 
 	ColliderType typeA = GetColliderTypeFromCharacter(characterA);
@@ -187,7 +189,7 @@ void GameCharacterCollision::ProcessCollision(GameCharacter<TColliderA>* charact
 ///-------------------------------------------/// 
 /// コライダー型の判定
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 ColliderType GameCharacterCollision::GetColliderTypeFromCharacter(GameCharacter<TCollider>* character) const {
 	return character->GetColliderType();
 }

@@ -37,7 +37,7 @@ public: /// ===衝突=== ///
 	/// 衝突処理
 	/// </summary>
 	/// <param name="collider">衝突した相手の Collider オブジェクトへのポインター。衝突に関する情報を取得・処理するために使用します。</param>
-	virtual void OnCollision(Collider* collider) override = 0;
+	virtual void OnCollision(Collider* collider) override;
 
 public: /// ===Setter=== ///
 	// AABBの設定

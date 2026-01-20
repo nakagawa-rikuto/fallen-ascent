@@ -37,7 +37,7 @@ public: /// ===衝突=== ///
 	/// 衝突処理
 	/// </summary>
 	/// <param name="collider">衝突対象のコライダへのポインタ。衝突したオブジェクトの情報にアクセスするために使用される。</param>
-	virtual void OnCollision(Collider* collider) override = 0;
+	virtual void OnCollision(Collider* collider) override;
 
 public: /// ===Setter=== ///
 	// Sphereの設定
