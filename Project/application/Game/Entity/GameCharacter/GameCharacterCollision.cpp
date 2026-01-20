@@ -1,8 +1,10 @@
 #include "GameCharacterCollision.h"
+// GameCharacter
 #include "GameCharacter.h"
-#include "Engine/Collider/SphereCollider.h"
-#include "Engine/Collider/OBBCollider.h"
+// C++
 #include <algorithm>
+// Math
+#include "Math/sMath.h"
 
 ///-------------------------------------------/// 
 /// テンプレート候補の明示的インスタンス化

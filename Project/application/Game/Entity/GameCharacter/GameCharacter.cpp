@@ -16,7 +16,7 @@ template class GameCharacter<SphereCollider>;
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 GameCharacter<TCollider>::~GameCharacter() {
 	this->object3d_.reset();
 }
@@ -24,7 +24,7 @@ GameCharacter<TCollider>::~GameCharacter() {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::Initialize() {
 	/// ===ColliderCollision=== ///
 	collision_ = std::make_unique<ColliderCollision>();
@@ -46,7 +46,7 @@ void GameCharacter<TCollider>::Initialize() {
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::Update() {
 
 	/// ===死亡処理=== ///
@@ -75,7 +75,7 @@ void GameCharacter<TCollider>::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::Draw(BlendMode mode) {
 	/// ===TCollider=== ///
 	TCollider::Draw(mode);
@@ -84,7 +84,7 @@ void GameCharacter<TCollider>::Draw(BlendMode mode) {
 ///-------------------------------------------/// 
 /// ImGui
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::Information() {
 #ifdef USE_IMGUI
 	TCollider::Information();
@@ -100,7 +100,7 @@ void GameCharacter<TCollider>::Information() {
 ///-------------------------------------------/// 
 /// 衝突
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::OnCollision(Collider* collider) {
 	// === 早期リターン === //
 	if (!collider) return;
@@ -134,7 +134,7 @@ void GameCharacter<TCollider>::OnCollision(Collider* collider) {
 ///-------------------------------------------/// 
 /// 地面との衝突処理
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::GroundCollision() {
 
 	/// ===地面から離れている場合の処理=== ///
@@ -199,7 +199,7 @@ void GameCharacter<TCollider>::GroundCollision() {
 ///-------------------------------------------/// 
 /// 地面に衝突した際の処理
 ///-------------------------------------------///
-template<typename TCollider>
+template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::GroundOnCollision(Collider* collider) {
 
 	// タイプの取得

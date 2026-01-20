@@ -1,15 +1,13 @@
 #pragma once
 /// ===Include=== ///
-#include "Engine/Collider/Base/Collider.h"
-#include "Engine/DataInfo/ColliderData.h"
-#include "Engine/Collider/GameColliderConcepts.h"
-#include "Math/sMath.h"
+// Collider
+#include "GameCharacterConcepts.h"
+#include "Engine/Collider/OBBCollider.h"
+#include "Engine/Collider/SphereCollider.h"
 
 /// ===前方宣言=== ///
 template<typename TCollider> requires IsCollider<TCollider>
 class GameCharacter;
-class SphereCollider;
-class OBBCollider;
 
 ///=====================================================/// 
 /// GameCharacterCollision - GameCharacter専用の衝突処理クラス

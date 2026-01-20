@@ -3,7 +3,7 @@
 // Collider
 #include "Engine/Collider/OBBCollider.h"
 #include "Engine/Collider/SphereCollider.h"
-#include "Engine/Collider/GameColliderConcepts.h"
+#include "GameCharacterConcepts.h"
 
 #include "GameCharacterCollision.h"
 
