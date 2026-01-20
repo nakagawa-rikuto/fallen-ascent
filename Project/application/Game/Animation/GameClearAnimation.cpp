@@ -57,7 +57,11 @@ void GameClearAnimation::Initialize(Player* player, GameCamera* camera) {
 	/// ===最終ジャンプの初期設定=== ///
 	finalJumpTimer_ = 0.0f;
 
+	// カメラのオフセットを設定
 	camera_->SetOrbitingOffset(startOffset);
+
+	/// ===Playerの重力を変更=== ///
+	player_->SetGravity(-4.9f); // 重力を半分にしてジャンプを緩やかに
 }
 
 ///-------------------------------------------/// 
