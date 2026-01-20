@@ -65,13 +65,15 @@ private:
 	float jumpTimer_ = 0.0f;                 // ジャンプタイマー
 	float jumpInterval_ = 0.5f;              // ジャンプの間隔
 	Vector3 basePlayerPosition_;             // プレイヤーの基準位置
-	float smallJumpHeight_ = 1.5f;           // 小ジャンプの高さ
+	float smallJumpHeight_ = 6.0f;           // 小ジャンプの高さ
 	int jumpCount_ = 0;                      // ジャンプ回数
 
 	/// ===最終ジャンプ用=== ///
 	float finalJumpTimer_ = 0.0f;            // 最終ジャンプタイマー
 	float finalJumpDuration_ = 1.0f;         // 最終ジャンプ時間
-	float finalJumpHeight_ = 5.0f;           // 最終ジャンプの高さ
+	float finalJumpHeight_ = 7.0f;           // 最終ジャンプの高さ
+
+	float deltaTime_ = 0.0f; // deltaTime
 
 private:
 	/// <summary>

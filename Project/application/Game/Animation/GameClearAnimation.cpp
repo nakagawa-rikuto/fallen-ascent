@@ -6,6 +6,7 @@
 // Math
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
+#include "M"
 // Service
 #include "Engine/System/Service/DeltaTimeSevice.h"
 
@@ -32,10 +33,26 @@ void GameClearAnimation::Initialize(Player* player, GameCamera* camera) {
 	// カメラのターゲットを設定
 	camera_->SetTarget(&basePlayerPosition_, &playerRotation);
 
-	// 開始位置のオフセット（画像の情報）
-	Vector3 startOffset = { 0.0f, 0.120f, -94.0f };
-	// 終了位置のオフセット（画像の情報）
-	Vector3 endOffset = { 0.0f, -0.080f, -30.000f };
+	// プレイヤーの前方向ベクトルを取得（Quaternionから計算）
+	Vector3 playerForward = Math::Transf({ 0.0f, 0.0f, 1.0f }, Math::MakeRotateMatrix(playerRotation));
+
+	// 開始位置：プレイヤーの後ろ（背後）
+	float startDistance = 94.0f;
+	float startHeight = 0.120f;
+	Vector3 startOffset = {
+		-playerForward.x * startDistance,
+		startHeight,
+		-playerForward.z * startDistance
+	};
+
+	// 終了位置：プレイヤーの前方
+	float endDistance = 30.0f;
+	float endHeight = -0.080f;
+	Vector3 endOffset = {
+		playerForward.x * endDistance,
+		endHeight,
+		playerForward.z * endDistance
+	};
 
 	// 開始角度と距離を計算
 	startAngle_ = atan2f(startOffset.x, startOffset.z);
@@ -60,14 +77,19 @@ void GameClearAnimation::Initialize(Player* player, GameCamera* camera) {
 	// カメラのオフセットを設定
 	camera_->SetOrbitingOffset(startOffset);
 
-	/// ===Playerの重力を変更=== ///
-	player_->SetGravity(-4.9f); // 重力を半分にしてジャンプを緩やかに
+	/// ===Playerの設定=== ///
+	player_->SetGravity(-2.9f); 
+	player_->SetVelocity({ 0.0f, 0.0f, 0.0f }); // 初期速度をリセット
 }
 
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
 void GameClearAnimation::Update() {
+
+	/// ===DeltaTimeの取得=== ///
+	deltaTime_ = DeltaTimeSevice::GetDeltaTime();
+
 	switch (currentPhase_) {
 	case ClearAnimationPhase::CameraRotation:
 		UpdateCameraRotation();
@@ -100,7 +122,7 @@ bool GameClearAnimation::IsCompleted() const {
 ///-------------------------------------------///
 void GameClearAnimation::UpdateCameraRotation() {
 	// タイマーを進める
-	cameraRotationTimer_ += DeltaTimeSevice::GetDeltaTime();
+	cameraRotationTimer_ += deltaTime_;
 
 	// 進行度を計算(0.0 ~ 1.0)
 	float t = cameraRotationTimer_ / cameraRotationDuration_;
@@ -136,8 +158,6 @@ void GameClearAnimation::UpdateCameraRotation() {
 	if (cameraRotationTimer_ >= cameraRotationDuration_) {
 		currentPhase_ = ClearAnimationPhase::FinalJump;
 		finalJumpTimer_ = 0.0f;
-		// プレイヤーを基準位置に戻す
-		player_->SetTranslate(basePlayerPosition_);
 	}
 }
 
@@ -146,7 +166,7 @@ void GameClearAnimation::UpdateCameraRotation() {
 ///-------------------------------------------///
 void GameClearAnimation::UpdatePlayerSmallJump() {
 	// ジャンプタイマーを進める
-	jumpTimer_ += DeltaTimeSevice::GetDeltaTime();
+	jumpTimer_ += deltaTime_;
 
 	// ジャンプ間隔ごとに新しいジャンプ開始
 	if (jumpTimer_ >= jumpInterval_) {
@@ -161,10 +181,10 @@ void GameClearAnimation::UpdatePlayerSmallJump() {
 	// 放物線を描くジャンプ（0.0 -> 1.0 -> 0.0）
 	float jumpProgress = -4.0f * smallJumpHeight_ * (localT - 0.5f) * (localT - 0.5f) + smallJumpHeight_;
 
-	// プレイヤーの位置を更新
-	Vector3 currentPosition = basePlayerPosition_;
-	currentPosition.y += jumpProgress;
-	player_->SetTranslate(currentPosition);
+	// プレイヤーのVelocityを更新
+	Vector3 playerCurrentVelocity = player_->GetVelocity();
+	playerCurrentVelocity.y += jumpProgress * deltaTime_;
+	player_->SetVelocity(playerCurrentVelocity);
 }
 
 ///-------------------------------------------/// 
@@ -172,7 +192,7 @@ void GameClearAnimation::UpdatePlayerSmallJump() {
 ///-------------------------------------------///
 void GameClearAnimation::UpdateFinalJump() {
 	// タイマーを進める
-	finalJumpTimer_ += DeltaTimeSevice::GetDeltaTime();
+	finalJumpTimer_ += deltaTime_;
 
 	// 進行度を計算(0.0 ~ 1.0)
 	float t = finalJumpTimer_ / finalJumpDuration_;
@@ -181,10 +201,10 @@ void GameClearAnimation::UpdateFinalJump() {
 		// 大きな放物線を描くジャンプ
 		float jumpProgress = -4.0f * finalJumpHeight_ * (t - 0.5f) * (t - 0.5f) + finalJumpHeight_;
 
-		// プレイヤーの位置を更新
-		Vector3 currentPosition = basePlayerPosition_;
-		currentPosition.y += jumpProgress;
-		player_->SetTranslate(currentPosition);
+		// プレイヤーのVelocityを更新
+		Vector3 playerCurrentVelocity = player_->GetVelocity();
+		playerCurrentVelocity.y += jumpProgress * deltaTime_;
+		player_->SetVelocity(playerCurrentVelocity);
 	} else {
 		// ジャンプ完了
 		currentPhase_ = ClearAnimationPhase::Completed;
