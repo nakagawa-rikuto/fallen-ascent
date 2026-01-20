@@ -16,6 +16,7 @@
 └── └── └── ├── Collision/
 └── └── └── └── ├── ColliderCollision.cpp
 └── └── └── └── └── ColliderCollision.h
+└── └── └── ├── GameColliderConcepts.h
 └── └── └── ├── OBBCollider.cpp
 └── └── └── ├── OBBCollider.h
 └── └── └── ├── SphereCollider.cpp
@@ -376,7 +377,8 @@
 └── └── └── └── └── ├── GameCharacter.cpp
 └── └── └── └── └── ├── GameCharacter.h
 └── └── └── └── └── ├── GameCharacterCollision.cpp
-└── └── └── └── └── └── GameCharacterCollision.h
+└── └── └── └── └── ├── GameCharacterCollision.h
+└── └── └── └── └── └── GameCharacterConcepts.h
 └── └── └── └── └── Player/
 └── └── └── └──     ├── Component/
 └── └── └── └──     └── ├── PlayerAttackComponent.cpp
@@ -2042,6 +2044,20 @@ private:
 };
 
 ============================================================
+File Path: Project/Engine/Collider/GameColliderConcepts.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// Collider
+#include "Base/Collider.h"
+// C++
+#include <type_traits>
+
+/// ===Concepts=== ///
+template<typename T>
+concept IsCollider = std::is_base_of_v<Collider, T>;
+
+============================================================
 File Path: Project/Engine/Collider/OBBCollider.cpp
 ============================================================
 #include "OBBCollider.h"
@@ -2851,6 +2867,7 @@ void DXCommon::CreateSwapChain() {
 	swapChainDesc_.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // 描画のターゲットとして利用する
 	swapChainDesc_.BufferCount = 2;  // ダブルバッファ
 	swapChainDesc_.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;  // モニタに移したら、中身を破棄
+	swapChainDesc_.Scaling = DXGI_SCALING_NONE;	// ウィンドウサイズに合わせて伸縮
 
 	// コマンドキュー、ウィンドウハンドル、設定を渡して生成する
 	hr = dxgiFactory_->CreateSwapChainForHwnd(
@@ -4671,7 +4688,6 @@ File Path: Project/Engine/DataInfo/LevelData.h
 #include <vector>
 
 #include "Math/Vector3.h"
-
 
 /// ===LevelData=== ///
 struct LevelData {
@@ -26712,6 +26728,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterConcepts.h" />
     <ClInclude Include="application\Game\Entity\Player\Editor\Data\AttackData.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyAttackState.h" />
@@ -26725,6 +26742,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Player\Editor\AttackEditor.h" />
     <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.h" />
+    <ClInclude Include="Engine\Collider\GameColliderConcepts.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.h" />
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
@@ -28080,6 +28098,8 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.h" />
     <ClInclude Include="application\Game\UI\Game\GameSceneUI.h" />
     <ClInclude Include="application\Game\UI\Game\PlayerUI.h" />
+    <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterConcepts.h" />
+    <ClInclude Include="Engine\Collider\GameColliderConcepts.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -31768,7 +31788,11 @@ void GameClearAnimation::Initialize(Player* player, GameCamera* camera) {
 	/// ===最終ジャンプの初期設定=== ///
 	finalJumpTimer_ = 0.0f;
 
+	// カメラのオフセットを設定
 	camera_->SetOrbitingOffset(startOffset);
+
+	/// ===Playerの重力を変更=== ///
+	player_->SetGravity(-4.9f); // 重力を半分にしてジャンプを緩やかに
 }
 
 ///-------------------------------------------/// 
@@ -32334,6 +32358,7 @@ File Path: Project/application/Game/Animation/StartAnimation.cpp
 #include "Math/EasingMath.h"
 // c++
 #include <algorithm>
+#include <functional>
 #undef max
 
 ///-------------------------------------------/// 
@@ -32351,21 +32376,33 @@ void StartAnimation::Initialize(Player* player, GameCamera* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	// 初期状態の設定
+	/// ===値の初期化=== ///
+	// タイマーとフラグ
 	timer_ = 0.0f;
 	isCompleted_ = false;
-	currentPhase_ = AnimationPhase::PlayerDescent;
+	currentPhase_ = AnimationPhase::Falling;
 	kDeltaTime_ = DeltaTimeSevice::GetDeltaTime();
+	// 落下アニメーション情報
+	fallInfo_.playerStartPos = { 0.0f, 50.0f, 0.0f };
+	fallInfo_.playerEndPos = { 0.0f, 1.0f, 0.0f };
+	fallInfo_.FallingDuration = 1.5f;
+	// カメラ回転アニメーション情報
+	cameraRotInfo_.cameraStartPos = { 0.0f, 5.0f, 15.0f };
+	cameraRotInfo_.cameraEndPos = { 0.0f, 70.0f, -60.0f };
+	cameraRotInfo_.cameraStartRot = { 0.0f, 0.0f, 0.0f, 1.0f };
+	cameraRotInfo_.cameraEndRot = { 0.5f, 0.0f, 0.0f, 1.1f };
+	cameraRotInfo_.rotationDuration = 1.5f;
+	cameraRotInfo_.rotationStartTime = 1.5f;
 
-	// プレイヤーの初期位置設定
+	/// ===Playerの初期位置を設定=== ///
 	/*if (player_) {
 		player_->SetTranslate(playerStartPos_);
 	}*/
 
-	// カメラの初期位置設定
+	/// ===カメラの初期位置を設定=== ///
 	if (camera_) {
-		camera_->SetTranslate(cameraStartPos_);
-		camera_->SetRotate(cameraStartRot_);
+		camera_->SetTranslate(cameraRotInfo_.cameraStartPos);
+		camera_->SetRotate(cameraRotInfo_.cameraStartRot);
 	}
 }
 
@@ -32373,51 +32410,49 @@ void StartAnimation::Initialize(Player* player, GameCamera* camera) {
 /// 更新
 ///-------------------------------------------///
 void StartAnimation::Update() {
-	if (isCompleted_) {
-		return;
-	}
+	// 早期リターン
+	if (isCompleted_ && !player_ && !camera_) return;
 
-	// デルタタイム取得
+	/// ===デルタタイム取得=== ///
 	kDeltaTime_ = DeltaTimeSevice::GetDeltaTime();
 
-	// タイマーを進める
+	/// ===タイマーを進める=== ///
 	timer_ += kDeltaTime_;
 
-	// フェーズ管理
-	if (timer_ < rotationStartTime_) {
-		currentPhase_ = AnimationPhase::PlayerDescent;
-		//UpdatePlayerDescent();
-	} else if (timer_ < rotationStartTime_ + rotationDuration_) {
+	/// ===フェーズ管理=== ///
+	if (timer_ < cameraRotInfo_.rotationStartTime) {
+		currentPhase_ = AnimationPhase::Falling;
+		//UpdateFalling();
+	} else if (timer_ < cameraRotInfo_.rotationStartTime + cameraRotInfo_.rotationDuration) {
 		currentPhase_ = AnimationPhase::CameraRotation;
 		UpdateCameraRotation();
 	} else if (timer_ < totalDuration_) {
 		currentPhase_ = AnimationPhase::FinalSetup;
 	} else {
-		CompleteAnimation();
+		// フラグを立てる
+		isCompleted_ = true;
 	}
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void StartAnimation::Draw() {
-}
+void StartAnimation::Draw() {}
 
 ///-------------------------------------------/// 
 /// プレイヤー降下アニメーション
 ///-------------------------------------------///
-void StartAnimation::UpdatePlayerDescent() {
-	if (!player_) return;
+void StartAnimation::UpdateFalling() {
 
 	// 正規化された時間（0.0 ~ 1.0）
-	float t = timer_ / descentDuration_;
+	float t = timer_ / fallInfo_.FallingDuration;
 	t = std::clamp(t, 0.0f, 1.0f);
 
-	// イージング適用（EaseOutBounce で着地感を演出）
+	// イージング適用
 	float easedT = Easing::EaseOutBounce(t);
 
 	// 補間してプレイヤーの位置を更新
-	Vector3 currentPos = Math::Lerp(playerStartPos_, playerEndPos_, easedT);
+	Vector3 currentPos = Math::Lerp(fallInfo_.playerStartPos, fallInfo_.playerEndPos, easedT);
 	player_->SetTranslate(currentPos);
 }
 
@@ -32425,51 +32460,39 @@ void StartAnimation::UpdatePlayerDescent() {
 /// カメラ回転アニメーション
 ///-------------------------------------------///
 void StartAnimation::UpdateCameraRotation() {
-	if (!camera_) return;
 
 	// 回転フェーズでの経過時間
-	float rotationTime = timer_ - rotationStartTime_;
-	float t = rotationTime / rotationDuration_;
+	float rotationTime = timer_ - cameraRotInfo_.rotationStartTime;
+	float t = rotationTime / cameraRotInfo_.rotationDuration;
 	t = std::clamp(t, 0.0f, 1.0f);
 
-	// イージング適用（EaseInOutCubic でスムーズに）
+	// イージング適用
 	float easedT = Easing::EaseInOutCubic(t);
 
-	// カメラ位置の補間（前方から後方上空へ円弧を描くように移動）
-	// 中間点を経由して自然な軌道を作る
+	// カメラ位置の補間
 	Vector3 midPoint = {
-		(cameraStartPos_.x + cameraEndPos_.x) * 0.5f,
-		std::max(cameraStartPos_.y, cameraEndPos_.y) + 10.0f, // 少し高めに
-		(cameraStartPos_.z + cameraEndPos_.z) * 0.5f
+		(cameraRotInfo_.cameraStartPos.x + cameraRotInfo_.cameraEndPos.x) * 0.5f,
+		std::max(cameraRotInfo_.cameraStartPos.y, cameraRotInfo_.cameraEndPos.y) + 10.0f, // 少し高めに
+		(cameraRotInfo_.cameraStartPos.z + cameraRotInfo_.cameraEndPos.z) * 0.5f
 	};
 
 	Vector3 currentPos;
 	if (easedT < 0.5f) {
-		// 前半：開始位置から中間点へ
+		// 開始位置から中間点へ
 		float t1 = easedT * 2.0f;
-		currentPos = Math::Lerp(cameraStartPos_, midPoint, t1);
+		currentPos = Math::Lerp(cameraRotInfo_.cameraStartPos, midPoint, t1);
 	} else {
-		// 後半：中間点から終了位置へ
+		// 中間点から終了位置へ
 		float t2 = (easedT - 0.5f) * 2.0f;
-		currentPos = Math::Lerp(midPoint, cameraEndPos_, t2);
+		currentPos = Math::Lerp(midPoint, cameraRotInfo_.cameraEndPos, t2);
 	}
 
-	// カメラ回転の補間（Slerp でスムーズに）
-	Quaternion currentRot = Math::SLerp(cameraStartRot_, cameraEndRot_, easedT);
+	// カメラ回転の補間
+	Quaternion currentRot = Math::SLerp(cameraRotInfo_.cameraStartRot, cameraRotInfo_.cameraEndRot, easedT);
 
 	// カメラ更新
 	camera_->SetTranslate(currentPos);
 	camera_->SetRotate(currentRot);
-}
-
-///-------------------------------------------/// 
-/// アニメーション完了処理
-///-------------------------------------------///
-void StartAnimation::CompleteAnimation() {
-	if (isCompleted_) return;
-
-	// フラグを立てる
-	isCompleted_ = true;
 }
 
 ============================================================
@@ -32478,7 +32501,6 @@ File Path: Project/application/Game/Animation/StartAnimation.h
 #pragma once
 /// ===Include=== ///
 #include "Engine/DataInfo/CData.h"
-#include <functional>
 
 /// ===前方宣言=== ///
 class Player;
@@ -32522,29 +32544,35 @@ private:
 
 	/// ===アニメーション制御=== ///
 	float timer_ = 0.0f;              // アニメーション用タイマー
-	float totalDuration_ = 3.5f;      // 全体の長さ（秒）
+	float totalDuration_ = 3.5f;      // 全体の長さ
 	bool isCompleted_ = false;        // 完了フラグ
 
 	/// ===フェーズ管理=== ///
 	enum class AnimationPhase {
-		PlayerDescent,   // プレイヤー降下フェーズ（0.0 ~ 1.5秒）
-		CameraRotation,  // カメラ回転フェーズ（1.5 ~ 3.0秒）
-		FinalSetup       // 最終調整フェーズ（3.0 ~ 3.5秒）
+		Falling,		 // プレイヤー降下フェーズ
+		CameraRotation,  // カメラ回転フェーズ
+		FinalSetup       // 最終調整フェーズ
 	};
-	AnimationPhase currentPhase_ = AnimationPhase::PlayerDescent;
+	AnimationPhase currentPhase_ = AnimationPhase::Falling;
 
-	/// ===プレイヤー関連=== ///
-	Vector3 playerStartPos_ = { 0.0f, 50.0f, 0.0f };  // 開始位置（上空）
-	Vector3 playerEndPos_ = { 0.0f, 1.0f, 0.0f };     // 終了位置（地面）
-	float descentDuration_ = 1.5f;                     // 降下時間
+	/// ===落下アニメーション情報=== ///
+	struct FallingAnimationInfo {
+		Vector3 playerStartPos;  // 開始位置
+		Vector3 playerEndPos;    // 終了位置
+		float FallingDuration;   // 降下時間
+	};
+	FallingAnimationInfo fallInfo_;
 
-	/// ===カメラ関連=== ///
-	Vector3 cameraStartPos_ = { 0.0f, 5.0f, 15.0f };  // 開始位置（前方）
-	Vector3 cameraEndPos_ = { 0.0f, 70.0f, -60.0f };  // 終了位置（後方上空）
-	Quaternion cameraStartRot_ = { 0.0f, 0.0f, 0.0f, 1.0f };  // 開始回転
-	Quaternion cameraEndRot_ = { 0.5f, 0.0f, 0.0f, 1.1f }; // 終了回転
-	float rotationDuration_ = 1.5f;                    // 回転時間
-	float rotationStartTime_ = 1.5f;                   // 回転開始時刻
+	/// ===カメラ回転アニメーション情報=== ///
+	struct CameraRotationAnimationInfo {
+		Vector3 cameraStartPos;      // 開始位置
+		Vector3 cameraEndPos;        // 終了位置
+		Quaternion cameraStartRot;   // 開始回転
+		Quaternion cameraEndRot;     // 終了回転
+		float rotationDuration;      // 回転時間
+		float rotationStartTime;     // 回転開始時刻
+	};
+	CameraRotationAnimationInfo cameraRotInfo_;
 
 	/// ===デルタタイム=== ///
 	float kDeltaTime_ = 0.0f;
@@ -32554,17 +32582,12 @@ private:
 	/// <summary>
 	/// プレイヤーの降下アニメーション更新処理
 	/// </summary>
-	void UpdatePlayerDescent();
+	void UpdateFalling();
 
 	/// <summary>
 	/// カメラの回転アニメーション更新処理
 	/// </summary>
 	void UpdateCameraRotation();
-
-	/// <summary>
-	/// アニメーション完了処理
-	/// </summary>
-	void CompleteAnimation();
 };
 
 ============================================================
@@ -35719,7 +35742,6 @@ void GameCharacter<TCollider>::Initialize() {
 
 	/// ===GroundInfo=== ///
 	groundInfo_.isGrounded = false;
-	groundInfo_.hasGroundCollision = false;
 
 	/// ===TCollider=== ///
 	TCollider::Initialize();
@@ -35731,22 +35753,27 @@ void GameCharacter<TCollider>::Initialize() {
 template<typename TCollider>
 void GameCharacter<TCollider>::Update() {
 
-	/// ===デルタタイムの取得=== ///
-	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
-
-	/// ===地面との衝突処理=== ///
-	GroundCollision();
-
-	/// ===位置の更新=== ///
-	this->transform_.translate += baseInfo_.velocity;
-
 	/// ===死亡処理=== ///
 	if (baseInfo_.HP <= 0 || this->transform_.translate.y < -50.0f) {
 		baseInfo_.isDead = true;
 	}
 
+	/// ===デルタタイムの取得=== ///
+	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+
+	/// ===位置の更新=== ///
+	this->transform_.translate += baseInfo_.velocity;
+
+	/// ===地面との衝突処理=== ///
+	GroundCollision();
+
 	/// ===TCollider=== ///
 	TCollider::Update();
+
+	/// ===フラグのリセット=== ///
+	if (this->transform_.translate.y > groundInfo_.currentGroundYPos) {
+		groundInfo_.isGrounded = false;
+	}
 }
 
 ///-------------------------------------------/// 
@@ -35779,37 +35806,20 @@ void GameCharacter<TCollider>::Information() {
 ///-------------------------------------------///
 template<typename TCollider>
 void GameCharacter<TCollider>::OnCollision(Collider* collider) {
-
 	// === 早期リターン === //
 	if (!collider) return;
 
 	/// ===Colliderとの衝突処理=== ///
 	if (collider->GetColliderName() == ColliderName::Ground) {
 
-		// isGroundedがfalseなら
+		// isGroundがfalseの場合のみ処理を実行
 		if (!groundInfo_.isGrounded) {
-			// 地面に接地したとみなす
+			
+			// 地面に接地
 			groundInfo_.isGrounded = true;
-			groundInfo_.hasGroundCollision = true;
 
-			// 地面の情報を保存
-			if (collider->GetColliderType() == ColliderType::AABB) {
-				// 中心点と半径サイズを取得
-				AABBCollider* aabbCollider = dynamic_cast<AABBCollider*>(collider);
-				if (aabbCollider) {
-					AABB groundAABB = aabbCollider->GetAABB();
-					groundInfo_.currentGroundCenter = (groundAABB.min + groundAABB.max) * 0.5f;
-					groundInfo_.currentGroundHalfSize = (groundAABB.max - groundAABB.min) * 0.5f;
-				}
-			} else if (collider->GetColliderType() == ColliderType::OBB) {
-				// 中心点と半径サイズを取得
-				OBBCollider* obbCollider = dynamic_cast<OBBCollider*>(collider);
-				if (obbCollider) {
-					OBB groundOBB = obbCollider->GetOBB();
-					groundInfo_.currentGroundCenter = groundOBB.center;
-					groundInfo_.currentGroundHalfSize = groundOBB.halfSize;
-				}
-			}
+			// 地面に衝突した際の処理
+			GroundOnCollision(collider);
 		}
 
 	} else if (collider->GetColliderName() == ColliderName::Object) {
@@ -35834,39 +35844,25 @@ void GameCharacter<TCollider>::GroundCollision() {
 	/// ===地面から離れている場合の処理=== ///
 	if (!groundInfo_.isGrounded) {
 		// 重力の適用
-		//baseInfo_.velocity.y += baseInfo_.gravity * baseInfo_.deltaTime;
+		baseInfo_.velocity.y += baseInfo_.gravity * baseInfo_.deltaTime;
 
 		// Y方向の速度の最大値を制限
-		const float kMaxFollSpeed = -10.0f;
+		const float kMaxFullSpeed = -10.0f;
 		// 下方向への速度を制限
-		baseInfo_.velocity.y = std::clamp(baseInfo_.velocity.y, kMaxFollSpeed, 0.0f);
+		baseInfo_.velocity.y = std::clamp(baseInfo_.velocity.y, kMaxFullSpeed, 0.0f);
+
+		// 早期リターン
+		return;
 	}
 
-	/// ===早期リターン=== ///
-	if (!groundInfo_.hasGroundCollision) return;
+	/// ===地面より下に行かないようにする=== ///
+	if (this->transform_.translate.y < groundInfo_.currentGroundYPos) {
 
-	/// ===Y座標が地面を下回っているかををチェック=== ///
-	float groundY = 0.0f;
-	float characterHalfHeight = 0.0f;
-
-	if (this->GetColliderType() == ColliderType::OBB) {
-		OBB obb = dynamic_cast<OBBCollider*>(this)->GetOBB();
-		characterHalfHeight = obb.halfSize.y;
-		groundY = groundInfo_.currentGroundCenter.y + groundInfo_.currentGroundHalfSize.y + characterHalfHeight;
-	} else if (this->GetColliderType() == ColliderType::Sphere) {
-		Sphere sphere = dynamic_cast<SphereCollider*>(this)->GetSphere();
-		characterHalfHeight = sphere.radius;
-		groundY = groundInfo_.currentGroundCenter.y + groundInfo_.currentGroundHalfSize.y + characterHalfHeight;
-	}
-
-	// はみ出し分を計算
-	float overlap = groundY - this->transform_.translate.y;
-
-	// 地面より下に行かないようにする
-	if (this->transform_.translate.y < groundY) {
+		// はみ出し分を計算
+		//float overlap = groundInfo_.currentGroundYPos - this->transform_.translate.y;
 
 		// はみ出し分を押し戻す
-		this->transform_.translate.y += overlap;
+		this->transform_.translate.y = groundInfo_.currentGroundYPos;
 
 		// 下降中なら速度を0にする
 		if (baseInfo_.velocity.y < 0.0f) {
@@ -35874,22 +35870,87 @@ void GameCharacter<TCollider>::GroundCollision() {
 		}
 	}
 
-	/// ===地面の範囲を出たら=== ///
-	// X方向の範囲チェック
-	if (this->transform_.translate.x > (groundInfo_.currentGroundCenter.x + groundInfo_.currentGroundHalfSize.x + characterHalfHeight) ||
-		this->transform_.translate.x < (groundInfo_.currentGroundCenter.x - groundInfo_.currentGroundHalfSize.x - characterHalfHeight)) {
-		// 地面の範囲から出たらfalseにする
-		groundInfo_.isGrounded = false;
-		groundInfo_.hasGroundCollision = false;
+	/// ===地面の範囲を出たかチェック=== ///
+	bool isOutOfRange = false;
+
+	if (groundInfo_.currentGroundType == ColliderType::AABB) {
+		// min～maxの範囲
+		float minX = groundInfo_.currentGroundFirst.x;
+		float maxX = groundInfo_.currentGroundSecond.x;
+		float minZ = groundInfo_.currentGroundFirst.z;
+		float maxZ = groundInfo_.currentGroundSecond.z;
+
+		isOutOfRange = (this->transform_.translate.x > maxX || this->transform_.translate.x < minX ||
+			this->transform_.translate.z > maxZ || this->transform_.translate.z < minZ);
+
+	} else if (groundInfo_.currentGroundType == ColliderType::OBB) {
+		// center +- halfSize
+		float centerX = groundInfo_.currentGroundFirst.x;
+		float halfSizeX = groundInfo_.currentGroundSecond.x;
+		float centerZ = groundInfo_.currentGroundFirst.z;
+		float halfSizeZ = groundInfo_.currentGroundSecond.z;
+
+		isOutOfRange = (this->transform_.translate.x > centerX + halfSizeX || this->transform_.translate.x < centerX - halfSizeX ||
+			this->transform_.translate.z > centerZ + halfSizeZ || this->transform_.translate.z < centerZ - halfSizeZ);
 	}
 
-	// Z方向の範囲チェック
-	if (this->transform_.translate.z > (groundInfo_.currentGroundCenter.z + groundInfo_.currentGroundHalfSize.z + characterHalfHeight) ||
-		this->transform_.translate.z < (groundInfo_.currentGroundCenter.z - groundInfo_.currentGroundHalfSize.z - characterHalfHeight)) {
-		// 地面の範囲から出たらfalseにする
+	// 地面の範囲から出たらフラグをリセット
+	if (isOutOfRange) {
 		groundInfo_.isGrounded = false;
-		groundInfo_.hasGroundCollision = false;
 	}
+}
+
+///-------------------------------------------/// 
+/// 地面に衝突した際の処理
+///-------------------------------------------///
+template<typename TCollider>
+void GameCharacter<TCollider>::GroundOnCollision(Collider* collider) {
+
+	// タイプの取得
+	groundInfo_.currentGroundType = collider->GetColliderType();
+
+	/// ===タイプ別の地面情報の取得=== ///
+	if (groundInfo_.currentGroundType == ColliderType::AABB) { // AABBの場合
+		AABBCollider* aabbCollider = dynamic_cast<AABBCollider*>(collider);
+		if (aabbCollider) {
+			AABB groundAABB = aabbCollider->GetAABB();
+			// 地面の情報を保存(Min, Max)
+			groundInfo_.currentGroundFirst = groundAABB.min;
+			groundInfo_.currentGroundSecond = groundAABB.max;
+		}
+	} else if (groundInfo_.currentGroundType == ColliderType::OBB) { // OBBの場合
+		OBBCollider* obbCollider = dynamic_cast<OBBCollider*>(collider);
+		if (obbCollider) {
+			OBB groundOBB = obbCollider->GetOBB();
+			// 地面の情報を保存(Center, HalfSize)
+			groundInfo_.currentGroundFirst = groundOBB.center;
+			groundInfo_.currentGroundSecond = groundOBB.halfSize;
+		}
+	}
+
+	/// ===GameCharacterの情報を取得=== ///
+	if (this->GetColliderType() == ColliderType::OBB) {
+		OBB obb = dynamic_cast<OBBCollider*>(this)->GetOBB();
+		characterHalfSize_ = obb.halfSize;
+		
+	} else if (this->GetColliderType() == ColliderType::Sphere) {
+		Sphere sphere = dynamic_cast<SphereCollider*>(this)->GetSphere();
+		characterHalfSize_ = { sphere.radius, sphere.radius, sphere.radius };
+	}
+
+	/// ===地面のY座標を計算（地面タイプに応じて）=== ///
+	float groundTopY = 0.0f;
+	if (groundInfo_.currentGroundType == ColliderType::AABB) {
+		// AABBの場合: maxがそのまま上端
+		groundTopY = groundInfo_.currentGroundSecond.y;
+
+	} else if (groundInfo_.currentGroundType == ColliderType::OBB) {
+		// OBBの場合: center + halfSize
+		groundTopY = groundInfo_.currentGroundFirst.y + groundInfo_.currentGroundSecond.y;
+	}
+
+	/// ===押し戻し後のY座標を計算=== ///
+	groundInfo_.currentGroundYPos = groundTopY + characterHalfSize_.y;
 }
 
 
@@ -35977,17 +36038,27 @@ private: /// ===地面との衝突処理=== ///
 
     /// ===GroundInfo=== ///
     struct GroundInfo {
-        Vector3 currentGroundCenter{};     // 現在の地面の中心位置
-        Vector3 currentGroundHalfSize{};   // 現在の地面の半サイズ
-        bool hasGroundCollision = false;   // 地面との衝突フラグ
+		ColliderType currentGroundType;    // 現在の地面のコライダータイプ
+        Vector3 currentGroundFirst{};      // 現在の地面の情報1
+		Vector3 currentGroundSecond{};     // 現在の地面の情報2
+        float currentGroundYPos = 0.0f;    // 現在の地面のY軸
         bool isGrounded = false;		   // 地面接地フラグ
     };
 	GroundInfo groundInfo_;
+
+    // キャラクターの半サイズY軸
+    Vector3 characterHalfSize_{};
 
     /// <summary>
     /// 指定した中心位置と半サイズを持つオブジェクトの地面との衝突を検出して処理します。
     /// </summary>
     void GroundCollision();
+  
+    /// <summary>
+    ///  地面に衝突した際の処理
+    /// </summary>
+    /// <param name="collider">衝突したコライダーへのポインタ。</param>
+    void GroundOnCollision(Collider* collider);
 
 };
 
@@ -36354,6 +36425,24 @@ private:
     /// <returns>重なり量（正の値なら重なっている）。</returns>
     float CalculateOverlapOnAxis(const OBB& obb1, const OBB& obb2, const Vector3& axis) const;
 };
+
+============================================================
+File Path: Project/application/Game/Entity/GameCharacter/GameCharacterConcepts.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// Collider
+#include "Engine/Collider/OBBCollider.h"
+#include "Engine/Collider/SphereCollider.h"
+// C++
+#include <type_traits>
+
+/// ===Concepts=== ///
+template<typename T>
+concept IsCollider = 
+std::is_base_of_v<Collider, T> 
+&& !std::is_abstract_v<T>
+&& std::is_default_constructible_v<T>;
 
 ============================================================
 File Path: Project/application/Game/Entity/Player/Component/PlayerAttackComponent.cpp
@@ -38876,6 +38965,8 @@ public: /// ===Setter=== ///
 	void SetCameraTargetPlayer();
 	// 無敵時間の設定
 	void SetInvincibleTime(const float& time);
+	// Gravityの設定
+	void SetGravity(const float& gravity) { baseInfo_.gravity = gravity; };
 
 public: /// ===State用関数=== ///
 
