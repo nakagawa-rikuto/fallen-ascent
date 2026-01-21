@@ -18,7 +18,7 @@ void Ground::GameInit(const std::string& modelName) {
 	// 初期化
 	object3d_->Init(ObjectType::Model, modelName);
 	// 初期化処理
-	AABBCollider::Initialize();
+	GameObject::Initialize();
 	name_ = ColliderName::Ground; // コライダー名を設定
 	// コライダーサービスに登録
 	ColliderService::AddCollider(this);
@@ -28,24 +28,24 @@ void Ground::GameInit(const std::string& modelName) {
 /// 初期化
 ///-------------------------------------------///
 void Ground::Initialize() {
-	// OBBColliderの初期化
-	AABBCollider::Initialize();
+	// GameObjectの初期化
+	GameObject::Initialize();
 }
 
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
 void Ground::Update() {
-	// 更新
-	AABBCollider::Update();
+	// GameObjectの更新
+	GameObject::Update();
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
 void Ground::Draw(BlendMode mode) {
-	// 描画
-	AABBCollider::Draw(mode);
+	// GameObjectの描画
+	GameObject::Draw(mode);
 }
 
 ///-------------------------------------------/// 

@@ -158,6 +158,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Object\GameStage.cpp" />
     <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp" />
     <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp" />
+    <ClCompile Include="application\Game\Object\GameObject\GameObject.cpp" />
     <ClCompile Include="Math\EasingMath.cpp" />
     <ClCompile Include="Engine\System\Managers\AnimationManager.cpp" />
     <ClCompile Include="Engine\System\Service\AudioService.cpp" />
@@ -273,7 +274,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterConcepts.h" />
+    <ClInclude Include="Engine\Collider\ColliderConcept.h" />
     <ClInclude Include="application\Game\Entity\Player\Editor\Data\AttackData.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyAttackState.h" />
@@ -328,6 +329,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Object\GameStage.h" />
     <ClInclude Include="application\Game\Animation\GameClearAnimation.h" />
     <ClInclude Include="application\Game\UI\Game\GameSceneUI.h" />
+    <ClInclude Include="application\Game\Object\GameObject\GameObject.h" />
     <ClInclude Include="Math\EasingMath.h" />
     <ClInclude Include="Engine\System\Managers\AnimationManager.h" />
     <ClInclude Include="Engine\DataInfo\AnimationData.h" />

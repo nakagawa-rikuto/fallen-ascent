@@ -1,12 +1,12 @@
 
 #pragma once
 /// ===Include=== ///
-#include "Engine/Collider/AABBCollider.h"
+#include "application/Game/Object/GameObject/GameObject.h"
 
 ///=====================================================/// 
 /// Ground
 ///=====================================================///
-class Ground : public AABBCollider {
+class Ground : public GameObject<AABBCollider> {
 public:
 	Ground() = default;
 	~Ground();

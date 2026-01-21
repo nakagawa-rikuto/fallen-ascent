@@ -1,9 +1,9 @@
 #pragma once
 /// ===Include=== ///
 // Collider
-#include "GameCharacterConcepts.h"
 #include "Engine/Collider/OBBCollider.h"
 #include "Engine/Collider/SphereCollider.h"
+#include "Engine/Collider/ColliderConcept.h"
 
 /// ===前方宣言=== ///
 template<typename TCollider> requires IsCollider<TCollider>

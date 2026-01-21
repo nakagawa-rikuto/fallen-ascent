@@ -1,8 +1,7 @@
 #pragma once
 /// ===Include=== ///
 // Collider
-#include "Engine/Collider/OBBCollider.h"
-#include "Engine/Collider/SphereCollider.h"
+#include "Engine/Collider/Base/Collider.h"
 // C++
 #include <type_traits>
 
