@@ -7,6 +7,7 @@
 // c++
 #include <cstdint>
 #include <cassert>
+#include <vector>
 
 /// ===前方宣言=== ///
 class DXCommon;
@@ -44,6 +45,12 @@ public:
 	/// </summary>
 	/// <returns>割り当てられたリソースの識別子を表す 32 ビット符号なし整数 (uint32_t)。</returns>
 	uint32_t Allocate();
+
+	/// <summary>
+	/// SRVインデックスを解放して再利用可能にする
+	/// </summary>
+	/// <param name="srvIndex">解放するSRVインデックス</param>
+	void Free(uint32_t srvIndex);
 
 	/// <summary>
 	/// メモリ割り当ての成否を検証
@@ -107,6 +114,9 @@ private:/// ===variable=== ///
 
 	// 次に使用するSRVインデックス
 	uint32_t useIndex_ = 0;
+
+	// 再利用可能なSRVインデックスのリスト
+	std::vector<uint32_t> freeIndices_;
 };
 
 

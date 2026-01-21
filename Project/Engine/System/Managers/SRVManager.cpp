@@ -75,6 +75,13 @@ void SRVManager::CreateShaderResourceView(uint32_t srvIndex, ID3D12Resource* pRe
 /// 確保関数
 ///-------------------------------------------///
 uint32_t SRVManager::Allocate() {
+	// 解放されたインデックスがあれば再利用
+	if (!freeIndices_.empty()) {
+		uint32_t index = freeIndices_.back();
+		freeIndices_.pop_back();
+		return index;
+	}
+
 	/// ===上限に達していないかチェックしてassert=== ///
 	assert(AssertAllocate());
 	// return する番号をいったん記録しておく
@@ -83,6 +90,19 @@ uint32_t SRVManager::Allocate() {
 	useIndex_++;
 	// 上で記録した番号をreturn(0番はImGuiだから+1)
 	return index + 1;
+}
+
+///-------------------------------------------/// 
+/// 解放関数
+///-------------------------------------------///
+void SRVManager::Free(uint32_t srvIndex) {
+	// インデックス0はImGui用なので解放しない
+	if (srvIndex == 0) {
+		return;
+	}
+
+	// 解放されたインデックスをプールに追加
+	freeIndices_.push_back(srvIndex);
 }
 // 上限チャック
 bool SRVManager::AssertAllocate() const  { return useIndex_ < kMaxSRVCount_; }

@@ -19,6 +19,10 @@
 /// コンストラクタ・デストラクタ
 ///-------------------------------------------///
 ParticleSetUp::~ParticleSetUp() { 
+	// SRVインデックスを解放
+	if (srvData_.srvManager_ != nullptr) {
+		srvData_.srvManager_->Free(srvData_.srvIndex);
+	}
 	vertex_.reset();
 	index_.reset();
 	common_.reset();
