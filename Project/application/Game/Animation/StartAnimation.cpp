@@ -10,7 +10,6 @@
 // c++
 #include <algorithm>
 #include <functional>
-#undef max
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -123,7 +122,7 @@ void StartAnimation::UpdateCameraRotation() {
 	// カメラ位置の補間
 	Vector3 midPoint = {
 		(cameraRotInfo_.cameraStartPos.x + cameraRotInfo_.cameraEndPos.x) * 0.5f,
-		std::max(cameraRotInfo_.cameraStartPos.y, cameraRotInfo_.cameraEndPos.y) + 10.0f, // 少し高めに
+		(std::max)(cameraRotInfo_.cameraStartPos.y, cameraRotInfo_.cameraEndPos.y) + 10.0f, // 少し高めに
 		(cameraRotInfo_.cameraStartPos.z + cameraRotInfo_.cameraEndPos.z) * 0.5f
 	};
 
