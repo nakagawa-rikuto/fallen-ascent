@@ -1,6 +1,6 @@
 #pragma once
 /// ===Include=== ///
-#include "Engine/Collider/AABBCollider.h"
+#include "application/Game/Object/GameObject/GameObject.h"
 // C++
 #include <string>
 #include <memory>
@@ -8,7 +8,7 @@
 ///=====================================================/// 
 /// StageObject
 ///=====================================================///
-class StageObject : public AABBCollider {
+class StageObject : public GameObject<AABBCollider> {
 public:
 	StageObject() = default;
 	~StageObject();

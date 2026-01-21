@@ -508,6 +508,7 @@
     <ClCompile Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.cpp" />
     <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp" />
     <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp" />
+    <ClCompile Include="application\Game\Object\GameObject\GameObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -979,7 +980,8 @@
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.h" />
     <ClInclude Include="application\Game\UI\Game\GameSceneUI.h" />
     <ClInclude Include="application\Game\UI\Game\PlayerUI.h" />
-    <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterConcepts.h" />
+    <ClInclude Include="Engine\Collider\ColliderConcept.h" />
+    <ClInclude Include="application\Game\Object\GameObject\GameObject.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

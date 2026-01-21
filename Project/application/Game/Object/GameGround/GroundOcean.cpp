@@ -16,8 +16,8 @@ GroundOcean::~GroundOcean() {
 void GroundOcean::Initialize() {
 
 	// AABBコライダーの初期化と設定
-	AABBCollider::Initialize();
-	AABBCollider::SetAABB({ { -500.0f, -2.0f, -500.0f }, { 500.0f, 0.0f, 500.0f } });
+	GameObject::Initialize();
+	GameObject::SetAABB({ { -500.0f, -2.0f, -500.0f }, { 500.0f, 0.0f, 500.0f } });
 
 	// オーシャンの初期化
 	ocean_ = std::make_unique<Ocean>();
@@ -25,6 +25,7 @@ void GroundOcean::Initialize() {
 	ocean_->SetTranslate({ 0.0f, -1.0f, 0.0f });
 	ocean_->SetScale({ 0.5f, 0.5f, 0.5f });
 
+	// 初回更新
 	ocean_->Update();
 }
 
@@ -34,7 +35,7 @@ void GroundOcean::Initialize() {
 void GroundOcean::Update() {
 
 #ifdef _DEBUG
-
+	// デバッグ用
 	if (InputService::TriggerKey(DIK_SPACE)) {
 		// 波紋を追加
 		Vector3 ripplePos = { 0.0f, 0.0f, 0.0f };
@@ -51,10 +52,6 @@ void GroundOcean::Update() {
 /// 描画
 ///-------------------------------------------///
 void GroundOcean::Draw(BlendMode mode) {
-
-#ifdef _DEBUG
-#endif // _DEBUG
-
 	// オーシャンの描画
 	ocean_->Draw(mode);
 }
@@ -64,6 +61,7 @@ void GroundOcean::Draw(BlendMode mode) {
 ///-------------------------------------------///
 void GroundOcean::ShowImGui() {
 #ifdef USE_IMGUI
+	// オーシャンのImGui表示
 	ocean_->ShowImGui();
 #endif // USE_IMGUI
 }
