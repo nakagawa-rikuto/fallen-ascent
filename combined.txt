@@ -13,6 +13,7 @@
 └── └── └── ├── Base/
 └── └── └── └── ├── Collider.cpp
 └── └── └── └── └── Collider.h
+└── └── └── ├── ColliderConcept.h
 └── └── └── ├── Collision/
 └── └── └── └── ├── ColliderCollision.cpp
 └── └── └── └── └── ColliderCollision.h
@@ -376,8 +377,7 @@
 └── └── └── └── └── ├── GameCharacter.cpp
 └── └── └── └── └── ├── GameCharacter.h
 └── └── └── └── └── ├── GameCharacterCollision.cpp
-└── └── └── └── └── ├── GameCharacterCollision.h
-└── └── └── └── └── └── GameCharacterConcepts.h
+└── └── └── └── └── └── GameCharacterCollision.h
 └── └── └── └── └── Player/
 └── └── └── └──     ├── Component/
 └── └── └── └──     └── ├── PlayerAttackComponent.cpp
@@ -416,6 +416,9 @@
 └── └── └── └── └── ├── Ground.h
 └── └── └── └── └── ├── GroundOcean.cpp
 └── └── └── └── └── └── GroundOcean.h
+└── └── └── └── ├── GameObject/
+└── └── └── └── └── ├── GameObject.cpp
+└── └── └── └── └── └── GameObject.h
 └── └── └── └── ├── GameStage.cpp
 └── └── └── └── ├── GameStage.h
 └── └── └── └── └── StageObject/
@@ -1497,6 +1500,20 @@ protected:
 };
 
 
+
+============================================================
+File Path: Project/Engine/Collider/ColliderConcept.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// Collider
+#include "Engine/Collider/Base/Collider.h"
+// C++
+#include <type_traits>
+
+/// ===Concepts=== ///
+template<typename T>
+concept IsCollider = std::is_base_of_v<Collider, T> && !std::is_abstract_v<T> && std::is_default_constructible_v<T>;
 
 ============================================================
 File Path: Project/Engine/Collider/Collision/ColliderCollision.cpp
@@ -26647,6 +26664,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Object\GameStage.cpp" />
     <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp" />
     <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp" />
+    <ClCompile Include="application\Game\Object\GameObject\GameObject.cpp" />
     <ClCompile Include="Math\EasingMath.cpp" />
     <ClCompile Include="Engine\System\Managers\AnimationManager.cpp" />
     <ClCompile Include="Engine\System\Service\AudioService.cpp" />
@@ -26762,7 +26780,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterConcepts.h" />
+    <ClInclude Include="Engine\Collider\ColliderConcept.h" />
     <ClInclude Include="application\Game\Entity\Player\Editor\Data\AttackData.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyAttackState.h" />
@@ -26817,6 +26835,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Object\GameStage.h" />
     <ClInclude Include="application\Game\Animation\GameClearAnimation.h" />
     <ClInclude Include="application\Game\UI\Game\GameSceneUI.h" />
+    <ClInclude Include="application\Game\Object\GameObject\GameObject.h" />
     <ClInclude Include="Math\EasingMath.h" />
     <ClInclude Include="Engine\System\Managers\AnimationManager.h" />
     <ClInclude Include="Engine\DataInfo\AnimationData.h" />
@@ -27660,6 +27679,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.cpp" />
     <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp" />
     <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp" />
+    <ClCompile Include="application\Game\Object\GameObject\GameObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -28131,7 +28151,8 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.h" />
     <ClInclude Include="application\Game\UI\Game\GameSceneUI.h" />
     <ClInclude Include="application\Game\UI\Game\PlayerUI.h" />
-    <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterConcepts.h" />
+    <ClInclude Include="Engine\Collider\ColliderConcept.h" />
+    <ClInclude Include="application\Game\Object\GameObject\GameObject.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -36013,7 +36034,7 @@ File Path: Project/application/Game/Entity/GameCharacter/GameCharacter.h
 // Collider
 #include "Engine/Collider/OBBCollider.h"
 #include "Engine/Collider/SphereCollider.h"
-#include "GameCharacterConcepts.h"
+#include "Engine/Collider/ColliderConcept.h"
 
 #include "GameCharacterCollision.h"
 
@@ -36382,9 +36403,9 @@ File Path: Project/application/Game/Entity/GameCharacter/GameCharacterCollision.
 #pragma once
 /// ===Include=== ///
 // Collider
-#include "GameCharacterConcepts.h"
 #include "Engine/Collider/OBBCollider.h"
 #include "Engine/Collider/SphereCollider.h"
+#include "Engine/Collider/ColliderConcept.h"
 
 /// ===前方宣言=== ///
 template<typename TCollider> requires IsCollider<TCollider>
@@ -36478,21 +36499,6 @@ private:
     /// <returns>重なり量（正の値なら重なっている）。</returns>
     float CalculateOverlapOnAxis(const OBB& obb1, const OBB& obb2, const Vector3& axis) const;
 };
-
-============================================================
-File Path: Project/application/Game/Entity/GameCharacter/GameCharacterConcepts.h
-============================================================
-#pragma once
-/// ===Include=== ///
-// Collider
-#include "Engine/Collider/OBBCollider.h"
-#include "Engine/Collider/SphereCollider.h"
-// C++
-#include <type_traits>
-
-/// ===Concepts=== ///
-template<typename T>
-concept IsCollider = std::is_base_of_v<Collider, T> && !std::is_abstract_v<T> && std::is_default_constructible_v<T>;
 
 ============================================================
 File Path: Project/application/Game/Entity/Player/Component/PlayerAttackComponent.cpp
@@ -40061,7 +40067,7 @@ void Ground::GameInit(const std::string& modelName) {
 	// 初期化
 	object3d_->Init(ObjectType::Model, modelName);
 	// 初期化処理
-	AABBCollider::Initialize();
+	GameObject::Initialize();
 	name_ = ColliderName::Ground; // コライダー名を設定
 	// コライダーサービスに登録
 	ColliderService::AddCollider(this);
@@ -40071,24 +40077,24 @@ void Ground::GameInit(const std::string& modelName) {
 /// 初期化
 ///-------------------------------------------///
 void Ground::Initialize() {
-	// OBBColliderの初期化
-	AABBCollider::Initialize();
+	// GameObjectの初期化
+	GameObject::Initialize();
 }
 
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
 void Ground::Update() {
-	// 更新
-	AABBCollider::Update();
+	// GameObjectの更新
+	GameObject::Update();
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
 void Ground::Draw(BlendMode mode) {
-	// 描画
-	AABBCollider::Draw(mode);
+	// GameObjectの描画
+	GameObject::Draw(mode);
 }
 
 ///-------------------------------------------/// 
@@ -40104,12 +40110,12 @@ File Path: Project/application/Game/Object/GameGround/Ground.h
 
 #pragma once
 /// ===Include=== ///
-#include "Engine/Collider/AABBCollider.h"
+#include "application/Game/Object/GameObject/GameObject.h"
 
 ///=====================================================/// 
 /// Ground
 ///=====================================================///
-class Ground : public AABBCollider {
+class Ground : public GameObject<AABBCollider> {
 public:
 	Ground() = default;
 	~Ground();
@@ -40166,8 +40172,8 @@ GroundOcean::~GroundOcean() {
 void GroundOcean::Initialize() {
 
 	// AABBコライダーの初期化と設定
-	AABBCollider::Initialize();
-	AABBCollider::SetAABB({ { -500.0f, -2.0f, -500.0f }, { 500.0f, 0.0f, 500.0f } });
+	GameObject::Initialize();
+	GameObject::SetAABB({ { -500.0f, -2.0f, -500.0f }, { 500.0f, 0.0f, 500.0f } });
 
 	// オーシャンの初期化
 	ocean_ = std::make_unique<Ocean>();
@@ -40175,6 +40181,7 @@ void GroundOcean::Initialize() {
 	ocean_->SetTranslate({ 0.0f, -1.0f, 0.0f });
 	ocean_->SetScale({ 0.5f, 0.5f, 0.5f });
 
+	// 初回更新
 	ocean_->Update();
 }
 
@@ -40184,7 +40191,7 @@ void GroundOcean::Initialize() {
 void GroundOcean::Update() {
 
 #ifdef _DEBUG
-
+	// デバッグ用
 	if (InputService::TriggerKey(DIK_SPACE)) {
 		// 波紋を追加
 		Vector3 ripplePos = { 0.0f, 0.0f, 0.0f };
@@ -40201,10 +40208,6 @@ void GroundOcean::Update() {
 /// 描画
 ///-------------------------------------------///
 void GroundOcean::Draw(BlendMode mode) {
-
-#ifdef _DEBUG
-#endif // _DEBUG
-
 	// オーシャンの描画
 	ocean_->Draw(mode);
 }
@@ -40214,6 +40217,7 @@ void GroundOcean::Draw(BlendMode mode) {
 ///-------------------------------------------///
 void GroundOcean::ShowImGui() {
 #ifdef USE_IMGUI
+	// オーシャンのImGui表示
 	ocean_->ShowImGui();
 #endif // USE_IMGUI
 }
@@ -40234,14 +40238,14 @@ File Path: Project/application/Game/Object/GameGround/GroundOcean.h
 #pragma once
 /// ===Include=== ///
 // Collider
-#include "Engine/Collider/AABBCollider.h"
+#include "application/Game/Object/GameObject/GameObject.h"
 // Ocean
 #include "Engine/Graphics/3d/Ocean/Ocean.h"
 
 ///=====================================================/// 
 /// GroundOcean
 ///=====================================================///
-class GroundOcean : public AABBCollider {
+class GroundOcean : public GameObject<AABBCollider> {
 public: 
 
 	GroundOcean() = default;
@@ -40280,6 +40284,123 @@ private:
 
 	/// ===オーシャン=== ///
 	std::unique_ptr<Ocean> ocean_;
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Object/GameObject/GameObject.cpp
+============================================================
+#include "GameObject.h"
+// ImGui
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
+
+/// ===テンプレート候補=== ///
+template class GameObject<AABBCollider>;
+template class GameObject<OBBCollider>;
+template class GameObject<SphereCollider>;
+
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+template<typename TCollider> requires IsCollider<TCollider>
+GameObject<TCollider>::~GameObject() {
+	this->object3d_.reset();
+}
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+template<typename TCollider> requires IsCollider<TCollider>
+void GameObject<TCollider>::Initialize() {
+	/// ===TCollider=== ///
+	TCollider::Initialize();
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+template<typename TCollider> requires IsCollider<TCollider>
+void GameObject<TCollider>::Update() {
+	/// ===TCollider=== ///
+	TCollider::Update();
+}
+
+///-------------------------------------------/// 
+/// 描画処理
+///-------------------------------------------///
+template<typename TCollider> requires IsCollider<TCollider>
+void GameObject<TCollider>::Draw(BlendMode mode) {
+	/// ===TCollider=== ///
+	TCollider::Draw(mode);
+}
+
+///-------------------------------------------/// 
+/// ImGui情報の表示
+///-------------------------------------------///
+template<typename TCollider> requires IsCollider<TCollider>
+void GameObject<TCollider>::Information() {}
+
+///-------------------------------------------/// 
+/// 衝突判定
+///-------------------------------------------///
+template<typename TCollider> requires IsCollider<TCollider>
+void GameObject<TCollider>::OnCollision(Collider* collider) {
+	collider;
+}
+
+
+
+============================================================
+File Path: Project/application/Game/Object/GameObject/GameObject.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// Collider
+#include "Engine/Collider/OBBCollider.h"
+#include "Engine/Collider/AABBCollider.h"
+#include "Engine/Collider/SphereCollider.h"
+#include "Engine/Collider/ColliderConcept.h"
+
+///=====================================================/// 
+/// GameObject
+///=====================================================///
+template<typename TCollider> requires IsCollider<TCollider>
+class GameObject : public TCollider {
+public:
+
+	GameObject() = default;
+	virtual ~GameObject();
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	virtual void Initialize() override;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	virtual void Update() override;
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	/// <param name="mode">描画に使用するブレンドモード。</param>
+	virtual void Draw(BlendMode mode) override;
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
+	virtual void Information() override;
+
+public: /// ===衝突判定=== ///
+	/// <summary>
+	/// 衝突時の処理
+	/// </summary>
+	/// <param name="collider">衝突した相手を表す Collider へのポインター。</param>
+	virtual void OnCollision(Collider* collider) override;
 };
 
 
@@ -40523,7 +40644,7 @@ void StageObject::GameInit(const std::string& modelName) {
 	// 初期化
 	object3d_->Init(ObjectType::Model, modelName);
 	// 初期化処理
-	AABBCollider::Initialize();
+	GameObject::Initialize();
 	name_ = ColliderName::Object; // コライダー名を設定
 	// コライダーサービスに登録
 	ColliderService::AddCollider(this);
@@ -40533,24 +40654,24 @@ void StageObject::GameInit(const std::string& modelName) {
 /// 初期化
 ///-------------------------------------------///
 void StageObject::Initialize() {
-	// AABBColliderの初期化
-	AABBCollider::Initialize();
+	// GameObjectの初期化
+	GameObject::Initialize();
 }
 
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
 void StageObject::Update() {
-	// AABBColliderの更新
-	AABBCollider::Update();
+	// GameObjectの更新
+	GameObject::Update();
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
 void StageObject::Draw(BlendMode mode) {
-	// AABBColliderの描画
-	AABBCollider::Draw(mode);
+	// GameObjectの描画
+	GameObject::Draw(mode);
 }
 
 ///-------------------------------------------/// 
@@ -40567,7 +40688,7 @@ File Path: Project/application/Game/Object/StageObject/StageObject.h
 ============================================================
 #pragma once
 /// ===Include=== ///
-#include "Engine/Collider/AABBCollider.h"
+#include "application/Game/Object/GameObject/GameObject.h"
 // C++
 #include <string>
 #include <memory>
@@ -40575,7 +40696,7 @@ File Path: Project/application/Game/Object/StageObject/StageObject.h
 ///=====================================================/// 
 /// StageObject
 ///=====================================================///
-class StageObject : public AABBCollider {
+class StageObject : public GameObject<AABBCollider> {
 public:
 	StageObject() = default;
 	~StageObject();
