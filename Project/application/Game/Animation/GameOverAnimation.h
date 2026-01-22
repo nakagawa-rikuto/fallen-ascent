@@ -62,11 +62,11 @@ private:
 
 	/// ===フェーズ管理=== ///
 	enum class Phase {
-		ApproceCamera, // カメラを近づける
+		AooroachCamera, // カメラを近づける
 		DrawSprite,    // スプライトを表示する
 		ShakeSprite    // スプライトをシェイクさせる
 	};
-	Phase phase_ = Phase::ApproceCamera;
+	Phase phase_ = Phase::AooroachCamera;
 
 private:
 

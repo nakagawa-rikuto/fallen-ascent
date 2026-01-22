@@ -60,7 +60,7 @@ void Mii::Initialize(const wchar_t* title, int width, int height) {
 
 	// AudioManagerの生成
 	audioManager_ = std::make_unique<AudioManager>();
-	audioManager_->Initialze();
+	audioManager_->Initialize();
 
 	// CSVManagerの生成
 	csvManager_ = std::make_unique<CSVManager>();

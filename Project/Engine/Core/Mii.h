@@ -86,7 +86,7 @@ public:/// ===開発者用関数(Getter)=== ///
 	RTVManager* GetRTVManager();
 	// DSVManagerの取得
 	DSVManager* GetDSVManager();
-	// PiplelineManagerの取得
+	// PipelineManagerの取得
 	PipelineManager* GetPipelineManager();
 	// TextureManagerの取得
 	TextureManager* GetTextureManager();
@@ -128,7 +128,7 @@ private:/// ===Variables(変数)=== ///
 	std::unique_ptr<TextureManager> textureManager_;     // TextureManager
 	std::unique_ptr<ModelManager> modelManager_;         // ModelManager
 	std::unique_ptr<ImGuiManager> imGuiManager_;         // ImGuiManager
-	std::unique_ptr<AudioManager> audioManager_;         // AudioMangaer
+	std::unique_ptr<AudioManager> audioManager_;         // AudioManager
 	std::unique_ptr<CSVManager> csvManager_;             // CSVManager
 	std::unique_ptr<AnimationManager> animationManager_; // AnimationManager
 	// OffScreen
