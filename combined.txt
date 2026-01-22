@@ -3450,7 +3450,7 @@ void Mii::Initialize(const wchar_t* title, int width, int height) {
 
 	// AudioManagerの生成
 	audioManager_ = std::make_unique<AudioManager>();
-	audioManager_->Initialze();
+	audioManager_->Initialize();
 
 	// CSVManagerの生成
 	csvManager_ = std::make_unique<CSVManager>();
@@ -3745,7 +3745,7 @@ public:/// ===開発者用関数(Getter)=== ///
 	RTVManager* GetRTVManager();
 	// DSVManagerの取得
 	DSVManager* GetDSVManager();
-	// PiplelineManagerの取得
+	// PipelineManagerの取得
 	PipelineManager* GetPipelineManager();
 	// TextureManagerの取得
 	TextureManager* GetTextureManager();
@@ -3787,7 +3787,7 @@ private:/// ===Variables(変数)=== ///
 	std::unique_ptr<TextureManager> textureManager_;     // TextureManager
 	std::unique_ptr<ModelManager> modelManager_;         // ModelManager
 	std::unique_ptr<ImGuiManager> imGuiManager_;         // ImGuiManager
-	std::unique_ptr<AudioManager> audioManager_;         // AudioMangaer
+	std::unique_ptr<AudioManager> audioManager_;         // AudioManager
 	std::unique_ptr<CSVManager> csvManager_;             // CSVManager
 	std::unique_ptr<AnimationManager> animationManager_; // AnimationManager
 	// OffScreen
@@ -20821,7 +20821,7 @@ AudioManager::~AudioManager() {
 ///-------------------------------------------/// 
 ///
 ///-------------------------------------------///
-void AudioManager::Initialze() {
+void AudioManager::Initialize() {
 	HRESULT result;
 
 	// XAudioエンジンのインスタンスを生成
@@ -20838,13 +20838,13 @@ void AudioManager::Initialze() {
 ///-------------------------------------------///
 void AudioManager::Load(const std::string& key, const std::string& filename, bool isMP3) {
 	// 既に存在する場合はスキップ
-	if (soundDatas_.find(key) != soundDatas_.end()) {
+	if (soundDates_.find(key) != soundDates_.end()) {
 		return; // 何もしない
 	}
 	if (isMP3) {
-		soundDatas_[key] = LoadMP3(filename);
+		soundDates_[key] = LoadMP3(filename);
 	} else {
-		soundDatas_[key] = LoadWave(filename);
+		soundDates_[key] = LoadWave(filename);
 	}
 }
 
@@ -20852,10 +20852,10 @@ void AudioManager::Load(const std::string& key, const std::string& filename, boo
 /// 音声データの解放
 ///-------------------------------------------///
 void AudioManager::Unload(const std::string& key) {
-	auto it = soundDatas_.find(key);
-	if (it != soundDatas_.end()) {
+	auto it = soundDates_.find(key);
+	if (it != soundDates_.end()) {
 		UnloadSoundData(it->second);
-		soundDatas_.erase(it);
+		soundDates_.erase(it);
 	}
 }
 
@@ -20863,19 +20863,19 @@ void AudioManager::Unload(const std::string& key) {
 /// 音声データの一括開放
 ///-------------------------------------------///
 void AudioManager::UnloadAll() {
-	for (auto& pair : soundDatas_) {
+	for (auto& pair : soundDates_) {
 		UnloadSoundData(pair.second);
 	}
-	soundDatas_.clear(); // コンテナをクリア
+	soundDates_.clear(); // コンテナをクリア
 }
 
 ///-------------------------------------------/// 
 /// サウンドの再生
 ///-------------------------------------------///
 void AudioManager::Play(const std::string& key, bool loop) {
-	auto it = soundDatas_.find(key); // 探したkeyを代入
+	auto it = soundDates_.find(key); // 探したkeyを代入
 	
-	assert(it != soundDatas_.end());
+	assert(it != soundDates_.end());
 	HRESULT result;
 
 	// 再生中の音声がある場合は処理をスキップ
@@ -20898,7 +20898,7 @@ void AudioManager::Play(const std::string& key, bool loop) {
 
 	// 再生する波形データの設定
 	XAUDIO2_BUFFER buf{};
-	buf.pAudioData = it->second.pBuffer;
+	buf.pAudioData = it->second.pBuffer.get();
 	buf.AudioBytes = it->second.bufferSize;
 	buf.Flags = XAUDIO2_END_OF_STREAM;
 
@@ -21009,16 +21009,16 @@ SoundData AudioManager::LoadWave(const std::string& filename) {
 		file.seekg(data.size, std::ios_base::cur);
 	}
 	// Dataチャンクのデータ部（波形データ）の読み込み
-	char* pBuffer = new char[data.size];
-	file.read(pBuffer, data.size);
+	auto pBuffer = std::make_unique<BYTE[]>(data.size);
+	file.read(reinterpret_cast<char*>(pBuffer.get()), data.size);
 	// Waveファイルを閉じる
 	file.close();
 
 	/// ====読み込んだ音声データをreturn== ///
-	// retrunする為の音声データ
+	// returnする為の音声データ
 	SoundData soundData = {};
 	soundData.wfex = format.fmt;
-	soundData.pBuffer = reinterpret_cast<BYTE*>(pBuffer);
+	soundData.pBuffer = std::move(pBuffer);
 	soundData.bufferSize = data.size;
 
 	return soundData;
@@ -21029,14 +21029,8 @@ SoundData AudioManager::LoadWave(const std::string& filename) {
 ///-------------------------------------------///
 SoundData AudioManager::LoadMP3(const std::string& filename) {
 
-	//// 通ってない
-	//// === キャッシュの確認と返却 ===
-	//if (auto it = soundDatas_.find(filename); it != soundDatas_.end()) {
-	//	return it->second; // 既にロード済みならキャッシュを返す
-	//}
-
 	/// ===ファイルオープン=== ///
-   // ファイル名を wide 文字列に変換
+    // ファイル名を wide 文字列に変換
 	int wideSize = MultiByteToWideChar(CP_ACP, 0, filename.c_str(), -1, nullptr, 0);
 	std::wstring wideFilename(wideSize, 0);
 	MultiByteToWideChar(CP_ACP, 0, filename.c_str(), -1, &wideFilename[0], wideSize);
@@ -21113,18 +21107,18 @@ SoundData AudioManager::LoadMP3(const std::string& filename) {
 
 	// Data チャンクのデータ部をセット
 	data.size = static_cast<uint32_t>(buffer.size());
-	char* pBuffer = new char[data.size];
-	memcpy(pBuffer, buffer.data(), data.size);
+	auto pBuffer = std::make_unique<BYTE[]>(data.size);
+	memcpy(pBuffer.get(), buffer.data(), data.size);
 
 	// リソース解放
 	sourceReader->Release();
 	audioType->Release();
 	MFShutdown();
 
-	/// ====読み込んだ音声データを return ==== ///
+	/// ====読み込んだ音声データ==== ///
 	SoundData soundData = {};
 	soundData.wfex = format.fmt; // フォーマットを設定
-	soundData.pBuffer = reinterpret_cast<BYTE*>(pBuffer);
+	soundData.pBuffer = std::move(pBuffer);
 	soundData.bufferSize = data.size;
 
 	return soundData;
@@ -21135,8 +21129,7 @@ SoundData AudioManager::LoadMP3(const std::string& filename) {
 ///-------------------------------------------///
 void AudioManager::UnloadSoundData(SoundData& soundData) {
 	// バッファのメモリを解放
-	delete[] soundData.pBuffer;
-	soundData.pBuffer = 0;
+	soundData.pBuffer.reset();
 	soundData.bufferSize = 0;
 	soundData.wfex = {};
 }
@@ -21149,6 +21142,8 @@ File Path: Project/Engine/System/Managers/AudioManager.h
 /// ===Include=== ///
 // Engine
 #include "Engine/Core/ComPtr.h"
+// C++
+#include <memory>
 // waveの読み込み
 #include <xaudio2.h> 
 // mp3の読み込み
@@ -21170,7 +21165,7 @@ struct SoundData {
 	// 波形フォーマット
 	WAVEFORMATEX wfex;
 	// バッファの先頭アドレス
-	BYTE* pBuffer;
+	std::unique_ptr<BYTE[]> pBuffer;
 	// バッファのサイズ
 	unsigned int bufferSize;
 };
@@ -21186,7 +21181,7 @@ public:
 	/// <summary>
 	/// 初期化処理
 	/// </summary>
-	void Initialze();
+	void Initialize();
 
 public:/// ===関数=== ///
 
@@ -21247,7 +21242,7 @@ private: /// ===変数=== ///
 	std::unordered_map<std::string, IXAudio2SourceVoice*> sourceVoices_;
 
 	// 音声データ
-	std::unordered_map<std::string, SoundData> soundDatas_;
+	std::unordered_map<std::string, SoundData> soundDates_;
 
 private: /// ===関数=== ///
 
@@ -21261,8 +21256,8 @@ private: /// ===関数=== ///
 	/// <summary>
 	/// MP3ファイルの読み込み処理
 	/// </summary>
-	/// <param name="filenam読み込むMP3ファイルのパスまたはファイル名。e"></param>
-	/// <retur読み込まれた音声データを表すSoundData。読み込みやデコードに失敗した場合の挙動は実装依存です。ns></returns>
+	/// <param name="filename読み込むMP3ファイルのパスまたはファイル名。e"></param>
+	/// <returns>読み込まれた音声データを表すSoundData。読み込みやデコードに失敗した場合の挙動は実装依存です。ns></returns>
 	SoundData LoadMP3(const std::string& filename);
 
 	/// <summary>
@@ -26576,7 +26571,7 @@ File Path: Project/FallenAscent.vcxproj
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalOptions>/ignore:4049 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/ignore:4049 /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
       <AdditionalLibraryDirectories>$(ProjectDir)externals\assimp\lib\Debug;$(SolutionDir)..\generated\outputs\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>assimp-vc143-mtd.lib;imgui.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -27128,6 +27123,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resource\Shaders\2D\Obj2D.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
     <None Include="Resource\Shaders\3D\LIne3D.hlsli">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -27244,14 +27243,18 @@ File Path: Project/FallenAscent.vcxproj.filters
     <FxCompile Include="Resource\Shaders\OffScreen\ShatterGlass.PS.hlsl">
       <Filter>Resource\Shaders\OffScreen</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Shaders\3D\Ocean.VS.hlsl">
-      <Filter>Resource\Shaders\Oshan</Filter>
+    <FxCompile Include="Resource\Shaders\2D\CircularGauge.PS.hlsl">
+      <Filter>Resource\Shaders\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\3D\Ocean.CS.hlsl">
+      <Filter>Resource\Shaders\3D</Filter>
     </FxCompile>
     <FxCompile Include="Resource\Shaders\3D\Ocean.PS.hlsl">
-      <Filter>Resource\Shaders\Oshan</Filter>
+      <Filter>Resource\Shaders\3D</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Shaders\3D\Ocean.CS.hlsl" />
-    <FxCompile Include="Resource\Shaders\2D\CircularGauge.PS.hlsl" />
+    <FxCompile Include="Resource\Shaders\3D\Ocean.VS.hlsl">
+      <Filter>Resource\Shaders\3D</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -27429,34 +27432,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Engine\Graphics\OffScreen\RenderTexture.cpp">
       <Filter>Engine\Graphics\OffScreen</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Particle\ParticleCommon.cpp">
-      <Filter>Engine\Graphics\Particle\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Particle\ParticleGroup.cpp">
-      <Filter>Engine\Graphics\Particle\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Particle\ParticleSetUp.cpp">
-      <Filter>Engine\Graphics\Particle\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\GS\BlendState.cpp">
-      <Filter>Engine\Graphics\Pipeline</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Graphics\Pipeline\Compiler.cpp">
-      <Filter>Engine\Graphics\Pipeline</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\GS\DepthStencil.cpp">
-      <Filter>Engine\Graphics\Pipeline</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\GS\InputLayout.cpp">
-      <Filter>Engine\Graphics\Pipeline</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\GS\GSPSOCommon.cpp">
-      <Filter>Engine\Graphics\Pipeline</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\GS\GSRootSignature.cpp">
-      <Filter>Engine\Graphics\Pipeline</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\GS\RasterizerState.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Scene\AbstractSceneFactory.cpp">
@@ -27598,7 +27574,7 @@ File Path: Project/FallenAscent.vcxproj.filters
       <Filter>Engine\Graphics\OffScreen\Effect</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\UI\Title\TitleUI.cpp">
-      <Filter>application\UI\Title</Filter>
+      <Filter>application\Game\UI\Title</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\2d\Sprite\SpriteCommon.cpp">
       <Filter>Engine\Graphics\2D\Sprite</Filter>
@@ -27618,9 +27594,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Engine\Graphics\2d\Base\Object2DCommon.cpp">
       <Filter>Engine\Graphics\2D\Base</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Scene\Transition\ShatterGlassTransition.cpp">
-      <Filter>application\Game\Transition</Filter>
-    </ClCompile>
     <ClCompile Include="application\Game\Animation\StartAnimation.cpp">
       <Filter>application\Game\Animation</Filter>
     </ClCompile>
@@ -27639,9 +27612,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Object\GameGround\GroundOcean.cpp">
       <Filter>application\Game\Object\GameGround</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp">
-      <Filter>application\Game\Object\GameObject</Filter>
-    </ClCompile>
     <ClCompile Include="application\Game\Object\GameStage.cpp">
       <Filter>application\Game\Object</Filter>
     </ClCompile>
@@ -27651,35 +27621,126 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Engine\Graphics\3d\Ocean\OceanCommon.cpp">
       <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\GameScene.cpp" />
-    <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp" />
-    <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp" />
-    <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\ParticleFactory.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp" />
-    <ClCompile Include="Engine\System\Editor\ParticleEditor.cpp" />
-    <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\ParticleParameter.cpp" />
-    <ClCompile Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.cpp" />
-    <ClCompile Include="Engine\Graphics\Pipeline\CS\CSRootSignature.cpp" />
-    <ClCompile Include="Engine\Graphics\Base\UAV.cpp" />
-    <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp" />
-    <ClCompile Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.cpp" />
-    <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp" />
-    <ClCompile Include="Engine\Scene\Transition\SceneTransitionManager.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp" />
-    <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Editor\AttackEditor.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Editor\AttackDataSerializer.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.cpp" />
-    <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp" />
-    <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp" />
-    <ClCompile Include="application\Game\Object\GameObject\GameObject.cpp" />
+    <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp">
+      <Filter>application\Game\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.cpp">
+      <Filter>application\Game\Entity\Enemy\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.cpp">
+      <Filter>application\Game\Entity\Enemy\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.cpp">
+      <Filter>application\Game\Entity\Enemy\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.cpp">
+      <Filter>application\Game\Entity\Enemy\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp">
+      <Filter>application\Game\Entity\GameCharacter</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp">
+      <Filter>application\Game\Entity\Player\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp">
+      <Filter>application\Game\Entity\Player\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp">
+      <Filter>application\Game\Entity\Player\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp">
+      <Filter>application\Game\Object\StageObject</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Object\GameObject\GameObject.cpp">
+      <Filter>application\Game\Object\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Scene\Transition\ShatterGlassTransition.cpp">
+      <Filter>Engine\Scene\Transition</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp">
+      <Filter>Engine\Scene\Transition\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Scene\Transition\SceneTransitionManager.cpp">
+      <Filter>Engine\Scene\Transition</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp">
+      <Filter>Engine\Scene\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Player\Editor\AttackDataSerializer.cpp">
+      <Filter>application\Game\Entity\Player\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Player\Editor\AttackEditor.cpp">
+      <Filter>application\Game\Entity\Player\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp">
+      <Filter>application\Scene\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\GameScene.cpp">
+      <Filter>application\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp">
+      <Filter>application\Game\UI\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp">
+      <Filter>application\Game\UI\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp">
+      <Filter>Engine\Collider\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.cpp">
+      <Filter>Engine\Graphics\3D\Oshan</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Base\UAV.cpp">
+      <Filter>Engine\Graphics\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\Editor\ParticleEditor.cpp">
+      <Filter>Engine\System\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Particle\ParticleFactory.cpp">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Particle\ParticleParameter.cpp">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Particle\ParticleCommon.cpp">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Particle\ParticleGroup.cpp">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Particle\ParticleSetUp.cpp">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.cpp">
+      <Filter>Engine\Graphics\Pipeline\CS</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Pipeline\CS\CSRootSignature.cpp">
+      <Filter>Engine\Graphics\Pipeline\CS</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Pipeline\GS\BlendState.cpp">
+      <Filter>Engine\Graphics\Pipeline\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Pipeline\GS\DepthStencil.cpp">
+      <Filter>Engine\Graphics\Pipeline\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Pipeline\GS\GSPSOCommon.cpp">
+      <Filter>Engine\Graphics\Pipeline\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Pipeline\GS\GSRootSignature.cpp">
+      <Filter>Engine\Graphics\Pipeline\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Pipeline\GS\InputLayout.cpp">
+      <Filter>Engine\Graphics\Pipeline\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Pipeline\GS\RasterizerState.cpp">
+      <Filter>Engine\Graphics\Pipeline\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp">
+      <Filter>Engine\Graphics\Pipeline</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -27898,34 +27959,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\Graphics\OffScreen\RenderTexture.h">
       <Filter>Engine\Graphics\OffScreen</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Particle\ParticleGroup.h">
-      <Filter>Engine\Graphics\Particle\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Particle\ParticleCommon.h">
-      <Filter>Engine\Graphics\Particle\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Particle\ParticleSetUp.h">
-      <Filter>Engine\Graphics\Particle\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\GS\BlendState.h">
-      <Filter>Engine\Graphics\Pipeline</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Graphics\Pipeline\Compiler.h">
-      <Filter>Engine\Graphics\Pipeline</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\GS\DepthStencil.h">
-      <Filter>Engine\Graphics\Pipeline</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\GS\InputLayout.h">
-      <Filter>Engine\Graphics\Pipeline</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\GS\GSPSOCommon.h">
-      <Filter>Engine\Graphics\Pipeline</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\GS\GSRootSignature.h">
-      <Filter>Engine\Graphics\Pipeline</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\GS\RasterizerState.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Scene\AbstractSceneFactory.h">
@@ -28067,7 +28101,7 @@ File Path: Project/FallenAscent.vcxproj.filters
       <Filter>Engine\Graphics\OffScreen\Effect</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\UI\Title\TitleUI.h">
-      <Filter>application\UI\Title</Filter>
+      <Filter>application\Game\UI\Title</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\2d\Sprite\SpriteCommon.h">
       <Filter>Engine\Graphics\2D\Sprite</Filter>
@@ -28087,9 +28121,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\Graphics\2d\Base\Object2DCommon.h">
       <Filter>Engine\Graphics\2D\Base</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Scene\Transition\ShatterGlassTransition.h">
-      <Filter>application\Game\Transition</Filter>
-    </ClInclude>
     <ClInclude Include="application\Game\Animation\StartAnimation.h">
       <Filter>application\Game\Animation</Filter>
     </ClInclude>
@@ -28108,9 +28139,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Object\GameGround\GroundOcean.h">
       <Filter>application\Game\Object\GameGround</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Object\StageObject\StageObject.h">
-      <Filter>application\Game\Object\GameObject</Filter>
-    </ClInclude>
     <ClInclude Include="application\Game\Object\GameStage.h">
       <Filter>application\Game\Object</Filter>
     </ClInclude>
@@ -28123,36 +28151,129 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\DataInfo\OceanData.h">
       <Filter>Engine\DataInfo</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
-    <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h" />
-    <ClInclude Include="application\Game\Animation\GameClearAnimation.h" />
-    <ClInclude Include="Engine\Graphics\Particle\ParticleFactory.h" />
-    <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
-    <ClInclude Include="Engine\System\Editor\ParticleEditor.h" />
-    <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h" />
-    <ClInclude Include="Engine\Graphics\Particle\ParticleParameter.h" />
-    <ClInclude Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.h" />
-    <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
-    <ClInclude Include="Engine\Graphics\Base\UAV.h" />
-    <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h" />
-    <ClInclude Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.h" />
-    <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h" />
-    <ClInclude Include="Engine\Scene\Transition\SceneTransitionManager.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h" />
-    <ClInclude Include="application\Game\Entity\Player\Editor\Data\AttackData.h" />
-    <ClInclude Include="application\Scene\Debug\AttackEditorScene.h" />
-    <ClInclude Include="application\Game\Entity\Player\Editor\AttackEditor.h" />
-    <ClInclude Include="application\Game\Entity\Player\Editor\AttackDataSerializer.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.h" />
-    <ClInclude Include="application\Game\UI\Game\GameSceneUI.h" />
-    <ClInclude Include="application\Game\UI\Game\PlayerUI.h" />
-    <ClInclude Include="Engine\Collider\ColliderConcept.h" />
-    <ClInclude Include="application\Game\Object\GameObject\GameObject.h" />
+    <ClInclude Include="application\Game\Animation\GameClearAnimation.h">
+      <Filter>application\Game\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.h">
+      <Filter>application\Game\Entity\Enemy\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.h">
+      <Filter>application\Game\Entity\Enemy\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.h">
+      <Filter>application\Game\Entity\Enemy\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.h">
+      <Filter>application\Game\Entity\Enemy\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h">
+      <Filter>application\Game\Entity\GameCharacter</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h">
+      <Filter>application\Game\Entity\Player\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h">
+      <Filter>application\Game\Entity\Player\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h">
+      <Filter>application\Game\Entity\Player\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Object\StageObject\StageObject.h">
+      <Filter>application\Game\Object\StageObject</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Object\GameObject\GameObject.h">
+      <Filter>application\Game\Object\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Scene\Transition\ShatterGlassTransition.h">
+      <Filter>Engine\Scene\Transition</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h">
+      <Filter>Engine\Scene\Transition\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Scene\Transition\SceneTransitionManager.h">
+      <Filter>Engine\Scene\Transition</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h">
+      <Filter>Engine\Scene\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Player\Editor\Data\AttackData.h">
+      <Filter>application\Game\Entity\Player\Editor\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Player\Editor\AttackDataSerializer.h">
+      <Filter>application\Game\Entity\Player\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Player\Editor\AttackEditor.h">
+      <Filter>application\Game\Entity\Player\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Debug\AttackEditorScene.h">
+      <Filter>application\Scene\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\UI\Game\GameSceneUI.h">
+      <Filter>application\Game\UI\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\UI\Game\PlayerUI.h">
+      <Filter>application\Game\UI\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h">
+      <Filter>Engine\Collider\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Collider\ColliderConcept.h">
+      <Filter>Engine\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\3d\Ocean\OceanWaveCompute.h">
+      <Filter>Engine\Graphics\3D\Oshan</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Base\UAV.h">
+      <Filter>Engine\Graphics\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\Editor\ParticleEditor.h">
+      <Filter>Engine\System\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Particle\ParticleFactory.h">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Particle\ParticleParameter.h">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Particle\ParticleCommon.h">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Particle\ParticleGroup.h">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Particle\ParticleSetUp.h">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.h">
+      <Filter>Engine\Graphics\Pipeline\CS</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h">
+      <Filter>Engine\Graphics\Pipeline\CS</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Pipeline\GS\BlendState.h">
+      <Filter>Engine\Graphics\Pipeline\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Pipeline\GS\DepthStencil.h">
+      <Filter>Engine\Graphics\Pipeline\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Pipeline\GS\GSPSOCommon.h">
+      <Filter>Engine\Graphics\Pipeline\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Pipeline\GS\GSRootSignature.h">
+      <Filter>Engine\Graphics\Pipeline\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Pipeline\GS\InputLayout.h">
+      <Filter>Engine\Graphics\Pipeline\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Pipeline\GS\RasterizerState.h">
+      <Filter>Engine\Graphics\Pipeline\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h">
+      <Filter>Engine\Graphics\Pipeline</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -28177,7 +28298,10 @@ File Path: Project/FallenAscent.vcxproj.filters
       <Filter>Resource\Shaders\OffScreen</Filter>
     </None>
     <None Include="Resource\Shaders\3D\Ocean.hlsli">
-      <Filter>Resource\Shaders\Oshan</Filter>
+      <Filter>Resource\Shaders\3D</Filter>
+    </None>
+    <None Include="Resource\Shaders\2D\Obj2D.hlsli">
+      <Filter>Resource\Shaders\2D</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -28313,12 +28437,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <Filter Include="Engine\Graphics\OffScreen\Effect">
       <UniqueIdentifier>{bdcd1d96-d618-47c3-9488-851f0e350bac}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Graphics\Particle\Base">
-      <UniqueIdentifier>{c51d0923-1ca7-473c-98ef-c645c2b6ae80}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\Graphics\Particle\Derivative">
-      <UniqueIdentifier>{75067441-708b-45c3-98e3-2f3618ea31f4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\System\ImGui">
       <UniqueIdentifier>{1ba47b9d-0e95-4338-9f1f-64d69dece035}</UniqueIdentifier>
     </Filter>
@@ -28349,29 +28467,14 @@ File Path: Project/FallenAscent.vcxproj.filters
     <Filter Include="Engine\Scene\Transition">
       <UniqueIdentifier>{b8f4e3a6-2da5-413a-9528-f6cef748c013}</UniqueIdentifier>
     </Filter>
-    <Filter Include="application\UI">
-      <UniqueIdentifier>{40deb47d-99c0-4514-b379-f9406b1914b1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\UI\Title">
-      <UniqueIdentifier>{3a1fbc3e-6980-4309-b497-63300e33f2de}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\Graphics\2D\Base">
       <UniqueIdentifier>{9e5b3652-441f-4ca3-a932-4206d1d0aaeb}</UniqueIdentifier>
     </Filter>
     <Filter Include="Engine\Graphics\2D\Sprite">
       <UniqueIdentifier>{2562fb89-85bb-4bad-9689-08236e5b4917}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource\Shaders\Oshan">
-      <UniqueIdentifier>{2dce79e3-2a1e-4233-b40a-999ce9144972}</UniqueIdentifier>
-    </Filter>
     <Filter Include="application\Game\Animation">
       <UniqueIdentifier>{085e0d29-b6e3-4284-83a5-a67f8d2ef173}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Transition">
-      <UniqueIdentifier>{ac3e439e-48cc-4acf-b0fc-9847e8a02d95}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\Graphics\Oshan">
-      <UniqueIdentifier>{393687b5-6d3a-4c5f-bea1-cc4c155d66f4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Engine\System\DeltaTime">
       <UniqueIdentifier>{a33a4348-398a-4784-ae8d-6b689a04db3d}</UniqueIdentifier>
@@ -28384,6 +28487,51 @@ File Path: Project/FallenAscent.vcxproj.filters
     </Filter>
     <Filter Include="Engine\Graphics\3D\Oshan">
       <UniqueIdentifier>{162736ff-601d-43a0-a358-c07c7e42961a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\Component">
+      <UniqueIdentifier>{bfbf771b-4eb8-4f58-9987-8362cb1d9598}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Player\Component">
+      <UniqueIdentifier>{343c8ccc-cc5a-47b8-a85a-2136b5da5a63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Object\StageObject">
+      <UniqueIdentifier>{0c7e6c59-aa3d-4334-ace6-11a71d75705f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Scene\Debug">
+      <UniqueIdentifier>{1a00492b-fdba-4f06-8a08-5fe73fbd7f3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Scene\Transition\Base">
+      <UniqueIdentifier>{3fe90dc3-309c-4aee-99f8-5f17af7419de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Player\Editor">
+      <UniqueIdentifier>{2c3ac7a9-47d3-448e-be28-647f35a1a93d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Player\Editor\Data">
+      <UniqueIdentifier>{65879f64-944d-4769-8aa5-ce77abb979cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Debug">
+      <UniqueIdentifier>{a6189ce8-a125-4857-ac37-26ab038ad5ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\UI">
+      <UniqueIdentifier>{40deb47d-99c0-4514-b379-f9406b1914b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\UI\Title">
+      <UniqueIdentifier>{3a1fbc3e-6980-4309-b497-63300e33f2de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\UI\Game">
+      <UniqueIdentifier>{1d39f8ad-5b70-4b35-8c83-53ceb7761d60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Collider\Collision">
+      <UniqueIdentifier>{e1f62b08-7016-43be-afbb-18c9707db47f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System\Editor">
+      <UniqueIdentifier>{f01271c9-5e87-4680-8aa6-3bbf2793f7f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Graphics\Pipeline\CS">
+      <UniqueIdentifier>{88230118-c849-41ac-8e75-8b8197f7cf32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Graphics\Pipeline\GS">
+      <UniqueIdentifier>{dc1cb9b9-66c2-43e0-8651-071a93355ec9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
@@ -31813,11 +31961,6 @@ void GameClearAnimation::Initialize(Player* player, GameCamera* camera) {
 	// 終了位置のオフセット
 	float finalDistance = 30.0f;
 	float finalHeight = 0.08f;
-	//Vector3 endOffset = {
-	//	-cameraInfo_.playerForward.x * finalDistance,
-	//	finalHeight,
-	//	-cameraInfo_.playerForward.z * finalDistance
-	//};
 	Vector3 endOffset = { 0.0f, -finalHeight, -finalDistance };
 	// 開始角度と距離を計算
 	cameraInfo_.startAngle = atan2f(startOffset.x, startOffset.z);
@@ -32146,7 +32289,7 @@ void GameOverAnimation::Initialize(GameCamera* camera) {
     blackSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 0.0f }); // 黒、初期は透明
 
     // 状態の初期化
-    phase_ = Phase::ApproceCamera;
+    phase_ = Phase::AooroachCamera;
     isCompleted_ = false;
     phaseTimer_ = 0.0f;
     spriteAlpha_ = 0.0f;
@@ -32169,7 +32312,7 @@ void GameOverAnimation::Update() {
     }
 
     switch (phase_) {
-    case Phase::ApproceCamera:
+    case Phase::AooroachCamera:
         UpdateApproachCamera();
         break;
 
@@ -32214,7 +32357,7 @@ void GameOverAnimation::Draw() {
 /// リセット
 ///-------------------------------------------///
 void GameOverAnimation::Reset() {
-    phase_ = Phase::ApproceCamera;
+    phase_ = Phase::AooroachCamera;
     isCompleted_ = false;
     phaseTimer_ = 0.0f;
     spriteAlpha_ = 0.0f;
@@ -32393,11 +32536,11 @@ private:
 
 	/// ===フェーズ管理=== ///
 	enum class Phase {
-		ApproceCamera, // カメラを近づける
+		AooroachCamera, // カメラを近づける
 		DrawSprite,    // スプライトを表示する
 		ShakeSprite    // スプライトをシェイクさせる
 	};
-	Phase phase_ = Phase::ApproceCamera;
+	Phase phase_ = Phase::AooroachCamera;
 
 private:
 
@@ -32465,11 +32608,6 @@ void StartAnimation::Initialize(Player* player, GameCamera* camera) {
 	cameraRotInfo_.cameraEndRot = { 0.5f, 0.0f, 0.0f, 1.1f };
 	cameraRotInfo_.rotationDuration = 1.5f;
 	cameraRotInfo_.rotationStartTime = 1.5f;
-
-	/// ===Playerの初期位置を設定=== ///
-	/*if (player_) {
-		player_->SetTranslate(playerStartPos_);
-	}*/
 
 	/// ===カメラの初期位置を設定=== ///
 	if (camera_) {
@@ -33406,11 +33544,6 @@ File Path: Project/application/Game/Entity/Enemy/Base/BaseEnemy.h
 /// ===前方宣言=== ///
 class Player;
 class ParticleGroup;
-
-/// ===StateType=== ///
-enum class StateType {
-	Attack
-};
 
 ///=====================================================/// 
 /// Enemy
@@ -42611,11 +42744,11 @@ const wchar_t kWindowTitle[] = L"Fallen Ascent";
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 宣言
-	Framework* game = new MyGame();
+	std::unique_ptr<Framework> game = std::make_unique<MyGame>();
 	// 実行
 	game->Run(kWindowTitle);
 	// 解放
-	delete game;
+	game.reset();
 
 	return 0;
 }
