@@ -2,6 +2,8 @@
 /// ===Include=== ///
 // Engine
 #include "Engine/Core/ComPtr.h"
+// C++
+#include <memory>
 // waveの読み込み
 #include <xaudio2.h> 
 // mp3の読み込み
@@ -23,7 +25,7 @@ struct SoundData {
 	// 波形フォーマット
 	WAVEFORMATEX wfex;
 	// バッファの先頭アドレス
-	BYTE* pBuffer;
+	std::unique_ptr<BYTE[]> pBuffer;
 	// バッファのサイズ
 	unsigned int bufferSize;
 };
@@ -39,7 +41,7 @@ public:
 	/// <summary>
 	/// 初期化処理
 	/// </summary>
-	void Initialze();
+	void Initialize();
 
 public:/// ===関数=== ///
 
@@ -100,7 +102,7 @@ private: /// ===変数=== ///
 	std::unordered_map<std::string, IXAudio2SourceVoice*> sourceVoices_;
 
 	// 音声データ
-	std::unordered_map<std::string, SoundData> soundDatas_;
+	std::unordered_map<std::string, SoundData> soundDates_;
 
 private: /// ===関数=== ///
 
@@ -114,8 +116,8 @@ private: /// ===関数=== ///
 	/// <summary>
 	/// MP3ファイルの読み込み処理
 	/// </summary>
-	/// <param name="filenam読み込むMP3ファイルのパスまたはファイル名。e"></param>
-	/// <retur読み込まれた音声データを表すSoundData。読み込みやデコードに失敗した場合の挙動は実装依存です。ns></returns>
+	/// <param name="filename読み込むMP3ファイルのパスまたはファイル名。e"></param>
+	/// <returns>読み込まれた音声データを表すSoundData。読み込みやデコードに失敗した場合の挙動は実装依存です。ns></returns>
 	SoundData LoadMP3(const std::string& filename);
 
 	/// <summary>

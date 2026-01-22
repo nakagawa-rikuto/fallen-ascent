@@ -44,11 +44,6 @@ void StartAnimation::Initialize(Player* player, GameCamera* camera) {
 	cameraRotInfo_.rotationDuration = 1.5f;
 	cameraRotInfo_.rotationStartTime = 1.5f;
 
-	/// ===Playerの初期位置を設定=== ///
-	/*if (player_) {
-		player_->SetTranslate(playerStartPos_);
-	}*/
-
 	/// ===カメラの初期位置を設定=== ///
 	if (camera_) {
 		camera_->SetTranslate(cameraRotInfo_.cameraStartPos);

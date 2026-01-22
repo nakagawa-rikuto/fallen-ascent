@@ -51,7 +51,7 @@ void GameOverAnimation::Initialize(GameCamera* camera) {
     blackSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 0.0f }); // 黒、初期は透明
 
     // 状態の初期化
-    phase_ = Phase::ApproceCamera;
+    phase_ = Phase::AooroachCamera;
     isCompleted_ = false;
     phaseTimer_ = 0.0f;
     spriteAlpha_ = 0.0f;
@@ -74,7 +74,7 @@ void GameOverAnimation::Update() {
     }
 
     switch (phase_) {
-    case Phase::ApproceCamera:
+    case Phase::AooroachCamera:
         UpdateApproachCamera();
         break;
 
@@ -119,7 +119,7 @@ void GameOverAnimation::Draw() {
 /// リセット
 ///-------------------------------------------///
 void GameOverAnimation::Reset() {
-    phase_ = Phase::ApproceCamera;
+    phase_ = Phase::AooroachCamera;
     isCompleted_ = false;
     phaseTimer_ = 0.0f;
     spriteAlpha_ = 0.0f;

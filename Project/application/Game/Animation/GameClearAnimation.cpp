@@ -29,11 +29,6 @@ void GameClearAnimation::Initialize(Player* player, GameCamera* camera) {
 	// 終了位置のオフセット
 	float finalDistance = 30.0f;
 	float finalHeight = 0.08f;
-	//Vector3 endOffset = {
-	//	-cameraInfo_.playerForward.x * finalDistance,
-	//	finalHeight,
-	//	-cameraInfo_.playerForward.z * finalDistance
-	//};
 	Vector3 endOffset = { 0.0f, -finalHeight, -finalDistance };
 	// 開始角度と距離を計算
 	cameraInfo_.startAngle = atan2f(startOffset.x, startOffset.z);

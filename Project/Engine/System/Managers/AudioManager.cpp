@@ -35,7 +35,7 @@ AudioManager::~AudioManager() {
 ///-------------------------------------------/// 
 ///
 ///-------------------------------------------///
-void AudioManager::Initialze() {
+void AudioManager::Initialize() {
 	HRESULT result;
 
 	// XAudioエンジンのインスタンスを生成
@@ -52,13 +52,13 @@ void AudioManager::Initialze() {
 ///-------------------------------------------///
 void AudioManager::Load(const std::string& key, const std::string& filename, bool isMP3) {
 	// 既に存在する場合はスキップ
-	if (soundDatas_.find(key) != soundDatas_.end()) {
+	if (soundDates_.find(key) != soundDates_.end()) {
 		return; // 何もしない
 	}
 	if (isMP3) {
-		soundDatas_[key] = LoadMP3(filename);
+		soundDates_[key] = LoadMP3(filename);
 	} else {
-		soundDatas_[key] = LoadWave(filename);
+		soundDates_[key] = LoadWave(filename);
 	}
 }
 
@@ -66,10 +66,10 @@ void AudioManager::Load(const std::string& key, const std::string& filename, boo
 /// 音声データの解放
 ///-------------------------------------------///
 void AudioManager::Unload(const std::string& key) {
-	auto it = soundDatas_.find(key);
-	if (it != soundDatas_.end()) {
+	auto it = soundDates_.find(key);
+	if (it != soundDates_.end()) {
 		UnloadSoundData(it->second);
-		soundDatas_.erase(it);
+		soundDates_.erase(it);
 	}
 }
 
@@ -77,19 +77,19 @@ void AudioManager::Unload(const std::string& key) {
 /// 音声データの一括開放
 ///-------------------------------------------///
 void AudioManager::UnloadAll() {
-	for (auto& pair : soundDatas_) {
+	for (auto& pair : soundDates_) {
 		UnloadSoundData(pair.second);
 	}
-	soundDatas_.clear(); // コンテナをクリア
+	soundDates_.clear(); // コンテナをクリア
 }
 
 ///-------------------------------------------/// 
 /// サウンドの再生
 ///-------------------------------------------///
 void AudioManager::Play(const std::string& key, bool loop) {
-	auto it = soundDatas_.find(key); // 探したkeyを代入
+	auto it = soundDates_.find(key); // 探したkeyを代入
 	
-	assert(it != soundDatas_.end());
+	assert(it != soundDates_.end());
 	HRESULT result;
 
 	// 再生中の音声がある場合は処理をスキップ
@@ -112,7 +112,7 @@ void AudioManager::Play(const std::string& key, bool loop) {
 
 	// 再生する波形データの設定
 	XAUDIO2_BUFFER buf{};
-	buf.pAudioData = it->second.pBuffer;
+	buf.pAudioData = it->second.pBuffer.get();
 	buf.AudioBytes = it->second.bufferSize;
 	buf.Flags = XAUDIO2_END_OF_STREAM;
 
@@ -223,16 +223,16 @@ SoundData AudioManager::LoadWave(const std::string& filename) {
 		file.seekg(data.size, std::ios_base::cur);
 	}
 	// Dataチャンクのデータ部（波形データ）の読み込み
-	char* pBuffer = new char[data.size];
-	file.read(pBuffer, data.size);
+	auto pBuffer = std::make_unique<BYTE[]>(data.size);
+	file.read(reinterpret_cast<char*>(pBuffer.get()), data.size);
 	// Waveファイルを閉じる
 	file.close();
 
 	/// ====読み込んだ音声データをreturn== ///
-	// retrunする為の音声データ
+	// returnする為の音声データ
 	SoundData soundData = {};
 	soundData.wfex = format.fmt;
-	soundData.pBuffer = reinterpret_cast<BYTE*>(pBuffer);
+	soundData.pBuffer = std::move(pBuffer);
 	soundData.bufferSize = data.size;
 
 	return soundData;
@@ -243,14 +243,8 @@ SoundData AudioManager::LoadWave(const std::string& filename) {
 ///-------------------------------------------///
 SoundData AudioManager::LoadMP3(const std::string& filename) {
 
-	//// 通ってない
-	//// === キャッシュの確認と返却 ===
-	//if (auto it = soundDatas_.find(filename); it != soundDatas_.end()) {
-	//	return it->second; // 既にロード済みならキャッシュを返す
-	//}
-
 	/// ===ファイルオープン=== ///
-   // ファイル名を wide 文字列に変換
+    // ファイル名を wide 文字列に変換
 	int wideSize = MultiByteToWideChar(CP_ACP, 0, filename.c_str(), -1, nullptr, 0);
 	std::wstring wideFilename(wideSize, 0);
 	MultiByteToWideChar(CP_ACP, 0, filename.c_str(), -1, &wideFilename[0], wideSize);
@@ -327,18 +321,18 @@ SoundData AudioManager::LoadMP3(const std::string& filename) {
 
 	// Data チャンクのデータ部をセット
 	data.size = static_cast<uint32_t>(buffer.size());
-	char* pBuffer = new char[data.size];
-	memcpy(pBuffer, buffer.data(), data.size);
+	auto pBuffer = std::make_unique<BYTE[]>(data.size);
+	memcpy(pBuffer.get(), buffer.data(), data.size);
 
 	// リソース解放
 	sourceReader->Release();
 	audioType->Release();
 	MFShutdown();
 
-	/// ====読み込んだ音声データを return ==== ///
+	/// ====読み込んだ音声データ==== ///
 	SoundData soundData = {};
 	soundData.wfex = format.fmt; // フォーマットを設定
-	soundData.pBuffer = reinterpret_cast<BYTE*>(pBuffer);
+	soundData.pBuffer = std::move(pBuffer);
 	soundData.bufferSize = data.size;
 
 	return soundData;
@@ -349,8 +343,7 @@ SoundData AudioManager::LoadMP3(const std::string& filename) {
 ///-------------------------------------------///
 void AudioManager::UnloadSoundData(SoundData& soundData) {
 	// バッファのメモリを解放
-	delete[] soundData.pBuffer;
-	soundData.pBuffer = 0;
+	soundData.pBuffer.reset();
 	soundData.bufferSize = 0;
 	soundData.wfex = {};
 }
