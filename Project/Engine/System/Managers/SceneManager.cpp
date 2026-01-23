@@ -4,11 +4,11 @@
 // SceneTransitionManager
 #include "Engine/Scene/Transition/SceneTransitionManager.h"
 // 各シーン
-#include "application/Scene/TitleScene.h"
-#include "application/Scene/SelectScene.h"
-#include "application/Scene/GameScene.h"
-#include "application/Scene/ClearScene.h"
-#include "application/Scene/GameOverScene.h"
+#include "application/Scene/Title/TitleScene.h"
+#include "application/Scene/Select/SelectScene.h"
+#include "application/Scene/Game/GameScene.h"
+#include "application/Scene/Clear/ClearScene.h"
+#include "application/Scene/GameOver/GameOverScene.h"
 #include "Engine/Scene/Debug/ParticleEditorScene.h"
 #include "application/Scene/Debug/AttackEditorScene.h"
 

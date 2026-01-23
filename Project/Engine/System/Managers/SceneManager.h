@@ -7,7 +7,7 @@
 #include "Engine/Scene/AbstractSceneFactory.h"
 // SceneTransitionManager
 #include "Engine/Scene/Transition/SceneTransitionManager.h"
-// Imgui
+// ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
 #endif // USE_IMGUI

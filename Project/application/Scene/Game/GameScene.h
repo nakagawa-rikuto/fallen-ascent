@@ -1,0 +1,89 @@
+#pragma once
+/// ===Include=== ///
+#include "Engine/Scene/IScene.h"
+// Entity
+#include "application/Game/Entity/Player/Player.h"
+#include "application/Game/Entity/Enemy/Manager/EnemyManager.h"
+// Object
+#include "application/Game/Object/GameStage.h"
+// State
+#include "State/Base/GameSceneFadeState.h"
+
+///=====================================================/// 
+/// ゲームシーン
+///=====================================================///
+class GameScene : public IScene {
+public:/// ===メンバ関数=== ///
+
+	GameScene() = default;
+	~GameScene();
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	void Initialize() override;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	void Draw() override;
+
+	/// <summary>
+	/// ゲームシーンのフェード状態を変更します。
+	/// </summary>
+	/// <param name="newState">新しいフェード状態へのユニークポインタ。</param>
+	void ChangState(std::unique_ptr<GameSceneFadeState> newState);
+
+public: /// ===Getter=== ///
+	// Playerの取得
+	Player* GetPlayer() const { return player_.get(); }
+	// EnemyManagerの取得
+	EnemyManager* GetEnemyManager() const { return enemyManager_.get(); }
+
+private:/// ===メンバ変数=== ///
+	/// <summary>
+	/// シーン用
+	/// </summary>
+
+	/// ===Classの宣言=== /// 
+	// Camera
+	std::shared_ptr<GameCamera> camera_;
+	// Player
+	std::unique_ptr<Player> player_;
+	// Enemy
+	std::unique_ptr<EnemyManager> enemyManager_;
+	// Stage
+	std::unique_ptr<GameStage> stage_;
+	// State
+	std::unique_ptr<GameSceneFadeState> currentState_;
+
+	/// ===変数の宣言=== ///
+	// カメラ情報
+	struct CameraInfo {
+		Quaternion rotate = { 0.372f, 0.0f, 0.0f, 1.055f };
+	};
+	CameraInfo cameraInfo_;
+
+private: /// ===メンバ関数=== ///
+
+	/// <summary>
+	/// 配置処理
+	/// </summary>
+	/// <param name="json_name">使用するJsonファイル名</param>
+	void SpawnEntity(const std::string& json_name);
+
+	/// <summary>
+	/// カメラの初期設定
+	/// </summary>
+	void SetUpCamera();
+
+	/// <summary>
+	/// パーティクルの追加
+	/// </summary>
+	void LoadParticle();
+};

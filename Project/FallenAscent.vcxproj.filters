@@ -148,16 +148,16 @@
     <ClCompile Include="application\Drawing\3d\Object3d.cpp">
       <Filter>application\Drawing\3D</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\ClearScene.cpp">
+    <ClCompile Include="application\Scene\Clear\ClearScene.cpp">
       <Filter>application\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\GameOverScene.cpp">
+    <ClCompile Include="application\Scene\GameOver\GameOverScene.cpp">
       <Filter>application\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\SelectScene.cpp">
+    <ClCompile Include="application\Scene\Select\SelectScene.cpp">
       <Filter>application\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\TitleScene.cpp">
+    <ClCompile Include="application\Scene\Title\TitleScene.cpp">
       <Filter>application\Scene</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Camera\FollowCamera.cpp">
@@ -505,7 +505,7 @@
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp">
       <Filter>application\Scene\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\GameScene.cpp">
+    <ClCompile Include="application\Scene\Game\GameScene.cpp">
       <Filter>application\Scene</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp">
@@ -571,6 +571,13 @@
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
+    <ClCompile Include="application\Scene\Game\State\Base\GameSceneFadeState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneInitializeState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneStartAnimationState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneInGameState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneGameOverAnimationState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneGameClearState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneExitState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -633,19 +640,19 @@
     <ClInclude Include="application\Drawing\3d\Object3d.h">
       <Filter>application\Drawing\3D</Filter>
     </ClInclude>
-    <ClInclude Include="application\Scene\ClearScene.h">
+    <ClInclude Include="application\Scene\Clear\ClearScene.h">
       <Filter>application\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="application\Scene\GameOverScene.h">
+    <ClInclude Include="application\Scene\GameOver\GameOverScene.h">
       <Filter>application\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="application\Scene\GameScene.h">
+    <ClInclude Include="application\Scene\Game\GameScene.h">
       <Filter>application\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="application\Scene\SelectScene.h">
+    <ClInclude Include="application\Scene\Select\SelectScene.h">
       <Filter>application\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="application\Scene\TitleScene.h">
+    <ClInclude Include="application\Scene\Title\TitleScene.h">
       <Filter>application\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Camera\FollowCamera.h">
@@ -1104,6 +1111,13 @@
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
+    <ClInclude Include="application\Scene\Game\State\Base\GameSceneFadeState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneInitializeState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneStartAnimationState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneInGameState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneGameOverAnimationState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneGameClearState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneExitState.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
