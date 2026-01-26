@@ -430,23 +430,48 @@
 └── └── └──     └── ├── GameSceneUI.h
 └── └── └──     └── ├── PlayerUI.cpp
 └── └── └──     └── └── PlayerUI.h
+└── └── └──     ├── Option/
+└── └── └──     └── ├── OptionUI.cpp
+└── └── └──     └── └── OptionUI.h
+└── └── └──     ├── SpriteBaseScale.h
 └── └── └──     └── Title/
 └── └── └──         ├── TitleUI.cpp
 └── └── └──         └── TitleUI.h
 └── └── └── Scene/
-└── └──     ├── ClearScene.cpp
-└── └──     ├── ClearScene.h
+└── └──     ├── Clear/
+└── └──     └── ├── ClearScene.cpp
+└── └──     └── └── ClearScene.h
 └── └──     ├── Debug/
 └── └──     └── ├── AttackEditorScene.cpp
 └── └──     └── └── AttackEditorScene.h
-└── └──     ├── GameOverScene.cpp
-└── └──     ├── GameOverScene.h
-└── └──     ├── GameScene.cpp
-└── └──     ├── GameScene.h
-└── └──     ├── SelectScene.cpp
-└── └──     ├── SelectScene.h
-└── └──     ├── TitleScene.cpp
-└── └──     └── TitleScene.h
+└── └──     ├── Game/
+└── └──     └── ├── GameScene.cpp
+└── └──     └── ├── GameScene.h
+└── └──     └── └── State/
+└── └──     └──     ├── Base/
+└── └──     └──     └── ├── GameSceneFadeState.cpp
+└── └──     └──     └── └── GameSceneFadeState.h
+└── └──     └──     ├── GameSceneExitState.cpp
+└── └──     └──     ├── GameSceneExitState.h
+└── └──     └──     ├── GameSceneGameClearState.cpp
+└── └──     └──     ├── GameSceneGameClearState.h
+└── └──     └──     ├── GameSceneGameOverAnimationState.cpp
+└── └──     └──     ├── GameSceneGameOverAnimationState.h
+└── └──     └──     ├── GameSceneInGameState.cpp
+└── └──     └──     ├── GameSceneInGameState.h
+└── └──     └──     ├── GameSceneInitializeState.cpp
+└── └──     └──     ├── GameSceneInitializeState.h
+└── └──     └──     ├── GameSceneStartAnimationState.cpp
+└── └──     └──     └── GameSceneStartAnimationState.h
+└── └──     ├── GameOver/
+└── └──     └── ├── GameOverScene.cpp
+└── └──     └── └── GameOverScene.h
+└── └──     ├── Select/
+└── └──     └── ├── SelectScene.cpp
+└── └──     └── └── SelectScene.h
+└── └──     └── Title/
+└── └──         ├── TitleScene.cpp
+└── └──         └── TitleScene.h
 └── └── main.cpp
 ================================================================================
 
@@ -17136,14 +17161,8 @@ File Path: Project/Engine/Scene/IScene.cpp
 // Service
 #include "Engine/System/Service/ServiceLocator.h"
 #include "Engine/System/Service/CameraService.h"
-#include "Engine/System/Service/GraphicsResourceGetter.h"
-#include "Engine/System/Service/Loader.h"
-// Object3d
-#include "Engine/Graphics/3d/Model/Model.h"
 // Line
 #include "Engine/Graphics/3d/Line/LineObject3D.h"
-// Math
-#include "Math/sMath.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -17511,11 +17530,11 @@ File Path: Project/Engine/Scene/SceneFactory.cpp
 #include "SceneFactory.h"
 
 // 各シーン
-#include "application/Scene/TitleScene.h"
-#include "application/Scene/SelectScene.h"
-#include "application/Scene/GameScene.h"
-#include "application/Scene/ClearScene.h"
-#include "application/Scene/GameOverScene.h"
+#include "application/Scene/Title/TitleScene.h"
+#include "application/Scene/Select/SelectScene.h"
+#include "application/Scene/Game/GameScene.h"
+#include "application/Scene/Clear/ClearScene.h"
+#include "application/Scene/GameOver/GameOverScene.h"
 #include "Engine/Scene/Debug/ParticleEditorScene.h"
 #include "application/Scene/Debug/AttackEditorScene.h"
 
@@ -24176,11 +24195,11 @@ File Path: Project/Engine/System/Managers/SceneManager.cpp
 // SceneTransitionManager
 #include "Engine/Scene/Transition/SceneTransitionManager.h"
 // 各シーン
-#include "application/Scene/TitleScene.h"
-#include "application/Scene/SelectScene.h"
-#include "application/Scene/GameScene.h"
-#include "application/Scene/ClearScene.h"
-#include "application/Scene/GameOverScene.h"
+#include "application/Scene/Title/TitleScene.h"
+#include "application/Scene/Select/SelectScene.h"
+#include "application/Scene/Game/GameScene.h"
+#include "application/Scene/Clear/ClearScene.h"
+#include "application/Scene/GameOver/GameOverScene.h"
 #include "Engine/Scene/Debug/ParticleEditorScene.h"
 #include "application/Scene/Debug/AttackEditorScene.h"
 
@@ -24363,7 +24382,7 @@ File Path: Project/Engine/System/Managers/SceneManager.h
 #include "Engine/Scene/AbstractSceneFactory.h"
 // SceneTransitionManager
 #include "Engine/Scene/Transition/SceneTransitionManager.h"
-// Imgui
+// ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
 #endif // USE_IMGUI
@@ -26617,7 +26636,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\Manager\EnemyManager.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp" />
-    <ClCompile Include="application\Scene\GameScene.cpp" />
+    <ClCompile Include="application\Scene\Game\GameScene.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.cpp" />
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Editor\AttackDataSerializer.cpp" />
@@ -26660,16 +26679,23 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp" />
     <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp" />
     <ClCompile Include="application\Game\Object\GameObject\GameObject.cpp" />
+    <ClCompile Include="application\Scene\Game\State\Base\GameSceneFadeState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneInitializeState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneStartAnimationState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneInGameState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneGameOverAnimationState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneGameClearState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneExitState.cpp" />
     <ClCompile Include="Math\EasingMath.cpp" />
     <ClCompile Include="Engine\System\Managers\AnimationManager.cpp" />
     <ClCompile Include="Engine\System\Service\AudioService.cpp" />
     <ClCompile Include="Engine\System\Input\Controller.cpp" />
     <ClCompile Include="Engine\System\Managers\CSVManager.cpp" />
     <ClCompile Include="Engine\Scene\AbstractSceneFactory.cpp" />
-    <ClCompile Include="application\Scene\ClearScene.cpp" />
+    <ClCompile Include="application\Scene\Clear\ClearScene.cpp" />
     <ClCompile Include="Engine\Scene\Framework.cpp" />
     <ClCompile Include="Engine\System\Managers\AudioManager.cpp" />
-    <ClCompile Include="application\Scene\GameOverScene.cpp" />
+    <ClCompile Include="application\Scene\GameOver\GameOverScene.cpp" />
     <ClCompile Include="Engine\System\Managers\CameraManager.cpp" />
     <ClCompile Include="Engine\Camera\NormalCamera.cpp" />
     <ClCompile Include="Engine\Core\DXCommon.cpp" />
@@ -26717,8 +26743,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\2d\Sprite\SpriteCommon.cpp" />
     <ClCompile Include="Engine\Scene\MyGame.cpp" />
     <ClCompile Include="Engine\System\Managers\SceneManager.cpp" />
-    <ClCompile Include="application\Scene\SelectScene.cpp" />
-    <ClCompile Include="application\Scene\TitleScene.cpp" />
+    <ClCompile Include="application\Scene\Select\SelectScene.cpp" />
+    <ClCompile Include="application\Scene\Title\TitleScene.cpp" />
     <ClCompile Include="Engine\Scene\SceneFactory.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleGroup.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleSetUp.cpp" />
@@ -26773,8 +26799,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp" />
     <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp" />
+    <ClCompile Include="application\Game\UI\Option\OptionUI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="application\Game\UI\SpriteBaseScale.h" />
     <ClInclude Include="Engine\Collider\ColliderConcept.h" />
     <ClInclude Include="application\Game\Entity\Player\Editor\Data\AttackData.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
@@ -26831,6 +26859,13 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Animation\GameClearAnimation.h" />
     <ClInclude Include="application\Game\UI\Game\GameSceneUI.h" />
     <ClInclude Include="application\Game\Object\GameObject\GameObject.h" />
+    <ClInclude Include="application\Scene\Game\State\Base\GameSceneFadeState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneInitializeState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneStartAnimationState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneInGameState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneGameOverAnimationState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneGameClearState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneExitState.h" />
     <ClInclude Include="Math\EasingMath.h" />
     <ClInclude Include="Engine\System\Managers\AnimationManager.h" />
     <ClInclude Include="Engine\DataInfo\AnimationData.h" />
@@ -26840,10 +26875,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\System\Managers\CSVManager.h" />
     <ClInclude Include="Engine\DataInfo\ParticleData.h" />
     <ClInclude Include="Engine\Scene\AbstractSceneFactory.h" />
-    <ClInclude Include="application\Scene\ClearScene.h" />
+    <ClInclude Include="application\Scene\Clear\ClearScene.h" />
     <ClInclude Include="Engine\Scene\Framework.h" />
     <ClInclude Include="Engine\System\Managers\AudioManager.h" />
-    <ClInclude Include="application\Scene\GameOverScene.h" />
+    <ClInclude Include="application\Scene\GameOver\GameOverScene.h" />
     <ClInclude Include="Engine\System\Managers\CameraManager.h" />
     <ClInclude Include="Engine\Camera\NormalCamera.h" />
     <ClInclude Include="Engine\DataInfo\CData.h" />
@@ -26877,7 +26912,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Core\WinApp.h" />
     <ClInclude Include="Engine\Core\ComPtr.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\GS\DepthStencil.h" />
-    <ClInclude Include="application\Scene\GameScene.h" />
+    <ClInclude Include="application\Scene\Game\GameScene.h" />
     <ClInclude Include="application\Drawing\2d\Sprite.h" />
     <ClInclude Include="Engine\System\Managers\TextureManager.h" />
     <ClInclude Include="Engine\Core\StringUtility.h" />
@@ -26896,8 +26931,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\2d\Sprite\SpriteCommon.h" />
     <ClInclude Include="Engine\Scene\MyGame.h" />
     <ClInclude Include="Engine\System\Managers\SceneManager.h" />
-    <ClInclude Include="application\Scene\SelectScene.h" />
-    <ClInclude Include="application\Scene\TitleScene.h" />
+    <ClInclude Include="application\Scene\Select\SelectScene.h" />
+    <ClInclude Include="application\Scene\Title\TitleScene.h" />
     <ClInclude Include="Engine\Scene\SceneFactory.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleGroup.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleSetUp.h" />
@@ -26952,6 +26987,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h" />
     <ClInclude Include="application\Game\UI\Game\PlayerUI.h" />
+    <ClInclude Include="application\Game\UI\Option\OptionUI.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -27318,16 +27354,16 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Drawing\3d\Object3d.cpp">
       <Filter>application\Drawing\3D</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\ClearScene.cpp">
+    <ClCompile Include="application\Scene\Clear\ClearScene.cpp">
       <Filter>application\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\GameOverScene.cpp">
+    <ClCompile Include="application\Scene\GameOver\GameOverScene.cpp">
       <Filter>application\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\SelectScene.cpp">
+    <ClCompile Include="application\Scene\Select\SelectScene.cpp">
       <Filter>application\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\TitleScene.cpp">
+    <ClCompile Include="application\Scene\Title\TitleScene.cpp">
       <Filter>application\Scene</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Camera\FollowCamera.cpp">
@@ -27675,7 +27711,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp">
       <Filter>application\Scene\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\GameScene.cpp">
+    <ClCompile Include="application\Scene\Game\GameScene.cpp">
       <Filter>application\Scene</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp">
@@ -27741,6 +27777,14 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
+    <ClCompile Include="application\Scene\Game\State\Base\GameSceneFadeState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneInitializeState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneStartAnimationState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneInGameState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneGameOverAnimationState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneGameClearState.cpp" />
+    <ClCompile Include="application\Scene\Game\State\GameSceneExitState.cpp" />
+    <ClCompile Include="application\Game\UI\Option\OptionUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -27803,19 +27847,19 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Drawing\3d\Object3d.h">
       <Filter>application\Drawing\3D</Filter>
     </ClInclude>
-    <ClInclude Include="application\Scene\ClearScene.h">
+    <ClInclude Include="application\Scene\Clear\ClearScene.h">
       <Filter>application\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="application\Scene\GameOverScene.h">
+    <ClInclude Include="application\Scene\GameOver\GameOverScene.h">
       <Filter>application\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="application\Scene\GameScene.h">
+    <ClInclude Include="application\Scene\Game\GameScene.h">
       <Filter>application\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="application\Scene\SelectScene.h">
+    <ClInclude Include="application\Scene\Select\SelectScene.h">
       <Filter>application\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="application\Scene\TitleScene.h">
+    <ClInclude Include="application\Scene\Title\TitleScene.h">
       <Filter>application\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Camera\FollowCamera.h">
@@ -28274,6 +28318,15 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
+    <ClInclude Include="application\Scene\Game\State\Base\GameSceneFadeState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneInitializeState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneStartAnimationState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneInGameState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneGameOverAnimationState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneGameClearState.h" />
+    <ClInclude Include="application\Scene\Game\State\GameSceneExitState.h" />
+    <ClInclude Include="application\Game\UI\Option\OptionUI.h" />
+    <ClInclude Include="application\Game\UI\SpriteBaseScale.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -32602,18 +32655,12 @@ void StartAnimation::Initialize(Player* player, GameCamera* camera) {
 	fallInfo_.playerEndPos = { 0.0f, 1.0f, 0.0f };
 	fallInfo_.FallingDuration = 1.5f;
 	// カメラ回転アニメーション情報
-	cameraRotInfo_.cameraStartPos = { 0.0f, 5.0f, 15.0f };
+	cameraRotInfo_.cameraStartPos = camera_->GetTranslate();
+	cameraRotInfo_.cameraStartRot = camera_->GetRotate();
 	cameraRotInfo_.cameraEndPos = { 0.0f, 70.0f, -60.0f };
-	cameraRotInfo_.cameraStartRot = { 0.0f, 0.0f, 0.0f, 1.0f };
 	cameraRotInfo_.cameraEndRot = { 0.5f, 0.0f, 0.0f, 1.1f };
 	cameraRotInfo_.rotationDuration = 1.5f;
 	cameraRotInfo_.rotationStartTime = 1.5f;
-
-	/// ===カメラの初期位置を設定=== ///
-	if (camera_) {
-		camera_->SetTranslate(cameraRotInfo_.cameraStartPos);
-		camera_->SetRotate(cameraRotInfo_.cameraStartRot);
-	}
 }
 
 ///-------------------------------------------/// 
@@ -38554,7 +38601,7 @@ private:
     int selectedAttackIndex_ = -1;                // 選択中の攻撃インデックス
 
     /// ===ファイル管理=== ///
-    static constexpr const char* kDefaultSavePath = "Resource/Json/Attacks";
+    static constexpr const char* kDefaultSavePath = "Resource/Json/Attacks/";
     char filePathBuffer_[256];                    // ファイルパス入力バッファ
     std::vector<std::string> availablePresets_;   // 利用可能なプリセットリスト
     std::unordered_map<int, std::string> attackFilePaths_; // 
@@ -40959,8 +41006,8 @@ File Path: Project/application/Game/UI/Game/PlayerUI.cpp
 #include "PlayerUI.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
-// Service
-#include "Engine/System/Service/GraphicsResourceGetter.h"
+// SpriteBaseScale 
+#include "application/Game/UI/SpriteBaseScale.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -40986,12 +41033,8 @@ void PlayerUI::Initialize() {
 		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
 	};
 	
-	/// ===Scale=== ///
-	// 基準解像度
-	constexpr float BASE_WIDTH = 1920.0f;
-	constexpr float BASE_HEIGHT = 1080.0f;
-	// Scale
-	scale_ = { windowSize.x / BASE_WIDTH, windowSize.y / BASE_HEIGHT };
+	/// ===基準スケール=== ///
+	scale_ = GetBaseScale();
 
 	/// ===位置=== ///
 	// 基準点
@@ -41272,21 +41315,515 @@ private:
 
 
 ============================================================
+File Path: Project/application/Game/UI/Option/OptionUI.cpp
+============================================================
+#include "OptionUI.h"
+// SpriteBaseScale
+#include "application/Game/UI/SpriteBaseScale.h"
+
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+OptionUI::~OptionUI() {
+	// スプライトのリセット
+	dimSprite_.reset();
+	optionMenuSprite_.reset();
+}
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void OptionUI::Initialize() {
+
+	/// ===ウィンドウサイズの取得=== ///
+	Vector2 windowSize = {
+		static_cast<float>(GraphicsResourceGetter::GetWindowWidth()),
+		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
+	};
+
+	/// ===基準スケール=== ///
+	scale_ = GetBaseScale();
+
+	// 薄暗いオーバーレイ
+	dimSprite_ = std::make_unique<Sprite>();
+	dimSprite_->Initialize("uvChecker");
+	dimSprite_->SetPosition({ 0.0f, 0.0f });
+	dimSprite_->SetSize({ windowSize.x, windowSize.y });
+	dimSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 0.7f }); // 半透明の黒
+	dimSprite_->Update();
+
+	// オプションメニュー
+	optionMenuSprite_ = std::make_unique<Sprite>();
+	optionMenuSprite_->Initialize("uvChecker");
+	optionMenuSprite_->SetPosition({ windowSize.x / 2.0f, windowSize.y / 2.0f });
+	optionMenuSprite_->SetSize({ 500.0f * scale_.x, 400.0f * scale_.y });
+	optionMenuSprite_->SetAnchorPoint({ 0.5f, 0.5f });
+	optionMenuSprite_->SetColor({ 0.3f, 0.3f, 0.5f, 1.0f }); // 青みがかった色
+	optionMenuSprite_->Update();
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void OptionUI::Update() {}
+
+///-------------------------------------------/// 
+/// 描画処理
+///-------------------------------------------///
+void OptionUI::Draw() {
+	dimSprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
+	optionMenuSprite_->Draw(GroundType::Front);
+}
+
+============================================================
+File Path: Project/application/Game/UI/Option/OptionUI.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// Sprite
+#include "application/Drawing/2d/Sprite.h"
+// C++
+#include <memory>
+
+///=====================================================/// 
+/// オプションUIクラス
+///=====================================================///
+class OptionUI {
+public:
+	OptionUI() = default;
+	~OptionUI();
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	void Initialize();
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update();
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	void Draw();
+
+private: /// ===メンバ変数=== ///
+
+	/// ===スプライト=== ///
+	std::unique_ptr<Sprite> dimSprite_;        // 薄暗いオーバーレイ
+	std::unique_ptr<Sprite> optionMenuSprite_; // オプションメニュー
+
+	/// ===参照スケール倍率=== ///
+	Vector2 scale_ = { 1.0f, 1.0f };
+};
+
+
+
+============================================================
+File Path: Project/application/Game/UI/SpriteBaseScale.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// Vector2
+#include "Math/Vector2.h"
+// Service
+#include "Engine/System/Service/GraphicsResourceGetter.h"
+
+///-------------------------------------------/// 
+/// 基準スケールの取得
+///-------------------------------------------///
+inline Vector2 GetBaseScale() {
+	// 基準解像度
+	constexpr float BASE_WIDTH = 1920.0f;
+	constexpr float BASE_HEIGHT = 1080.0f;
+	// ウィンドウサイズの取得
+	Vector2 windowSize = {
+		static_cast<float>(GraphicsResourceGetter::GetWindowWidth()),
+		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
+	};
+	// スケール計算
+	Vector2 scale = { windowSize.x / BASE_WIDTH, windowSize.y / BASE_HEIGHT };
+	return scale;
+}
+
+
+
+
+============================================================
 File Path: Project/application/Game/UI/Title/TitleUI.cpp
 ============================================================
 #include "TitleUI.h"
+// SpriteBaseScale
+#include "application/Game/UI/SpriteBaseScale.h"
+// Service
+#include "Engine/System/Service/InputService.h"
 
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+TitleUI::~TitleUI() {
+	// スプライトのリセット
+	bgSprite_.reset();
+	bgKiriSprite_.reset();
+	titleSprite_.reset();
+	selectSprite_.start_.reset();
+	selectSprite_.option_.reset();
+	selectSprite_.exit_.reset();
+	selectSprite_.overlay_.reset();
+	// OptionUIのリセット
+	optionUI_.reset();
+}
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void TitleUI::Initialize() {
+	/// ===ウィンドウサイズの取得=== ///
+	Vector2 windowSize = {
+		static_cast<float>(GraphicsResourceGetter::GetWindowWidth()),
+		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
+	};
+
+	/// ===基準スケール=== ///
+	scale_ = GetBaseScale();
+
+	/// ===基準値の設定=== ///
+	spaceY_ = windowSize.y / 12.0f; // メニュー項目間の垂直スペース
+	startPos_ = { // 開始項目のY位置
+		windowSize.x / 2.0f,
+		windowSize.y / 2.0f + windowSize.y / 8.0f
+	};
+
+	/// ===スプライトの初期化=== ///
+	// 背景スプライト
+	bgSprite_ = std::make_unique<Sprite>();
+	bgSprite_->Initialize("TitleBG");
+	bgSprite_->SetPosition({ 0.0f, 0.0f });
+	bgSprite_->SetSize({ windowSize.x, windowSize.y });
+	bgSprite_->Update();
+
+	// 背景(霧)スプライト
+	bgKiriSprite_ = std::make_unique<Sprite>();
+	bgKiriSprite_->Initialize("TitleBGKiri");
+	bgKiriSprite_->SetPosition({ 0.0f, 0.0f });
+	bgKiriSprite_->SetSize({ windowSize.x, windowSize.y });
+	bgKiriSprite_->Update();
+
+	// タイトルスプライト
+	titleSprite_ = std::make_unique<Sprite>();
+	titleSprite_->Initialize("Title");
+	titleSprite_->SetPosition({ startPos_.x, windowSize.y / 4.0f });
+	titleSprite_->SetSize({ 1000.0f * scale_.x, 1000.0f * scale_.y });
+	titleSprite_->SetAnchorPoint({ 0.5f, 0.5f });
+	titleSprite_->Update();
+
+	// 開始スプライト
+	selectSprite_.start_ = std::make_unique<Sprite>();
+	selectSprite_.start_->Initialize("Start");
+	selectSprite_.start_->SetPosition({ startPos_.x, startPos_.y });
+	selectSprite_.start_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
+	selectSprite_.start_->SetAnchorPoint({ 0.5f, 0.5f });
+	selectSprite_.start_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 未選択は灰色
+	selectSprite_.start_->Update();
+
+	// オプションスプライト
+	selectSprite_.option_ = std::make_unique<Sprite>();
+	selectSprite_.option_->Initialize("Option");
+	selectSprite_.option_->SetPosition({ startPos_.x, startPos_.y + spaceY_ });
+	selectSprite_.option_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
+	selectSprite_.option_->SetAnchorPoint({ 0.5f, 0.5f });
+	selectSprite_.option_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 未選択は灰色
+	selectSprite_.option_->Update();
+
+	// 終了スプライト
+	selectSprite_.exit_ = std::make_unique<Sprite>();
+	selectSprite_.exit_->Initialize("Exit");
+	selectSprite_.exit_->SetPosition({ startPos_.x, startPos_.y + spaceY_ * 2.0f });
+	selectSprite_.exit_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
+	selectSprite_.exit_->SetAnchorPoint({ 0.5f, 0.5f });
+	selectSprite_.exit_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 未選択は灰色
+	selectSprite_.exit_->Update();
+
+	// 選択オーバーレイスプライト
+	selectSprite_.overlay_ = std::make_unique<Sprite>();
+	selectSprite_.overlay_->Initialize("OverLay"); // テクスチャファイルパスは適宜変更
+	selectSprite_.overlay_->SetPosition({ startPos_.x, startPos_.y }); // 初期位置は開始の位置
+	selectSprite_.overlay_->SetSize({ 400.0f * scale_.x, 80.0f * scale_.y }); // メニュー項目より少し大きめ
+	selectSprite_.overlay_->SetAnchorPoint({ 0.5f, 0.5f });
+	selectSprite_.overlay_->SetColor({ 0.8f, 0.8f, 0.8f, 0.8f }); // 半透明の灰色
+	selectSprite_.overlay_->Update();
+
+	/// ===OptionUIの初期化=== ///
+	optionUI_ = std::make_unique<OptionUI>();
+	optionUI_->Initialize();
+
+	/// ===フラグの初期化=== ///
+	isOptionOpen_ = false;
+	isGameStart_ = false;
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void TitleUI::Update() {
+	// セレクトスプライトの更新
+	selectSprite_.start_->Update();
+	selectSprite_.option_->Update();
+	selectSprite_.exit_->Update();
+	selectSprite_.overlay_->Update();
+
+	// オプションの更新
+	if (isOptionOpen_) {
+		optionUI_->Update();
+	}
+
+	// 選択状態の更新
+	UpdateSelecting();
+}
+
+///-------------------------------------------/// 
+/// 描画処理
+///-------------------------------------------///
+void TitleUI::Draw() {
+	// スプライトの描画
+	bgSprite_->Draw(GroundType::Back);
+	//bgKiriSprite_->Draw(GroundType::Back);
+	titleSprite_->Draw(GroundType::Front);
+	selectSprite_.start_->Draw(GroundType::Front);
+	selectSprite_.option_->Draw(GroundType::Front);
+	selectSprite_.exit_->Draw(GroundType::Front);
+	selectSprite_.overlay_->Draw(GroundType::Front, BlendMode::kBlendModeAdd);
+
+	// オプションの描画
+	if (isOptionOpen_) {
+		optionUI_->Draw();
+	}
+}
+
+///-------------------------------------------/// 
+/// 選択状態の更新
+///-------------------------------------------///
+void TitleUI::UpdateSelecting() {
+
+	/// ===オプション画面の処理=== ///
+	if (isOptionOpen_) {
+		UpdateOptionMenu();
+	} else {
+		/// ===メニュー選択の更新=== ///
+		UpdateMenuSelection();
+
+		/// ===決定処理=== ///
+		if (InputService::TriggerButton(0, ControllerButtonType::A) || InputService::TriggerKey(DIK_SPACE)) {
+			ConfirmSelection();
+		}
+	}
+}
+
+///-------------------------------------------/// 
+/// メニュー選択の更新
+///-------------------------------------------///
+void TitleUI::UpdateMenuSelection() {
+	// 十字キー上
+	if (InputService::TriggerButton(0, ControllerButtonType::DPadUP) || InputService::TriggerKey(DIK_UP)) {
+		switch (currentSelection_) {
+		case MenuSelection::Start:
+			currentSelection_ = MenuSelection::Exit; // 一番上から一番下へ
+			break;
+		case MenuSelection::Option:
+			currentSelection_ = MenuSelection::Start;
+			break;
+		case MenuSelection::Exit:
+			currentSelection_ = MenuSelection::Option;
+			break;
+		}
+		UpdateSelectOverlayPosition();
+	}
+
+	// 十字キー下
+	if (InputService::TriggerButton(0, ControllerButtonType::DPadDOWN) || InputService::TriggerKey(DIK_DOWN)) {
+		switch (currentSelection_) {
+		case MenuSelection::Start:
+			currentSelection_ = MenuSelection::Option;
+			break;
+		case MenuSelection::Option:
+			currentSelection_ = MenuSelection::Exit;
+			break;
+		case MenuSelection::Exit:
+			currentSelection_ = MenuSelection::Start; // 一番下から一番上へ
+			break;
+		}
+		UpdateSelectOverlayPosition();
+	}
+}
+
+///-------------------------------------------/// 
+/// メニュー決定処理
+///-------------------------------------------///
+void TitleUI::ConfirmSelection() {
+	// Selectionに応じた処理
+	switch (currentSelection_) {
+	case MenuSelection::Start:
+		// ゲーム開始処理へ移行
+		isGameStart_ = true;
+		break;
+	case MenuSelection::Option:
+		// オプション画面を開く
+		isOptionOpen_ = true;
+		break;
+	case MenuSelection::Exit:
+		// ゲーム終了
+		PostQuitMessage(0);
+		break;
+	}
+}
+
+///-------------------------------------------/// 
+/// メニュー項目の色更新
+///-------------------------------------------///
+void TitleUI::UpdateSelectOverlayPosition() {
+
+	// 選択中の項目の位置に応じてオーバーレイを移動
+	switch (currentSelection_) {
+	case MenuSelection::Start:
+		selectSprite_.overlay_->SetPosition({ startPos_.x, startPos_.y });
+		break;
+	case MenuSelection::Option:
+		selectSprite_.overlay_->SetPosition({ startPos_.x, startPos_.y + spaceY_ });
+		break;
+	case MenuSelection::Exit:
+		selectSprite_.overlay_->SetPosition({ startPos_.x, startPos_.y + spaceY_ * 2.0f });
+		break;
+	}
+}
+
+///-------------------------------------------/// 
+/// オプション画面の更新
+///-------------------------------------------///
+void TitleUI::UpdateOptionMenu() {
+	// Bボタンでオプション画面を閉じる
+	if (InputService::TriggerButton(0, ControllerButtonType::B) || InputService::TriggerKey(DIK_SPACE)) {
+		isOptionOpen_ = false;
+	}
+}
 
 ============================================================
 File Path: Project/application/Game/UI/Title/TitleUI.h
 ============================================================
 #pragma once
-class TitleUI {};
+/// ===Include=== ///
+// Sprite
+#include "application/Drawing/2d/Sprite.h"
+#include "application/Game/UI/Option/OptionUI.h"
+// C++
+#include <memory>
+
+///=====================================================/// 
+/// タイトルシーンのUIクラス
+///=====================================================///
+class TitleUI {
+public:
+	TitleUI() = default;
+	~TitleUI();
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	void Initialize();
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update();
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	void Draw();
+
+private: /// ===メンバ変数=== ///
+
+	// オプションUI
+	std::unique_ptr<OptionUI> optionUI_;
+
+	/// ===スプライト=== ///
+	std::unique_ptr<Sprite> bgSprite_;         // 背景
+	std::unique_ptr<Sprite> bgKiriSprite_;     // 背景(霧)
+	std::unique_ptr<Sprite> titleSprite_;      // タイトル
+
+	/// ===セレクトスプライト=== ///
+	struct SelectSprite {
+		std::unique_ptr<Sprite> start_;      // 開始
+		std::unique_ptr<Sprite> option_;     // オプション
+		std::unique_ptr<Sprite> exit_;       // 終了
+		std::unique_ptr<Sprite> overlay_;    // 選択中のオーバーレイ
+	};
+	SelectSprite selectSprite_;
+
+	/// ===基準値=== ///
+	Vector2 startPos_{}; // メニュー開始Y座標
+	float spaceY_ = 0.0f; // メニュー項目間のスペース
+
+	/// ===参照スケール倍率=== ///
+	Vector2 scale_ = { 1.0f, 1.0f };
+
+	/// ===メニュー選択=== ///
+	// メニュー項目の列挙型
+	enum class MenuSelection {
+		Start,    // 開始
+		Option,   // オプション
+		Exit      // 終了
+	};
+	MenuSelection currentSelection_ = MenuSelection::Start; // 現在の選択
+
+	/// ===フラグ=== ///
+	bool isOptionOpen_ = false;      // オプション画面が開いているか
+	bool isGameStart_ = false;      // ゲーム開始フラグ
+
+public: /// ===Getter=== ///
+	/// <summary>
+	/// 選択スプライトを取得します。
+	/// </summary>
+	/// <returns>選択スプライトへの参照。</returns>
+	SelectSprite& GetSelectSprite() { return selectSprite_; }
+
+	/// <summary>
+	/// ゲームが開始されているかどうかを取得します。
+	/// </summary>
+	/// <returns>ゲームが開始されている場合は true、それ以外の場合は false。</returns>
+	bool IsGameStart() const { return isGameStart_; }
+
+private:
+	/// <summary>
+	/// 選択状態を更新します。
+	/// </summary>
+	void UpdateSelecting();
+
+	/// <summary>
+	/// メニューの選択状態の更新処理
+	/// </summary>
+	void UpdateMenuSelection();
+
+	/// <summary>
+	/// メニューの選択決定処理
+	/// </summary>
+	void ConfirmSelection();
+
+	/// <summary>
+	/// 選択オーバーレイの位置を更新処理
+	/// </summary>
+	void UpdateSelectOverlayPosition();
+
+	/// <summary>
+	/// オプション画面の更新処理
+	/// </summary>
+	void UpdateOptionMenu();
+};
 
 
 
 ============================================================
-File Path: Project/application/Scene/ClearScene.cpp
+File Path: Project/application/Scene/Clear/ClearScene.cpp
 ============================================================
 #include "ClearScene.h"
 // SceneManager
@@ -41340,7 +41877,7 @@ void ClearScene::Draw() {
 
 
 ============================================================
-File Path: Project/application/Scene/ClearScene.h
+File Path: Project/application/Scene/Clear/ClearScene.h
 ============================================================
 #pragma once
 /// ===Include=== ///
@@ -41387,6 +41924,7 @@ File Path: Project/application/Scene/Debug/AttackEditorScene.cpp
 #include "Engine/System/Managers/SceneManager.h"
 // ServiceLocator
 #include "Engine/System/Service/DeltaTimeSevice.h"
+#include "Engine/System/Service/ParticleService.h"
 // ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
@@ -41409,6 +41947,10 @@ AttackEditorScene::~AttackEditorScene() {
 void AttackEditorScene::Initialize() {
     // ISceneの初期化(デフォルトカメラとカメラマネージャ)
     IScene::Initialize();
+
+	// パーティクルの定義を読み込み
+    ParticleService::LoadParticleDefinition("WeaponAttack.json");
+
 
     /// ===エディターの初期化=== ///
     attackEditor_ = std::make_unique<AttackEditor>();
@@ -41628,7 +42170,996 @@ private:
 };
 
 ============================================================
-File Path: Project/application/Scene/GameOverScene.cpp
+File Path: Project/application/Scene/Game/GameScene.cpp
+============================================================
+#include "GameScene.h"
+// SceneManager
+#include "Engine/System/Managers/SceneManager.h"
+// Service
+#include "Engine/System/Service/CameraService.h"
+#include "Engine/System/Service/ParticleService.h"
+#include "Engine/System/Service/ColliderService.h"
+#include "Engine/System/Service/GraphicsResourceGetter.h"
+// State
+#include "State/GameSceneInitializeState.h"
+// Math
+#include "Math/SMath.h"
+
+///-------------------------------------------/// 
+/// コンストラクタ
+///-------------------------------------------///
+GameScene::GameScene() {
+	/// ===パーティクルの読み込み=== ///
+	LoadParticle();
+}
+
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+GameScene::~GameScene() {
+	// ISceneのデストラクタ
+	IScene::~IScene();
+	// Colliderのリセット
+	ColliderService::Reset();
+	// State
+	currentState_.reset();
+	// Camera
+	camera_.reset();
+	// Player
+	player_.reset();
+	// Enemy
+	enemyManager_.reset();
+	// Ground
+	stage_.reset();
+}
+
+///-------------------------------------------/// 
+/// 初期化
+///-------------------------------------------///
+void GameScene::Initialize() {
+	/// ===ISceneの初期化=== ///
+	IScene::Initialize();
+
+	/// ===Camera=== ///
+	camera_ = std::make_shared<GameCamera>();
+	camera_->Init(CameraType::Follow);
+	SetUpCamera();
+	// Managerに追加,アクティブに
+	CameraService::AddCamera("Game", camera_);
+	CameraService::SetActiveCamera("Game");
+
+	/// ===Playerの生成=== ///
+	player_ = std::make_unique<Player>();
+
+	/// ===EnemyManagerの生成=== ///
+	enemyManager_ = std::make_unique<EnemyManager>();
+
+	/// ===SponEntity=== ///
+	SpawnEntity("Level/EntityData.json");
+	// EnemyにPlayerを設定
+	enemyManager_->SetPlayer(player_.get());
+
+	/// ===GameStage=== ///
+	stage_ = std::make_unique<GameStage>();
+	stage_->Initialize("Level/StageData.json");
+
+	/// ===State=== ///
+	// 初期状態をInitializeStateに設定
+	ChangState(std::make_unique<GameSceneInitializeState>());
+}
+
+///-------------------------------------------/// 
+/// 更新
+///-------------------------------------------///
+void GameScene::Update() {
+	/// ===デバック用ImGui=== ///
+#ifdef USE_IMGUI
+	ImGui::Begin("GameScene");
+	ImGui::End();
+
+	// Camera
+	camera_->ImGuiUpdate();
+	camera_->DebugUpdate();
+
+	// Player
+	player_->Information();
+	// Enemy
+	enemyManager_->UpdateImGui();
+
+#endif // USE_IMGUI
+
+	/// ===Groundの更新=== ///
+	stage_->Update();
+
+	/// ===Stateの管理=== ///
+	if (currentState_) {
+		// 各Stateの更新
+		currentState_->Update();
+	}
+
+	/// ===ISceneの更新=== ///
+	IScene::Update();
+}
+
+///-------------------------------------------/// 
+/// 描画
+///-------------------------------------------///
+void GameScene::Draw() {
+	/// ===GameStage=== ///
+	stage_->Draw();
+
+	/// ===Enemy=== ///
+	enemyManager_->Draw();
+
+	/// ===Player=== ///
+	player_->Draw();
+
+	/// ===Stateの管理=== ///
+	if (currentState_) {
+		// 各Stateの更新
+		currentState_->Draw();
+	}
+
+	/// ===ISceneの描画=== ///
+	IScene::Draw();
+}
+
+///-------------------------------------------/// 
+/// Stateの変更処理
+///-------------------------------------------///
+void GameScene::ChangState(std::unique_ptr<GameSceneFadeState> newState) {
+	if (currentState_) {
+		// 古い状態を解放  
+		currentState_->Finalize();
+		currentState_.reset();
+	}
+
+	// 新しい状態をセット  
+	currentState_ = std::move(newState);
+	// SceneManagerの設定
+	currentState_->SetSceneManager(sceneManager_);
+	// 新しい状態の初期化  
+	currentState_->Enter(this);
+}
+
+///-------------------------------------------/// 
+/// 配置関数
+///-------------------------------------------///
+void GameScene::SpawnEntity(const std::string& json_name) {
+	LevelData* levelData = GraphicsResourceGetter::GetLevelData(json_name);
+
+	// オブジェクト分回す
+	for (const auto& obj : levelData->objects) {
+		// OBBの半分の大きさを計算
+		Vector3 obbHalfSize = obj.colliderInfo2 / 2.0f;
+
+		/// ===クラス名で分岐=== ///
+		switch (obj.classType) {
+		case LevelData::ClassTypeLevel::Player1:
+			// 初期化と座標設定
+			player_->Initialize();
+			player_->SetTranslate(obj.translation);
+			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
+			player_->SetHalfSize(obbHalfSize);
+			break;
+		case LevelData::ClassTypeLevel::Enemy1:
+			// Enemyの座標設定
+			enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.rotation), obbHalfSize);
+			break;
+		case LevelData::ClassTypeLevel::Enemy2:
+			// Enemyの座標設定
+			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.rotation), obbHalfSize);
+			break;
+		}
+	}
+}
+
+///-------------------------------------------/// 
+/// カメラの初期設定
+///-------------------------------------------///
+void GameScene::SetUpCamera() {
+	/// ===カメラの初期設定=== ///
+	// カメラの座標設定
+	camera_->SetTranslate({ 0.0f, 5.0f, 15.0f });
+	// カメラの回転設定
+	camera_->SetRotate({ 0.0f, 0.0f, 0.0f, 1.0f });
+	// カメラの追従設定
+	camera_->SetFollowCamera(FollowCameraType::TopDown);
+	// 追従オフセット設定
+	camera_->SetOffset({ 0.0f, 70.0f, -60.0f });
+	// 追従速度設定
+	camera_->SetFollowSpeed(0.1f);
+}
+
+///-------------------------------------------/// 
+/// パーティクルの読み込み
+///-------------------------------------------///
+void GameScene::LoadParticle() {
+	ParticleService::LoadParticleDefinition("Game.json");
+	ParticleService::LoadParticleDefinition("WeaponAttack.json");
+	ParticleService::LoadParticleDefinition("nakagawa.json");
+	ParticleService::LoadParticleDefinition("PlayerWarke.json");
+	ParticleService::LoadParticleDefinition("EnemyAttack.json");
+	ParticleService::LoadParticleDefinition("EnemyPrePareAttack.json");
+	ParticleService::LoadParticleDefinition("EnemyPrePareAttackCharge.json");
+	ParticleService::LoadParticleDefinition("CloseEnemyAttack.json");
+	ParticleService::LoadParticleDefinition("LongEnemyAttack.json");
+}
+
+
+============================================================
+File Path: Project/application/Scene/Game/GameScene.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Engine/Scene/IScene.h"
+// Entity
+#include "application/Game/Entity/Player/Player.h"
+#include "application/Game/Entity/Enemy/Manager/EnemyManager.h"
+// Object
+#include "application/Game/Object/GameStage.h"
+// State
+#include "State/Base/GameSceneFadeState.h"
+
+///=====================================================/// 
+/// ゲームシーン
+///=====================================================///
+class GameScene : public IScene {
+public:/// ===メンバ関数=== ///
+
+	GameScene();
+	~GameScene();
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	void Initialize() override;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	void Draw() override;
+
+	/// <summary>
+	/// ゲームシーンのフェード状態を変更します。
+	/// </summary>
+	/// <param name="newState">新しいフェード状態へのユニークポインタ。</param>
+	void ChangState(std::unique_ptr<GameSceneFadeState> newState);
+
+public: /// ===Getter=== ///
+	// Playerの取得
+	Player* GetPlayer() const { return player_.get(); }
+	// EnemyManagerの取得
+	EnemyManager* GetEnemyManager() const { return enemyManager_.get(); }
+
+private:/// ===メンバ変数=== ///
+	/// <summary>
+	/// シーン用
+	/// </summary>
+
+	/// ===Classの宣言=== /// 
+	// Camera
+	std::shared_ptr<GameCamera> camera_;
+	// Player
+	std::unique_ptr<Player> player_;
+	// Enemy
+	std::unique_ptr<EnemyManager> enemyManager_;
+	// Stage
+	std::unique_ptr<GameStage> stage_;
+	// State
+	std::unique_ptr<GameSceneFadeState> currentState_;
+
+	/// ===変数の宣言=== ///
+	// カメラ情報
+	struct CameraInfo {
+		Quaternion rotate = { 0.372f, 0.0f, 0.0f, 1.055f };
+	};
+	CameraInfo cameraInfo_;
+
+private: /// ===メンバ関数=== ///
+
+	/// <summary>
+	/// 配置処理
+	/// </summary>
+	/// <param name="json_name">使用するJsonファイル名</param>
+	void SpawnEntity(const std::string& json_name);
+
+	/// <summary>
+	/// カメラの初期設定
+	/// </summary>
+	void SetUpCamera();
+
+	/// <summary>
+	/// パーティクルの追加
+	/// </summary>
+	void LoadParticle();
+};
+
+============================================================
+File Path: Project/application/Scene/Game/State/Base/GameSceneFadeState.cpp
+============================================================
+#include "GameSceneFadeState.h"
+
+///-------------------------------------------/// 
+/// 終了処理
+///-------------------------------------------///
+void GameSceneFadeState::Finalize() {
+	gameScene_ = nullptr;
+	sceneManager_ = nullptr;
+}
+
+
+============================================================
+File Path: Project/application/Scene/Game/State/Base/GameSceneFadeState.h
+============================================================
+#pragma once
+/// ===前方宣言=== ///
+class GameScene;
+class SceneManager;
+
+///=====================================================/// 
+/// ゲームシーンフェード状態
+///=====================================================///
+class GameSceneFadeState {
+public:
+	virtual ~GameSceneFadeState() = default;
+
+	/// <summary>
+	/// ステートに入る際に呼び出される仮想関数。
+	/// </summary>
+	/// <param name="gameScene">入るゲームシーンへのポインタ。</param>
+	virtual void Enter(GameScene* gameScene) = 0;
+
+	/// <summary>
+	/// ステート時の更新処理、純粋仮想関数
+	/// </summary>
+	virtual void Update() = 0;
+
+	/// <summary>
+	/// ステート時の描画処理、純粋仮想関数
+	/// </summary>
+	virtual void Draw() = 0;
+
+	/// <summary>
+	/// ステート終了処理
+	/// </summary>
+	virtual void Finalize();
+
+public: /// ===Setter=== ///
+	// SceneManagerの設定
+	void SetSceneManager(SceneManager* sceneManager) { sceneManager_ = sceneManager; }
+
+protected:
+	// ゲームシーン
+	GameScene* gameScene_ = nullptr; 
+	// SceneManager
+	SceneManager* sceneManager_ = nullptr;
+};
+
+
+
+============================================================
+File Path: Project/application/Scene/Game/State/GameSceneExitState.cpp
+============================================================
+#include "GameSceneExitState.h"
+// GameScene
+#include "application/Scene/Game/GameScene.h"
+// SceneManager
+#include "Engine/System/Managers/SceneManager.h"
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void GameSceneExitState::Enter(GameScene* gameScene) {
+	// ゲームシーンのポインタを保存
+	gameScene_ = gameScene;
+
+	// フェードインの継続時間を設定
+	float fadeInDuration = 1.0f;
+
+	// シーンマネージャーでフェードインを開始
+	sceneManager_->StartFadeOut(TransitionType::None, fadeInDuration);
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void GameSceneExitState::Update() {
+	/// ===シーンの切り替え=== ///
+	if (sceneManager_->GetTransitionFinished()) {
+		// タイトルへ遷移
+		sceneManager_->ChangeScene(SceneType::Title);
+	}
+
+	// タイトルへ遷移
+	sceneManager_->ChangeScene(SceneType::Title);
+}
+
+///-------------------------------------------/// 
+/// 描画処理
+///-------------------------------------------///
+void GameSceneExitState::Draw() {}
+
+///-------------------------------------------/// 
+/// 終了処理
+///-------------------------------------------///
+void GameSceneExitState::Finalize() {
+	GameSceneFadeState::Finalize();
+}
+
+
+============================================================
+File Path: Project/application/Scene/Game/State/GameSceneExitState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// Base
+#include "Base/GameSceneFadeState.h"
+
+///=====================================================/// 
+/// ゲームシーンフェードイン状態
+///=====================================================///
+class GameSceneExitState : public GameSceneFadeState {
+public:
+
+	~GameSceneExitState() override = default;
+
+	/// <summary>
+	/// ゲームシーンに入る際に呼び出されるオーバーライドメソッドです。
+	/// </summary>
+	/// <param name="gameScene">入るゲームシーンへのポインタ。</param>
+	void Enter(GameScene* gameScene) override;
+
+	/// <summary>
+	/// フレームごとに呼び出される更新関数をオーバーライドします。
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 描画処理を実行します。
+	/// </summary>
+	void Draw() override;
+
+	/// <summary>
+	/// オブジェクトを終了処理します。
+	/// </summary>
+	void Finalize() override;
+};
+
+
+
+
+
+============================================================
+File Path: Project/application/Scene/Game/State/GameSceneGameClearState.cpp
+============================================================
+#include "GameSceneGameClearState.h"
+// GameScene
+#include "application/Scene/Game/GameScene.h"
+// Service
+#include "Engine/System/Service/CameraService.h"
+// State
+#include "GameSceneExitState.h"
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void GameSceneGameClearState::Enter(GameScene* gameScene) {
+	// ゲームシーンのポインタを保存
+	gameScene_ = gameScene;
+
+	/// ===GameClearAnimation=== ///
+	gameClearAnimation_ = std::make_unique<GameClearAnimation>();
+	gameClearAnimation_->Initialize(gameScene_->GetPlayer(), CameraService::GetActiveCamera().get());
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void GameSceneGameClearState::Update() {
+	// GameClearAnimationの更新
+	gameClearAnimation_->Update();
+	// EnemyManagerの更新
+	gameScene_->GetEnemyManager()->UpdateAnimation();
+	// Playerの更新
+	gameScene_->GetPlayer()->UpdateAnimation();
+	// アニメーション完了を確認
+	if (gameClearAnimation_->IsCompleted()) {
+		// Exit状態に変更
+		gameScene_->ChangState(std::make_unique<GameSceneExitState>());
+	}
+}
+
+///-------------------------------------------/// 
+/// 描画処理
+///-------------------------------------------///
+void GameSceneGameClearState::Draw() {
+	// GameClearAnimationの描画
+	gameClearAnimation_->Draw();
+}
+
+///-------------------------------------------/// 
+/// 終了処理
+///-------------------------------------------///
+void GameSceneGameClearState::Finalize() {
+	gameClearAnimation_.reset();
+	GameSceneFadeState::Finalize();
+}
+
+
+============================================================
+File Path: Project/application/Scene/Game/State/GameSceneGameClearState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// Base
+#include "Base/GameSceneFadeState.h"
+// GameClearAnimation
+#include "application/Game/Animation/GameClearAnimation.h"
+// C++
+#include <memory>
+
+///=====================================================/// 
+/// ゲームシーンフェードイン状態
+///=====================================================///
+class GameSceneGameClearState : public GameSceneFadeState {
+public:
+
+	~GameSceneGameClearState() override = default;
+
+	/// <summary>
+	/// ゲームシーンに入る際に呼び出されるオーバーライドメソッドです。
+	/// </summary>
+	/// <param name="gameScene">入るゲームシーンへのポインタ。</param>
+	void Enter(GameScene* gameScene) override;
+
+	/// <summary>
+	/// フレームごとに呼び出される更新関数をオーバーライドします。
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 描画処理を実行します。
+	/// </summary>
+	void Draw() override;
+
+	/// <summary>
+	/// オブジェクトを終了処理します。
+	/// </summary>
+	void Finalize() override;
+
+private:
+	// GameClearAnimation
+	std::unique_ptr<GameClearAnimation> gameClearAnimation_;
+};
+
+
+
+
+============================================================
+File Path: Project/application/Scene/Game/State/GameSceneGameOverAnimationState.cpp
+============================================================
+#include "GameSceneGameOverAnimationState.h"
+// GameScene
+#include "application/Scene/Game/GameScene.h"
+// Service
+#include "Engine/System/Service/CameraService.h"
+// State
+#include "GameSceneExitState.h"
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void GameSceneGameOverAnimationState::Enter(GameScene* gameScene) {
+	// ゲームシーンのポインタを保存
+	gameScene_ = gameScene;
+
+	/// ===GameOverAnimation=== ///
+	gameOverAnimation_ = std::make_unique<GameOverAnimation>();
+	gameOverAnimation_->Initialize(CameraService::GetActiveCamera().get());
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void GameSceneGameOverAnimationState::Update() {
+	// GameOverAnimationの更新
+	gameOverAnimation_->Update();
+
+	// EnemyManagerの更新
+	gameScene_->GetEnemyManager()->UpdateAnimation();
+	// Playerの更新
+	gameScene_->GetPlayer()->UpdateAnimation();
+
+	// アニメーション完了を確認
+	if (gameOverAnimation_->IsCompleted()) {
+		//NOTE:ゲームオーバーの場合はタイトルに戻るため、Exitではなくタイトルシーンへ変更する処理を追加する予定
+		// Exit状態に変更
+		gameScene_->ChangState(std::make_unique<GameSceneExitState>());
+	}
+}
+
+///-------------------------------------------/// 
+/// 描画処理
+///-------------------------------------------///
+void GameSceneGameOverAnimationState::Draw() {
+	// GameOverAnimationの描画
+	gameOverAnimation_->Draw();
+}
+
+///-------------------------------------------/// 
+/// 終了処理
+///-------------------------------------------///
+void GameSceneGameOverAnimationState::Finalize() {
+	gameOverAnimation_.reset();
+	GameSceneFadeState::Finalize();
+}
+
+
+============================================================
+File Path: Project/application/Scene/Game/State/GameSceneGameOverAnimationState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// Base
+#include "Base/GameSceneFadeState.h"
+// GameOverAnimation
+#include "application/Game/Animation/GameOverAnimation.h"
+// C++
+#include <memory>
+
+///=====================================================/// 
+/// ゲームシーンフェードイン状態
+///=====================================================///
+class GameSceneGameOverAnimationState : public GameSceneFadeState {
+public:
+
+	~GameSceneGameOverAnimationState() override = default;
+
+	/// <summary>
+	/// ゲームシーンに入る際に呼び出されるオーバーライドメソッドです。
+	/// </summary>
+	/// <param name="gameScene">入るゲームシーンへのポインタ。</param>
+	void Enter(GameScene* gameScene) override;
+
+	/// <summary>
+	/// フレームごとに呼び出される更新関数をオーバーライドします。
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 描画処理を実行します。
+	/// </summary>
+	void Draw() override;
+
+	/// <summary>
+	/// オブジェクトを終了処理します。
+	/// </summary>
+	void Finalize() override;
+private:
+	// GameOverAnimation
+	std::unique_ptr<GameOverAnimation> gameOverAnimation_;
+};
+
+
+
+============================================================
+File Path: Project/application/Scene/Game/State/GameSceneInGameState.cpp
+============================================================
+#include "GameSceneInGameState.h"
+// GameScene
+#include "application/Scene/Game/GameScene.h"
+// State
+#include "GameSceneGameOverAnimationState.h"
+#include "GameSceneGameClearState.h"
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void GameSceneInGameState::Enter(GameScene* gameScene) {
+	// ゲームシーンのポインタを保存
+	gameScene_ = gameScene;
+
+	/// ===GameSceneUI=== ///
+	ui_ = std::make_unique<GameSceneUI>();
+	ui_->Initialize();
+	// GameSceneUIにPlayerを設定
+	ui_->SetPlayer(gameScene_->GetPlayer());
+	ui_->Update();
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void GameSceneInGameState::Update() {
+
+	// EnemyManagerの更新
+	gameScene_->GetEnemyManager()->Update();
+	// Playerの更新
+	gameScene_->GetPlayer()->Update();
+	// GameSceneUIの更新
+	ui_->Update();
+
+	// Playerが死亡しているか確認
+	if (gameScene_->GetPlayer()->GetIsDead()) {
+		// ゲームオーバーアニメーション状態に変更
+		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
+	} else if (gameScene_->GetEnemyManager()->GetTotalEnemyCount() <= 0) {
+		// ゲームクリアアニメーション状態に変更
+		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
+	}
+}
+
+///-------------------------------------------/// 
+/// 描画処理
+///-------------------------------------------///
+void GameSceneInGameState::Draw() {
+	ui_->Draw();
+}
+
+///-------------------------------------------/// 
+/// 終了処理
+///-------------------------------------------///
+void GameSceneInGameState::Finalize() {
+	GameSceneFadeState::Finalize();
+}
+
+
+============================================================
+File Path: Project/application/Scene/Game/State/GameSceneInGameState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// Base
+#include "Base/GameSceneFadeState.h"
+// GameUI
+#include "application/Game/UI/Game/GameSceneUI.h"
+// C++
+#include <memory>
+
+///=====================================================/// 
+/// ゲームシーンフェードイン状態
+///=====================================================///
+class GameSceneInGameState : public GameSceneFadeState {
+public:
+
+	~GameSceneInGameState() override = default;
+
+	/// <summary>
+	/// ゲームシーンに入る際に呼び出されるオーバーライドメソッドです。
+	/// </summary>
+	/// <param name="gameScene">入るゲームシーンへのポインタ。</param>
+	void Enter(GameScene* gameScene) override;
+
+	/// <summary>
+	/// フレームごとに呼び出される更新関数をオーバーライドします。
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 描画処理を実行します。
+	/// </summary>
+	void Draw() override;
+
+	/// <summary>
+	/// オブジェクトを終了処理します。
+	/// </summary>
+	void Finalize() override;
+
+private:
+	// UI
+	std::unique_ptr<GameSceneUI> ui_;
+};
+
+
+============================================================
+File Path: Project/application/Scene/Game/State/GameSceneInitializeState.cpp
+============================================================
+#include "GameSceneInitializeState.h"
+// GameScene
+#include "application/Scene/Game/GameScene.h"
+// SceneManager
+#include "Engine/System/Managers/SceneManager.h"
+// Service
+#include "Engine/System/Service/OffScreenService.h"
+// State
+#include "GameSceneStartAnimationState.h"
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void GameSceneInitializeState::Enter(GameScene* gameScene) {
+	// ゲームシーンのポインタを保存
+	gameScene_ = gameScene;
+
+	/// ===Transition=== ///
+	float fadeInDuration = 2.0f;
+	sceneManager_->StartFadeIn(TransitionType::ShatterGlass, fadeInDuration); // フェードイン開始
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void GameSceneInitializeState::Update() {
+	// EnemyManagerの更新
+	gameScene_->GetEnemyManager()->UpdateAnimation();
+	// Playerの更新
+	gameScene_->GetPlayer()->UpdateAnimation();
+
+	if (sceneManager_->GetTransitionFinished()) {
+		OffScreenService::SetOffScreenType(OffScreenType::CopyImage);
+		// InGame状態に変更
+		gameScene_->ChangState(std::make_unique<GameSceneStartAnimationState>());
+	}
+}
+
+///-------------------------------------------/// 
+/// 描画処理
+///-------------------------------------------///
+void GameSceneInitializeState::Draw() {}
+
+///-------------------------------------------/// 
+/// 終了処理
+///-------------------------------------------///
+void GameSceneInitializeState::Finalize() {
+	GameSceneFadeState::Finalize();
+}
+
+
+============================================================
+File Path: Project/application/Scene/Game/State/GameSceneInitializeState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// Base
+#include "Base/GameSceneFadeState.h"
+
+///=====================================================/// 
+/// ゲームシーンフェードイン状態
+///=====================================================///
+class GameSceneInitializeState : public GameSceneFadeState {
+public:
+
+	~GameSceneInitializeState() override = default;
+
+	/// <summary>
+	/// ゲームシーンに入る際に呼び出されるオーバーライドメソッドです。
+	/// </summary>
+	/// <param name="gameScene">入るゲームシーンへのポインタ。</param>
+	void Enter(GameScene* gameScene) override;
+
+	/// <summary>
+	/// フレームごとに呼び出される更新関数をオーバーライドします。
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 描画処理を実行します。
+	/// </summary>
+	void Draw() override;
+
+	/// <summary>
+	/// オブジェクトを終了処理します。
+	/// </summary>
+	void Finalize() override;
+};
+
+
+
+============================================================
+File Path: Project/application/Scene/Game/State/GameSceneStartAnimationState.cpp
+============================================================
+#include "GameSceneStartAnimationState.h"
+// GameScene
+#include "application/Scene/Game/GameScene.h"
+// Service
+#include "Engine/System/Service/CameraService.h"
+// State
+#include "GameSceneInGameState.h"
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void GameSceneStartAnimationState::Enter(GameScene* gameScene) {
+	// ゲームシーンのポインタを保存
+	gameScene_ = gameScene;
+
+	/// ===StartAnimationの初期化=== ///
+	startAnimation_ = std::make_unique<StartAnimation>();
+	startAnimation_->Initialize(gameScene_->GetPlayer(), CameraService::GetActiveCamera().get());
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void GameSceneStartAnimationState::Update() {
+	// StartAnimationの更新
+	startAnimation_->Update();
+
+	// EnemyManagerの更新
+	gameScene_->GetEnemyManager()->UpdateAnimation();
+
+	// Playerの更新
+	gameScene_->GetPlayer()->UpdateAnimation();
+
+	if (startAnimation_->IsCompleted()) {
+		// カメラターゲットをPlayerに設定
+		gameScene_->GetPlayer()->SetCameraTargetPlayer();
+		gameScene_->ChangState(std::make_unique<GameSceneInGameState>());
+	}
+}
+
+///-------------------------------------------/// 
+/// 描画処理
+///-------------------------------------------///
+void GameSceneStartAnimationState::Draw() {
+	// StartAnimationの描画
+	startAnimation_->Draw();
+}
+
+///-------------------------------------------/// 
+/// 終了処理
+///-------------------------------------------///
+void GameSceneStartAnimationState::Finalize() {
+	startAnimation_.reset();
+	GameSceneFadeState::Finalize();
+}
+
+
+============================================================
+File Path: Project/application/Scene/Game/State/GameSceneStartAnimationState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// Base
+#include "Base/GameSceneFadeState.h"
+// StartAnimation
+#include "application/Game/Animation/StartAnimation.h"
+// C++
+#include <memory>
+
+///=====================================================/// 
+/// ゲームシーンフェードイン状態
+///=====================================================///
+class GameSceneStartAnimationState : public GameSceneFadeState {
+public:
+
+	~GameSceneStartAnimationState() override = default;
+
+	/// <summary>
+	/// ゲームシーンに入る際に呼び出されるオーバーライドメソッドです。
+	/// </summary>
+	/// <param name="gameScene">入るゲームシーンへのポインタ。</param>
+	void Enter(GameScene* gameScene) override;
+
+	/// <summary>
+	/// フレームごとに呼び出される更新関数をオーバーライドします。
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 描画処理を実行します。
+	/// </summary>
+	void Draw() override;
+
+	/// <summary>
+	/// オブジェクトを終了処理します。
+	/// </summary>
+	void Finalize() override;
+
+private:
+	// StartAnimation
+	std::unique_ptr<StartAnimation> startAnimation_;
+
+};
+
+============================================================
+File Path: Project/application/Scene/GameOver/GameOverScene.cpp
 ============================================================
 #include "GameOverScene.h"
 // SceneManager
@@ -41682,7 +43213,7 @@ void GameOverScene::Draw() {
 
 
 ============================================================
-File Path: Project/application/Scene/GameOverScene.h
+File Path: Project/application/Scene/GameOver/GameOverScene.h
 ============================================================
 #pragma once
 /// ===Include=== ///
@@ -41722,464 +43253,7 @@ private:/// ===メンバ変数=== ///
 
 
 ============================================================
-File Path: Project/application/Scene/GameScene.cpp
-============================================================
-#include "GameScene.h"
-// SceneManager
-#include "Engine/System/Managers/SceneManager.h"
-// Service
-#include "Engine/System/Service/CameraService.h"
-#include "Engine/System/Service/ParticleService.h"
-#include "Engine/System/Service/ColliderService.h"
-#include "Engine/System/Service/InputService.h"
-#include "Engine/System/Service/GraphicsResourceGetter.h"
-#include "Engine/System/Service/OffScreenService.h"
-#include "Engine/System/Service/Loader.h"
-// Math
-#include "Math/SMath.h"
-
-///-------------------------------------------/// 
-/// デストラクタ
-///-------------------------------------------///
-GameScene::~GameScene() {
-	// ISceneのデストラクタ
-	IScene::~IScene();
-	// Colliderのリセット
-	ColliderService::Reset();
-	// StartAnimation
-	startAnimation_.reset();
-	// Camera
-	camera_.reset();
-	// Player
-	player_.reset();
-	// Enemy
-	enemyManager_.reset();
-	// Ground
-	stage_.reset();
-}
-
-///-------------------------------------------/// 
-/// 初期化
-///-------------------------------------------///
-void GameScene::Initialize() {
-	// ISceneの初期化(デフォルトカメラとカメラマネージャ)
-	IScene::Initialize();
-
-	// パーティクルの読み込み
-	ParticleService::LoadParticleDefinition("Game.json");
-	ParticleService::LoadParticleDefinition("WeaponAttack.json");
-	ParticleService::LoadParticleDefinition("nakagawa.json");
-	ParticleService::LoadParticleDefinition("PlayerWarke.json");
-	ParticleService::LoadParticleDefinition("EnemyAttack.json");
-	ParticleService::LoadParticleDefinition("EnemyPrePareAttack.json");
-	ParticleService::LoadParticleDefinition("EnemyPrePareAttackCharge.json");
-	ParticleService::LoadParticleDefinition("CloseEnemyAttack.json");
-	ParticleService::LoadParticleDefinition("LongEnemyAttack.json");
-
-	/// ===Camera=== ///
-	camera_ = std::make_shared<GameCamera>();
-	camera_->Init(CameraType::Follow);
-	camera_->SetRotate(cameraInfo_.rotate);
-	camera_->SetFollowCamera(FollowCameraType::TopDown);
-	camera_->SetOffset({ 0.0f, 70.0f, -60.0f });
-	camera_->SetFollowSpeed(0.1f);
-	// Managerに追加,アクティブに
-	CameraService::AddCamera("Game", camera_);
-	CameraService::SetActiveCamera("Game");
-
-	/// ===Playerの生成=== ///
-	player_ = std::make_unique<Player>();
-
-	/// ===EnemyManagerの生成=== ///
-	enemyManager_ = std::make_unique<EnemyManager>();
-
-	/// ===SponEntity=== ///
-	SpawnEntity("Level/EntityData.json");
-	// EnemyにPlayerを設定
-	enemyManager_->SetPlayer(player_.get());
-
-	/// ===GameStage=== ///
-	stage_ = std::make_unique<GameStage>();
-	stage_->Initialize("Level/StageData.json");
-
-	/// ===StartAnimation=== ///
-	startAnimation_ = std::make_unique<StartAnimation>();
-	startAnimation_->Initialize(player_.get(), camera_.get());
-
-	/// ===GameOverAnimation=== ///
-	gameOverAnimation_ = std::make_unique<GameOverAnimation>();
-
-	/// ===GameClearAnimation=== ///
-	gameClearAnimation_ = std::make_unique<GameClearAnimation>();
-
-	/// ===GameSceneUI=== ///
-	gameSceneUI_ = std::make_unique<GameSceneUI>();
-	gameSceneUI_->Initialize();
-	// GameSceneUIにPlayerを設定
-	gameSceneUI_->SetPlayer(player_.get());
-	gameSceneUI_->Update();
-
-	// 初期フェーズをFadeInに設定
-	currentPhase_ = FadeState::FadeIn;
-	/// ===Transition=== ///
-	float fadeInDuration = 2.0f;
-	sceneManager_->StartFadeIn(TransitionType::ShatterGlass, fadeInDuration); // フェードイン開始
-}
-
-///-------------------------------------------/// 
-/// 更新
-///-------------------------------------------///
-void GameScene::Update() {
-	/// ===デバック用ImGui=== ///
-#ifdef USE_IMGUI
-	ImGui::Begin("GameScene");
-	ImGui::End();
-
-	// Camera
-	camera_->ImGuiUpdate();
-	camera_->DebugUpdate();
-
-	// Player
-	player_->Information();
-	// Enemy
-	enemyManager_->UpdateImGui();
-	
-	// カメラ切り替え（デバッグ）
-	if (InputService::TriggerKey(DIK_O)) {
-		CameraService::SetActiveCamera("Game");
-	} else if (InputService::TriggerKey(DIK_P)) {
-		CameraService::SetActiveCamera("Default");
-	}
-
-#endif // USE_IMGUI
-
-	/// ===Groundの更新=== ///
-	stage_->Update();
-
-	/// ===フェーズ別更新=== ///
-	switch (currentPhase_) {
-	// フェードイン
-	case FadeState::FadeIn:
-		UpdateFadeIn();
-		break;
-	// 開始アニメーション
-	case FadeState::StartAnimation:
-		UpdateStartAnimation();
-		break;
-	// ゲームプレイ
-	case FadeState::Game:
-		UpdateGame();
-		break;
-	case FadeState::GameOverAnimation:
-		UpdateGameOverAnimation();
-		break;
-	// フェードアウト
-	case FadeState::GameClearAnimation:
-		UpdateGameClearAnimation();
-		break;
-	}
-
-	/// ===ISceneの更新=== ///
-	IScene::Update();
-}
-
-///-------------------------------------------/// 
-/// 描画
-///-------------------------------------------///
-void GameScene::Draw() {
-#pragma region 背景スプライト描画
-#pragma endregion
-
-#pragma region モデル描画
-
-	/// ===GameStage=== ///
-	stage_->Draw();
-
-	/// ===Enemy=== ///
-	enemyManager_->Draw();
-
-	/// ===Player=== ///
-	player_->Draw();
-
-	/// ===StartAnimation=== ///
-	if (currentPhase_ == FadeState::StartAnimation) {
-		startAnimation_->Draw();
-	/// ===GameOverAnimation=== ///
-	} else if (currentPhase_ == FadeState::GameOverAnimation) {
-		gameOverAnimation_->Draw();
-	}
-
-	/// ===ISceneの描画=== ///
-	IScene::Draw();
-#pragma endregion
-
-#pragma region 前景スプライト描画
-
-	if (currentPhase_ == FadeState::Game) {
-		/// ===GameSceneUI=== ///
-		gameSceneUI_->Draw();
-	}
-#pragma endregion
-}
-
-///-------------------------------------------/// 
-/// フェードイン時の更新処理
-///-------------------------------------------///
-void GameScene::UpdateFadeIn() {
-
-	// アニメーション時のEnemy更新
-	enemyManager_->UpdateAnimation();
-
-	// アニメーション時のPlayer更新
-	player_->UpdateAnimation();
-
-	// FadeIn完了でStartAnimationフェーズへ
-	if (sceneManager_->GetTransitionFinished()) {
-		OffScreenService::SetOffScreenType(OffScreenType::CopyImage);
-		currentPhase_ = FadeState::StartAnimation;
-	}
-}
-
-///-------------------------------------------/// 
-/// 開始アニメーション時の更新処理
-///-------------------------------------------///
-void GameScene::UpdateStartAnimation() {
-	// アニメーション更新
-	startAnimation_->Update();
-
-	// アニメーション時のEnemy更新
-	enemyManager_->UpdateAnimation();
-
-	// アニメーション時のPlayer更新
-	player_->UpdateAnimation();
-
-	// アニメーション完了でGameフェーズへ
-	if (startAnimation_->IsCompleted()) {
-		// カメラターゲットをPlayerに設定
-		player_->SetCameraTargetPlayer(); // ぎこちなさが残る
-		currentPhase_ = FadeState::Game;
-	}
-}
-
-///-------------------------------------------/// 
-/// ゲーム時の更新処理
-///-------------------------------------------///
-void GameScene::UpdateGame() {
-	/// ===Playerの更新=== ///
-	player_->Update();
-
-	/// ===Enemy=== ///
-	enemyManager_->Update();
-	enemyManager_->SetPlayer(player_.get()); // Playerを設定
-
-	/// ===GameSceneUIの更新=== ///
-	gameSceneUI_->Update();
-
-	// Playerが死んだら
-	if (player_->GetIsDead() || InputService::TriggerKey(DIK_Q)) {
-		gameOverAnimation_->Initialize(camera_.get());
-		currentPhase_ = FadeState::GameOverAnimation; // GameOverAnimationへ
-
-	// ゲームが終わったらFadeOutへ
-	} else if (enemyManager_->GetTotalEnemyCount() <= 0 || InputService::TriggerKey(DIK_W)) {
-		gameClearAnimation_->Initialize(player_.get(), camera_.get());
-		currentPhase_ = FadeState::GameClearAnimation; // GameClearへ
-	}
-}
-
-///-------------------------------------------/// 
-/// GameOverアニメーション時の更新処理
-///-------------------------------------------///
-void GameScene::UpdateGameOverAnimation() {
-	// アニメーション更新
-	gameOverAnimation_->Update();
-
-	// アニメーション時のPlayer更新
-	player_->Update();
-	// アニメーション時のEnemy更新
-	enemyManager_->UpdateAnimation();
-
-	// アニメーション完了でシーン移動
-	//NOTE:この部分はシーン移動ではなく遷移にする。クリアも同じ
-	if (gameOverAnimation_->IsCompleted()) {
-		sceneManager_->ChangeScene(SceneType::Title);
-	}
-}
-
-///-------------------------------------------/// 
-/// クリア時の更新処理
-///-------------------------------------------///
-void GameScene::UpdateGameClearAnimation() {
-
-	// アニメーション更新
-	gameClearAnimation_->Update();
-	// アニメーション時のPlayer更新
-	player_->UpdateAnimation();
-	// アニメーション時のEnemy更新
-	enemyManager_->UpdateAnimation();
-	
-	// アニメーション完了でシーン移動
-	if (gameClearAnimation_->IsCompleted()) {
-		sceneManager_->ChangeScene(SceneType::Title);
-	}
-}
-
-///-------------------------------------------/// 
-/// 配置関数
-///-------------------------------------------///
-void GameScene::SpawnEntity(const std::string& json_name) {
-	LevelData* levelData = GraphicsResourceGetter::GetLevelData(json_name);
-
-	// オブジェクト分回す
-	for (const auto& obj : levelData->objects) {
-		// OBBの半分の大きさを計算
-		Vector3 obbHalfSize = obj.colliderInfo2 / 2.0f;
-
-		/// ===クラス名で分岐=== ///
-		switch (obj.classType) {
-		case LevelData::ClassTypeLevel::Player1:
-			// 初期化と座標設定
-			player_->Initialize();
-			player_->SetTranslate(obj.translation);
-			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
-			player_->SetHalfSize(obbHalfSize);
-			break;
-		case LevelData::ClassTypeLevel::Enemy1:
-			// Enemyの座標設定
-			enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.rotation), obbHalfSize);
-			break;
-		case LevelData::ClassTypeLevel::Enemy2:
-			// Enemyの座標設定
-			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.rotation), obbHalfSize);
-			break;
-		}
-	}
-}
-
-============================================================
-File Path: Project/application/Scene/GameScene.h
-============================================================
-#pragma once
-/// ===Include=== ///
-#include "Engine/Scene/IScene.h"
-// Entity
-#include "application/Game/Entity/Player/Player.h"
-#include "application/Game/Entity/Enemy/Manager/EnemyManager.h"
-#include "application/Game/Entity/Enemy/CloseRange/CloseRangeEnemy.h"
-#include "application/Game/Entity/Enemy/LongRange/LongRangeEnemy.h"
-// Object
-#include "application/Game/Object/GameStage.h"
-// Animation
-#include "application/Game/Animation/StartAnimation.h"
-#include "application/Game/Animation/GameOverAnimation.h"
-#include "application/Game/Animation/GameClearAnimation.h"
-// UI
-#include "application/Game/UI/Game/GameSceneUI.h"
-
-///=====================================================/// 
-/// ゲームシーン
-///=====================================================///
-class GameScene : public IScene {
-public:/// ===メンバ関数=== ///
-
-	GameScene() = default;
-	~GameScene();
-
-	/// <summary>
-	/// 初期化処理
-	/// </summary>
-	void Initialize() override;
-
-	/// <summary>
-	/// 更新処理
-	/// </summary>
-	void Update() override;
-
-	/// <summary>
-	/// 描画処理
-	/// </summary>
-	void Draw() override;
-
-private:/// ===メンバ変数=== ///
-	/// <summary>
-	/// シーン用
-	/// </summary>
-
-	/// ===Classの宣言=== /// 
-	// Camera
-	std::shared_ptr<GameCamera> camera_;
-	// Player
-	std::unique_ptr<Player> player_;
-	// Enemy
-	std::unique_ptr<EnemyManager> enemyManager_;
-	// Enemy
-	std::unique_ptr<CloseRangeEnemy> closeRangeEnemy_;
-	std::unique_ptr<LongRangeEnemy> longRangeEnemy_;
-	// Stage
-	std::unique_ptr<GameStage> stage_;
-	// StartAnimation
-	std::unique_ptr<StartAnimation> startAnimation_;
-	// GameOverAnimation
-	std::unique_ptr<GameOverAnimation> gameOverAnimation_;
-	// GameClearAnimation
-	std::unique_ptr<GameClearAnimation> gameClearAnimation_;
-	// UI
-	std::unique_ptr<GameSceneUI> gameSceneUI_;
-
-	/// ===変数の宣言=== ///
-	// カメラ情報
-	struct CameraInfo {
-		Quaternion rotate = { 0.372f, 0.0f, 0.0f, 1.055f };
-	};
-	CameraInfo cameraInfo_;
-
-	/// ===フェーズ管理=== ///
-	// ゲームの進行フェーズ
-	enum class FadeState {
-		FadeIn,				// フェードイン
-		StartAnimation,		// 開始アニメーション
-		Game,				// ゲームプレイ中
-		GameOverAnimation,  // ゲームオーバー
-		GameClearAnimation  // フェードアウト
-	};
-	FadeState currentPhase_ = FadeState::FadeIn;
-
-private: /// ===メンバ関数=== ///
-
-	/// <summary>
-	/// フェードイン時の更新処理
-	/// </summary>
-	void UpdateFadeIn();
-
-	/// <summary>
-	/// 開始アニメーション時の更新処理
-	/// </summary>
-	void UpdateStartAnimation();
-
-	/// <summary>
-	/// ゲーム時の更新処理
-	/// </summary>
-	void UpdateGame();
-
-	/// <summary>
-	/// ゲームオーバー時のアニメーションを更新処理
-	/// </summary>
-	void UpdateGameOverAnimation();
-
-	/// <summary>
-	/// フェードアウト時の更新処理
-	/// </summary>
-	void UpdateGameClearAnimation();
-
-	/// <summary>
-	/// 配置処理
-	/// </summary>
-	/// <param name="json_name">使用するJsonファイル名</param>
-	void SpawnEntity(const std::string& json_name);
-};
-
-============================================================
-File Path: Project/application/Scene/SelectScene.cpp
+File Path: Project/application/Scene/Select/SelectScene.cpp
 ============================================================
 #include "SelectScene.h"
 // SceneManager
@@ -42233,7 +43307,7 @@ void SelectScene::Draw() {
 
 
 ============================================================
-File Path: Project/application/Scene/SelectScene.h
+File Path: Project/application/Scene/Select/SelectScene.h
 ============================================================
 #pragma once
 /// ===Include=== ///
@@ -42273,7 +43347,7 @@ private:/// ===メンバ変数=== ///
 
 
 ============================================================
-File Path: Project/application/Scene/TitleScene.cpp
+File Path: Project/application/Scene/Title/TitleScene.cpp
 ============================================================
 #include "TitleScene.h"
 // SceneManager
@@ -42292,16 +43366,8 @@ File Path: Project/application/Scene/TitleScene.cpp
 TitleScene::~TitleScene() {
 	// ISceneのデストラクタ
 	IScene::~IScene();
-	// スプライトのリセット
-	bgSprite_.reset();
-	bgKiriSprite_.reset();
-	titleSprite_.reset();
-	startSprite_.reset();
-	optionSprite_.reset();
-	exitSprite_.reset();
-	selectOverlay_.reset();
-	dimSprite_.reset();
-	optionMenuSprite_.reset();
+	// TitleUIのリセット
+	titleUI_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -42311,100 +43377,9 @@ void TitleScene::Initialize() {
 	// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 	IScene::Initialize();
 
-	// windowサイズの取得
-	Vector2 windowSize = {
-		static_cast<float>(GraphicsResourceGetter::GetWindowWidth()),
-		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
-	};
-
-	/// ===Scale=== ///
-	// 基準解像度
-	constexpr float BASE_WIDTH = 1920.0f;
-	constexpr float BASE_HEIGHT = 1080.0f;
-	// Scale
-	scale_ = { windowSize.x / BASE_WIDTH, windowSize.y / BASE_HEIGHT };
-
-	/// ===スプライトの初期化=== ///
-	// 背景スプライト
-	bgSprite_ = std::make_unique<Sprite>();
-	bgSprite_->Initialize("TitleBG");
-	bgSprite_->SetPosition({ 0.0f, 0.0f });
-	bgSprite_->SetSize({ windowSize.x, windowSize.y });
-
-	// 背景Kiriスプライト
-	bgKiriSprite_ = std::make_unique<Sprite>();
-	bgKiriSprite_->Initialize("TitleBGKiri");
-	bgKiriSprite_->SetPosition({ 0.0f, 0.0f });
-	bgKiriSprite_->SetSize({ windowSize.x, windowSize.y });
-
-	// タイトルスプライト
-	titleSprite_ = std::make_unique<Sprite>();
-	titleSprite_->Initialize("Title"); // テクスチャファイルパスは適宜変更
-	titleSprite_->SetPosition({ windowSize.x / 2.0f, windowSize.y / 4.0f });
-	titleSprite_->SetSize({ 1000.0f * scale_.x, 1000.0f * scale_.y });
-	titleSprite_->SetAnchorPoint({ 0.5f, 0.5f });
-	titleSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
-
-	// 開始スプライト
-	spaceY_ = windowSize.y / 12.0f; // メニュー項目間の垂直スペース
-	startY_ = windowSize.y / 2.0f + windowSize.y / 8.0f; // 開始項目のY位置
-
-	startSprite_ = std::make_unique<Sprite>();
-	startSprite_->Initialize("Start");
-	startSprite_->SetPosition({ windowSize.x / 2.0f, startY_ });
-	startSprite_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
-	startSprite_->SetAnchorPoint({ 0.5f, 0.5f });
-	startSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 選択中は黄色
-
-	// オプションスプライト
-	optionSprite_ = std::make_unique<Sprite>();
-	optionSprite_->Initialize("Option");
-	optionSprite_->SetPosition({ windowSize.x / 2.0f, startY_ + spaceY_ });
-	optionSprite_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
-	optionSprite_->SetAnchorPoint({ 0.5f, 0.5f });
-	optionSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 未選択は灰色
-
-	// 終了スプライト
-	exitSprite_ = std::make_unique<Sprite>();
-	exitSprite_->Initialize("Exit");
-	exitSprite_->SetPosition({ windowSize.x / 2.0f, startY_ + spaceY_ * 2.0f });
-	exitSprite_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
-	exitSprite_->SetAnchorPoint({ 0.5f, 0.5f });
-	exitSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f });
-
-	// 選択オーバーレイスプライト
-	selectOverlay_ = std::make_unique<Sprite>();
-	selectOverlay_->Initialize("OverLay"); // テクスチャファイルパスは適宜変更
-	selectOverlay_->SetPosition({ windowSize.x / 2.0f, startY_ }); // 初期位置は開始の位置
-	selectOverlay_->SetSize({ 400.0f * scale_.x, 80.0f * scale_.y }); // メニュー項目より少し大きめ
-	selectOverlay_->SetAnchorPoint({ 0.5f, 0.5f });
-	selectOverlay_->SetColor({ 0.8f, 0.8f, 0.8f, 0.8f }); // 半透明の黄色
-
-	// 薄暗いオーバーレイ
-	dimSprite_ = std::make_unique<Sprite>();
-	dimSprite_->Initialize("uvChecker");
-	dimSprite_->SetPosition({ 0.0f, 0.0f });
-	dimSprite_->SetSize({ windowSize.x, windowSize.y });
-	dimSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 0.7f }); // 半透明の黒
-
-	// オプションメニュー
-	optionMenuSprite_ = std::make_unique<Sprite>();
-	optionMenuSprite_->Initialize("uvChecker");
-	optionMenuSprite_->SetPosition({ windowSize.x / 2.0f, windowSize.y / 2.0f });
-	optionMenuSprite_->SetSize({ 500.0f * scale_.x, 400.0f * scale_.y });
-	optionMenuSprite_->SetAnchorPoint({ 0.5f, 0.5f });
-	optionMenuSprite_->SetColor({ 0.3f, 0.3f, 0.5f, 1.0f }); // 青みがかった色
-
-	// 初期化時の位置更新
-	bgSprite_->Update();
-	bgKiriSprite_->Update();
-	titleSprite_->Update();
-	startSprite_->Update();
-	optionSprite_->Update();
-	exitSprite_->Update();
-	selectOverlay_->Update();
-	dimSprite_->Update();
-	optionMenuSprite_->Update();
+	/// ===TitleUI=== ///
+	titleUI_ = std::make_unique<TitleUI>();
+	titleUI_->Initialize();
 
 	/// ===Fadeの設定=== ///
 	currentFade_ = FadeState::Selecting; // デバッグ用にフェードインをスキップ
@@ -42418,8 +43393,6 @@ void TitleScene::Update() {
 #ifdef USE_IMGUI
 	ImGui::Begin("TitleScene");
 	ImGui::Text("Fade State: %d", static_cast<int>(currentFade_));
-	ImGui::Text("Current Selection: %d", static_cast<int>(currentSelection_));
-	ImGui::Text("Option Open: %s", isOptionOpen_ ? "true" : "false");
 	ImGui::End();
 #endif // USE_IMGUI
 
@@ -42429,7 +43402,11 @@ void TitleScene::Update() {
 		UpdateFadeIn();
 		break;
 	case TitleScene::FadeState::Selecting:
-		UpdateSelecting();
+		titleUI_->Update();
+		if (titleUI_->IsGameStart()) {
+			currentFade_ = FadeState::FadeOut;
+			sceneManager_->StartFadeOut(TransitionType::ShatterGlass, 1.0f);
+		}
 		break;
 	case TitleScene::FadeState::FadeOut:
 		UpdateFadeOut();
@@ -42444,36 +43421,11 @@ void TitleScene::Update() {
 /// 描画
 ///-------------------------------------------///
 void TitleScene::Draw() {
-#pragma region 背景スプライト描画
-	// 背景スプライト
-	bgSprite_->Draw(GroundType::Back);
-	//bgKiriSprite_->Draw(GroundType::Back);
-	// タイトルスプライト
-	titleSprite_->Draw(GroundType::Back);
-#pragma endregion
+	/// ===TitleUIの描画=== ///
+	titleUI_->Draw();
 
-#pragma region モデル描画
 	/// ===ISceneの描画=== ///
 	IScene::Draw();
-#pragma endregion
-
-#pragma region 前景スプライト描画
-	// メニュースプライト
-	startSprite_->Draw(GroundType::Front);
-	optionSprite_->Draw(GroundType::Front);
-	exitSprite_->Draw(GroundType::Front);
-
-	// 選択オーバーレイ（オプション画面が開いていない時のみ）
-	if (!isOptionOpen_) {
-		selectOverlay_->Draw(GroundType::Front, BlendMode::kBlendModeAdd); // 加算合成で光らせる
-	}
-
-	// オプション画面
-	if (isOptionOpen_) {
-		dimSprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
-		optionMenuSprite_->Draw(GroundType::Front);
-	}
-#pragma endregion
 }
 
 ///-------------------------------------------/// 
@@ -42483,28 +43435,6 @@ void TitleScene::UpdateFadeIn() {
 	/// ===Fadeの変更=== ///
 	if (sceneManager_->GetTransitionFinished()) {
 		currentFade_ = FadeState::Selecting;
-	}
-}
-
-///-------------------------------------------/// 
-/// 選択状態の更新
-///-------------------------------------------///
-void TitleScene::UpdateSelecting() {
-
-	/// ===スプライトの更新=== ///
-	selectOverlay_->Update();
-
-	/// ===オプション画面の処理=== ///
-	if (isOptionOpen_) {
-		UpdateOptionMenu();
-	} else {
-		/// ===メニュー選択の更新=== ///
-		UpdateMenuSelection();
-
-		/// ===決定処理=== ///
-		if (InputService::TriggerButton(0, ControllerButtonType::A) || InputService::TriggerKey(DIK_SPACE)) {
-			ConfirmSelection();
-		}
 	}
 }
 
@@ -42520,106 +43450,15 @@ void TitleScene::UpdateFadeOut() {
 	}
 }
 
-///-------------------------------------------/// 
-/// メニュー選択の更新
-///-------------------------------------------///
-void TitleScene::UpdateMenuSelection() {
-	// 十字キー上
-	if (InputService::TriggerButton(0, ControllerButtonType::DPadUP) || InputService::TriggerKey(DIK_UP)) {
-		switch (currentSelection_) {
-		case MenuSelection::Start:
-			currentSelection_ = MenuSelection::Exit; // 一番上から一番下へ
-			break;
-		case MenuSelection::Option:
-			currentSelection_ = MenuSelection::Start;
-			break;
-		case MenuSelection::Exit:
-			currentSelection_ = MenuSelection::Option;
-			break;
-		}
-		UpdateSelectOverlayPosition();
-	}
-
-	// 十字キー下
-	if (InputService::TriggerButton(0, ControllerButtonType::DPadDOWN) || InputService::TriggerKey(DIK_DOWN)) {
-		switch (currentSelection_) {
-		case MenuSelection::Start:
-			currentSelection_ = MenuSelection::Option;
-			break;
-		case MenuSelection::Option:
-			currentSelection_ = MenuSelection::Exit;
-			break;
-		case MenuSelection::Exit:
-			currentSelection_ = MenuSelection::Start; // 一番下から一番上へ
-			break;
-		}
-		UpdateSelectOverlayPosition();
-	}
-}
-
-///-------------------------------------------/// 
-/// メニュー決定処理
-///-------------------------------------------///
-void TitleScene::ConfirmSelection() {
-	// フェードイン時間
-	float fadeInDuration = 1.0f;
-
-	switch (currentSelection_) {
-	case MenuSelection::Start:
-		sceneManager_->StartFadeOut(TransitionType::ShatterGlass, fadeInDuration);
-		currentFade_ = FadeState::FadeOut;
-		break;
-	case MenuSelection::Option:
-		// オプション画面を開く
-		isOptionOpen_ = true;
-		break;
-	case MenuSelection::Exit:
-		// ゲーム終了
-		PostQuitMessage(0);
-		break;
-	}
-}
-
-///-------------------------------------------/// 
-/// メニュー項目の色更新
-///-------------------------------------------///
-void TitleScene::UpdateSelectOverlayPosition() {
-	float windowWidth = static_cast<float>(GraphicsResourceGetter::GetWindowWidth());
-
-	// 選択中の項目の位置に応じてオーバーレイを移動
-	switch (currentSelection_) {
-	case MenuSelection::Start:
-		selectOverlay_->SetPosition({ windowWidth / 2.0f, startY_ });
-		break;
-	case MenuSelection::Option:
-		selectOverlay_->SetPosition({ windowWidth / 2.0f, startY_ + spaceY_ });
-		break;
-	case MenuSelection::Exit:
-		selectOverlay_->SetPosition({ windowWidth / 2.0f, startY_ + spaceY_ * 2.0f });
-		break;
-	}
-}
-
-///-------------------------------------------/// 
-/// オプション画面の更新
-///-------------------------------------------///
-void TitleScene::UpdateOptionMenu() {
-	// Bボタンでオプション画面を閉じる
-	if (InputService::TriggerButton(0, ControllerButtonType::B) || InputService::TriggerKey(DIK_SPACE)) {
-		isOptionOpen_ = false;
-	}
-
-	/// ===ここにオプション画面の処理を追加=== ///
-}
-
 ============================================================
-File Path: Project/application/Scene/TitleScene.h
+File Path: Project/application/Scene/Title/TitleScene.h
 ============================================================
 #pragma once
 /// ===Include=== ///
 // IScene
 #include "Engine/Scene/IScene.h"
-#include "application/Drawing/2d/Sprite.h"
+// UI
+#include "application/Game/UI/Title/TitleUI.h"
 // C++
 #include <memory>
 #include <array>
@@ -42652,21 +43491,9 @@ private:/// ===メンバ変数=== ///
 	/// <summary>
 	/// シーン用
 	/// </summary>
-
-	/// ===スプライト=== ///
-	std::unique_ptr<Sprite> bgSprite_;         // 背景
-	std::unique_ptr<Sprite> bgKiriSprite_;     // 背景
-	std::unique_ptr<Sprite> titleSprite_;      // タイトル
-	std::unique_ptr<Sprite> startSprite_;      // 開始
-	std::unique_ptr<Sprite> optionSprite_;     // オプション
-	std::unique_ptr<Sprite> exitSprite_;       // 終了
-	std::unique_ptr<Sprite> selectOverlay_;    // 選択中のオーバーレイ
-	std::unique_ptr<Sprite> dimSprite_;        // 薄暗いオーバーレイ
-	std::unique_ptr<Sprite> optionMenuSprite_; // オプションメニュー
-
-	/// ===ポイントの値=== ///
-	float startY_ = 0.0f;
-	float spaceY_ = 0.0f;
+	
+	/// ===Class=== ///
+	std::unique_ptr<TitleUI> titleUI_;     // タイトルUI
 
 	/// ===Fade=== ///
 	enum class FadeState {
@@ -42676,21 +43503,6 @@ private:/// ===メンバ変数=== ///
 	};
 	FadeState currentFade_ = FadeState::FadeIn;
 
-	/// ===メニュー選択=== ///
-	// メニュー項目の列挙型
-	enum class MenuSelection {
-		Start,    // 開始
-		Option,   // オプション
-		Exit      // 終了
-	};
-	MenuSelection currentSelection_ = MenuSelection::Start; // 現在の選択
-	bool isOptionOpen_ = false;      // オプション画面が開いているか
-
-	/// ===入力制御=== ///
-	bool canInput_ = true; // 入力可能フラグ（連続入力防止）
-
-	/// ===参照スケール倍率=== ///
-	Vector2 scale_ = { 1.0f, 1.0f }; // スケール
 
 private:/// ===プライベート関数=== ///
 
@@ -42700,34 +43512,10 @@ private:/// ===プライベート関数=== ///
 	void UpdateFadeIn();
 
 	/// <summary>
-	/// 選択状態を更新します。
-	/// </summary>
-	void UpdateSelecting();
-
-	/// <summary>
 	/// フェードアウトの状態を更新します。
 	/// </summary>
 	void UpdateFadeOut();
 
-	/// <summary>
-	/// メニューの選択状態の更新処理
-	/// </summary>
-	void UpdateMenuSelection();
-
-	/// <summary>
-	/// メニューの選択決定処理
-	/// </summary>
-	void ConfirmSelection();
-
-	/// <summary>
-	/// 選択オーバーレイの位置を更新処理
-	/// </summary>
-	void UpdateSelectOverlayPosition();
-
-	/// <summary>
-	/// オプション画面の更新処理
-	/// </summary>
-	void UpdateOptionMenu();
 };
 
 ============================================================
