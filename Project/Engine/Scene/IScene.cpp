@@ -2,14 +2,8 @@
 // Service
 #include "Engine/System/Service/ServiceLocator.h"
 #include "Engine/System/Service/CameraService.h"
-#include "Engine/System/Service/GraphicsResourceGetter.h"
-#include "Engine/System/Service/Loader.h"
-// Object3d
-#include "Engine/Graphics/3d/Model/Model.h"
 // Line
 #include "Engine/Graphics/3d/Line/LineObject3D.h"
-// Math
-#include "Math/sMath.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ

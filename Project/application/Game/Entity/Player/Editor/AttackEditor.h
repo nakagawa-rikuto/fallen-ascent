@@ -70,7 +70,7 @@ private:
     int selectedAttackIndex_ = -1;                // 選択中の攻撃インデックス
 
     /// ===ファイル管理=== ///
-    static constexpr const char* kDefaultSavePath = "Resource/Json/Attacks";
+    static constexpr const char* kDefaultSavePath = "Resource/Json/Attacks/";
     char filePathBuffer_[256];                    // ファイルパス入力バッファ
     std::vector<std::string> availablePresets_;   // 利用可能なプリセットリスト
     std::unordered_map<int, std::string> attackFilePaths_; // 

@@ -1,20 +1,20 @@
 {
-    "activeDuration": 0.30000001192092896,
-    "attackID": 2,
-    "attackName": "Attack_2",
+    "activeDuration": 1.440000057220459,
+    "attackID": 1,
+    "attackName": "Mihon_1",
     "branchComboIDs": [],
     "cameraShakeDuration": 0.0,
     "cameraShakeIntensity": 0.0,
     "canComboToNext": false,
     "comboWindowTime": 1.0,
-    "cooldownTime": 0.05000000074505806,
+    "cooldownTime": 0.30000001192092896,
     "curveSegments": 20,
-    "description": "縦振り",
+    "description": "",
     "endRotation": [
-        0.0998334214091301,
-        0.0,
-        0.0,
-        0.9950041770935059
+        0.22984886169433594,
+        -0.42073550820350647,
+        0.42073550820350647,
+        0.7701511383056641
     ],
     "hitSoundName": "",
     "moveSpeedMultiplier": 1.0,
@@ -32,8 +32,8 @@
     ],
     "showTrajectory": true,
     "startRotation": [
-        -0.4794255495071411,
         0.0,
+        0.4794255495071411,
         0.0,
         0.8775825500488281
     ],
@@ -46,25 +46,33 @@
     "trajectoryPoints": [
         {
             "position": [
-                0.0,
-                8.5,
-                0.0
+                8.0,
+                5.0,
+                3.0
             ],
             "time": 0.0
         },
         {
             "position": [
-                0.0,
-                10.699999809265137,
-                8.0
+                -34.5,
+                5.199999809265137,
+                3.0
             ],
-            "time": 0.10999999940395355
+            "time": 0.5
+        },
+        {
+            "position": [
+                30.100000381469727,
+                0.30000001192092896,
+                3.0
+            ],
+            "time": 0.6399999856948853
         },
         {
             "position": [
                 0.0,
                 0.0,
-                9.800000190734863
+                0.0
             ],
             "time": 1.0
         }

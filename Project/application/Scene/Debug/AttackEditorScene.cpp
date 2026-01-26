@@ -3,6 +3,7 @@
 #include "Engine/System/Managers/SceneManager.h"
 // ServiceLocator
 #include "Engine/System/Service/DeltaTimeSevice.h"
+#include "Engine/System/Service/ParticleService.h"
 // ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
@@ -25,6 +26,10 @@ AttackEditorScene::~AttackEditorScene() {
 void AttackEditorScene::Initialize() {
     // ISceneの初期化(デフォルトカメラとカメラマネージャ)
     IScene::Initialize();
+
+	// パーティクルの定義を読み込み
+    ParticleService::LoadParticleDefinition("WeaponAttack.json");
+
 
     /// ===エディターの初期化=== ///
     attackEditor_ = std::make_unique<AttackEditor>();
