@@ -1,8 +1,8 @@
 #include "PlayerUI.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
-// Service
-#include "Engine/System/Service/GraphicsResourceGetter.h"
+// SpriteBaseScale 
+#include "application/Game/UI/SpriteBaseScale.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -28,12 +28,8 @@ void PlayerUI::Initialize() {
 		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
 	};
 	
-	/// ===Scale=== ///
-	// 基準解像度
-	constexpr float BASE_WIDTH = 1920.0f;
-	constexpr float BASE_HEIGHT = 1080.0f;
-	// Scale
-	scale_ = { windowSize.x / BASE_WIDTH, windowSize.y / BASE_HEIGHT };
+	/// ===基準スケール=== ///
+	scale_ = GetBaseScale();
 
 	/// ===位置=== ///
 	// 基準点

@@ -32,6 +32,7 @@ void GameSceneGameOverAnimationState::Update() {
 
 	// アニメーション完了を確認
 	if (gameOverAnimation_->IsCompleted()) {
+		//NOTE:ゲームオーバーの場合はタイトルに戻るため、Exitではなくタイトルシーンへ変更する処理を追加する予定
 		// Exit状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneExitState>());
 	}

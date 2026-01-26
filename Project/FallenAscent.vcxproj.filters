@@ -578,6 +578,7 @@
     <ClCompile Include="application\Scene\Game\State\GameSceneGameOverAnimationState.cpp" />
     <ClCompile Include="application\Scene\Game\State\GameSceneGameClearState.cpp" />
     <ClCompile Include="application\Scene\Game\State\GameSceneExitState.cpp" />
+    <ClCompile Include="application\Game\UI\Option\OptionUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -1118,6 +1119,8 @@
     <ClInclude Include="application\Scene\Game\State\GameSceneGameOverAnimationState.h" />
     <ClInclude Include="application\Scene\Game\State\GameSceneGameClearState.h" />
     <ClInclude Include="application\Scene\Game\State\GameSceneExitState.h" />
+    <ClInclude Include="application\Game\UI\Option\OptionUI.h" />
+    <ClInclude Include="application\Game\UI\SpriteBaseScale.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

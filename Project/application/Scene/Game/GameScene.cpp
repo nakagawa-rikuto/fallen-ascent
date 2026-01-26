@@ -12,6 +12,14 @@
 #include "Math/SMath.h"
 
 ///-------------------------------------------/// 
+/// コンストラクタ
+///-------------------------------------------///
+GameScene::GameScene() {
+	/// ===パーティクルの読み込み=== ///
+	LoadParticle();
+}
+
+///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
 GameScene::~GameScene() {
@@ -37,9 +45,6 @@ GameScene::~GameScene() {
 void GameScene::Initialize() {
 	/// ===ISceneの初期化=== ///
 	IScene::Initialize();
-
-	/// ===パーティクルの読み込み=== ///
-	LoadParticle();
 
 	/// ===Camera=== ///
 	camera_ = std::make_shared<GameCamera>();

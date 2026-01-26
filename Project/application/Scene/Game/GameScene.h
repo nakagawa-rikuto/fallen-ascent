@@ -15,7 +15,7 @@
 class GameScene : public IScene {
 public:/// ===メンバ関数=== ///
 
-	GameScene() = default;
+	GameScene();
 	~GameScene();
 
 	/// <summary>

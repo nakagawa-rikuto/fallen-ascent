@@ -1,24 +1,24 @@
 {
-    "activeDuration": 0.30000001192092896,
-    "attackID": 2,
-    "attackName": "Attack_2",
+    "activeDuration": 1.4199999570846558,
+    "attackID": 0,
+    "attackName": "Mihon_0",
     "branchComboIDs": [],
     "cameraShakeDuration": 0.0,
     "cameraShakeIntensity": 0.0,
-    "canComboToNext": false,
+    "canComboToNext": true,
     "comboWindowTime": 1.0,
-    "cooldownTime": 0.05000000074505806,
+    "cooldownTime": 0.30000001192092896,
     "curveSegments": 20,
-    "description": "縦振り",
+    "description": "",
     "endRotation": [
-        0.0998334214091301,
-        0.0,
-        0.0,
-        0.9950041770935059
+        0.42073550820350647,
+        0.42073550820350647,
+        -0.22984886169433594,
+        0.7701511383056641
     ],
     "hitSoundName": "",
     "moveSpeedMultiplier": 1.0,
-    "nextComboID": -1,
+    "nextComboID": 1,
     "particleEffectName": "WeaponAttack",
     "particleOffset": [
         0.0,
@@ -32,10 +32,10 @@
     ],
     "showTrajectory": true,
     "startRotation": [
-        -0.4794255495071411,
         0.0,
         0.0,
-        0.8775825500488281
+        0.0,
+        1.0
     ],
     "swingSoundName": "",
     "trajectoryColor": [
@@ -46,25 +46,33 @@
     "trajectoryPoints": [
         {
             "position": [
-                0.0,
-                8.5,
+                -8.0,
+                7.199999809265137,
                 0.0
             ],
             "time": 0.0
         },
         {
             "position": [
-                0.0,
-                10.699999809265137,
+                6.900000095367432,
+                4.099999904632568,
                 8.0
             ],
-            "time": 0.10999999940395355
+            "time": 0.5199999809265137
         },
         {
             "position": [
-                0.0,
-                0.0,
-                9.800000190734863
+                12.800000190734863,
+                -7.300000190734863,
+                0.0
+            ],
+            "time": 0.7799999713897705
+        },
+        {
+            "position": [
+                4.800000190734863,
+                8.199999809265137,
+                0.0
             ],
             "time": 1.0
         }
