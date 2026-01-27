@@ -657,6 +657,7 @@ void AttackEditor::RenderTimingSettings(AttackData& data) {
 /// 軌道設定UIの描画
 ///-------------------------------------------///
 void AttackEditor::RenderTrajectorySettings(AttackData& data) {
+    data;
 #ifdef USE_IMGUI
     ImGui::SeparatorText("武器の軌道設定");
 
@@ -684,6 +685,7 @@ void AttackEditor::RenderTrajectorySettings(AttackData& data) {
 /// 両手軌道設定UIの描画
 ///-------------------------------------------///
 void AttackEditor::RenderDualHandTrajectorySettings(AttackData& data) {
+    data;
 #ifdef USE_IMGUI
     ImGui::SeparatorText("手の攻撃設定");
 
@@ -896,6 +898,9 @@ void AttackEditor::RenderPreviewControl() {
 /// ベジェ曲線制御点リストのUI描画
 ///-------------------------------------------///
 void AttackEditor::RenderBezierControlPointList(std::vector<BezierControlPointData>& points, const char* label, TrajectoryType type) {
+	points;
+	label;
+    type;
 #ifdef USE_IMGUI
     // rotationEditDataのベクターサイズを調整
     std::vector<Vector3>* eulerList = nullptr;

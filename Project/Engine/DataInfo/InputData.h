@@ -33,6 +33,8 @@ enum class ControllerButtonType {
 	DPadDOWN,   // 十字キー下
 	DPadLEFT,   // 十字キー左
 	DPadRIGHT,  // 十字キー右
+	Select,     // セレクトボタン
+	Start,      // スタートボタン
 };
 
 /// ===コントローラーのスティックの状況をえるための列挙型=== ///

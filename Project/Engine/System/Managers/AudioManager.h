@@ -90,6 +90,12 @@ public:/// ===関数=== ///
 	void SetVolume(const std::string& key, float volume);
 
 	/// <summary>
+	/// サウンド全体の音量設定処理
+	/// </summary>
+	/// <param name="volume"></param>
+	void SetVolumeAll(float volume);
+
+	/// <summary>
 	/// 再生速度の設定処理
 	/// </summary>
 	/// <param name="key">ピッチを設定する対象を識別する文字列キー。</param>
