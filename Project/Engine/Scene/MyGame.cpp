@@ -143,6 +143,8 @@ void MyGame::LoadTexture() {
 	Loader::LoadTexture("aButton", "GameUI/xbox_button_color_a.png");
 	Loader::LoadTexture("leftStick", "GameUI/xbox_stick_l.png");
 	Loader::LoadTexture("rightStick", "GameUI/xbox_stick_r.png");
+	Loader::LoadTexture("menuButton", "GameUI/xbox_button_menu.png");
+	
 	// OptionUI
 	Loader::LoadTexture("OptionTitle", "OptionUI/OptionTitle.png");
 	Loader::LoadTexture("OptionVolume", "OptionUI/Volume.png");

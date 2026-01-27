@@ -38,5 +38,8 @@ private:
 	/// ===Class=== ///
 	// PlayerUI
 	std::unique_ptr<PlayerUI> playerUI_;
+
+	/// ===Sprite=== ///
+	std::unique_ptr<Sprite> optionMenuSprite_;
 };
 

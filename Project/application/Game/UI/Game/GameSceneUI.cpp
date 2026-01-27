@@ -1,6 +1,7 @@
 #include "GameSceneUI.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
+#include "Engine/System/Service/GraphicsResourceGetter.h"
 
 ///-------------------------------------------/// 
 /// Setter
@@ -17,6 +18,21 @@ void GameSceneUI::Initialize() {
 	// PlayerUIの生成と初期化
 	playerUI_ = std::make_unique<PlayerUI>();
 	playerUI_->Initialize();
+
+	/// ===ウィンドウサイズの取得=== ///
+	Vector2 windowSize = {
+		static_cast<float>(GraphicsResourceGetter::GetWindowWidth()),
+		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
+	};
+
+	/// ===OptionSprite=== ///
+	optionMenuSprite_ = std::make_unique<Sprite>();
+	optionMenuSprite_->Initialize("menuButton");
+	optionMenuSprite_->SetPosition({ windowSize.x - 100.0f, 100.0f});
+	optionMenuSprite_->SetSize({ 100.0f, 100.0f });
+	optionMenuSprite_->SetAnchorPoint({ 0.5f, 0.5f });
+	optionMenuSprite_->Update();
+
 }
 
 ///-------------------------------------------/// 
@@ -33,4 +49,6 @@ void GameSceneUI::Update() {
 void GameSceneUI::Draw() {
 	// PlayerUIの描画
 	playerUI_->Draw();
+	// オプションメニュースプライトの描画
+	optionMenuSprite_->Draw();
 }
