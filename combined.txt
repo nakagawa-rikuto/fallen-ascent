@@ -318,6 +318,7 @@
 └── └──     ├── DDS/
 └── └──     ├── GameUI/
 └── └──     ├── OffScreen/
+└── └──     ├── OptionUI/
 └── └──     ├── Particle/
 └── └──     ├── TitleUI/
 └── ├── application/
@@ -4710,6 +4711,8 @@ enum class ControllerButtonType {
 	DPadDOWN,   // 十字キー下
 	DPadLEFT,   // 十字キー左
 	DPadRIGHT,  // 十字キー右
+	Select,     // セレクトボタン
+	Start,      // スタートボタン
 };
 
 /// ===コントローラーのスティックの状況をえるための列挙型=== ///
@@ -17410,6 +17413,9 @@ void MyGame::LoadTexture() {
 	Loader::LoadTexture("aButton", "GameUI/xbox_button_color_a.png");
 	Loader::LoadTexture("leftStick", "GameUI/xbox_stick_l.png");
 	Loader::LoadTexture("rightStick", "GameUI/xbox_stick_r.png");
+	// OptionUI
+	Loader::LoadTexture("OptionTitle", "OptionUI/OptionTitle.png");
+	Loader::LoadTexture("OptionVolume", "OptionUI/Volume.png");
 	// GameAnimation
 	Loader::LoadTexture("GameOverAnimation", "Animation/GameOverAnimation.png");
 }
@@ -19753,6 +19759,8 @@ void Controller::Initialize() {
 		{ControllerButtonType::DPadRIGHT, {static_cast<WORD>(XINPUT_GAMEPAD_DPAD_RIGHT), 11}}, // DPad →
 		{ControllerButtonType::LeftStick, {static_cast<WORD>(XINPUT_GAMEPAD_LEFT_THUMB), 6}},   // Lスティック押し込み
 		{ControllerButtonType::RightStick, {static_cast<WORD>(XINPUT_GAMEPAD_RIGHT_THUMB), 7}}, // Rスティック押し込み
+		{ControllerButtonType::Select, {static_cast<WORD>(XINPUT_GAMEPAD_BACK), 8}},    // セレクトボタン
+		{ControllerButtonType::Start, {static_cast<WORD>(XINPUT_GAMEPAD_START), 9}},    // スタートボタン
 	};
 }
 
@@ -20127,7 +20135,7 @@ float Controller::GetTriggerValue(int stickNo, ControllerButtonType button) cons
 File Path: Project/Engine/System/Input/Controller.h
 ============================================================
 #pragma once
-/// ===Includ=== ///
+/// ===Include=== ///
 // Engine
 #include "Engine/Core/ComPtr.h"
 #include "Engine/DataInfo/InputData.h"
@@ -20980,6 +20988,17 @@ void AudioManager::SetVolume(const std::string& key, float volume) {
 }
 
 ///-------------------------------------------/// 
+/// 全ての音量の設定
+///-------------------------------------------///
+void AudioManager::SetVolumeAll(float volume) {
+	for (auto& pair : sourceVoices_) {
+		if (pair.second) {
+			pair.second->SetVolume(volume);
+		}
+	}
+}
+
+///-------------------------------------------/// 
 /// 再生速度の設定
 ///-------------------------------------------///
 void AudioManager::setPitch(const std::string& key, float pitch) {
@@ -21254,6 +21273,12 @@ public:/// ===関数=== ///
 	/// <param name="key">音量を設定する対象を識別するキー文字列。</param>
 	/// <param name="volume">設定する音量値。通常は 0.0（無音）から 1.0（最大）などの範囲で指定します。</param>
 	void SetVolume(const std::string& key, float volume);
+
+	/// <summary>
+	/// サウンド全体の音量設定処理
+	/// </summary>
+	/// <param name="volume"></param>
+	void SetVolumeAll(float volume);
 
 	/// <summary>
 	/// 再生速度の設定処理
@@ -24840,7 +24865,7 @@ File Path: Project/Engine/System/Service/AudioService.cpp
 /// Audioの処理
 ///-------------------------------------------///
 // 音声の再生
-void AudioService::PlayeSound(const std::string& key, bool loop) {
+void AudioService::StartSound(const std::string& key, bool loop) {
 	ServiceLocator::GetAudioManager()->Play(key, loop);
 }
 // 音声の停止
@@ -24850,6 +24875,10 @@ void AudioService::StopSound(const std::string& key) {
 // 音声のボリュームの調整
 void AudioService::VolumeSound(const std::string& key, float volume) {
 	ServiceLocator::GetAudioManager()->SetVolume(key, volume);
+}
+// 全ての音声のボリュームの調整
+void AudioService::AllVolumeSound(float volume) {
+	ServiceLocator::GetAudioManager()->SetVolumeAll(volume);
 }
 // 音声の再生速度の調整
 void AudioService::PitchSound(const std::string& key, float pitch) {
@@ -24875,7 +24904,7 @@ public:
 	/// </summary>
 	/// <param name="key">再生する音声を識別するキーを表す文字列。</param>
 	/// <param name="loop">再生をループするかどうかを指定します。true の場合はループ再生、false の場合は一度だけ再生します。</param>
-	static void PlayeSound(const std::string& key, bool loop);
+	static void StartSound(const std::string& key, bool loop);
 
 	/// <summary>
 	/// 指定したキーに対応する再生中のサウンドを停止します。
@@ -24889,6 +24918,12 @@ public:
 	/// <param name="key">サウンドを識別する文字列キー。</param>
 	/// <param name="volume">設定する音量を表す浮動小数点値。範囲や単位は実装に依存します。</param>
 	static void VolumeSound(const std::string& key, float volume);
+
+	/// <summary>
+	/// 全てのサウンドの音量を一括で設定します。
+	/// </summary>
+	/// <param name="volume"></param>
+	static void AllVolumeSound(float volume);
 
 	/// <summary>
 	/// 指定されたキーに対応するサウンドを指定したピッチで再生します。
@@ -38453,6 +38488,7 @@ void AttackEditor::RenderTimingSettings(AttackData& data) {
 /// 軌道設定UIの描画
 ///-------------------------------------------///
 void AttackEditor::RenderTrajectorySettings(AttackData& data) {
+    data;
 #ifdef USE_IMGUI
     ImGui::SeparatorText("武器の軌道設定");
 
@@ -38480,6 +38516,7 @@ void AttackEditor::RenderTrajectorySettings(AttackData& data) {
 /// 両手軌道設定UIの描画
 ///-------------------------------------------///
 void AttackEditor::RenderDualHandTrajectorySettings(AttackData& data) {
+    data;
 #ifdef USE_IMGUI
     ImGui::SeparatorText("手の攻撃設定");
 
@@ -38692,6 +38729,9 @@ void AttackEditor::RenderPreviewControl() {
 /// ベジェ曲線制御点リストのUI描画
 ///-------------------------------------------///
 void AttackEditor::RenderBezierControlPointList(std::vector<BezierControlPointData>& points, const char* label, TrajectoryType type) {
+	points;
+	label;
+    type;
 #ifdef USE_IMGUI
     // rotationEditDataのベクターサイズを調整
     std::vector<Vector3>* eulerList = nullptr;
@@ -42110,6 +42150,13 @@ File Path: Project/application/Game/UI/Option/OptionUI.cpp
 #include "OptionUI.h"
 // SpriteBaseScale
 #include "application/Game/UI/SpriteBaseScale.h"
+// Service
+#include "Engine/System/Service/InputService.h"
+#include "Engine/System/Service/AudioService.h"
+#ifdef USE_IMGUI
+// ImGui
+#include <imgui.h>
+#endif // USE_IMGUI
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -42136,7 +42183,7 @@ void OptionUI::Initialize() {
 
 	// 薄暗いオーバーレイ
 	dimSprite_ = std::make_unique<Sprite>();
-	dimSprite_->Initialize("uvChecker");
+	dimSprite_->Initialize("White");
 	dimSprite_->SetPosition({ 0.0f, 0.0f });
 	dimSprite_->SetSize({ windowSize.x, windowSize.y });
 	dimSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 0.7f }); // 半透明の黒
@@ -42144,26 +42191,174 @@ void OptionUI::Initialize() {
 
 	// オプションメニュー
 	optionMenuSprite_ = std::make_unique<Sprite>();
-	optionMenuSprite_->Initialize("uvChecker");
+	optionMenuSprite_->Initialize("White");
 	optionMenuSprite_->SetPosition({ windowSize.x / 2.0f, windowSize.y / 2.0f });
-	optionMenuSprite_->SetSize({ 500.0f * scale_.x, 400.0f * scale_.y });
+	optionMenuSprite_->SetSize({ 800.0f * scale_.x, 700.0f * scale_.y });
 	optionMenuSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	optionMenuSprite_->SetColor({ 0.3f, 0.3f, 0.5f, 1.0f }); // 青みがかった色
 	optionMenuSprite_->Update();
+
+	/// ===AudioSprite=== ///
+	audioButtonSprite_ = std::make_unique<Sprite>();
+	audioButtonSprite_->Initialize("OptionVolume");
+	audioButtonSprite_->SetPosition({ audioButtonPos_.x * scale_.x, audioButtonPos_.y * scale_.y });
+	audioButtonSprite_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
+	audioButtonSprite_->SetAnchorPoint({ 0.5f, 0.5f });
+	audioButtonSprite_->SetColor({ 1.0f, 1.0f, 0.0f, 1.0f }); // 黄色
+	audioButtonSprite_->Update();
+
+	// オーディオスプライト
+	audioHandleSprite_ = std::make_unique<Sprite>();
+	audioHandleSprite_->Initialize("White");
+	audioHandleSprite_->SetColor({ 1.0f, 1.0f, 0.0f, 1.0f }); // 黄色
+
+	audioTextSprite_ = std::make_unique<Sprite>();
+	audioTextSprite_->Initialize("White");
+	audioTextSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f }); // 黒色
+
+	audioSliderSprite_ = std::make_unique<Sprite>();
+	audioSliderSprite_->Initialize("White");
+	audioSliderSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 灰色
+	UpdateAudioSprite();
+
+	// タイトルボタンスプライト
+	titleButtonSprite_ = std::make_unique<Sprite>();
+	titleButtonSprite_->Initialize("OptionTitle");
+	titleButtonSprite_->SetPosition({ windowSize.x / 2.0f, windowSize.y / 2.0f + 150.0f * scale_.y });
+	titleButtonSprite_->SetSize({ 400.0f * scale_.x, 150.0f * scale_.y });
+	titleButtonSprite_->SetAnchorPoint({ 0.5f, 0.5f });
+	titleButtonSprite_->Update();
 }
 
 ///-------------------------------------------/// 
-/// 更新処理
+/// 更新処理（タイトル）
 ///-------------------------------------------///
-void OptionUI::Update() {}
+void OptionUI::TitleUpdate() {
+#ifdef USE_IMGUI
+
+	ImGui::Begin("OptionUI");
+	ImGui::Text("OptionUI");
+	ImGui::DragFloat2("audioSpritePos", &audioButtonPos_.x, 1.0f);
+	ImGui::DragFloat2("spritePos_", &spritePos_.x, 1.0f);
+	ImGui::DragFloat2("spritePos_2_", &spritePos_2_.x, 1.0f);
+	ImGui::DragFloat2("spriteSize_", &spriteSize_.x, 1.0f);
+	ImGui::DragFloat2("spriteSize_2_", &spriteSize_2_.x, 1.0f);
+	ImGui::End();
+
+#endif // USE_IMGUI
+
+
+	// 音量調整（左右）
+	if (InputService::TriggerButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
+		volumeBGM_ = (std::min)(volumeBGM_ + 1, 100);
+		AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
+	}
+	if (InputService::TriggerButton(stickNo_, ControllerButtonType::DPadLEFT)) {
+		volumeBGM_ = (std::max)(volumeBGM_ - 1, 0);
+		AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
+	}
+
+	// スプライトの更新
+	UpdateAudioSprite();
+
+}
+
+///-------------------------------------------/// 
+/// 更新処理（ゲーム）
+///-------------------------------------------///
+void OptionUI::GameUpdate() {
+
+	// 項目選択（上下）
+	if (InputService::TriggerButton(stickNo_, ControllerButtonType::DPadUP) ||
+		InputService::TriggerButton(stickNo_, ControllerButtonType::DPadDOWN)) {
+		// Audio <-> Title をトグル
+		if (optionState_ == OptionState::Audio) {
+			optionState_ = OptionState::Title;
+			titleButtonSprite_->SetColor({ 1.0f, 1.0f, 0.0f, 1.0f }); // 選択中は黄色
+			audioHandleSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f }); // 白色
+			audioButtonSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f }); // 白色
+		} else {
+			optionState_ = OptionState::Audio;
+			titleButtonSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f }); // 非選択中は白色
+			audioHandleSprite_->SetColor({ 1.0f, 1.0f, 0.0f, 1.0f }); // 黄色
+			audioButtonSprite_->SetColor({ 1.0f, 1.0f, 0.0f, 1.0f }); // 黄色
+		}
+	}
+
+    // 音量調整（左右）
+    if (optionState_ == OptionState::Audio) { // BGM
+        if (InputService::TriggerButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
+            volumeBGM_ = (std::min)(volumeBGM_ + 1, 100);
+            AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
+        }
+        if (InputService::TriggerButton(stickNo_, ControllerButtonType::DPadLEFT)) {
+            volumeBGM_ = (std::max)(volumeBGM_ - 1, 0);
+            AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
+        }
+    }
+
+	// スプライトの更新
+	titleButtonSprite_->Update();
+	// スプライトの更新
+	UpdateAudioSprite();
+
+    // タイトルに戻る
+    if (optionState_ == OptionState::Title && InputService::TriggerButton(stickNo_, ControllerButtonType::A)) {
+        returnToTitle_ = true;
+    }
+}
 
 ///-------------------------------------------/// 
 /// 描画処理
 ///-------------------------------------------///
-void OptionUI::Draw() {
+void OptionUI::TitleDraw() {
 	dimSprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
-	optionMenuSprite_->Draw(GroundType::Front);
+	//optionMenuSprite_->Draw(GroundType::Front);
+	audioButtonSprite_->Draw(GroundType::Front);
+	audioHandleSprite_->Draw(GroundType::Front);
+	audioTextSprite_->Draw(GroundType::Front);
+	audioSliderSprite_->Draw(GroundType::Front);
 }
+
+///-------------------------------------------/// 
+/// 描画処理
+///-------------------------------------------///
+void OptionUI::GameDraw() {
+	dimSprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
+	//optionMenuSprite_->Draw(GroundType::Front);
+	audioButtonSprite_->Draw(GroundType::Front);
+	audioHandleSprite_->Draw(GroundType::Front);
+	audioTextSprite_->Draw(GroundType::Front);
+	audioSliderSprite_->Draw(GroundType::Front);
+	titleButtonSprite_->Draw(GroundType::Front);
+}
+
+///-------------------------------------------/// 
+/// オーディオスプライトの更新
+///-------------------------------------------///
+void OptionUI::UpdateAudioSprite() {
+
+	audioButtonSprite_->SetPosition({ audioButtonPos_.x * scale_.x, audioButtonPos_.y * scale_.y });
+	audioButtonSprite_->Update();
+
+	// オーディオスプライト
+	audioHandleSprite_->SetPosition({ spritePos_.x * scale_.x, spritePos_.y * scale_.y });
+	audioHandleSprite_->SetAnchorPoint({ 0.0f, 0.0f });
+	audioHandleSprite_->SetSize({ spriteSize_.x * scale_.x, spriteSize_.y * scale_.y });
+	audioHandleSprite_->Update();
+
+	audioTextSprite_->SetPosition({ spritePos_2_.x * scale_.x, spritePos_2_.y * scale_.y });
+	audioTextSprite_->SetAnchorPoint({ 0.0f, 0.0f });
+	audioTextSprite_->SetSize({ (spriteSize_2_.x * 100.0f) * scale_.x, spriteSize_2_.y * scale_.y });
+	audioTextSprite_->Update();
+
+	audioSliderSprite_->SetPosition({ spritePos_2_.x * scale_.x, spritePos_2_.y * scale_.y });
+	audioSliderSprite_->SetAnchorPoint({ 0.0f, 0.0f });
+	audioSliderSprite_->SetSize({ (spriteSize_2_.x * static_cast<float>(volumeBGM_)) * scale_.x, spriteSize_2_.y * scale_.y });
+	audioSliderSprite_->Update();
+
+}
+
 
 ============================================================
 File Path: Project/application/Game/UI/Option/OptionUI.h
@@ -42189,23 +42384,67 @@ public:
 	void Initialize();
 
 	/// <summary>
-	/// 更新処理
+	/// 更新処理(タイトル)
 	/// </summary>
-	void Update();
+	void TitleUpdate();
+
+	/// <summary>
+	/// 更新処理(ゲーム中)
+	/// </summary>
+	void GameUpdate();
 
 	/// <summary>
 	/// 描画処理
 	/// </summary>
-	void Draw();
+	void TitleDraw();
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	void GameDraw();
+
+public: /// ===Getter=== ///
+	// タイトルに戻るフラグの取得
+	bool GetReturnToTitle() const { return returnToTitle_; }
 
 private: /// ===メンバ変数=== ///
 
 	/// ===スプライト=== ///
-	std::unique_ptr<Sprite> dimSprite_;        // 薄暗いオーバーレイ
-	std::unique_ptr<Sprite> optionMenuSprite_; // オプションメニュー
+	std::unique_ptr<Sprite> dimSprite_;          // 薄暗いオーバーレイ
+	std::unique_ptr<Sprite> optionMenuSprite_;   // オプションメニュー
+	std::unique_ptr<Sprite> titleButtonSprite_;  // タイトルに戻るボタン
+	std::unique_ptr<Sprite> audioButtonSprite_;  // オーディオボタン
+	std::unique_ptr<Sprite> audioTextSprite_;    // 音量調整テキスト
+	std::unique_ptr<Sprite> audioSliderSprite_;  // 音量調整スライダー
+	std::unique_ptr<Sprite> audioHandleSprite_;  // 音量調整ハンドル
 
 	/// ===参照スケール倍率=== ///
 	Vector2 scale_ = { 1.0f, 1.0f };
+
+	/// ===Game用=== ///
+	enum class OptionState {
+		Audio,
+		Title,
+	};
+
+	int volumeBGM_ = 100; // BGM音量（0～100）
+	bool returnToTitle_ = false; // タイトルに戻るフラグ
+	OptionState optionState_ = OptionState::Audio; // オプションの状態
+	int stickNo_ = 0; // コントローラー番号
+
+	// デバッグ用ImGui
+	Vector2 spritePos_ = { 592.0f, 445.0f };
+	Vector2 spritePos_2_ = { 605.0f, 457.0f };
+	Vector2 audioButtonPos_ = { 690.0f, 400.0f };
+	Vector2 spriteSize_ = { 728.0f, 71.0f };
+	Vector2 spriteSize_2_ = { 7.0f, 50.0f };
+
+private:
+
+	/// <summary>
+	/// Audioスプライトの更新処理
+	/// </summary>
+	void UpdateAudioSprite();
 };
 
 
@@ -42365,7 +42604,7 @@ void TitleUI::Update() {
 
 	// オプションの更新
 	if (isOptionOpen_) {
-		optionUI_->Update();
+		optionUI_->TitleUpdate();
 	}
 
 	// 選択状態の更新
@@ -42387,7 +42626,7 @@ void TitleUI::Draw() {
 
 	// オプションの描画
 	if (isOptionOpen_) {
-		optionUI_->Draw();
+		optionUI_->TitleDraw();
 	}
 }
 
@@ -43646,11 +43885,16 @@ private:
 File Path: Project/application/Scene/Game/State/GameSceneInGameState.cpp
 ============================================================
 #include "GameSceneInGameState.h"
+// SceneManager
+#include "Engine/System/Managers/SceneManager.h"
 // GameScene
 #include "application/Scene/Game/GameScene.h"
 // State
 #include "GameSceneGameOverAnimationState.h"
 #include "GameSceneGameClearState.h"
+// Service
+#include "Engine/System/Service/InputService.h"
+#include "Engine/System/Service/DeltaTimeSevice.h"
 
 ///-------------------------------------------/// 
 /// 初期化処理
@@ -43665,6 +43909,12 @@ void GameSceneInGameState::Enter(GameScene* gameScene) {
 	// GameSceneUIにPlayerを設定
 	ui_->SetPlayer(gameScene_->GetPlayer());
 	ui_->Update();
+
+	/// ===OptionUI=== ///
+	optionUI_ = std::make_unique<OptionUI>();
+	optionUI_->Initialize();
+	optionUI_->GameUpdate();
+	isOptionActive_ = false;
 }
 
 ///-------------------------------------------/// 
@@ -43672,12 +43922,29 @@ void GameSceneInGameState::Enter(GameScene* gameScene) {
 ///-------------------------------------------///
 void GameSceneInGameState::Update() {
 
-	// EnemyManagerの更新
-	gameScene_->GetEnemyManager()->Update();
-	// Playerの更新
-	gameScene_->GetPlayer()->Update();
-	// GameSceneUIの更新
-	ui_->Update();
+	// オプションアクティブ
+	if (InputService::TriggerButton(0, ControllerButtonType::Start)) {
+		if (isOptionActive_) {
+			DeltaTimeSevice::SetDeltaTime(1.0f / 60.0f);
+			isOptionActive_ = false;
+		} else {
+			DeltaTimeSevice::SetDeltaTime(0.0f);
+			isOptionActive_ = true;
+		}
+	}
+
+	// UIの更新
+	if (isOptionActive_) {
+		// OptionUIの更新
+		optionUI_->GameUpdate();
+	} else {
+		// EnemyManagerの更新
+		gameScene_->GetEnemyManager()->Update();
+		// Playerの更新
+		gameScene_->GetPlayer()->Update();
+		// GameSceneUIの更新
+		ui_->Update();
+	}
 
 	// Playerが死亡しているか確認
 	if (gameScene_->GetPlayer()->GetIsDead()) {
@@ -43687,13 +43954,23 @@ void GameSceneInGameState::Update() {
 		// ゲームクリアアニメーション状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
 	}
+
+	// タイトルに戻る処理
+	if (optionUI_->GetReturnToTitle()) {
+		sceneManager_->ChangeScene(SceneType::Title);
+	}
 }
 
 ///-------------------------------------------/// 
 /// 描画処理
 ///-------------------------------------------///
 void GameSceneInGameState::Draw() {
-	ui_->Draw();
+	
+	if (isOptionActive_) {
+		optionUI_->GameDraw();
+	} else {
+		ui_->Draw();
+	}
 }
 
 ///-------------------------------------------/// 
@@ -43713,6 +43990,7 @@ File Path: Project/application/Scene/Game/State/GameSceneInGameState.h
 #include "Base/GameSceneFadeState.h"
 // GameUI
 #include "application/Game/UI/Game/GameSceneUI.h"
+#include "application/Game/UI/Option/OptionUI.h"
 // C++
 #include <memory>
 
@@ -43748,6 +44026,9 @@ public:
 private:
 	// UI
 	std::unique_ptr<GameSceneUI> ui_;
+	// OptionUI
+	std::unique_ptr<OptionUI> optionUI_;
+	bool isOptionActive_ = false;
 };
 
 
