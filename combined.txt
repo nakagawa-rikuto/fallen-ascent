@@ -17367,7 +17367,7 @@ void MyGame::Draw() {
 ///-------------------------------------------///
 void MyGame::LoadAudio() {
 #pragma region Wave
-	Loader::LoadWave("fanfare", "fanfare.wav");
+	Loader::LoadWave("title", "title.wav");
 #pragma endregion
 #pragma region MP3
 	Loader::LoadMP3("clear", "clear.mp3");
@@ -42249,11 +42249,11 @@ void OptionUI::TitleUpdate() {
 
 
 	// 音量調整（左右）
-	if (InputService::TriggerButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
+	if (InputService::PushButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
 		volumeBGM_ = (std::min)(volumeBGM_ + 1, 100);
 		AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
 	}
-	if (InputService::TriggerButton(stickNo_, ControllerButtonType::DPadLEFT)) {
+	if (InputService::PushButton(stickNo_, ControllerButtonType::DPadLEFT)) {
 		volumeBGM_ = (std::max)(volumeBGM_ - 1, 0);
 		AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
 	}
@@ -42287,11 +42287,11 @@ void OptionUI::GameUpdate() {
 
     // 音量調整（左右）
     if (optionState_ == OptionState::Audio) { // BGM
-        if (InputService::TriggerButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
+        if (InputService::PushButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
             volumeBGM_ = (std::min)(volumeBGM_ + 1, 100);
             AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
         }
-        if (InputService::TriggerButton(stickNo_, ControllerButtonType::DPadLEFT)) {
+        if (InputService::PushButton(stickNo_, ControllerButtonType::DPadLEFT)) {
             volumeBGM_ = (std::max)(volumeBGM_ - 1, 0);
             AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
         }
@@ -43213,6 +43213,7 @@ File Path: Project/application/Scene/Game/GameScene.cpp
 #include "Engine/System/Service/ParticleService.h"
 #include "Engine/System/Service/ColliderService.h"
 #include "Engine/System/Service/GraphicsResourceGetter.h"
+#include "Engine/System/Service/AudioService.h"
 // State
 #include "State/GameSceneInitializeState.h"
 // Math
@@ -43232,6 +43233,9 @@ GameScene::GameScene() {
 GameScene::~GameScene() {
 	// ISceneのデストラクタ
 	IScene::~IScene();
+	// BGMの停止
+	AudioService::StopSound("title");
+
 	// Colliderのリセット
 	ColliderService::Reset();
 	// State
@@ -43279,6 +43283,9 @@ void GameScene::Initialize() {
 	/// ===State=== ///
 	// 初期状態をInitializeStateに設定
 	ChangState(std::make_unique<GameSceneInitializeState>());
+
+	// BGMの再生
+	AudioService::StartSound("title", true);
 }
 
 ///-------------------------------------------/// 
