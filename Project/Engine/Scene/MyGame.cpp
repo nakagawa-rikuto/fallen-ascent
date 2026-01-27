@@ -97,7 +97,7 @@ void MyGame::Draw() {
 ///-------------------------------------------///
 void MyGame::LoadAudio() {
 #pragma region Wave
-	Loader::LoadWave("fanfare", "fanfare.wav");
+	Loader::LoadWave("title", "title.wav");
 #pragma endregion
 #pragma region MP3
 	Loader::LoadMP3("clear", "clear.mp3");

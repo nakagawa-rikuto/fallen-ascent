@@ -6,6 +6,7 @@
 #include "Engine/System/Service/ParticleService.h"
 #include "Engine/System/Service/ColliderService.h"
 #include "Engine/System/Service/GraphicsResourceGetter.h"
+#include "Engine/System/Service/AudioService.h"
 // State
 #include "State/GameSceneInitializeState.h"
 // Math
@@ -25,6 +26,9 @@ GameScene::GameScene() {
 GameScene::~GameScene() {
 	// ISceneのデストラクタ
 	IScene::~IScene();
+	// BGMの停止
+	AudioService::StopSound("title");
+
 	// Colliderのリセット
 	ColliderService::Reset();
 	// State
@@ -72,6 +76,9 @@ void GameScene::Initialize() {
 	/// ===State=== ///
 	// 初期状態をInitializeStateに設定
 	ChangState(std::make_unique<GameSceneInitializeState>());
+
+	// BGMの再生
+	AudioService::StartSound("title", true);
 }
 
 ///-------------------------------------------/// 

@@ -100,11 +100,11 @@ void OptionUI::TitleUpdate() {
 
 
 	// 音量調整（左右）
-	if (InputService::TriggerButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
+	if (InputService::PushButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
 		volumeBGM_ = (std::min)(volumeBGM_ + 1, 100);
 		AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
 	}
-	if (InputService::TriggerButton(stickNo_, ControllerButtonType::DPadLEFT)) {
+	if (InputService::PushButton(stickNo_, ControllerButtonType::DPadLEFT)) {
 		volumeBGM_ = (std::max)(volumeBGM_ - 1, 0);
 		AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
 	}
@@ -138,11 +138,11 @@ void OptionUI::GameUpdate() {
 
     // 音量調整（左右）
     if (optionState_ == OptionState::Audio) { // BGM
-        if (InputService::TriggerButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
+        if (InputService::PushButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
             volumeBGM_ = (std::min)(volumeBGM_ + 1, 100);
             AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
         }
-        if (InputService::TriggerButton(stickNo_, ControllerButtonType::DPadLEFT)) {
+        if (InputService::PushButton(stickNo_, ControllerButtonType::DPadLEFT)) {
             volumeBGM_ = (std::max)(volumeBGM_ - 1, 0);
             AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
         }
