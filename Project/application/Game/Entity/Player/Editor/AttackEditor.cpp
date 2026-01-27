@@ -1,6 +1,8 @@
 #include "AttackEditor.h"
 // PlayerWeapon
 #include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
+// PlayerHand
+#include "application/Game/Entity/Player/Hand/PlayerHand.h"
 // Service
 #include "Engine/System/Service/ServiceLocator.h"
 // Line
@@ -40,6 +42,7 @@ void AttackEditor::Initialize() {
 /// 更新
 ///-------------------------------------------///
 void AttackEditor::Update(const float deltaTime) {
+	// 表示されていなければ処理しない
     if (!isVisible_) return;
 
     // プレビューの更新
@@ -85,8 +88,13 @@ void AttackEditor::Render() {
                 ImGui::EndTabItem();
             }
 
-            if (ImGui::BeginTabItem("軌道")) {
+            if (ImGui::BeginTabItem("武器の軌道")) {
                 RenderTrajectorySettings(currentAttack);
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("手の軌道")) {
+                RenderDualHandTrajectorySettings(currentAttack);
                 ImGui::EndTabItem();
             }
 
@@ -218,42 +226,91 @@ void AttackEditor::Render() {
 /// プレビュー描画
 ///-------------------------------------------///
 void AttackEditor::DrawPreview() {
+	// 表示状態と選択中の攻撃を確認
     if (!isVisible_ || selectedAttackIndex_ < 0 || selectedAttackIndex_ >= static_cast<int>(attacks_.size())) {
         return;
     }
 
+	// 現在の攻撃データを取得
     AttackData& currentAttack = attacks_[selectedAttackIndex_];
 
+	// 軌道表示が無効なら終了
     if (!currentAttack.showTrajectory) {
         return;
     }
 
-    // 武器位置を基準にワールド座標に変換
-    Vector3 weaponPos = previewWeaponPosition_;
-    std::vector<BezierControlPointData> worldPoints;
-
-    for (const auto& point : currentAttack.trajectoryPoints) {
-        BezierControlPointData worldPoint = {};
-        worldPoint.position = weaponPos + point.position;
-        worldPoint.time = point.time;
-        worldPoints.push_back(worldPoint);
+    /// ===右手=== ///
+    if (currentAttack.isRightHandAttack) {
+        // Dataの取得
+        std::vector<BezierControlPointData> HandWorld;
+        for (const auto& point : currentAttack.rightHandTrajectoryPoints) {
+            BezierControlPointData worldPoint = {};
+            worldPoint.position = point.position;
+            worldPoint.rotation = point.rotation;
+            worldPoint.time = point.time;
+            HandWorld.push_back(worldPoint);
+        }
+        // 右手軌道（緑）
+        Vector4 color = { currentAttack.rightHandColor.x, currentAttack.rightHandColor.y, currentAttack.rightHandColor.z, 1.0f };
+        line_->CreateSmoothCurve(HandWorld, color, currentAttack.curveSegments);
+        // 制御点を可視化（右手）
+        ServiceLocator::GetLineObject3D()->DrawBezierControlPoints(
+            HandWorld,
+            Vector4{ 0.5f, 1.0f, 0.5f, 1.0f },  // 明るい緑
+            Vector4{ 0.2f, 0.8f, 0.2f, 0.5f },  // 半透明緑
+            AttackData::kControlPointSize
+        );
     }
 
-    // ベジェ曲線を描画
-    Vector4 trajectoryColor{ currentAttack.trajectoryColor.x, currentAttack.trajectoryColor.y, currentAttack.trajectoryColor.z, 1.0f };
-    line_->CreateSmoothCurve(worldPoints, trajectoryColor, currentAttack.curveSegments);
+    /// ===左手=== ///
+    if (currentAttack.isLeftHandAttack) {
+        // Dataの取得
+        std::vector<BezierControlPointData> HandWorld;
+        for (const auto& point : currentAttack.leftHandTrajectoryPoints) {
+            BezierControlPointData worldPoint = {};
+            worldPoint.position = point.position;
+			worldPoint.rotation = point.rotation;
+            worldPoint.time = point.time;
+            HandWorld.push_back(worldPoint);
+        }
+        // 左手軌道（青）
+        Vector4 color = { currentAttack.leftHandColor.x, currentAttack.leftHandColor.y, currentAttack.leftHandColor.z, 1.0f };
+        line_->CreateSmoothCurve(HandWorld, color, currentAttack.curveSegments);
+        // 制御点を可視化（左手）
+        ServiceLocator::GetLineObject3D()->DrawBezierControlPoints(
+            HandWorld,
+            Vector4{ 0.5f, 0.5f, 1.0f, 1.0f },  // 明るい青
+            Vector4{ 0.2f, 0.2f, 0.8f, 0.5f },  // 半透明青
+            AttackData::kControlPointSize
+        );
+    }
 
-    // 制御点を可視化
+    /// ===武器=== ///
+    // Dataの取得
+    std::vector<BezierControlPointData> WeaponWorld;
+    for (const auto& point : currentAttack.weaponTrajectoryPoints) {
+        BezierControlPointData worldPoint = {};
+        worldPoint.position = point.position;
+        worldPoint.rotation = point.rotation;
+        worldPoint.time = point.time;
+        WeaponWorld.push_back(worldPoint);
+    }
+    // 武器軌道（赤）
+    Vector4 weaponColor = { currentAttack.weaponColor.x, currentAttack.weaponColor.y, currentAttack.weaponColor.z, 1.0f };
+    line_->CreateSmoothCurve(WeaponWorld, weaponColor, currentAttack.curveSegments);
+    // 制御点を可視化（武器）
     ServiceLocator::GetLineObject3D()->DrawBezierControlPoints(
-        worldPoints,
-        Vector4{ 1.0f, 1.0f, 0.0f, 1.0f },  // 黄色
-        Vector4{ 0.5f, 0.5f, 0.5f, 0.5f },  // 半透明グレー
-        0.3f
+        WeaponWorld,
+        Vector4{ 1.0f, 0.5f, 0.5f, 1.0f },  // 明るい赤
+        Vector4{ 0.8f, 0.2f, 0.2f, 0.5f },  // 半透明赤
+        AttackData::kControlPointSize
     );
 
     // プレビュー用武器の描画（オプション）
-    if (previewWeapon_ && isPlaying_) {
+    if (previewWeapon_ && previewRightHand_ && previewLeftHand_&& isPlaying_) {
         previewWeapon_->Draw(BlendMode::KBlendModeNormal);
+		previewLeftHand_->Draw(BlendMode::KBlendModeNormal);
+		previewRightHand_->Draw(BlendMode::KBlendModeNormal);
     }
 }
 
@@ -600,96 +657,71 @@ void AttackEditor::RenderTimingSettings(AttackData& data) {
 /// 軌道設定UIの描画
 ///-------------------------------------------///
 void AttackEditor::RenderTrajectorySettings(AttackData& data) {
-    data;
 #ifdef USE_IMGUI
-    ImGui::SeparatorText("ベジェ曲線の制御点");
+    ImGui::SeparatorText("武器の軌道設定");
 
     ImGui::DragFloat("武器の距離", &data.weaponLength, 0.1f, 1.0f, 50.0f);
     ImGui::DragInt("曲線の分割数", &data.curveSegments, 1, 5, 100);
 
-    // 制御点リスト
-    for (int i = 0; i < static_cast<int>(data.trajectoryPoints.size()); ++i) {
-        ImGui::PushID(i);
+    ImGui::Spacing();
+    ImGui::Separator();
 
-        ImGui::Text("制御点 %d", i);
-        ImGui::DragFloat3("位置", &data.trajectoryPoints[i].position.x, 0.1f);
-        ImGui::SliderFloat("時間", &data.trajectoryPoints[i].time, 0.0f, 1.0f, "%.2f");
-
-        ImGui::SameLine();
-        if (ImGui::Button("削除") && data.trajectoryPoints.size() > 2) {
-            data.trajectoryPoints.erase(data.trajectoryPoints.begin() + i);
-            ImGui::PopID();
-            break;
-        }
-
-        ImGui::Separator();
-        ImGui::PopID();
-    }
-
-    if (ImGui::Button("+ 制御点を追加")) {
-        BezierControlPointData newPoint = {};
-        newPoint.position = Vector3{ 0.0f, 0.0f, 0.0f };
-        newPoint.time = 0.5f;
-        data.trajectoryPoints.push_back(newPoint);
-    }
-
-    // 編集用データを取得または初期化
-    if (rotationEditMap_.find(data.attackID) == rotationEditMap_.end()) {
-        // 初回：QuaternionからVector3に変換
-        RotationEditData editData;
-        editData.startEuler = Math::QuaternionToEuler(data.startRotation);
-        editData.endEuler = Math::QuaternionToEuler(data.endRotation);
-        rotationEditMap_[data.attackID] = editData;
-    }
-
-    RotationEditData& editData = rotationEditMap_[data.attackID];
-
-    // Vector3（度数法）で編集
-    ImGui::Text("開始回転 (度数法)");
-    if (ImGui::DragFloat3("StartEuler", &editData.startEuler.x, 0.5f, -360.0f, 360.0f)) {
-        // 編集されたらQuaternionに変換
-        data.startRotation = Math::QuaternionFromVector(editData.startEuler);
-    }
-
-    // 現在のQuaternion値も表示
-    ImGui::SameLine();
-    if (ImGui::TreeNode("StartQuaternion")) {
-        ImGui::Text("x: %.3f, y: %.3f", data.startRotation.x, data.startRotation.y);
-        ImGui::Text("z: %.3f, w: %. 3f", data.startRotation.z, data.startRotation.w);
-        ImGui::TreePop();
-    }
+    // ベジェ曲線の制御点リスト
+    ImGui::SeparatorText("ベジェ曲線の制御点");
+    RenderBezierControlPointList(data.weaponTrajectoryPoints, "Weapon", TrajectoryType::WeaponTrajectory);
 
     ImGui::Spacing();
+    ImGui::Separator();
 
-    ImGui::Text("終了回転 (度数法)");
-    if (ImGui::DragFloat3("EndEuler", &editData.endEuler.x, 0.5f, -360.0f, 360.0f)) {
-        // 編集されたらQuaternionに変換
-        data.endRotation = Math::QuaternionFromVector(editData.endEuler);
-    }
-
-    // 現在のQuaternion値も表示
-    ImGui::SameLine();
-    if (ImGui::TreeNode("EndQuaternion")) {
-        ImGui::Text("x:  %.3f, y: %.3f", data.endRotation.x, data.endRotation.y);
-        ImGui::Text("z: %.3f, w: %.3f", data.endRotation.z, data.endRotation.w);
-        ImGui::TreePop();
-    }
-
-    ImGui::Spacing();
-
-    // リセットボタン
-    if (ImGui::Button("回転をリセット")) {
-        editData.startEuler = { 0.0f, 0.0f, 0.0f };
-        editData.endEuler = { 0.0f, 0.0f, 0.0f };
-        data.startRotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
-        data.endRotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
-    }
-
-    ImGui::Checkbox("回転もベジェ曲線で補間", &data.useRotationCurve);
-
+    // プレビュー設定
     ImGui::SeparatorText("プレビュー");
     ImGui::Checkbox("軌道を表示", &data.showTrajectory);
-    ImGui::ColorEdit3("軌道の色", &data.trajectoryColor.x);
+    ImGui::ColorEdit3("軌道の色", &data.weaponColor.x);
+#endif
+}
+
+///-------------------------------------------/// 
+/// 両手軌道設定UIの描画
+///-------------------------------------------///
+void AttackEditor::RenderDualHandTrajectorySettings(AttackData& data) {
+#ifdef USE_IMGUI
+    ImGui::SeparatorText("手の攻撃設定");
+
+	// 攻撃モード選択
+    ImGui::Checkbox("左手攻撃", &data.isLeftHandAttack);
+    ImGui::Checkbox("右手攻撃", &data.isRightHandAttack);
+
+    ImGui::Spacing();
+    ImGui::Separator();
+
+    // 共通設定
+    ImGui::DragInt("曲線の分割数", &data.curveSegments, 1, 5, 100);
+    // 色設定
+    ImGui::ColorEdit3("左手軌道の色", &data.leftHandColor.x);
+    ImGui::ColorEdit3("右手軌道の色", &data.rightHandColor.x);
+    
+    ImGui::Spacing();
+    ImGui::Separator();
+
+    // 左手のベジェ曲線の表示
+    ImGui::BeginChild("LeftHandPanel", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0), true);
+    ImGui::TextColored(ImVec4(0.3f, 0.3f, 1.0f, 1.0f), "左手 (Left Hand)");
+    ImGui::Separator();
+    RenderBezierControlPointList(data.leftHandTrajectoryPoints, "LeftHand", TrajectoryType::LeftHandTrajectory);
+    ImGui::EndChild();
+
+    ImGui::SameLine();
+
+    // 右手のベジェ曲線の表示
+    ImGui::BeginChild("RightHandPanel", ImVec2(0, 0), true);
+    ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.3f, 1.0f), "右手 (Right Hand)");
+    ImGui::Separator();
+    RenderBezierControlPointList(data.rightHandTrajectoryPoints, "RightHand", TrajectoryType::RightHandTrajectory);
+    ImGui::EndChild();
+
+    ImGui::Spacing();
+    ImGui::Separator();
+
 #endif
 }
 
@@ -786,46 +818,156 @@ void AttackEditor::RenderPreviewControl() {
     ImGui::Checkbox("自動リプレイ", &autoReplay_);
 
     ImGui::SeparatorText("プレビュー設定");
-    ImGui::DragFloat3("武器位置", &previewWeaponPosition_.x, 0.1f);
+	ImGui::DragFloat3("武器位置", &previewPlayerPosition_.x, 0.1f); // 後々Player位置の変更にする予定
 
     // 実際の攻撃をプレビュー
     if (ImGui::Button("攻撃プレビュー実行", ImVec2(-1, 0)) && previewWeapon_) {
+		// 選択中の攻撃を確認
         if (selectedAttackIndex_ >= 0 && selectedAttackIndex_ < static_cast<int>(attacks_.size())) {
+			// 現在の攻撃データを取得
             AttackData& currentAttack = attacks_[selectedAttackIndex_];
-
-            // ベジェ曲線の制御点が2点以上あるか確認
-            if (currentAttack.trajectoryPoints.size() >= 2) {
+            
+            /// ===武器=== ///
+			// 武器の軌道ポイントが2つ以上あることを確認
+            if (currentAttack.weaponTrajectoryPoints.size() >= 2) {
 
                 // 全ての制御点にオフセットを適用
-                std::vector<BezierControlPointData> worldPoints;
-                for (const auto& point : currentAttack.trajectoryPoints) {
-                    BezierControlPointData worldPoint = {};
-                    worldPoint.position = previewWeaponPosition_ + point.position;
-                    worldPoint.time = point.time;
-                    worldPoints.push_back(worldPoint);
+                std::vector<BezierControlPointData> weaponPoints;
+                for (const auto& point : currentAttack.weaponTrajectoryPoints) {
+                    BezierControlPointData weaponPoint = {};
+                    weaponPoint.position = previewPlayerPosition_ + point.position;
+					weaponPoint.rotation = point.rotation;
+                    weaponPoint.time = point.time;
+                    weaponPoints.push_back(weaponPoint);
                 }
 
                 // 武器に攻撃を実行させる（ベジェ曲線版）
-                previewWeapon_->StartAttack(
-                    worldPoints,                    // ← 全制御点を渡す
-                    currentAttack.activeDuration,
-                    currentAttack.startRotation,
-                    currentAttack.endRotation
-                );
-
-                // プレビュー再生開始
-                PlayPreview();
+                previewWeapon_->StartAttack(weaponPoints, currentAttack.activeDuration);
             }
+
+            /// ===右手攻撃=== ///
+			// 右手攻撃が有効で、プレビューオブジェクトが存在する場合
+            if (currentAttack.isRightHandAttack && previewRightHand_) {
+				// 右手の軌道ポイントが2つ以上あることを確認
+                if (currentAttack.rightHandTrajectoryPoints.size() >= 2) {
+					// 全ての制御点にオフセットを適用
+                    std::vector<BezierControlPointData> rightHandPoints;
+                    for (const auto& point : currentAttack.rightHandTrajectoryPoints) {
+                        BezierControlPointData handPoint = {};
+                        handPoint.position = previewPlayerPosition_ + point.position;
+						handPoint.rotation = point.rotation;
+                        handPoint.time = point.time;
+                        rightHandPoints.push_back(handPoint);
+                    }
+					// 右手に攻撃を実行させる（ベジェ曲線版）
+                    previewRightHand_->StartAttack(rightHandPoints, currentAttack.activeDuration);
+                }
+			}
+
+            /// ===左手攻撃=== ///
+            // 左手攻撃が有効で、プレビューオブジェクトが存在する場合
+            if (currentAttack.isLeftHandAttack && previewLeftHand_) {
+                // 左手の軌道ポイントが2つ以上あることを確認
+                if (currentAttack.leftHandTrajectoryPoints.size() >= 2) {
+                    // 全ての制御点にオフセットを適用
+                    std::vector<BezierControlPointData> leftHandPoints;
+                    for (const auto& point : currentAttack.leftHandTrajectoryPoints) {
+                        BezierControlPointData handPoint = {};
+                        handPoint.position = previewPlayerPosition_ + point.position;
+                        handPoint.rotation = point.rotation;
+                        handPoint.time = point.time;
+                        leftHandPoints.push_back(handPoint);
+                    }
+					// 左手に攻撃を実行させる（ベジェ曲線版）
+                    previewLeftHand_->StartAttack(leftHandPoints, currentAttack.activeDuration);
+                }
+            }
+
+            /// ===プレビュー再生開始=== ///
+            PlayPreview();
+        }
+    }
+    ImGui::Separator();
+    ImGui::End();
+#endif
+}
+
+///-------------------------------------------/// 
+/// ベジェ曲線制御点リストのUI描画
+///-------------------------------------------///
+void AttackEditor::RenderBezierControlPointList(std::vector<BezierControlPointData>& points, const char* label, TrajectoryType type) {
+#ifdef USE_IMGUI
+    // rotationEditDataのベクターサイズを調整
+    std::vector<Vector3>* eulerList = nullptr;
+    switch (type) {
+    case TrajectoryType::WeaponTrajectory:
+        eulerList = &rotationEditData_.weaponEuler;
+        break;
+    case TrajectoryType::RightHandTrajectory:
+        eulerList = &rotationEditData_.rightHandEuler;
+        break;
+    case TrajectoryType::LeftHandTrajectory:
+        eulerList = &rotationEditData_.leftHandEuler;
+        break;
+    }
+
+    // ベクターサイズが足りない場合は追加
+    if (eulerList && eulerList->size() < points.size()) {
+        size_t oldSize = eulerList->size();
+        eulerList->resize(points.size());
+        // 新しく追加された要素をQuaternionから変換して初期化
+        for (size_t i = oldSize; i < points.size(); ++i) {
+            (*eulerList)[i] = Math::QuaternionToEuler(points[i].rotation);
+        }
+    }
+    // ベクターサイズが多すぎる場合は削減
+    else if (eulerList && eulerList->size() > points.size()) {
+        eulerList->resize(points.size());
+    }
+
+    for (int i = 0; i < static_cast<int>(points.size()); ++i) {
+        ImGui::PushID((std::string(label) + std::to_string(i)).c_str());
+
+        // 制御点データ
+        ImGui::Text("制御点 %d", i);
+        ImGui::DragFloat3("位置", &points[i].position.x, 0.1f);
+
+        if (eulerList && i < static_cast<int>(eulerList->size())) {
+            ImGui::DragFloat3("回転", &(*eulerList)[i].x, 0.1f);
+            // 回転をQuaternionに変換して保存
+            points[i].rotation = Math::QuaternionFromVector((*eulerList)[i]);
+        }
+
+        ImGui::SliderFloat("時間", &points[i].time, 0.0f, 1.0f, "%.2f");
+        ImGui::SameLine();
+
+        // 削除
+        if (ImGui::Button("削除") && points.size() > 2) {
+            points.erase(points.begin() + i);
+            if (eulerList && i < static_cast<int>(eulerList->size())) {
+                eulerList->erase(eulerList->begin() + i);
+            }
+            ImGui::PopID();
+            break;
+        }
+        ImGui::Separator();
+        ImGui::PopID();
+    }
+
+    // 制御点追加ボタン
+    if (ImGui::Button((std::string("+ 制御点を追加_") + label).c_str())) {
+        BezierControlPointData newPoint = {};
+        newPoint.position = Vector3{ 0.0f, 0.0f, 0.0f };
+        newPoint.rotation = Math::QuaternionFromVector(Vector3{ 0.0f, 0.0f, 0.0f });
+        newPoint.time = 0.5f;
+        points.push_back(newPoint);
+
+        // オイラー角リストにも追加
+        if (eulerList) {
+            eulerList->push_back(Vector3{ 0.0f, 0.0f, 0.0f });
         }
     }
 
-    // ヘルプテキスト
-    ImGui::Separator();
-    ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "ヒント:");
-    ImGui::BulletText("「再生」で軌道のプレビュー表示");
-    ImGui::BulletText("「攻撃プレビュー実行」で実際の攻撃モーション");
-
-    ImGui::End();
 #endif
 }
 
@@ -883,6 +1025,12 @@ void AttackEditor::UpdateTrajectoryPreview(const float deltaTime) {
     previewTimer_ += deltaTime;
 
     // プレビュー用武器の更新
+    if (previewLeftHand_) {
+        previewLeftHand_->Update();
+    }
+    if (previewRightHand_) {
+        previewRightHand_->Update();
+    }
     if (previewWeapon_) {
         previewWeapon_->Update();
     }

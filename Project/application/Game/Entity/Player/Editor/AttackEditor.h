@@ -12,6 +12,7 @@
 
 /// ===前方宣言=== ///
 class PlayerWeapon;
+class PlayerHand;
 
 ///=====================================================/// 
 /// プレイヤー攻撃エディター
@@ -63,6 +64,16 @@ public:
     /// </summary>
     void SetPreviewPlayer(PlayerWeapon* player) { previewWeapon_ = player; }
 
+    /// <summary>
+	/// プレビュー用右手の設定
+    /// </summary>
+    void SetPreviewRightHand(PlayerHand* hand) { previewRightHand_ = hand; }
+
+    /// <summary>
+	/// プレビュー用左手の設定
+    /// </summary>
+    void SetPreviewLeftHand(PlayerHand* hand) { previewLeftHand_ = hand; }
+
 private:
     /// ===エディター状態=== ///
     bool isVisible_ = false;                      // 表示フラグ
@@ -70,31 +81,35 @@ private:
     int selectedAttackIndex_ = -1;                // 選択中の攻撃インデックス
 
     /// ===ファイル管理=== ///
-    static constexpr const char* kDefaultSavePath = "Resource/Json/Attacks/";
-    char filePathBuffer_[256];                    // ファイルパス入力バッファ
+	static constexpr const char* kDefaultSavePath = "Resource/Json/Attacks/"; // デフォルト保存パス
+    char filePathBuffer_[256];                    // ファイルパス入力バッファ 
     std::vector<std::string> availablePresets_;   // 利用可能なプリセットリスト
-    std::unordered_map<int, std::string> attackFilePaths_; // 
+    std::unordered_map<int, std::string> attackFilePaths_; // 攻撃IDとファイルパスのマッピング
 
     /// ===プレビュー=== ///
     bool isPlaying_ = false;                      // プレビュー再生中フラグ
     bool autoReplay_ = false;                     // 自動リプレイフラグ
     float previewTimer_ = 0.0f;                   // プレビュータイマー
-    Vector3 previewWeaponPosition_{ 0.0f, 0.0f, 0.0f };  // プレビュー用プレイヤー位置
+	Vector3 previewPlayerPosition_ = { 0.0f, 0.0f, 0.0f }; // プレビュープレイヤー位置
 
-    PlayerWeapon* previewWeapon_ = nullptr;             // プレビュー用プレイヤー
+    /// ===プレビュー用=== ///
+    PlayerWeapon* previewWeapon_ = nullptr;         // プレビュー用武器
+	PlayerHand* previewRightHand_ = nullptr;        // プレビュー用右手
+	PlayerHand* previewLeftHand_ = nullptr;         // プレビュー用左手
 
     /// ===Line描画=== ///
     std::unique_ptr<Line> line_;                  // 線描画オブジェクト
-    
+
     /// ===Serializer=== ///
-	std::unique_ptr<AttackDataSerializer> serializer_; // シリアライザ
+    std::unique_ptr<AttackDataSerializer> serializer_; // シリアライザ
 
     /// ===回転編集用（オイラー角）=== ///  
     struct RotationEditData {
-        Vector3 startEuler = { 0.0f, 0.0f, 0.0f };  // 開始回転（度数法）
-        Vector3 endEuler = { 0.0f, 0.0f, 0.0f };    // 終了回転（度数法）
+		std::vector<Vector3> weaponEuler;    // 武器回転制御点
+		std::vector<Vector3> rightHandEuler; // 右手回転制御点
+		std::vector<Vector3> leftHandEuler;  // 左手回転制御点
     };
-    std::unordered_map<int, RotationEditData> rotationEditMap_;  
+	RotationEditData rotationEditData_;
 
 private:
 
@@ -175,9 +190,14 @@ private:
     void RenderTimingSettings(AttackData& data);
 
     /// <summary>
-    /// 軌道設定UIの描画
+    /// 軌道設定UIの描画（単手）
     /// </summary>
     void RenderTrajectorySettings(AttackData& data);
+
+    /// <summary>
+    /// 両手軌道設定UIの描画
+    /// </summary>
+    void RenderDualHandTrajectorySettings(AttackData& data);
 
     /// <summary>
     /// エフェクト設定UIの描画
@@ -195,6 +215,11 @@ private:
     void RenderPreviewControl();
 
     /// ===ヘルパー関数=== ///
+
+    /// <summary>
+    /// ベジェ曲線制御点リストのUI描画
+    /// </summary>
+    void RenderBezierControlPointList(std::vector<BezierControlPointData>& points, const char* label, TrajectoryType type);
 
     /// <summary>
     /// 選択中の攻撃を削除

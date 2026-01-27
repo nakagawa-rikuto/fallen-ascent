@@ -1,0 +1,179 @@
+{
+    "activeDuration": 0.4000000059604645,
+    "attackID": 1,
+    "attackName": "Player_Attack_1",
+    "branchComboIDs": [],
+    "cameraShakeDuration": 0.0,
+    "cameraShakeIntensity": 0.0,
+    "canComboToNext": true,
+    "comboWindowTime": 0.5,
+    "cooldownTime": 0.009999999776482582,
+    "curveSegments": 20,
+    "description": "",
+    "hitSoundName": "",
+    "isLeftHandAttack": true,
+    "isRightHandAttack": true,
+    "leftHandColor": [
+        0.0,
+        0.0,
+        1.0
+    ],
+    "leftHandTrajectoryPoints": [
+        {
+            "position": [
+                8.0,
+                1.0,
+                -3.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "time": 0.0
+        },
+        {
+            "position": [
+                7.0,
+                0.5,
+                6.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "time": 0.5
+        },
+        {
+            "position": [
+                -6.0,
+                7.0,
+                -3.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "time": 1.0
+        }
+    ],
+    "moveSpeedMultiplier": 1.0,
+    "nextComboID": 2,
+    "particleEffectName": "WeaponAttack",
+    "particleOffset": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "rightHandColor": [
+        0.0,
+        1.0,
+        0.0
+    ],
+    "rightHandTrajectoryPoints": [
+        {
+            "position": [
+                8.0,
+                0.0,
+                -3.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "time": 0.0
+        },
+        {
+            "position": [
+                7.0,
+                -0.5,
+                6.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "time": 0.5
+        },
+        {
+            "position": [
+                -6.0,
+                6.0,
+                -3.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "time": 1.0
+        }
+    ],
+    "rootMotion": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "showTrajectory": true,
+    "swingSoundName": "",
+    "trajectoryColor": [
+        1.0,
+        0.0,
+        0.0
+    ],
+    "weaponLength": 8.0,
+    "weaponTrajectoryPoints": [
+        {
+            "position": [
+                8.0,
+                0.5,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "time": 0.0
+        },
+        {
+            "position": [
+                7.0,
+                0.0,
+                9.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "time": 0.5
+        },
+        {
+            "position": [
+                -6.0,
+                6.5,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "time": 1.0
+        }
+    ]
+}

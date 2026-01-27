@@ -8,8 +8,10 @@
 #include "Component/PlayerAttackComponent.h"
 // State
 #include "State/Base/PlayerState.h"
+// Hand
+#include "Hand/PlayerHand.h"
 // Weapon
-#include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
+#include "Weapon/PlayerWeapon.h"
 
 /// ===前方宣言=== ///
 class Enemy;
@@ -57,7 +59,9 @@ public: /// ===衝突判定=== ///
 	void OnCollision(Collider* collider) override;
 
 public: /// ===Getter=== ///
-
+	// Hand
+	PlayerHand* GetRightHand() const { return rightHand_.get(); };
+	PlayerHand* GetLeftHand() const { return leftHand_.get(); };
 	// Weapon
 	PlayerWeapon* GetWeapon() const { return weapon_.get(); };
 
@@ -96,6 +100,10 @@ public: /// ===State用関数=== ///
 private: /// ===変数の宣言=== ///
 	// カメラ
 	GameCamera* camera_ = nullptr; 
+
+	/// ===Hand=== ///
+	std::unique_ptr<PlayerHand> rightHand_;
+	std::unique_ptr<PlayerHand> leftHand_;
 
 	/// ===Weapon=== ///
 	std::unique_ptr<PlayerWeapon> weapon_;

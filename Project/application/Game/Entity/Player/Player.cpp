@@ -50,7 +50,17 @@ void Player::Initialize() {
 	// コライダーに追加
 	ColliderService::AddCollider(this);
 
-	// Weaponの初期化
+	/// ===Handの初期化=== ///
+	// 右手
+	rightHand_ = std::make_unique<PlayerHand>();
+	rightHand_->Initialize();
+	rightHand_->SetUpParent(this);
+	// 左手
+	leftHand_ = std::make_unique<PlayerHand>();
+	leftHand_->Initialize();
+	leftHand_->SetUpParent(this);
+
+	/// ===Weaponの初期化=== ///
 	weapon_ = std::make_unique<PlayerWeapon>();
 	weapon_->Initialize();
 	weapon_->SetUpParent(this);
@@ -136,6 +146,10 @@ void Player::Update() {
 ///-------------------------------------------///
 void Player::UpdateAnimation() {
 
+	/// ===Hand=== ///
+	rightHand_->Update();
+	leftHand_->Update();
+
 	/// ===Weapon=== ///
 	weapon_->Update();
 
@@ -147,6 +161,10 @@ void Player::UpdateAnimation() {
 /// 描画
 ///-------------------------------------------///
 void Player::Draw(BlendMode mode) {
+
+	/// ===Hand=== ///
+	rightHand_->Draw(mode);
+	leftHand_->Draw(mode);
 
 	/// ===Weapon=== ///
 	weapon_->Draw(mode);

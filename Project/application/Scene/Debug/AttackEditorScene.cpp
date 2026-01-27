@@ -14,6 +14,8 @@
 ///-------------------------------------------///
 AttackEditorScene::~AttackEditorScene() {
     attackEditor_.reset();
+	previewRightHand_.reset();
+	previewLeftHand_.reset();
     previewWeapon_.reset();
     line_.reset();
     // ISceneのデストラクタ
@@ -40,10 +42,18 @@ void AttackEditorScene::Initialize() {
     line_ = std::make_unique<Line>();
 
     /// ===プレビュー用プレイヤーの初期化=== ///
+	previewLeftHand_ = std::make_unique<PlayerHand>();
+	previewLeftHand_->Initialize();
+
+	previewRightHand_ = std::make_unique<PlayerHand>();
+    previewRightHand_->Initialize();
+
     previewWeapon_ = std::make_unique<PlayerWeapon>();
     previewWeapon_->Initialize();
 
     // エディターにプレビュー用プレイヤーとカメラを設定
+	attackEditor_->SetPreviewLeftHand(previewLeftHand_.get());
+	attackEditor_->SetPreviewRightHand(previewRightHand_.get());
     attackEditor_->SetPreviewPlayer(previewWeapon_.get());
 
     // デフォルトカメラの位置を設定
@@ -58,11 +68,6 @@ void AttackEditorScene::Update() {
     /// ===エディターの更新=== ///
     if (attackEditor_) {
         attackEditor_->Update(DeltaTimeSevice::GetDeltaTime());
-    }
-
-    /// ===プレビュー用プレイヤーの更新=== ///
-    if (previewWeapon_) {
-		previewWeapon_->Update();
     }
 
     /// ===ImGui描画=== ///
@@ -95,11 +100,6 @@ void AttackEditorScene::Draw() {
     /// ===グリッドの描画=== ///
     if (showGrid_) {
         line_->DrawGrid({ 0.0f, 0.0f, 0.0f }, { 500.0f, 0.0f, 500.0f }, 100, { 1.0f, 1.0f, 1.0f, 1.0f });
-    }
-
-    /// ===プレビュー用プレイヤーの描画=== ///
-    if (previewWeapon_) {
-        previewWeapon_->Draw(BlendMode::KBlendModeNormal);
     }
 
     /// ===エディタープレビューの描画=== ///

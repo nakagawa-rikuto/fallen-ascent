@@ -7,15 +7,15 @@
 
 /// ===前方宣言=== ///
 class Player;
-class ParticleGroup;
 
 ///=====================================================/// 
-/// PlayerWeapon
+/// PlayerHand
 ///=====================================================///
-class PlayerWeapon : public OBBCollider {
+class PlayerHand : public OBBCollider {
 public:
-	PlayerWeapon() = default;
-	~PlayerWeapon() override;
+
+	PlayerHand() = default;
+	~PlayerHand();
 
 	/// <summary>
 	/// 初期化処理
@@ -56,7 +56,6 @@ public:
 		float duration
 	);
 
-
 public: /// ===衝突=== ///
 	/// <summary>
 	/// 衝突処理
@@ -64,46 +63,30 @@ public: /// ===衝突=== ///
 	/// <param name="collider">衝突した相手の Collider オブジェクトを指すポインター。</param>
 	void OnCollision(Collider* collider) override;
 
-public: /// ===Getter=== ///
-	// 攻撃中かどうか
-	bool GetIsAttack() const { return attackInfo_.isAttacking; }
-	// 攻撃の進行度を取得
-	float GetAttackProgress() const { return attackInfo_.progress; }
-
-public: /// ===Setter=== ///
-
-	// アクティブ状態の設定
-	void SetActive(bool flag) { baseInfo_.isActive = flag; }
-
 private:
-	// Player
-	Player* player_ = nullptr;
 
-	// Particle
-	ParticleGroup* attackParticle_ = nullptr;
+	/// ===Player=== ///
+	Player* player_ = nullptr;
 
 	/// ===基本情報=== ///
 	struct BaseInfo {
-		bool isActive = false;					 // アクティブフラグ
+		bool isActive = false;                   // アクティブフラグ
 		float deltaTime = 0.0f;					 // デルタタイム
 	};
 	BaseInfo baseInfo_;
 
 	/// ===攻撃情報=== ///
 	struct AttackInfo {
-		bool isAttacking = false;      // 攻撃中フラグ
-		bool hasHit = false;            // ヒット済みフラグ
-
-		float timer = 0.0f;             // 攻撃タイマー
-		float duration = 0.0f;          // 攻撃の持続時間
-		float progress = 0.0f;          // 攻撃の進行度（0.0～1.0）
-
-		// ベジェ曲線の制御点
-		std::vector<BezierControlPointData> trajectoryPoints;
+		bool isAttacking = false;							   // 攻撃中フラグ
+		std::vector<BezierControlPointData> trajectoryPoints;  // ベジェ曲線の制御点リスト
+		float timer = 0.0f;                                    // 攻撃タイマー
+		float duration = 0.0f;                                 // 攻撃の持続時間
+		float progress = 0.0f;                                 // 攻撃の進行度
 	};
 	AttackInfo attackInfo_;
 
 private:
+
 	/// <summary>
 	/// ベジェ曲線上の位置を計算
 	/// </summary>
@@ -125,3 +108,4 @@ private:
 	/// </summary>
 	void UpdateBezierTrajectory();
 };
+
