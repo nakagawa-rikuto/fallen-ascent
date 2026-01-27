@@ -4,6 +4,7 @@
 #include "Base/GameSceneFadeState.h"
 // GameUI
 #include "application/Game/UI/Game/GameSceneUI.h"
+#include "application/Game/UI/Option/OptionUI.h"
 // C++
 #include <memory>
 
@@ -39,4 +40,7 @@ public:
 private:
 	// UI
 	std::unique_ptr<GameSceneUI> ui_;
+	// OptionUI
+	std::unique_ptr<OptionUI> optionUI_;
+	bool isOptionActive_ = false;
 };

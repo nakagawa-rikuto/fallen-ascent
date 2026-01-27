@@ -13,7 +13,7 @@ public:
 	/// </summary>
 	/// <param name="key">再生する音声を識別するキーを表す文字列。</param>
 	/// <param name="loop">再生をループするかどうかを指定します。true の場合はループ再生、false の場合は一度だけ再生します。</param>
-	static void PlayeSound(const std::string& key, bool loop);
+	static void StartSound(const std::string& key, bool loop);
 
 	/// <summary>
 	/// 指定したキーに対応する再生中のサウンドを停止します。
@@ -27,6 +27,12 @@ public:
 	/// <param name="key">サウンドを識別する文字列キー。</param>
 	/// <param name="volume">設定する音量を表す浮動小数点値。範囲や単位は実装に依存します。</param>
 	static void VolumeSound(const std::string& key, float volume);
+
+	/// <summary>
+	/// 全てのサウンドの音量を一括で設定します。
+	/// </summary>
+	/// <param name="volume"></param>
+	static void AllVolumeSound(float volume);
 
 	/// <summary>
 	/// 指定されたキーに対応するサウンドを指定したピッチで再生します。

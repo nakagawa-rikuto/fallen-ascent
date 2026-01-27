@@ -1,5 +1,5 @@
 #pragma once
-/// ===Includ=== ///
+/// ===Include=== ///
 // Engine
 #include "Engine/Core/ComPtr.h"
 #include "Engine/DataInfo/InputData.h"

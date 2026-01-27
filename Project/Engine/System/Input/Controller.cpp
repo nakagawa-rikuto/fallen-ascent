@@ -32,6 +32,8 @@ void Controller::Initialize() {
 		{ControllerButtonType::DPadRIGHT, {static_cast<WORD>(XINPUT_GAMEPAD_DPAD_RIGHT), 11}}, // DPad →
 		{ControllerButtonType::LeftStick, {static_cast<WORD>(XINPUT_GAMEPAD_LEFT_THUMB), 6}},   // Lスティック押し込み
 		{ControllerButtonType::RightStick, {static_cast<WORD>(XINPUT_GAMEPAD_RIGHT_THUMB), 7}}, // Rスティック押し込み
+		{ControllerButtonType::Select, {static_cast<WORD>(XINPUT_GAMEPAD_BACK), 8}},    // セレクトボタン
+		{ControllerButtonType::Start, {static_cast<WORD>(XINPUT_GAMEPAD_START), 9}},    // スタートボタン
 	};
 }
 

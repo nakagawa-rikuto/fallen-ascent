@@ -120,7 +120,7 @@ void TitleUI::Update() {
 
 	// オプションの更新
 	if (isOptionOpen_) {
-		optionUI_->Update();
+		optionUI_->TitleUpdate();
 	}
 
 	// 選択状態の更新
@@ -142,7 +142,7 @@ void TitleUI::Draw() {
 
 	// オプションの描画
 	if (isOptionOpen_) {
-		optionUI_->Draw();
+		optionUI_->TitleDraw();
 	}
 }
 

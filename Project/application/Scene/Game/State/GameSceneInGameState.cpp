@@ -1,9 +1,14 @@
 #include "GameSceneInGameState.h"
+// SceneManager
+#include "Engine/System/Managers/SceneManager.h"
 // GameScene
 #include "application/Scene/Game/GameScene.h"
 // State
 #include "GameSceneGameOverAnimationState.h"
 #include "GameSceneGameClearState.h"
+// Service
+#include "Engine/System/Service/InputService.h"
+#include "Engine/System/Service/DeltaTimeSevice.h"
 
 ///-------------------------------------------/// 
 /// 初期化処理
@@ -18,6 +23,12 @@ void GameSceneInGameState::Enter(GameScene* gameScene) {
 	// GameSceneUIにPlayerを設定
 	ui_->SetPlayer(gameScene_->GetPlayer());
 	ui_->Update();
+
+	/// ===OptionUI=== ///
+	optionUI_ = std::make_unique<OptionUI>();
+	optionUI_->Initialize();
+	optionUI_->GameUpdate();
+	isOptionActive_ = false;
 }
 
 ///-------------------------------------------/// 
@@ -25,12 +36,29 @@ void GameSceneInGameState::Enter(GameScene* gameScene) {
 ///-------------------------------------------///
 void GameSceneInGameState::Update() {
 
-	// EnemyManagerの更新
-	gameScene_->GetEnemyManager()->Update();
-	// Playerの更新
-	gameScene_->GetPlayer()->Update();
-	// GameSceneUIの更新
-	ui_->Update();
+	// オプションアクティブ
+	if (InputService::TriggerButton(0, ControllerButtonType::Start)) {
+		if (isOptionActive_) {
+			DeltaTimeSevice::SetDeltaTime(1.0f / 60.0f);
+			isOptionActive_ = false;
+		} else {
+			DeltaTimeSevice::SetDeltaTime(0.0f);
+			isOptionActive_ = true;
+		}
+	}
+
+	// UIの更新
+	if (isOptionActive_) {
+		// OptionUIの更新
+		optionUI_->GameUpdate();
+	} else {
+		// EnemyManagerの更新
+		gameScene_->GetEnemyManager()->Update();
+		// Playerの更新
+		gameScene_->GetPlayer()->Update();
+		// GameSceneUIの更新
+		ui_->Update();
+	}
 
 	// Playerが死亡しているか確認
 	if (gameScene_->GetPlayer()->GetIsDead()) {
@@ -40,13 +68,23 @@ void GameSceneInGameState::Update() {
 		// ゲームクリアアニメーション状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
 	}
+
+	// タイトルに戻る処理
+	if (optionUI_->GetReturnToTitle()) {
+		sceneManager_->ChangeScene(SceneType::Title);
+	}
 }
 
 ///-------------------------------------------/// 
 /// 描画処理
 ///-------------------------------------------///
 void GameSceneInGameState::Draw() {
-	ui_->Draw();
+	
+	if (isOptionActive_) {
+		optionUI_->GameDraw();
+	} else {
+		ui_->Draw();
+	}
 }
 
 ///-------------------------------------------/// 

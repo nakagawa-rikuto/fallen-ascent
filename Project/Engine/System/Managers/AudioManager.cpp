@@ -168,6 +168,17 @@ void AudioManager::SetVolume(const std::string& key, float volume) {
 }
 
 ///-------------------------------------------/// 
+/// 全ての音量の設定
+///-------------------------------------------///
+void AudioManager::SetVolumeAll(float volume) {
+	for (auto& pair : sourceVoices_) {
+		if (pair.second) {
+			pair.second->SetVolume(volume);
+		}
+	}
+}
+
+///-------------------------------------------/// 
 /// 再生速度の設定
 ///-------------------------------------------///
 void AudioManager::setPitch(const std::string& key, float pitch) {
