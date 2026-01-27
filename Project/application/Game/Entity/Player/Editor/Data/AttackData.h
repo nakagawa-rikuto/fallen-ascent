@@ -9,9 +9,23 @@
 #include <string>
 
 ///-------------------------------------------/// 
+/// 軌道の種類
+///-------------------------------------------///
+enum class TrajectoryType {
+    WeaponTrajectory,    // 武器軌道
+    RightHandTrajectory, // 右手軌道
+    LeftHandTrajectory   // 左手軌道
+};
+
+///-------------------------------------------/// 
 /// 攻撃データ構造体
 ///-------------------------------------------///
 struct AttackData {
+    // ===定数定義=== //
+	static constexpr int kDefaultBezierSegments = 20;   // デフォルトのベジェ曲線分割数
+	static constexpr float kDefaultWeaponLength = 8.0f; // デフォルトの武器距離
+	static constexpr float kControlPointSize = 1.5f;    // 制御点の表示サイズ
+
     // ===基本情報=== //
     std::string attackName;              // 攻撃名
     std::string description;             // 説明
@@ -23,18 +37,20 @@ struct AttackData {
     float cooldownTime;                  // クールダウン時間（秒）
 
     // ===軌道設定（ベジェ曲線）=== //
-    std::vector<BezierControlPointData> trajectoryPoints;  // ベジェ曲線の制御点リスト
-    int curveSegments;                   // 曲線の分割数（滑らかさ）
-    float weaponLength;                  // 武器の距離
+    bool isRightHandAttack;              // 右手攻撃かどうか
+    bool isLeftHandAttack;               // 左手攻撃かどうか
 
-    // ===回転設定=== //
-    Quaternion startRotation;            // 開始回転
-    Quaternion endRotation;              // 終了回転
-    bool useRotationCurve;               // 回転もベジェ曲線で補間するか
+    // 軌道
+    std::vector<BezierControlPointData> weaponTrajectoryPoints;    // 武器用軌道の制御点リスト
+	std::vector<BezierControlPointData> rightHandTrajectoryPoints; // 右手用軌道の制御点リスト
+	std::vector<BezierControlPointData> leftHandTrajectoryPoints;  // 左手用軌道の制御点リスト
+
+    int curveSegments;                   // 曲線の分割数
+    float weaponLength;                  // 武器の距離
 
     // ===コンボ設定=== //
     bool canComboToNext;                 // 次のコンボに繋げるか
-    int nextComboID;                     // 次のコンボのID（-1で無し）
+    int nextComboID;                     // 次のコンボのID
     std::vector<int> branchComboIDs;     // 分岐可能なコンボID（複数選択肢）
 
     // ===エフェクト設定=== //
@@ -53,7 +69,9 @@ struct AttackData {
 
     // ===デバッグ/プレビュー用=== //
     bool showTrajectory;                 // 軌道を表示するか
-    Vector3 trajectoryColor;             // 軌道の色（RGB）
+    Vector3 weaponColor;             // 軌道の色
+    Vector3 rightHandColor;              // 右手軌道の色
+    Vector3 leftHandColor;               // 左手軌道の色
 
     /// デフォルトコンストラクタ
     AttackData()
@@ -63,11 +81,10 @@ struct AttackData {
         , activeDuration(0.4f)
         , comboWindowTime(1.0f)
         , cooldownTime(0.3f)
-        , curveSegments(20)
-        , weaponLength(8.0f)
-        , startRotation(Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f })
-        , endRotation(Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f })
-        , useRotationCurve(false)
+        , isRightHandAttack(false)
+        , isLeftHandAttack(false)
+        , curveSegments(kDefaultBezierSegments)
+        , weaponLength(kDefaultWeaponLength)
         , canComboToNext(false)
         , nextComboID(-1)
         , particleEffectName("WeaponAttack")
@@ -79,11 +96,24 @@ struct AttackData {
         , moveSpeedMultiplier(0.4f)
         , rootMotion(Vector3{ 0.0f, 0.0f, 0.0f })
         , showTrajectory(true)
-        , trajectoryColor(Vector3{ 1.0f, 0.0f, 0.0f })
+        , weaponColor(Vector3{ 1.0f, 0.0f, 0.0f })     // 赤
+        , rightHandColor(Vector3{ 0.0f, 1.0f, 0.0f })  // 緑
+        , leftHandColor(Vector3{ 0.0f, 0.0f, 1.0f })   // 青
     {
         // デフォルトで3点のベジェ曲線を設定（左→中央→右）
-        trajectoryPoints.push_back({ Vector3{-8.0f, 0.0f, 0.0f}, 0.0f });
-        trajectoryPoints.push_back({ Vector3{0.0f, 0.0f, 8.0f}, 0.5f });
-        trajectoryPoints.push_back({ Vector3{8.0f, 0.0f, 0.0f}, 1.0f });
+        weaponTrajectoryPoints.push_back({ Vector3{-8.0f, 0.0f, 0.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f},0.0f });
+        weaponTrajectoryPoints.push_back({ Vector3{0.0f, 0.0f, 8.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f},0.5f });
+        weaponTrajectoryPoints.push_back({ Vector3{8.0f, 0.0f, 0.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f},1.0f });
+
+        // 両手用デフォルト軌道
+        // 右手：右→前
+        rightHandTrajectoryPoints.push_back({ Vector3{5.0f, 0.0f, -3.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f},0.0f });
+        rightHandTrajectoryPoints.push_back({ Vector3{5.0f, 2.0f, 0.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f},0.5f });
+        rightHandTrajectoryPoints.push_back({ Vector3{0.0f, 0.0f, 5.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f},1.0f });
+
+        // 左手：左→前
+        leftHandTrajectoryPoints.push_back({ Vector3{-5.0f, 0.0f, -3.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f}, 0.0f });
+        leftHandTrajectoryPoints.push_back({ Vector3{-5.0f, 2.0f, 0.0f},Quaternion{0.0f, 0.0f, 0.0f, 1.0f}, 0.5f });
+        leftHandTrajectoryPoints.push_back({ Vector3{0.0f, 0.0f, 5.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f},1.0f });
     }
 };

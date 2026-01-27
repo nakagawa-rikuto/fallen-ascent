@@ -18,7 +18,7 @@ void AttackState::Enter(Player* player, GameCamera* camera) {
 	camera_ = camera;
 
 	// 攻撃の開始
-	player_->GetAttackComponent()->StartAttack(0, player_->GetWeapon());
+	player_->GetAttackComponent()->StartAttack(0, player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand());
 }
 
 ///-------------------------------------------/// 
@@ -42,7 +42,7 @@ void AttackState::Update(Player* player, GameCamera* camera) {
 	// 攻撃ボタンが押されたらコンボを試行
 	if (InputService::TriggerButton(0, ControllerButtonType::X)) {
 		if (attackComp->CanCombo()) {
-			attackComp->TryCombo(player_->GetWeapon());
+			attackComp->TryCombo(player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand());
 		}
 	}
 

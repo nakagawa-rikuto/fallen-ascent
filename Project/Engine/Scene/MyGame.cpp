@@ -166,6 +166,7 @@ void MyGame::LoadModel() {
 	Loader::LoadModel("Object1", "Object1/Object1.obj");
 	Loader::LoadModel("Object2", "Object2/Object2.obj");
 	Loader::LoadModel("PlayerWeapon", "PlayerWeapon/PlayerWeapon.obj");
+	Loader::LoadModel("PlayerHand", "PlayerHand/PlayerHand.gltf");
 }
 
 ///-------------------------------------------/// 

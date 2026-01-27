@@ -7,6 +7,7 @@
 #include <string>
 
 /// ===前方宣言=== ///
+class PlayerHand;
 class PlayerWeapon;
 
 ///-------------------------------------------/// 
@@ -65,7 +66,7 @@ public:
 	/// <param name="playerPosition">プレイヤーの位置</param>
 	/// <param name="playerRotation">プレイヤーの回転</param>
 	/// <returns>攻撃開始に成功したらtrue</returns>
-	bool StartAttack(int attackID, PlayerWeapon* weapon);
+	bool StartAttack(int attackID, PlayerWeapon* weapon, PlayerHand* rightHand, PlayerHand* leftHand);
 
 	/// <summary>
 	/// コンボ攻撃を試行
@@ -74,7 +75,7 @@ public:
 	/// <param name="playerPosition">プレイヤーの位置</param>
 	/// <param name="playerRotation">プレイヤーの回転</param>
 	/// <returns>コンボ成功したらtrue</returns>
-	bool TryCombo(PlayerWeapon* weapon);
+	bool TryCombo(PlayerWeapon* weapon, PlayerHand* rightHand, PlayerHand* leftHand);
 
 	/// <summary>
 	/// 攻撃をキャンセル
@@ -118,6 +119,6 @@ private:
 	/// <param name="weapon">攻撃を受ける対象の武器オブジェクトを指すポインタ。</param>
 	/// <param name="basePosition">攻撃適用時の基準となる位置（ワールド座標）。</param>
 	/// <param name="baseRotation">攻撃適用時の基準となる回転（クォータニオン）。</param>
-	void ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon);
+	void ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon, PlayerHand* rightHand, PlayerHand* leftHand);
 };
 

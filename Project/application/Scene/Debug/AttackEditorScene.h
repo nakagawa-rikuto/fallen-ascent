@@ -6,6 +6,8 @@
 // Line 
 #include "application/Drawing/3d/Line.h"
 // Player
+#include "application/Game/Entity/Player/Player.h"
+#include "application/Game/Entity/Player/Hand/PlayerHand.h"
 #include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
 // c++
 #include <memory>
@@ -40,6 +42,8 @@ private:
     /// ===エディター=== ///
     std::unique_ptr<AttackEditor> attackEditor_;
     /// ===プレビュー用プレイヤー=== ///
+	std::unique_ptr<PlayerHand> previewRightHand_;
+	std::unique_ptr<PlayerHand> previewLeftHand_;
     std::unique_ptr<PlayerWeapon> previewWeapon_;
 
     /// ===エディター設定=== ///

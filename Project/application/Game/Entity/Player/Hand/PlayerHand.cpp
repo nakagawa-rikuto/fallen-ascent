@@ -1,4 +1,4 @@
-#include "PlayerWeapon.h"
+#include "PlayerHand.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // Math
@@ -7,55 +7,45 @@
 // Service
 #include "Engine/System/Service/ColliderService.h"
 #include "Engine/System/Service/DeltaTimeSevice.h"
-#include "Engine/System/Service/ParticleService.h"
-// ImGui
-#ifdef USE_IMGUI
-#include "imgui.h"
-#endif // USE_IMGUI
 
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
-PlayerWeapon::~PlayerWeapon() {
+PlayerHand::~PlayerHand() {
 	object3d_.reset();
 }
 
 ///-------------------------------------------/// 
-/// 初期化
+/// 初期化処理
 ///-------------------------------------------///
-void PlayerWeapon::Initialize() {
-
-	// Object3dの初期化
+void PlayerHand::Initialize() {
+	// モデルの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "PlayerWeapon");
-	object3d_->SetRotate({ 0.0f, 30.0f, 0.0f, 1.0f });
+	object3d_->Init(ObjectType::Model, "PlayerHand");
 
 	/// ===OBBCollider=== ///
 	OBBCollider::Initialize();
-	name_ = ColliderName::PlayerWeapon;
+	name_ = ColliderName::None;
 	OBBCollider::SetHalfSize({ 0.5f, 0.5f, 3.0f });
+
+	attackInfo_.isAttacking = false;
 
 	// DeltaTime初期化
 	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
 
-	// 初期状態では非アクティブ
-	SetActive(false);
-	attackInfo_.isAttacking = false;
-
-	// 更新
+	// 初回更新
 	Update();
 }
 
 ///-------------------------------------------/// 
-/// 更新
+/// 更新処理
 ///-------------------------------------------///
-void PlayerWeapon::Update() {
+void PlayerHand::Update() {
 	// DeltaTime更新
 	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
 
 	// 攻撃中でない場合は早期リターン
 	if (!attackInfo_.isAttacking) {
-		SetActive(false);
 		OBBCollider::Update();
 		return;
 	}
@@ -68,32 +58,21 @@ void PlayerWeapon::Update() {
 	if (attackInfo_.progress >= 1.0f) {
 		attackInfo_.isAttacking = false;
 		attackInfo_.progress = 1.0f;
-		SetActive(false);
-		ColliderService::RemoveCollider(this);
 		OBBCollider::Update();
-		// パーティクルの削除
-		attackParticle_->Stop();
-		attackParticle_ = nullptr;
 		return;
 	}
 
-	// ベジェ曲線に沿った軌道更新
+	// ベジェ曲線に沿った攻撃軌道の更新
 	UpdateBezierTrajectory();
-
-	// Particleの軌道更新
-	if (attackParticle_) {
-		attackParticle_->SetEmitterPosition(object3d_->GetWorldTranslate());
-	}
-	
 
 	/// ===OBBCollider=== ///
 	OBBCollider::Update();
 }
 
 ///-------------------------------------------/// 
-/// 描画
+/// 描画処理
 ///-------------------------------------------///
-void PlayerWeapon::Draw(BlendMode mode) {
+void PlayerHand::Draw(BlendMode mode) {
 	// 攻撃中のみ描画
 	if (attackInfo_.isAttacking) {
 		OBBCollider::Draw(mode);
@@ -101,70 +80,34 @@ void PlayerWeapon::Draw(BlendMode mode) {
 }
 
 ///-------------------------------------------/// 
-/// ImGui
+/// ImGui情報の表示
 ///-------------------------------------------///
-void PlayerWeapon::Information() {
-#ifdef USE_IMGUI
-	ImGui::Begin("PlayerWeapon");
+void PlayerHand::Information() {}
 
-	ImGui::SeparatorText("攻撃情報");
-	ImGui::Checkbox("攻撃フラグ", &attackInfo_.isAttacking);
-	ImGui::DragFloat("タイマー", &attackInfo_.timer, 0.01f);
-	ImGui::DragFloat("進行度", &attackInfo_.progress, 0.01f, 0.0f, 1.0f);
-	ImGui::DragFloat("持続時間", &attackInfo_.duration, 0.01f);
-
-	ImGui::SeparatorText("ベジェ曲線");
-	ImGui::Text("制御点数: %zu", attackInfo_.trajectoryPoints.size());
-
-	for (size_t i = 0; i < attackInfo_.trajectoryPoints.size(); ++i) {
-		ImGui::PushID(static_cast<int>(i));
-		ImGui::Text("制御点 %zu", i);
-		ImGui::Text("  位置: (%.2f, %.2f, %.2f)",
-			attackInfo_.trajectoryPoints[i].position.x,
-			attackInfo_.trajectoryPoints[i].position.y,
-			attackInfo_.trajectoryPoints[i].position.z);
-		ImGui::Text("  時間: %.2f", attackInfo_.trajectoryPoints[i].time);
-		ImGui::PopID();
-	}
-
-	ImGui::End();
-#endif // USE_IMGUI
+///-------------------------------------------/// 
+/// 衝突処理
+///-------------------------------------------///
+void PlayerHand::OnCollision(Collider* collider) {
+	collider;
 }
 
 ///-------------------------------------------/// 
-/// 衝突判定
+/// 親子関係を設定し、指定したオフセットで子オブジェクトの位置を調整
 ///-------------------------------------------///
-void PlayerWeapon::OnCollision(Collider* collider) {
-	// 攻撃中でない、または既にヒット済みの場合は処理しない
-	if (!baseInfo_.isActive) {
-		return;
-	}
-
-	// 敵に当たった場合
-	if (collider->GetColliderName() == ColliderName::Enemy) {
-		// ヒットフラグを立てる（1回の攻撃で複数ヒットを防ぐ）
-		attackInfo_.hasHit = true;
-		// ここでヒットエフェクトやサウンドの再生などを行う
-	}
-}
-
-///-------------------------------------------/// 
-/// 親子関係の設定
-///-------------------------------------------///
-void PlayerWeapon::SetUpParent(Player* parent) {
+void PlayerHand::SetUpParent(Player* parent) {
 	player_ = parent;
 	// 親子関係の設定
 	object3d_->SetParent(player_->GetModelCommon());
 }
 
-//-------------------------------------------/// 
-/// 攻撃開始処理（ベジェ曲線版）
+///-------------------------------------------/// 
+/// 攻撃の開始処理（ベジェ曲線）
 ///-------------------------------------------///
-void PlayerWeapon::StartAttack(
-	const std::vector<BezierControlPointData>& trajectoryPoints,
+void PlayerHand::StartAttack(
+	const std::vector<BezierControlPointData>& trajectoryPoints, 
 	float duration) {
 
-	// 制御点が2点未満の場合はエラー
+	// 制御点が2点未満の場合は処理を行わない
 	if (trajectoryPoints.size() < 2) {
 		return;
 	}
@@ -178,23 +121,6 @@ void PlayerWeapon::StartAttack(
 	// ベジェ曲線の制御点を保存
 	attackInfo_.trajectoryPoints = trajectoryPoints;
 
-	// コライダーに追加
-	ColliderService::AddCollider(this);
-
-	// 当たり判定フラグをリセット
-	attackInfo_.hasHit = false;
-
-	// コライダーを有効化
-	SetActive(true);
-
-	// Particleの開始
-	if (attackParticle_) {
-		attackParticle_->Stop();
-		attackParticle_ = nullptr;
-	}
-	attackParticle_ = ParticleService::Emit("WeaponAttack", trajectoryPoints.front().position);
-	attackParticle_->SetEmitterPosition(object3d_->GetWorldTranslate());
-
 	// 初期位置と回転を設定
 	transform_.translate = trajectoryPoints.front().position;
 	transform_.rotate = trajectoryPoints.front().rotation;
@@ -203,7 +129,7 @@ void PlayerWeapon::StartAttack(
 ///-------------------------------------------/// 
 /// ベジェ曲線上の位置を計算
 ///-------------------------------------------///
-Vector3 PlayerWeapon::CalculateBezierPoint(const std::vector<BezierControlPointData>& controlPoints, float t) {
+Vector3 PlayerHand::CalculateBezierPoint(const std::vector<BezierControlPointData>& controlPoints, float t) {
 	size_t n = controlPoints.size();
 
 	// 制御点が2点の場合は線形補間
@@ -276,7 +202,7 @@ Vector3 PlayerWeapon::CalculateBezierPoint(const std::vector<BezierControlPointD
 ///-------------------------------------------/// 
 /// ベジェ曲線上の回転を計算
 ///-------------------------------------------///
-Quaternion PlayerWeapon::CalculateBezierRotation(const std::vector<BezierControlPointData>& controlPoints, float t) {
+Quaternion PlayerHand::CalculateBezierRotation(const std::vector<BezierControlPointData>& controlPoints, float t) {
 	size_t n = controlPoints.size();
 	if (n == 0) {
 		// デフォルト quaternion（必要に応じて変更）
@@ -311,7 +237,7 @@ Quaternion PlayerWeapon::CalculateBezierRotation(const std::vector<BezierControl
 ///-------------------------------------------/// 
 /// ベジェ曲線に沿った軌道更新
 ///-------------------------------------------///
-void PlayerWeapon::UpdateBezierTrajectory() {
+void PlayerHand::UpdateBezierTrajectory() {
 	// イージング関数を適用（滑らかな加速・減速）
 	float t = attackInfo_.progress;
 	float easedT = Easing::EaseInOutQuad(t);

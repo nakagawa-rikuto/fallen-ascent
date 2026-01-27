@@ -148,18 +148,6 @@
     <ClCompile Include="application\Drawing\3d\Object3d.cpp">
       <Filter>application\Drawing\3D</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\Clear\ClearScene.cpp">
-      <Filter>application\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Scene\GameOver\GameOverScene.cpp">
-      <Filter>application\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Scene\Select\SelectScene.cpp">
-      <Filter>application\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Scene\Title\TitleScene.cpp">
-      <Filter>application\Scene</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Camera\FollowCamera.cpp">
       <Filter>Engine\Camera</Filter>
     </ClCompile>
@@ -505,9 +493,6 @@
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp">
       <Filter>application\Scene\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\Game\GameScene.cpp">
-      <Filter>application\Scene</Filter>
-    </ClCompile>
     <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp">
       <Filter>application\Game\UI\Game</Filter>
     </ClCompile>
@@ -571,14 +556,46 @@
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\Game\State\Base\GameSceneFadeState.cpp" />
-    <ClCompile Include="application\Scene\Game\State\GameSceneInitializeState.cpp" />
-    <ClCompile Include="application\Scene\Game\State\GameSceneStartAnimationState.cpp" />
-    <ClCompile Include="application\Scene\Game\State\GameSceneInGameState.cpp" />
-    <ClCompile Include="application\Scene\Game\State\GameSceneGameOverAnimationState.cpp" />
-    <ClCompile Include="application\Scene\Game\State\GameSceneGameClearState.cpp" />
-    <ClCompile Include="application\Scene\Game\State\GameSceneExitState.cpp" />
-    <ClCompile Include="application\Game\UI\Option\OptionUI.cpp" />
+    <ClCompile Include="application\Scene\Clear\ClearScene.cpp">
+      <Filter>application\Scene\Clear</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\GameOver\GameOverScene.cpp">
+      <Filter>application\Scene\GameOver</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\GameScene.cpp">
+      <Filter>application\Scene\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Title\TitleScene.cpp">
+      <Filter>application\Scene\Title</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Select\SelectScene.cpp">
+      <Filter>application\Scene\Select</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\State\Base\GameSceneFadeState.cpp">
+      <Filter>application\Scene\Game\State\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\State\GameSceneExitState.cpp">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\State\GameSceneGameClearState.cpp">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\State\GameSceneGameOverAnimationState.cpp">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\State\GameSceneInGameState.cpp">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\State\GameSceneInitializeState.cpp">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\State\GameSceneStartAnimationState.cpp">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\UI\Option\OptionUI.cpp">
+      <Filter>application\Game\UI\Option</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Player\Hand\PlayerHand.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -640,21 +657,6 @@
     </ClInclude>
     <ClInclude Include="application\Drawing\3d\Object3d.h">
       <Filter>application\Drawing\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Scene\Clear\ClearScene.h">
-      <Filter>application\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Scene\GameOver\GameOverScene.h">
-      <Filter>application\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Scene\Game\GameScene.h">
-      <Filter>application\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Scene\Select\SelectScene.h">
-      <Filter>application\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Scene\Title\TitleScene.h">
-      <Filter>application\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Camera\FollowCamera.h">
       <Filter>Engine\Camera</Filter>
@@ -1112,15 +1114,49 @@
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
-    <ClInclude Include="application\Scene\Game\State\Base\GameSceneFadeState.h" />
-    <ClInclude Include="application\Scene\Game\State\GameSceneInitializeState.h" />
-    <ClInclude Include="application\Scene\Game\State\GameSceneStartAnimationState.h" />
-    <ClInclude Include="application\Scene\Game\State\GameSceneInGameState.h" />
-    <ClInclude Include="application\Scene\Game\State\GameSceneGameOverAnimationState.h" />
-    <ClInclude Include="application\Scene\Game\State\GameSceneGameClearState.h" />
-    <ClInclude Include="application\Scene\Game\State\GameSceneExitState.h" />
-    <ClInclude Include="application\Game\UI\Option\OptionUI.h" />
-    <ClInclude Include="application\Game\UI\SpriteBaseScale.h" />
+    <ClInclude Include="application\Scene\Clear\ClearScene.h">
+      <Filter>application\Scene\Clear</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\GameOver\GameOverScene.h">
+      <Filter>application\Scene\GameOver</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\GameScene.h">
+      <Filter>application\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Title\TitleScene.h">
+      <Filter>application\Scene\Title</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Select\SelectScene.h">
+      <Filter>application\Scene\Select</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\State\Base\GameSceneFadeState.h">
+      <Filter>application\Scene\Game\State\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\State\GameSceneExitState.h">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\State\GameSceneGameClearState.h">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\State\GameSceneGameOverAnimationState.h">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\State\GameSceneInGameState.h">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\State\GameSceneInitializeState.h">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\State\GameSceneStartAnimationState.h">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\UI\Option\OptionUI.h">
+      <Filter>application\Game\UI\Option</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\UI\SpriteBaseScale.h">
+      <Filter>application\Game\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -1379,6 +1415,30 @@
     </Filter>
     <Filter Include="Engine\Graphics\Pipeline\GS">
       <UniqueIdentifier>{dc1cb9b9-66c2-43e0-8651-071a93355ec9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Game">
+      <UniqueIdentifier>{289ae28e-df34-4935-947d-90bd903cb0c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Title">
+      <UniqueIdentifier>{ad85a046-bfe8-452c-a6de-06ba4e19391a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\GameOver">
+      <UniqueIdentifier>{da4eab3c-ab6b-466d-8903-ed4f277cd1e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Clear">
+      <UniqueIdentifier>{8afa2ab7-ca79-45d3-84f0-f2fc5eeac793}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Select">
+      <UniqueIdentifier>{e5102d77-33f5-477f-917e-5e0a31496cba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Game\State">
+      <UniqueIdentifier>{b541b84f-bf76-4ada-9cd4-d539113daf31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Game\State\Base">
+      <UniqueIdentifier>{993ccf2a-ceec-45b9-9629-ab8718cedaf0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\UI\Option">
+      <UniqueIdentifier>{99f9a55d-539f-45b1-9770-1c1487a2ece7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

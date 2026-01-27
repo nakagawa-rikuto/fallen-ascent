@@ -3,6 +3,7 @@
 #include "Math/Matrix4x4.h"
 #include "Math/Vector3.h"
 #include "Math/Vector4.h"
+#include "Math/Quaternion.h"
 
 struct LineVertexData3D {
 	Vector3 position;
@@ -15,5 +16,6 @@ struct LineTransformMatrixData3D {
 
 struct BezierControlPointData {
 	Vector3 position;
+	Quaternion rotation;
 	float time;
 };
