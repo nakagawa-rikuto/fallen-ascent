@@ -305,6 +305,7 @@
 └── └── └── └── ├── Sphere/
 └── └── └── └── └── Triangle/
 └── └── └── ├── Player/
+└── └── └── ├── PlayerHand/
 └── └── └── ├── PlayerWeapon/
 └── └── └── └── terrain/
 └── └── ├── Shaders/
@@ -393,6 +394,9 @@
 └── └── └── └──     └── ├── AttackEditor.h
 └── └── └── └──     └── └── Data/
 └── └── └── └──     └──     └── AttackData.h
+└── └── └── └──     ├── Hand/
+└── └── └── └──     └── ├── PlayerHand.cpp
+└── └── └── └──     └── └── PlayerHand.h
 └── └── └── └──     ├── Player.cpp
 └── └── └── └──     ├── Player.h
 └── └── └── └──     ├── State/
@@ -4868,6 +4872,7 @@ File Path: Project/Engine/DataInfo/LineObjectData.h
 #include "Math/Matrix4x4.h"
 #include "Math/Vector3.h"
 #include "Math/Vector4.h"
+#include "Math/Quaternion.h"
 
 struct LineVertexData3D {
 	Vector3 position;
@@ -4880,6 +4885,7 @@ struct LineTransformMatrixData3D {
 
 struct BezierControlPointData {
 	Vector3 position;
+	Quaternion rotation;
 	float time;
 };
 
@@ -17427,6 +17433,7 @@ void MyGame::LoadModel() {
 	Loader::LoadModel("Object1", "Object1/Object1.obj");
 	Loader::LoadModel("Object2", "Object2/Object2.obj");
 	Loader::LoadModel("PlayerWeapon", "PlayerWeapon/PlayerWeapon.obj");
+	Loader::LoadModel("PlayerHand", "PlayerHand/PlayerHand.gltf");
 }
 
 ///-------------------------------------------/// 
@@ -26800,6 +26807,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp" />
     <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp" />
     <ClCompile Include="application\Game\UI\Option\OptionUI.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Hand\PlayerHand.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\UI\SpriteBaseScale.h" />
@@ -26988,6 +26996,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h" />
     <ClInclude Include="application\Game\UI\Game\PlayerUI.h" />
     <ClInclude Include="application\Game\UI\Option\OptionUI.h" />
+    <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -27354,18 +27363,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Drawing\3d\Object3d.cpp">
       <Filter>application\Drawing\3D</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\Clear\ClearScene.cpp">
-      <Filter>application\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Scene\GameOver\GameOverScene.cpp">
-      <Filter>application\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Scene\Select\SelectScene.cpp">
-      <Filter>application\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Scene\Title\TitleScene.cpp">
-      <Filter>application\Scene</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Camera\FollowCamera.cpp">
       <Filter>Engine\Camera</Filter>
     </ClCompile>
@@ -27711,9 +27708,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp">
       <Filter>application\Scene\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\Game\GameScene.cpp">
-      <Filter>application\Scene</Filter>
-    </ClCompile>
     <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp">
       <Filter>application\Game\UI\Game</Filter>
     </ClCompile>
@@ -27777,14 +27771,46 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\Game\State\Base\GameSceneFadeState.cpp" />
-    <ClCompile Include="application\Scene\Game\State\GameSceneInitializeState.cpp" />
-    <ClCompile Include="application\Scene\Game\State\GameSceneStartAnimationState.cpp" />
-    <ClCompile Include="application\Scene\Game\State\GameSceneInGameState.cpp" />
-    <ClCompile Include="application\Scene\Game\State\GameSceneGameOverAnimationState.cpp" />
-    <ClCompile Include="application\Scene\Game\State\GameSceneGameClearState.cpp" />
-    <ClCompile Include="application\Scene\Game\State\GameSceneExitState.cpp" />
-    <ClCompile Include="application\Game\UI\Option\OptionUI.cpp" />
+    <ClCompile Include="application\Scene\Clear\ClearScene.cpp">
+      <Filter>application\Scene\Clear</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\GameOver\GameOverScene.cpp">
+      <Filter>application\Scene\GameOver</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\GameScene.cpp">
+      <Filter>application\Scene\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Title\TitleScene.cpp">
+      <Filter>application\Scene\Title</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Select\SelectScene.cpp">
+      <Filter>application\Scene\Select</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\State\Base\GameSceneFadeState.cpp">
+      <Filter>application\Scene\Game\State\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\State\GameSceneExitState.cpp">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\State\GameSceneGameClearState.cpp">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\State\GameSceneGameOverAnimationState.cpp">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\State\GameSceneInGameState.cpp">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\State\GameSceneInitializeState.cpp">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\State\GameSceneStartAnimationState.cpp">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\UI\Option\OptionUI.cpp">
+      <Filter>application\Game\UI\Option</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Player\Hand\PlayerHand.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -27846,21 +27872,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     </ClInclude>
     <ClInclude Include="application\Drawing\3d\Object3d.h">
       <Filter>application\Drawing\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Scene\Clear\ClearScene.h">
-      <Filter>application\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Scene\GameOver\GameOverScene.h">
-      <Filter>application\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Scene\Game\GameScene.h">
-      <Filter>application\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Scene\Select\SelectScene.h">
-      <Filter>application\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Scene\Title\TitleScene.h">
-      <Filter>application\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Camera\FollowCamera.h">
       <Filter>Engine\Camera</Filter>
@@ -28318,15 +28329,49 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h">
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
-    <ClInclude Include="application\Scene\Game\State\Base\GameSceneFadeState.h" />
-    <ClInclude Include="application\Scene\Game\State\GameSceneInitializeState.h" />
-    <ClInclude Include="application\Scene\Game\State\GameSceneStartAnimationState.h" />
-    <ClInclude Include="application\Scene\Game\State\GameSceneInGameState.h" />
-    <ClInclude Include="application\Scene\Game\State\GameSceneGameOverAnimationState.h" />
-    <ClInclude Include="application\Scene\Game\State\GameSceneGameClearState.h" />
-    <ClInclude Include="application\Scene\Game\State\GameSceneExitState.h" />
-    <ClInclude Include="application\Game\UI\Option\OptionUI.h" />
-    <ClInclude Include="application\Game\UI\SpriteBaseScale.h" />
+    <ClInclude Include="application\Scene\Clear\ClearScene.h">
+      <Filter>application\Scene\Clear</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\GameOver\GameOverScene.h">
+      <Filter>application\Scene\GameOver</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\GameScene.h">
+      <Filter>application\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Title\TitleScene.h">
+      <Filter>application\Scene\Title</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Select\SelectScene.h">
+      <Filter>application\Scene\Select</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\State\Base\GameSceneFadeState.h">
+      <Filter>application\Scene\Game\State\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\State\GameSceneExitState.h">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\State\GameSceneGameClearState.h">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\State\GameSceneGameOverAnimationState.h">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\State\GameSceneInGameState.h">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\State\GameSceneInitializeState.h">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\State\GameSceneStartAnimationState.h">
+      <Filter>application\Scene\Game\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\UI\Option\OptionUI.h">
+      <Filter>application\Game\UI\Option</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\UI\SpriteBaseScale.h">
+      <Filter>application\Game\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -28585,6 +28630,30 @@ File Path: Project/FallenAscent.vcxproj.filters
     </Filter>
     <Filter Include="Engine\Graphics\Pipeline\GS">
       <UniqueIdentifier>{dc1cb9b9-66c2-43e0-8651-071a93355ec9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Game">
+      <UniqueIdentifier>{289ae28e-df34-4935-947d-90bd903cb0c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Title">
+      <UniqueIdentifier>{ad85a046-bfe8-452c-a6de-06ba4e19391a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\GameOver">
+      <UniqueIdentifier>{da4eab3c-ab6b-466d-8903-ed4f277cd1e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Clear">
+      <UniqueIdentifier>{8afa2ab7-ca79-45d3-84f0-f2fc5eeac793}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Select">
+      <UniqueIdentifier>{e5102d77-33f5-477f-917e-5e0a31496cba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Game\State">
+      <UniqueIdentifier>{b541b84f-bf76-4ada-9cd4-d539113daf31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Game\State\Base">
+      <UniqueIdentifier>{993ccf2a-ceec-45b9-9629-ab8718cedaf0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\UI\Option">
+      <UniqueIdentifier>{99f9a55d-539f-45b1-9770-1c1487a2ece7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
@@ -36684,8 +36753,11 @@ private:
 File Path: Project/application/Game/Entity/Player/Component/PlayerAttackComponent.cpp
 ============================================================
 #include "PlayerAttackComponent.h"
+// PlayerHand
+#include "application/Game/Entity/Player/Hand/PlayerHand.h"
 // PlayerWeapon
 #include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
+// AttackDataSerializer
 #include "application/Game/Entity/Player/Editor/AttackDataSerializer.h"
 // ImGui
 #ifdef USE_IMGUI
@@ -36698,9 +36770,9 @@ File Path: Project/application/Game/Entity/Player/Component/PlayerAttackComponen
 ///-------------------------------------------///
 void PlayerAttackComponent::Initialize() {
     // コンボの読み込み
-    LoadAttackData(0, "Resource/Json/Attacks/Attack_0.json");
-    LoadAttackData(1, "Resource/Json/Attacks/Attack_1.json");
-    LoadAttackData(2, "Resource/Json/Attacks/Attack_2.json");
+    LoadAttackData(0, "Resource/Json/Attacks/Player_Attack_0.json");
+    LoadAttackData(1, "Resource/Json/Attacks/Player_Attack_1.json");
+    LoadAttackData(2, "Resource/Json/Attacks/Player_Attack_2.json");
 }
 
 ///-------------------------------------------/// 
@@ -36801,7 +36873,12 @@ bool PlayerAttackComponent::LoadAttackData(int attackID, const std::string& file
 ///-------------------------------------------/// 
 /// 攻撃を開始
 ///-------------------------------------------///
-bool PlayerAttackComponent::StartAttack(int attackID, PlayerWeapon* weapon) {
+bool PlayerAttackComponent::StartAttack(
+    int attackID, 
+    PlayerWeapon* weapon, 
+    PlayerHand* rightHand, 
+    PlayerHand* leftHand) {
+
     // 既に攻撃中の場合は失敗
     if (state_.isActive) {
         return false;
@@ -36818,7 +36895,7 @@ bool PlayerAttackComponent::StartAttack(int attackID, PlayerWeapon* weapon) {
     const AttackData& attackData = it->second;
 
     // 武器に攻撃を適用
-    ApplyAttackToWeapon(attackData, weapon);
+    ApplyAttackToWeapon(attackData, weapon, rightHand, leftHand);
 
     // 状態を更新
     state_.isActive = true;
@@ -36833,13 +36910,17 @@ bool PlayerAttackComponent::StartAttack(int attackID, PlayerWeapon* weapon) {
 ///-------------------------------------------/// 
 /// コンボ攻撃を試行
 ///-------------------------------------------///
-bool PlayerAttackComponent::TryCombo(PlayerWeapon* weapon) {
+bool PlayerAttackComponent::TryCombo(
+    PlayerWeapon* weapon, 
+    PlayerHand* rightHand,
+    PlayerHand* leftHand) {
+
     // コンボ可能状態でない場合は失敗
     if (!state_.canCombo) {
         return false;
     }
 
-    // ★ 前の攻撃データを取得
+    // 前の攻撃データを取得
     const AttackData* previousData = GetAttackData(state_.previousAttackID);
     if (!previousData || !previousData->canComboToNext) {
         return false;
@@ -36855,7 +36936,7 @@ bool PlayerAttackComponent::TryCombo(PlayerWeapon* weapon) {
     state_.canCombo = false;
     state_.comboCount++;
 
-    return StartAttack(nextAttackID, weapon);
+    return StartAttack(nextAttackID, weapon, rightHand, leftHand);
 }
 
 ///-------------------------------------------/// 
@@ -36904,18 +36985,29 @@ float PlayerAttackComponent::GetAttackProgress() const {
 ///-------------------------------------------/// 
 /// 武器に攻撃軌道を設定
 ///-------------------------------------------///
-void PlayerAttackComponent::ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon) {
-    if (!weapon || data.trajectoryPoints.size() < 2) {
+void PlayerAttackComponent::ApplyAttackToWeapon(
+    const AttackData& data, 
+    PlayerWeapon* weapon, 
+    PlayerHand* rightHand, 
+    PlayerHand* leftHand) {
+
+    if (!weapon) {
         return;
     }
 
-    // ベジェ曲線の制御点をそのまま渡す
-    weapon->StartAttack(
-        data.trajectoryPoints,     // ベジェ曲線の全制御点
-        data.activeDuration,
-        data.startRotation,
-        data.endRotation
-    );
+    /// ===攻撃スタート=== ///
+    if (data.isLeftHandAttack) {
+		// 左手攻撃
+        leftHand->StartAttack(data.leftHandTrajectoryPoints, data.activeDuration);
+    } 
+    
+    if (data.isRightHandAttack) {
+		// 右手攻撃
+		rightHand->StartAttack(data.rightHandTrajectoryPoints, data.activeDuration);
+    }
+
+	// 武器攻撃
+	weapon->StartAttack(data.weaponTrajectoryPoints, data.activeDuration);
 }
 
 ///-------------------------------------------/// 
@@ -36943,6 +37035,7 @@ File Path: Project/application/Game/Entity/Player/Component/PlayerAttackComponen
 #include <string>
 
 /// ===前方宣言=== ///
+class PlayerHand;
 class PlayerWeapon;
 
 ///-------------------------------------------/// 
@@ -37001,7 +37094,7 @@ public:
 	/// <param name="playerPosition">プレイヤーの位置</param>
 	/// <param name="playerRotation">プレイヤーの回転</param>
 	/// <returns>攻撃開始に成功したらtrue</returns>
-	bool StartAttack(int attackID, PlayerWeapon* weapon);
+	bool StartAttack(int attackID, PlayerWeapon* weapon, PlayerHand* rightHand, PlayerHand* leftHand);
 
 	/// <summary>
 	/// コンボ攻撃を試行
@@ -37010,7 +37103,7 @@ public:
 	/// <param name="playerPosition">プレイヤーの位置</param>
 	/// <param name="playerRotation">プレイヤーの回転</param>
 	/// <returns>コンボ成功したらtrue</returns>
-	bool TryCombo(PlayerWeapon* weapon);
+	bool TryCombo(PlayerWeapon* weapon, PlayerHand* rightHand, PlayerHand* leftHand);
 
 	/// <summary>
 	/// 攻撃をキャンセル
@@ -37054,7 +37147,7 @@ private:
 	/// <param name="weapon">攻撃を受ける対象の武器オブジェクトを指すポインタ。</param>
 	/// <param name="basePosition">攻撃適用時の基準となる位置（ワールド座標）。</param>
 	/// <param name="baseRotation">攻撃適用時の基準となる回転（クォータニオン）。</param>
-	void ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon);
+	void ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon, PlayerHand* rightHand, PlayerHand* leftHand);
 };
 
 
@@ -37417,7 +37510,7 @@ File Path: Project/application/Game/Entity/Player/Editor/AttackDataSerializer.cp
 using json = nlohmann::json;
 
 ///-------------------------------------------/// 
-/// 攻撃データのJson保存・読み込み
+/// 攻撃データのJson保存
 ///-------------------------------------------///
 bool AttackDataSerializer::SaveToJson(const AttackData& data, const std::string& filepath) {
     try {
@@ -37434,23 +37527,43 @@ bool AttackDataSerializer::SaveToJson(const AttackData& data, const std::string&
         j["cooldownTime"] = data.cooldownTime;
 
         // 軌道設定
+        j["isRightHandAttack"] = data.isRightHandAttack;
+        j["isLeftHandAttack"] = data.isLeftHandAttack;
         j["curveSegments"] = data.curveSegments;
         j["weaponLength"] = data.weaponLength;
 
-        // ベジェ曲線の制御点
+		// 武器用ベジェ曲線の制御点
         json trajectoryArray = json::array();
-        for (const auto& point : data.trajectoryPoints) {
+        for (const auto& point : data.weaponTrajectoryPoints) {
             json pointJson;
             pointJson["position"] = { point.position.x, point.position.y, point.position.z };
+            pointJson["rotation"] = { point.rotation.x, point.rotation.y, point.rotation.z, point.rotation.w };
             pointJson["time"] = point.time;
             trajectoryArray.push_back(pointJson);
         }
-        j["trajectoryPoints"] = trajectoryArray;
+        j["weaponTrajectoryPoints"] = trajectoryArray;
 
-        // 回転設定
-        j["startRotation"] = { data.startRotation.x, data.startRotation.y, data.startRotation.z, data.startRotation.w };
-        j["endRotation"] = { data.endRotation.x, data.endRotation.y, data.endRotation.z, data.endRotation.w };
-        j["useRotationCurve"] = data.useRotationCurve;
+		// 右手用ベジェ曲線の制御点
+        json rightHandArray = json::array();
+        for (const auto& point : data.rightHandTrajectoryPoints) {
+            json pointJson;
+            pointJson["position"] = { point.position.x, point.position.y, point.position.z };
+            pointJson["rotation"] = { point.rotation.x, point.rotation.y, point.rotation.z, point.rotation.w };
+            pointJson["time"] = point.time;
+            rightHandArray.push_back(pointJson);
+        }
+        j["rightHandTrajectoryPoints"] = rightHandArray;
+
+		// 左手用ベジェ曲線の制御点
+        json leftHandArray = json::array();
+        for (const auto& point : data.leftHandTrajectoryPoints) {
+            json pointJson;
+            pointJson["position"] = { point.position.x, point.position.y, point.position.z };
+            pointJson["rotation"] = { point.rotation.x, point.rotation.y, point.rotation.z, point.rotation.w };
+            pointJson["time"] = point.time;
+            leftHandArray.push_back(pointJson);
+        }
+        j["leftHandTrajectoryPoints"] = leftHandArray;
 
         // コンボ設定
         j["canComboToNext"] = data.canComboToNext;
@@ -37471,9 +37584,17 @@ bool AttackDataSerializer::SaveToJson(const AttackData& data, const std::string&
         j["moveSpeedMultiplier"] = data.moveSpeedMultiplier;
         j["rootMotion"] = { data.rootMotion.x, data.rootMotion.y, data.rootMotion.z };
 
-        // デバッグ
+        // デバッグ/プレビュー
         j["showTrajectory"] = data.showTrajectory;
-        j["trajectoryColor"] = { data.trajectoryColor.x, data.trajectoryColor.y, data.trajectoryColor.z };
+        j["trajectoryColor"] = { data.weaponColor.x, data.weaponColor.y, data.weaponColor.z };
+        j["rightHandColor"] = { data.rightHandColor.x, data.rightHandColor.y, data.rightHandColor.z };
+        j["leftHandColor"] = { data.leftHandColor.x, data.leftHandColor.y, data.leftHandColor.z };
+
+        // ディレクトリが存在しない場合は作成
+        std::filesystem::path dirPath = std::filesystem::path(filepath).parent_path();
+        if (!dirPath.empty() && !std::filesystem::exists(dirPath)) {
+            std::filesystem::create_directories(dirPath);
+        }
 
         // ファイルに書き込み
         std::ofstream file(filepath);
@@ -37495,6 +37616,12 @@ bool AttackDataSerializer::SaveToJson(const AttackData& data, const std::string&
 ///-------------------------------------------///
 bool AttackDataSerializer::LoadFromJson(AttackData& data, const std::string& filepath) {
     try {
+        // ファイル存在チェック
+        if (!std::filesystem::exists(filepath)) {
+            // ログ出力やエラー通知
+            return false;
+        }
+
         std::ifstream file(filepath);
         if (!file.is_open()) {
             return false;
@@ -37503,6 +37630,12 @@ bool AttackDataSerializer::LoadFromJson(AttackData& data, const std::string& fil
         json j;
         file >> j;
         file.close();
+
+        // 必須フィールドの検証
+        if (!j.contains("attackName") || !j.contains("attackID")) {
+            // 不正なJSONフォーマット
+            return false;
+        }
 
         // 基本情報
         data.attackName = j.value("attackName", "Unknown");
@@ -37515,36 +37648,61 @@ bool AttackDataSerializer::LoadFromJson(AttackData& data, const std::string& fil
         data.cooldownTime = j.value("cooldownTime", 0.3f);
 
         // 軌道設定
-        data.curveSegments = j.value("curveSegments", 20);
-        data.weaponLength = j.value("weaponLength", 8.0f);
+        data.isRightHandAttack = j.value("isRightHandAttack", false);
+        data.isLeftHandAttack = j.value("isLeftHandAttack", false);
+        data.curveSegments = j.value("curveSegments", AttackData::kDefaultBezierSegments);
+        data.weaponLength = j.value("weaponLength", AttackData::kDefaultWeaponLength);
 
-        // ベジェ曲線の制御点
-        data.trajectoryPoints.clear();
-        if (j.contains("trajectoryPoints")) {
-            for (const auto& pointJson : j["trajectoryPoints"]) {
+		// 武器用ベジェ曲線の制御点
+        data.weaponTrajectoryPoints.clear();
+        if (j.contains("weaponTrajectoryPoints")) {
+            for (const auto& pointJson : j["weaponTrajectoryPoints"]) {
                 BezierControlPointData point;
                 point.position.x = pointJson["position"][0];
                 point.position.y = pointJson["position"][1];
                 point.position.z = pointJson["position"][2];
+				point.rotation.x = pointJson["rotation"][0];
+				point.rotation.y = pointJson["rotation"][1];
+				point.rotation.z = pointJson["rotation"][2];
+				point.rotation.w = pointJson["rotation"][3];
                 point.time = pointJson["time"];
-                data.trajectoryPoints.push_back(point);
+                data.weaponTrajectoryPoints.push_back(point);
             }
         }
 
-        // 回転設定
-        if (j.contains("startRotation")) {
-            data.startRotation.x = j["startRotation"][0];
-            data.startRotation.y = j["startRotation"][1];
-            data.startRotation.z = j["startRotation"][2];
-            data.startRotation.w = j["startRotation"][3];
+		// 右手用ベジェ曲線の制御点
+        data.rightHandTrajectoryPoints.clear();
+        if (j.contains("rightHandTrajectoryPoints")) {
+            for (const auto& pointJson : j["rightHandTrajectoryPoints"]) {
+                BezierControlPointData point;
+                point.position.x = pointJson["position"][0];
+                point.position.y = pointJson["position"][1];
+                point.position.z = pointJson["position"][2];
+                point.rotation.x = pointJson["rotation"][0];
+                point.rotation.y = pointJson["rotation"][1];
+                point.rotation.z = pointJson["rotation"][2];
+                point.rotation.w = pointJson["rotation"][3];
+                point.time = pointJson["time"];
+                data.rightHandTrajectoryPoints.push_back(point);
+            }
         }
-        if (j.contains("endRotation")) {
-            data.endRotation.x = j["endRotation"][0];
-            data.endRotation.y = j["endRotation"][1];
-            data.endRotation.z = j["endRotation"][2];
-            data.endRotation.w = j["endRotation"][3];
+
+		// 左手用ベジェ曲線の制御点
+        data.leftHandTrajectoryPoints.clear();
+        if (j.contains("leftHandTrajectoryPoints")) {
+            for (const auto& pointJson : j["leftHandTrajectoryPoints"]) {
+                BezierControlPointData point;
+                point.position.x = pointJson["position"][0];
+                point.position.y = pointJson["position"][1];
+                point.position.z = pointJson["position"][2];
+                point.rotation.x = pointJson["rotation"][0];
+                point.rotation.y = pointJson["rotation"][1];
+                point.rotation.z = pointJson["rotation"][2];
+                point.rotation.w = pointJson["rotation"][3];
+                point.time = pointJson["time"];
+                data.leftHandTrajectoryPoints.push_back(point);
+            }
         }
-        data.useRotationCurve = j.value("useRotationCurve", false);
 
         // コンボ設定
         data.canComboToNext = j.value("canComboToNext", false);
@@ -37575,12 +37733,22 @@ bool AttackDataSerializer::LoadFromJson(AttackData& data, const std::string& fil
             data.rootMotion.z = j["rootMotion"][2];
         }
 
-        // デバッグ
+        // デバッグ/プレビュー
         data.showTrajectory = j.value("showTrajectory", true);
-        if (j.contains("trajectoryColor")) {
-            data.trajectoryColor.x = j["trajectoryColor"][0];
-            data.trajectoryColor.y = j["trajectoryColor"][1];
-            data.trajectoryColor.z = j["trajectoryColor"][2];
+        if (j.contains("weaponColor")) {
+            data.weaponColor.x = j["weaponColor"][0];
+            data.weaponColor.y = j["weaponColor"][1];
+            data.weaponColor.z = j["weaponColor"][2];
+        }
+        if (j.contains("rightHandColor")) {
+            data.rightHandColor.x = j["rightHandColor"][0];
+            data.rightHandColor.y = j["rightHandColor"][1];
+            data.rightHandColor.z = j["rightHandColor"][2];
+        }
+        if (j.contains("leftHandColor")) {
+            data.leftHandColor.x = j["leftHandColor"][0];
+            data.leftHandColor.y = j["leftHandColor"][1];
+            data.leftHandColor.z = j["leftHandColor"][2];
         }
 
         return true;
@@ -37589,7 +37757,6 @@ bool AttackDataSerializer::LoadFromJson(AttackData& data, const std::string& fil
         return false;
     }
 }
-
 
 ============================================================
 File Path: Project/application/Game/Entity/Player/Editor/AttackDataSerializer.h
@@ -37630,6 +37797,8 @@ File Path: Project/application/Game/Entity/Player/Editor/AttackEditor.cpp
 #include "AttackEditor.h"
 // PlayerWeapon
 #include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
+// PlayerHand
+#include "application/Game/Entity/Player/Hand/PlayerHand.h"
 // Service
 #include "Engine/System/Service/ServiceLocator.h"
 // Line
@@ -37669,6 +37838,7 @@ void AttackEditor::Initialize() {
 /// 更新
 ///-------------------------------------------///
 void AttackEditor::Update(const float deltaTime) {
+	// 表示されていなければ処理しない
     if (!isVisible_) return;
 
     // プレビューの更新
@@ -37714,8 +37884,13 @@ void AttackEditor::Render() {
                 ImGui::EndTabItem();
             }
 
-            if (ImGui::BeginTabItem("軌道")) {
+            if (ImGui::BeginTabItem("武器の軌道")) {
                 RenderTrajectorySettings(currentAttack);
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("手の軌道")) {
+                RenderDualHandTrajectorySettings(currentAttack);
                 ImGui::EndTabItem();
             }
 
@@ -37847,42 +38022,91 @@ void AttackEditor::Render() {
 /// プレビュー描画
 ///-------------------------------------------///
 void AttackEditor::DrawPreview() {
+	// 表示状態と選択中の攻撃を確認
     if (!isVisible_ || selectedAttackIndex_ < 0 || selectedAttackIndex_ >= static_cast<int>(attacks_.size())) {
         return;
     }
 
+	// 現在の攻撃データを取得
     AttackData& currentAttack = attacks_[selectedAttackIndex_];
 
+	// 軌道表示が無効なら終了
     if (!currentAttack.showTrajectory) {
         return;
     }
 
-    // 武器位置を基準にワールド座標に変換
-    Vector3 weaponPos = previewWeaponPosition_;
-    std::vector<BezierControlPointData> worldPoints;
-
-    for (const auto& point : currentAttack.trajectoryPoints) {
-        BezierControlPointData worldPoint = {};
-        worldPoint.position = weaponPos + point.position;
-        worldPoint.time = point.time;
-        worldPoints.push_back(worldPoint);
+    /// ===右手=== ///
+    if (currentAttack.isRightHandAttack) {
+        // Dataの取得
+        std::vector<BezierControlPointData> HandWorld;
+        for (const auto& point : currentAttack.rightHandTrajectoryPoints) {
+            BezierControlPointData worldPoint = {};
+            worldPoint.position = point.position;
+            worldPoint.rotation = point.rotation;
+            worldPoint.time = point.time;
+            HandWorld.push_back(worldPoint);
+        }
+        // 右手軌道（緑）
+        Vector4 color = { currentAttack.rightHandColor.x, currentAttack.rightHandColor.y, currentAttack.rightHandColor.z, 1.0f };
+        line_->CreateSmoothCurve(HandWorld, color, currentAttack.curveSegments);
+        // 制御点を可視化（右手）
+        ServiceLocator::GetLineObject3D()->DrawBezierControlPoints(
+            HandWorld,
+            Vector4{ 0.5f, 1.0f, 0.5f, 1.0f },  // 明るい緑
+            Vector4{ 0.2f, 0.8f, 0.2f, 0.5f },  // 半透明緑
+            AttackData::kControlPointSize
+        );
     }
 
-    // ベジェ曲線を描画
-    Vector4 trajectoryColor{ currentAttack.trajectoryColor.x, currentAttack.trajectoryColor.y, currentAttack.trajectoryColor.z, 1.0f };
-    line_->CreateSmoothCurve(worldPoints, trajectoryColor, currentAttack.curveSegments);
+    /// ===左手=== ///
+    if (currentAttack.isLeftHandAttack) {
+        // Dataの取得
+        std::vector<BezierControlPointData> HandWorld;
+        for (const auto& point : currentAttack.leftHandTrajectoryPoints) {
+            BezierControlPointData worldPoint = {};
+            worldPoint.position = point.position;
+			worldPoint.rotation = point.rotation;
+            worldPoint.time = point.time;
+            HandWorld.push_back(worldPoint);
+        }
+        // 左手軌道（青）
+        Vector4 color = { currentAttack.leftHandColor.x, currentAttack.leftHandColor.y, currentAttack.leftHandColor.z, 1.0f };
+        line_->CreateSmoothCurve(HandWorld, color, currentAttack.curveSegments);
+        // 制御点を可視化（左手）
+        ServiceLocator::GetLineObject3D()->DrawBezierControlPoints(
+            HandWorld,
+            Vector4{ 0.5f, 0.5f, 1.0f, 1.0f },  // 明るい青
+            Vector4{ 0.2f, 0.2f, 0.8f, 0.5f },  // 半透明青
+            AttackData::kControlPointSize
+        );
+    }
 
-    // 制御点を可視化
+    /// ===武器=== ///
+    // Dataの取得
+    std::vector<BezierControlPointData> WeaponWorld;
+    for (const auto& point : currentAttack.weaponTrajectoryPoints) {
+        BezierControlPointData worldPoint = {};
+        worldPoint.position = point.position;
+        worldPoint.rotation = point.rotation;
+        worldPoint.time = point.time;
+        WeaponWorld.push_back(worldPoint);
+    }
+    // 武器軌道（赤）
+    Vector4 weaponColor = { currentAttack.weaponColor.x, currentAttack.weaponColor.y, currentAttack.weaponColor.z, 1.0f };
+    line_->CreateSmoothCurve(WeaponWorld, weaponColor, currentAttack.curveSegments);
+    // 制御点を可視化（武器）
     ServiceLocator::GetLineObject3D()->DrawBezierControlPoints(
-        worldPoints,
-        Vector4{ 1.0f, 1.0f, 0.0f, 1.0f },  // 黄色
-        Vector4{ 0.5f, 0.5f, 0.5f, 0.5f },  // 半透明グレー
-        0.3f
+        WeaponWorld,
+        Vector4{ 1.0f, 0.5f, 0.5f, 1.0f },  // 明るい赤
+        Vector4{ 0.8f, 0.2f, 0.2f, 0.5f },  // 半透明赤
+        AttackData::kControlPointSize
     );
 
     // プレビュー用武器の描画（オプション）
-    if (previewWeapon_ && isPlaying_) {
+    if (previewWeapon_ && previewRightHand_ && previewLeftHand_&& isPlaying_) {
         previewWeapon_->Draw(BlendMode::KBlendModeNormal);
+		previewLeftHand_->Draw(BlendMode::KBlendModeNormal);
+		previewRightHand_->Draw(BlendMode::KBlendModeNormal);
     }
 }
 
@@ -38229,96 +38453,71 @@ void AttackEditor::RenderTimingSettings(AttackData& data) {
 /// 軌道設定UIの描画
 ///-------------------------------------------///
 void AttackEditor::RenderTrajectorySettings(AttackData& data) {
-    data;
 #ifdef USE_IMGUI
-    ImGui::SeparatorText("ベジェ曲線の制御点");
+    ImGui::SeparatorText("武器の軌道設定");
 
     ImGui::DragFloat("武器の距離", &data.weaponLength, 0.1f, 1.0f, 50.0f);
     ImGui::DragInt("曲線の分割数", &data.curveSegments, 1, 5, 100);
 
-    // 制御点リスト
-    for (int i = 0; i < static_cast<int>(data.trajectoryPoints.size()); ++i) {
-        ImGui::PushID(i);
+    ImGui::Spacing();
+    ImGui::Separator();
 
-        ImGui::Text("制御点 %d", i);
-        ImGui::DragFloat3("位置", &data.trajectoryPoints[i].position.x, 0.1f);
-        ImGui::SliderFloat("時間", &data.trajectoryPoints[i].time, 0.0f, 1.0f, "%.2f");
-
-        ImGui::SameLine();
-        if (ImGui::Button("削除") && data.trajectoryPoints.size() > 2) {
-            data.trajectoryPoints.erase(data.trajectoryPoints.begin() + i);
-            ImGui::PopID();
-            break;
-        }
-
-        ImGui::Separator();
-        ImGui::PopID();
-    }
-
-    if (ImGui::Button("+ 制御点を追加")) {
-        BezierControlPointData newPoint = {};
-        newPoint.position = Vector3{ 0.0f, 0.0f, 0.0f };
-        newPoint.time = 0.5f;
-        data.trajectoryPoints.push_back(newPoint);
-    }
-
-    // 編集用データを取得または初期化
-    if (rotationEditMap_.find(data.attackID) == rotationEditMap_.end()) {
-        // 初回：QuaternionからVector3に変換
-        RotationEditData editData;
-        editData.startEuler = Math::QuaternionToEuler(data.startRotation);
-        editData.endEuler = Math::QuaternionToEuler(data.endRotation);
-        rotationEditMap_[data.attackID] = editData;
-    }
-
-    RotationEditData& editData = rotationEditMap_[data.attackID];
-
-    // Vector3（度数法）で編集
-    ImGui::Text("開始回転 (度数法)");
-    if (ImGui::DragFloat3("StartEuler", &editData.startEuler.x, 0.5f, -360.0f, 360.0f)) {
-        // 編集されたらQuaternionに変換
-        data.startRotation = Math::QuaternionFromVector(editData.startEuler);
-    }
-
-    // 現在のQuaternion値も表示
-    ImGui::SameLine();
-    if (ImGui::TreeNode("StartQuaternion")) {
-        ImGui::Text("x: %.3f, y: %.3f", data.startRotation.x, data.startRotation.y);
-        ImGui::Text("z: %.3f, w: %. 3f", data.startRotation.z, data.startRotation.w);
-        ImGui::TreePop();
-    }
+    // ベジェ曲線の制御点リスト
+    ImGui::SeparatorText("ベジェ曲線の制御点");
+    RenderBezierControlPointList(data.weaponTrajectoryPoints, "Weapon", TrajectoryType::WeaponTrajectory);
 
     ImGui::Spacing();
+    ImGui::Separator();
 
-    ImGui::Text("終了回転 (度数法)");
-    if (ImGui::DragFloat3("EndEuler", &editData.endEuler.x, 0.5f, -360.0f, 360.0f)) {
-        // 編集されたらQuaternionに変換
-        data.endRotation = Math::QuaternionFromVector(editData.endEuler);
-    }
-
-    // 現在のQuaternion値も表示
-    ImGui::SameLine();
-    if (ImGui::TreeNode("EndQuaternion")) {
-        ImGui::Text("x:  %.3f, y: %.3f", data.endRotation.x, data.endRotation.y);
-        ImGui::Text("z: %.3f, w: %.3f", data.endRotation.z, data.endRotation.w);
-        ImGui::TreePop();
-    }
-
-    ImGui::Spacing();
-
-    // リセットボタン
-    if (ImGui::Button("回転をリセット")) {
-        editData.startEuler = { 0.0f, 0.0f, 0.0f };
-        editData.endEuler = { 0.0f, 0.0f, 0.0f };
-        data.startRotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
-        data.endRotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
-    }
-
-    ImGui::Checkbox("回転もベジェ曲線で補間", &data.useRotationCurve);
-
+    // プレビュー設定
     ImGui::SeparatorText("プレビュー");
     ImGui::Checkbox("軌道を表示", &data.showTrajectory);
-    ImGui::ColorEdit3("軌道の色", &data.trajectoryColor.x);
+    ImGui::ColorEdit3("軌道の色", &data.weaponColor.x);
+#endif
+}
+
+///-------------------------------------------/// 
+/// 両手軌道設定UIの描画
+///-------------------------------------------///
+void AttackEditor::RenderDualHandTrajectorySettings(AttackData& data) {
+#ifdef USE_IMGUI
+    ImGui::SeparatorText("手の攻撃設定");
+
+	// 攻撃モード選択
+    ImGui::Checkbox("左手攻撃", &data.isLeftHandAttack);
+    ImGui::Checkbox("右手攻撃", &data.isRightHandAttack);
+
+    ImGui::Spacing();
+    ImGui::Separator();
+
+    // 共通設定
+    ImGui::DragInt("曲線の分割数", &data.curveSegments, 1, 5, 100);
+    // 色設定
+    ImGui::ColorEdit3("左手軌道の色", &data.leftHandColor.x);
+    ImGui::ColorEdit3("右手軌道の色", &data.rightHandColor.x);
+    
+    ImGui::Spacing();
+    ImGui::Separator();
+
+    // 左手のベジェ曲線の表示
+    ImGui::BeginChild("LeftHandPanel", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0), true);
+    ImGui::TextColored(ImVec4(0.3f, 0.3f, 1.0f, 1.0f), "左手 (Left Hand)");
+    ImGui::Separator();
+    RenderBezierControlPointList(data.leftHandTrajectoryPoints, "LeftHand", TrajectoryType::LeftHandTrajectory);
+    ImGui::EndChild();
+
+    ImGui::SameLine();
+
+    // 右手のベジェ曲線の表示
+    ImGui::BeginChild("RightHandPanel", ImVec2(0, 0), true);
+    ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.3f, 1.0f), "右手 (Right Hand)");
+    ImGui::Separator();
+    RenderBezierControlPointList(data.rightHandTrajectoryPoints, "RightHand", TrajectoryType::RightHandTrajectory);
+    ImGui::EndChild();
+
+    ImGui::Spacing();
+    ImGui::Separator();
+
 #endif
 }
 
@@ -38415,46 +38614,156 @@ void AttackEditor::RenderPreviewControl() {
     ImGui::Checkbox("自動リプレイ", &autoReplay_);
 
     ImGui::SeparatorText("プレビュー設定");
-    ImGui::DragFloat3("武器位置", &previewWeaponPosition_.x, 0.1f);
+	ImGui::DragFloat3("武器位置", &previewPlayerPosition_.x, 0.1f); // 後々Player位置の変更にする予定
 
     // 実際の攻撃をプレビュー
     if (ImGui::Button("攻撃プレビュー実行", ImVec2(-1, 0)) && previewWeapon_) {
+		// 選択中の攻撃を確認
         if (selectedAttackIndex_ >= 0 && selectedAttackIndex_ < static_cast<int>(attacks_.size())) {
+			// 現在の攻撃データを取得
             AttackData& currentAttack = attacks_[selectedAttackIndex_];
-
-            // ベジェ曲線の制御点が2点以上あるか確認
-            if (currentAttack.trajectoryPoints.size() >= 2) {
+            
+            /// ===武器=== ///
+			// 武器の軌道ポイントが2つ以上あることを確認
+            if (currentAttack.weaponTrajectoryPoints.size() >= 2) {
 
                 // 全ての制御点にオフセットを適用
-                std::vector<BezierControlPointData> worldPoints;
-                for (const auto& point : currentAttack.trajectoryPoints) {
-                    BezierControlPointData worldPoint = {};
-                    worldPoint.position = previewWeaponPosition_ + point.position;
-                    worldPoint.time = point.time;
-                    worldPoints.push_back(worldPoint);
+                std::vector<BezierControlPointData> weaponPoints;
+                for (const auto& point : currentAttack.weaponTrajectoryPoints) {
+                    BezierControlPointData weaponPoint = {};
+                    weaponPoint.position = previewPlayerPosition_ + point.position;
+					weaponPoint.rotation = point.rotation;
+                    weaponPoint.time = point.time;
+                    weaponPoints.push_back(weaponPoint);
                 }
 
                 // 武器に攻撃を実行させる（ベジェ曲線版）
-                previewWeapon_->StartAttack(
-                    worldPoints,                    // ← 全制御点を渡す
-                    currentAttack.activeDuration,
-                    currentAttack.startRotation,
-                    currentAttack.endRotation
-                );
-
-                // プレビュー再生開始
-                PlayPreview();
+                previewWeapon_->StartAttack(weaponPoints, currentAttack.activeDuration);
             }
+
+            /// ===右手攻撃=== ///
+			// 右手攻撃が有効で、プレビューオブジェクトが存在する場合
+            if (currentAttack.isRightHandAttack && previewRightHand_) {
+				// 右手の軌道ポイントが2つ以上あることを確認
+                if (currentAttack.rightHandTrajectoryPoints.size() >= 2) {
+					// 全ての制御点にオフセットを適用
+                    std::vector<BezierControlPointData> rightHandPoints;
+                    for (const auto& point : currentAttack.rightHandTrajectoryPoints) {
+                        BezierControlPointData handPoint = {};
+                        handPoint.position = previewPlayerPosition_ + point.position;
+						handPoint.rotation = point.rotation;
+                        handPoint.time = point.time;
+                        rightHandPoints.push_back(handPoint);
+                    }
+					// 右手に攻撃を実行させる（ベジェ曲線版）
+                    previewRightHand_->StartAttack(rightHandPoints, currentAttack.activeDuration);
+                }
+			}
+
+            /// ===左手攻撃=== ///
+            // 左手攻撃が有効で、プレビューオブジェクトが存在する場合
+            if (currentAttack.isLeftHandAttack && previewLeftHand_) {
+                // 左手の軌道ポイントが2つ以上あることを確認
+                if (currentAttack.leftHandTrajectoryPoints.size() >= 2) {
+                    // 全ての制御点にオフセットを適用
+                    std::vector<BezierControlPointData> leftHandPoints;
+                    for (const auto& point : currentAttack.leftHandTrajectoryPoints) {
+                        BezierControlPointData handPoint = {};
+                        handPoint.position = previewPlayerPosition_ + point.position;
+                        handPoint.rotation = point.rotation;
+                        handPoint.time = point.time;
+                        leftHandPoints.push_back(handPoint);
+                    }
+					// 左手に攻撃を実行させる（ベジェ曲線版）
+                    previewLeftHand_->StartAttack(leftHandPoints, currentAttack.activeDuration);
+                }
+            }
+
+            /// ===プレビュー再生開始=== ///
+            PlayPreview();
+        }
+    }
+    ImGui::Separator();
+    ImGui::End();
+#endif
+}
+
+///-------------------------------------------/// 
+/// ベジェ曲線制御点リストのUI描画
+///-------------------------------------------///
+void AttackEditor::RenderBezierControlPointList(std::vector<BezierControlPointData>& points, const char* label, TrajectoryType type) {
+#ifdef USE_IMGUI
+    // rotationEditDataのベクターサイズを調整
+    std::vector<Vector3>* eulerList = nullptr;
+    switch (type) {
+    case TrajectoryType::WeaponTrajectory:
+        eulerList = &rotationEditData_.weaponEuler;
+        break;
+    case TrajectoryType::RightHandTrajectory:
+        eulerList = &rotationEditData_.rightHandEuler;
+        break;
+    case TrajectoryType::LeftHandTrajectory:
+        eulerList = &rotationEditData_.leftHandEuler;
+        break;
+    }
+
+    // ベクターサイズが足りない場合は追加
+    if (eulerList && eulerList->size() < points.size()) {
+        size_t oldSize = eulerList->size();
+        eulerList->resize(points.size());
+        // 新しく追加された要素をQuaternionから変換して初期化
+        for (size_t i = oldSize; i < points.size(); ++i) {
+            (*eulerList)[i] = Math::QuaternionToEuler(points[i].rotation);
+        }
+    }
+    // ベクターサイズが多すぎる場合は削減
+    else if (eulerList && eulerList->size() > points.size()) {
+        eulerList->resize(points.size());
+    }
+
+    for (int i = 0; i < static_cast<int>(points.size()); ++i) {
+        ImGui::PushID((std::string(label) + std::to_string(i)).c_str());
+
+        // 制御点データ
+        ImGui::Text("制御点 %d", i);
+        ImGui::DragFloat3("位置", &points[i].position.x, 0.1f);
+
+        if (eulerList && i < static_cast<int>(eulerList->size())) {
+            ImGui::DragFloat3("回転", &(*eulerList)[i].x, 0.1f);
+            // 回転をQuaternionに変換して保存
+            points[i].rotation = Math::QuaternionFromVector((*eulerList)[i]);
+        }
+
+        ImGui::SliderFloat("時間", &points[i].time, 0.0f, 1.0f, "%.2f");
+        ImGui::SameLine();
+
+        // 削除
+        if (ImGui::Button("削除") && points.size() > 2) {
+            points.erase(points.begin() + i);
+            if (eulerList && i < static_cast<int>(eulerList->size())) {
+                eulerList->erase(eulerList->begin() + i);
+            }
+            ImGui::PopID();
+            break;
+        }
+        ImGui::Separator();
+        ImGui::PopID();
+    }
+
+    // 制御点追加ボタン
+    if (ImGui::Button((std::string("+ 制御点を追加_") + label).c_str())) {
+        BezierControlPointData newPoint = {};
+        newPoint.position = Vector3{ 0.0f, 0.0f, 0.0f };
+        newPoint.rotation = Math::QuaternionFromVector(Vector3{ 0.0f, 0.0f, 0.0f });
+        newPoint.time = 0.5f;
+        points.push_back(newPoint);
+
+        // オイラー角リストにも追加
+        if (eulerList) {
+            eulerList->push_back(Vector3{ 0.0f, 0.0f, 0.0f });
         }
     }
 
-    // ヘルプテキスト
-    ImGui::Separator();
-    ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "ヒント:");
-    ImGui::BulletText("「再生」で軌道のプレビュー表示");
-    ImGui::BulletText("「攻撃プレビュー実行」で実際の攻撃モーション");
-
-    ImGui::End();
 #endif
 }
 
@@ -38512,6 +38821,12 @@ void AttackEditor::UpdateTrajectoryPreview(const float deltaTime) {
     previewTimer_ += deltaTime;
 
     // プレビュー用武器の更新
+    if (previewLeftHand_) {
+        previewLeftHand_->Update();
+    }
+    if (previewRightHand_) {
+        previewRightHand_->Update();
+    }
     if (previewWeapon_) {
         previewWeapon_->Update();
     }
@@ -38543,6 +38858,7 @@ File Path: Project/application/Game/Entity/Player/Editor/AttackEditor.h
 
 /// ===前方宣言=== ///
 class PlayerWeapon;
+class PlayerHand;
 
 ///=====================================================/// 
 /// プレイヤー攻撃エディター
@@ -38594,6 +38910,16 @@ public:
     /// </summary>
     void SetPreviewPlayer(PlayerWeapon* player) { previewWeapon_ = player; }
 
+    /// <summary>
+	/// プレビュー用右手の設定
+    /// </summary>
+    void SetPreviewRightHand(PlayerHand* hand) { previewRightHand_ = hand; }
+
+    /// <summary>
+	/// プレビュー用左手の設定
+    /// </summary>
+    void SetPreviewLeftHand(PlayerHand* hand) { previewLeftHand_ = hand; }
+
 private:
     /// ===エディター状態=== ///
     bool isVisible_ = false;                      // 表示フラグ
@@ -38601,31 +38927,35 @@ private:
     int selectedAttackIndex_ = -1;                // 選択中の攻撃インデックス
 
     /// ===ファイル管理=== ///
-    static constexpr const char* kDefaultSavePath = "Resource/Json/Attacks/";
-    char filePathBuffer_[256];                    // ファイルパス入力バッファ
+	static constexpr const char* kDefaultSavePath = "Resource/Json/Attacks/"; // デフォルト保存パス
+    char filePathBuffer_[256];                    // ファイルパス入力バッファ 
     std::vector<std::string> availablePresets_;   // 利用可能なプリセットリスト
-    std::unordered_map<int, std::string> attackFilePaths_; // 
+    std::unordered_map<int, std::string> attackFilePaths_; // 攻撃IDとファイルパスのマッピング
 
     /// ===プレビュー=== ///
     bool isPlaying_ = false;                      // プレビュー再生中フラグ
     bool autoReplay_ = false;                     // 自動リプレイフラグ
     float previewTimer_ = 0.0f;                   // プレビュータイマー
-    Vector3 previewWeaponPosition_{ 0.0f, 0.0f, 0.0f };  // プレビュー用プレイヤー位置
+	Vector3 previewPlayerPosition_ = { 0.0f, 0.0f, 0.0f }; // プレビュープレイヤー位置
 
-    PlayerWeapon* previewWeapon_ = nullptr;             // プレビュー用プレイヤー
+    /// ===プレビュー用=== ///
+    PlayerWeapon* previewWeapon_ = nullptr;         // プレビュー用武器
+	PlayerHand* previewRightHand_ = nullptr;        // プレビュー用右手
+	PlayerHand* previewLeftHand_ = nullptr;         // プレビュー用左手
 
     /// ===Line描画=== ///
     std::unique_ptr<Line> line_;                  // 線描画オブジェクト
-    
+
     /// ===Serializer=== ///
-	std::unique_ptr<AttackDataSerializer> serializer_; // シリアライザ
+    std::unique_ptr<AttackDataSerializer> serializer_; // シリアライザ
 
     /// ===回転編集用（オイラー角）=== ///  
     struct RotationEditData {
-        Vector3 startEuler = { 0.0f, 0.0f, 0.0f };  // 開始回転（度数法）
-        Vector3 endEuler = { 0.0f, 0.0f, 0.0f };    // 終了回転（度数法）
+		std::vector<Vector3> weaponEuler;    // 武器回転制御点
+		std::vector<Vector3> rightHandEuler; // 右手回転制御点
+		std::vector<Vector3> leftHandEuler;  // 左手回転制御点
     };
-    std::unordered_map<int, RotationEditData> rotationEditMap_;  
+	RotationEditData rotationEditData_;
 
 private:
 
@@ -38706,9 +39036,14 @@ private:
     void RenderTimingSettings(AttackData& data);
 
     /// <summary>
-    /// 軌道設定UIの描画
+    /// 軌道設定UIの描画（単手）
     /// </summary>
     void RenderTrajectorySettings(AttackData& data);
+
+    /// <summary>
+    /// 両手軌道設定UIの描画
+    /// </summary>
+    void RenderDualHandTrajectorySettings(AttackData& data);
 
     /// <summary>
     /// エフェクト設定UIの描画
@@ -38726,6 +39061,11 @@ private:
     void RenderPreviewControl();
 
     /// ===ヘルパー関数=== ///
+
+    /// <summary>
+    /// ベジェ曲線制御点リストのUI描画
+    /// </summary>
+    void RenderBezierControlPointList(std::vector<BezierControlPointData>& points, const char* label, TrajectoryType type);
 
     /// <summary>
     /// 選択中の攻撃を削除
@@ -38762,9 +39102,23 @@ File Path: Project/application/Game/Entity/Player/Editor/Data/AttackData.h
 #include <string>
 
 ///-------------------------------------------/// 
+/// 軌道の種類
+///-------------------------------------------///
+enum class TrajectoryType {
+    WeaponTrajectory,    // 武器軌道
+    RightHandTrajectory, // 右手軌道
+    LeftHandTrajectory   // 左手軌道
+};
+
+///-------------------------------------------/// 
 /// 攻撃データ構造体
 ///-------------------------------------------///
 struct AttackData {
+    // ===定数定義=== //
+	static constexpr int kDefaultBezierSegments = 20;   // デフォルトのベジェ曲線分割数
+	static constexpr float kDefaultWeaponLength = 8.0f; // デフォルトの武器距離
+	static constexpr float kControlPointSize = 1.5f;    // 制御点の表示サイズ
+
     // ===基本情報=== //
     std::string attackName;              // 攻撃名
     std::string description;             // 説明
@@ -38776,18 +39130,20 @@ struct AttackData {
     float cooldownTime;                  // クールダウン時間（秒）
 
     // ===軌道設定（ベジェ曲線）=== //
-    std::vector<BezierControlPointData> trajectoryPoints;  // ベジェ曲線の制御点リスト
-    int curveSegments;                   // 曲線の分割数（滑らかさ）
-    float weaponLength;                  // 武器の距離
+    bool isRightHandAttack;              // 右手攻撃かどうか
+    bool isLeftHandAttack;               // 左手攻撃かどうか
 
-    // ===回転設定=== //
-    Quaternion startRotation;            // 開始回転
-    Quaternion endRotation;              // 終了回転
-    bool useRotationCurve;               // 回転もベジェ曲線で補間するか
+    // 軌道
+    std::vector<BezierControlPointData> weaponTrajectoryPoints;    // 武器用軌道の制御点リスト
+	std::vector<BezierControlPointData> rightHandTrajectoryPoints; // 右手用軌道の制御点リスト
+	std::vector<BezierControlPointData> leftHandTrajectoryPoints;  // 左手用軌道の制御点リスト
+
+    int curveSegments;                   // 曲線の分割数
+    float weaponLength;                  // 武器の距離
 
     // ===コンボ設定=== //
     bool canComboToNext;                 // 次のコンボに繋げるか
-    int nextComboID;                     // 次のコンボのID（-1で無し）
+    int nextComboID;                     // 次のコンボのID
     std::vector<int> branchComboIDs;     // 分岐可能なコンボID（複数選択肢）
 
     // ===エフェクト設定=== //
@@ -38806,7 +39162,9 @@ struct AttackData {
 
     // ===デバッグ/プレビュー用=== //
     bool showTrajectory;                 // 軌道を表示するか
-    Vector3 trajectoryColor;             // 軌道の色（RGB）
+    Vector3 weaponColor;             // 軌道の色
+    Vector3 rightHandColor;              // 右手軌道の色
+    Vector3 leftHandColor;               // 左手軌道の色
 
     /// デフォルトコンストラクタ
     AttackData()
@@ -38816,11 +39174,10 @@ struct AttackData {
         , activeDuration(0.4f)
         , comboWindowTime(1.0f)
         , cooldownTime(0.3f)
-        , curveSegments(20)
-        , weaponLength(8.0f)
-        , startRotation(Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f })
-        , endRotation(Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f })
-        , useRotationCurve(false)
+        , isRightHandAttack(false)
+        , isLeftHandAttack(false)
+        , curveSegments(kDefaultBezierSegments)
+        , weaponLength(kDefaultWeaponLength)
         , canComboToNext(false)
         , nextComboID(-1)
         , particleEffectName("WeaponAttack")
@@ -38832,14 +39189,396 @@ struct AttackData {
         , moveSpeedMultiplier(0.4f)
         , rootMotion(Vector3{ 0.0f, 0.0f, 0.0f })
         , showTrajectory(true)
-        , trajectoryColor(Vector3{ 1.0f, 0.0f, 0.0f })
+        , weaponColor(Vector3{ 1.0f, 0.0f, 0.0f })     // 赤
+        , rightHandColor(Vector3{ 0.0f, 1.0f, 0.0f })  // 緑
+        , leftHandColor(Vector3{ 0.0f, 0.0f, 1.0f })   // 青
     {
         // デフォルトで3点のベジェ曲線を設定（左→中央→右）
-        trajectoryPoints.push_back({ Vector3{-8.0f, 0.0f, 0.0f}, 0.0f });
-        trajectoryPoints.push_back({ Vector3{0.0f, 0.0f, 8.0f}, 0.5f });
-        trajectoryPoints.push_back({ Vector3{8.0f, 0.0f, 0.0f}, 1.0f });
+        weaponTrajectoryPoints.push_back({ Vector3{-8.0f, 0.0f, 0.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f},0.0f });
+        weaponTrajectoryPoints.push_back({ Vector3{0.0f, 0.0f, 8.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f},0.5f });
+        weaponTrajectoryPoints.push_back({ Vector3{8.0f, 0.0f, 0.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f},1.0f });
+
+        // 両手用デフォルト軌道
+        // 右手：右→前
+        rightHandTrajectoryPoints.push_back({ Vector3{5.0f, 0.0f, -3.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f},0.0f });
+        rightHandTrajectoryPoints.push_back({ Vector3{5.0f, 2.0f, 0.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f},0.5f });
+        rightHandTrajectoryPoints.push_back({ Vector3{0.0f, 0.0f, 5.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f},1.0f });
+
+        // 左手：左→前
+        leftHandTrajectoryPoints.push_back({ Vector3{-5.0f, 0.0f, -3.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f}, 0.0f });
+        leftHandTrajectoryPoints.push_back({ Vector3{-5.0f, 2.0f, 0.0f},Quaternion{0.0f, 0.0f, 0.0f, 1.0f}, 0.5f });
+        leftHandTrajectoryPoints.push_back({ Vector3{0.0f, 0.0f, 5.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f},1.0f });
     }
 };
+
+============================================================
+File Path: Project/application/Game/Entity/Player/Hand/PlayerHand.cpp
+============================================================
+#include "PlayerHand.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
+// Math
+#include "Math/sMath.h"
+#include "Math/EasingMath.h"
+// Service
+#include "Engine/System/Service/ColliderService.h"
+#include "Engine/System/Service/DeltaTimeSevice.h"
+
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+PlayerHand::~PlayerHand() {
+	object3d_.reset();
+}
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void PlayerHand::Initialize() {
+	// モデルの初期化
+	object3d_ = std::make_unique<Object3d>();
+	object3d_->Init(ObjectType::Model, "PlayerHand");
+
+	/// ===OBBCollider=== ///
+	OBBCollider::Initialize();
+	name_ = ColliderName::None;
+	OBBCollider::SetHalfSize({ 0.5f, 0.5f, 3.0f });
+
+	attackInfo_.isAttacking = false;
+
+	// DeltaTime初期化
+	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+
+	// 初回更新
+	Update();
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void PlayerHand::Update() {
+	// DeltaTime更新
+	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+
+	// 攻撃中でない場合は早期リターン
+	if (!attackInfo_.isAttacking) {
+		OBBCollider::Update();
+		return;
+	}
+
+	// タイマーを進める
+	attackInfo_.timer += baseInfo_.deltaTime;
+	attackInfo_.progress = attackInfo_.timer / attackInfo_.duration;
+
+	// 攻撃終了チェック
+	if (attackInfo_.progress >= 1.0f) {
+		attackInfo_.isAttacking = false;
+		attackInfo_.progress = 1.0f;
+		OBBCollider::Update();
+		return;
+	}
+
+	// ベジェ曲線に沿った攻撃軌道の更新
+	UpdateBezierTrajectory();
+
+	/// ===OBBCollider=== ///
+	OBBCollider::Update();
+}
+
+///-------------------------------------------/// 
+/// 描画処理
+///-------------------------------------------///
+void PlayerHand::Draw(BlendMode mode) {
+	// 攻撃中のみ描画
+	if (attackInfo_.isAttacking) {
+		OBBCollider::Draw(mode);
+	}
+}
+
+///-------------------------------------------/// 
+/// ImGui情報の表示
+///-------------------------------------------///
+void PlayerHand::Information() {}
+
+///-------------------------------------------/// 
+/// 衝突処理
+///-------------------------------------------///
+void PlayerHand::OnCollision(Collider* collider) {
+	collider;
+}
+
+///-------------------------------------------/// 
+/// 親子関係を設定し、指定したオフセットで子オブジェクトの位置を調整
+///-------------------------------------------///
+void PlayerHand::SetUpParent(Player* parent) {
+	player_ = parent;
+	// 親子関係の設定
+	object3d_->SetParent(player_->GetModelCommon());
+}
+
+///-------------------------------------------/// 
+/// 攻撃の開始処理（ベジェ曲線）
+///-------------------------------------------///
+void PlayerHand::StartAttack(
+	const std::vector<BezierControlPointData>& trajectoryPoints, 
+	float duration) {
+
+	// 制御点が2点未満の場合は処理を行わない
+	if (trajectoryPoints.size() < 2) {
+		return;
+	}
+
+	// 攻撃情報の設定
+	attackInfo_.isAttacking = true;
+	attackInfo_.timer = 0.0f;
+	attackInfo_.duration = duration;
+	attackInfo_.progress = 0.0f;
+
+	// ベジェ曲線の制御点を保存
+	attackInfo_.trajectoryPoints = trajectoryPoints;
+
+	// 初期位置と回転を設定
+	transform_.translate = trajectoryPoints.front().position;
+	transform_.rotate = trajectoryPoints.front().rotation;
+}
+
+///-------------------------------------------/// 
+/// ベジェ曲線上の位置を計算
+///-------------------------------------------///
+Vector3 PlayerHand::CalculateBezierPoint(const std::vector<BezierControlPointData>& controlPoints, float t) {
+	size_t n = controlPoints.size();
+
+	// 制御点が2点の場合は線形補間
+	if (n == 2) {
+		return Math::Lerp(controlPoints[0].position, controlPoints[1].position, t);
+	}
+
+	// 制御点が3点の場合は2次ベジェ曲線
+	if (n == 3) {
+		float u = 1.0f - t;
+		float uu = u * u;
+		float tt = t * t;
+
+		Vector3 point = {};
+		point.x = uu * controlPoints[0].position.x +
+			2.0f * u * t * controlPoints[1].position.x +
+			tt * controlPoints[2].position.x;
+		point.y = uu * controlPoints[0].position.y +
+			2.0f * u * t * controlPoints[1].position.y +
+			tt * controlPoints[2].position.y;
+		point.z = uu * controlPoints[0].position.z +
+			2.0f * u * t * controlPoints[1].position.z +
+			tt * controlPoints[2].position.z;
+
+		return point;
+	}
+
+	// 制御点が4点の場合は3次ベジェ曲線
+	if (n == 4) {
+		float u = 1.0f - t;
+		float uu = u * u;
+		float uuu = uu * u;
+		float tt = t * t;
+		float ttt = tt * t;
+
+		Vector3 point = {};
+		point.x = uuu * controlPoints[0].position.x +
+			3.0f * uu * t * controlPoints[1].position.x +
+			3.0f * u * tt * controlPoints[2].position.x +
+			ttt * controlPoints[3].position.x;
+		point.y = uuu * controlPoints[0].position.y +
+			3.0f * uu * t * controlPoints[1].position.y +
+			3.0f * u * tt * controlPoints[2].position.y +
+			ttt * controlPoints[3].position.y;
+		point.z = uuu * controlPoints[0].position.z +
+			3.0f * uu * t * controlPoints[1].position.z +
+			3.0f * u * tt * controlPoints[2].position.z +
+			ttt * controlPoints[3].position.z;
+
+		return point;
+	}
+
+	// 5点以上の場合はDe Casteljauのアルゴリズム
+	std::vector<Vector3> temp;
+	for (const auto& cp : controlPoints) {
+		temp.push_back(cp.position);
+	}
+
+	while (temp.size() > 1) {
+		std::vector<Vector3> newTemp;
+		for (size_t i = 0; i < temp.size() - 1; ++i) {
+			newTemp.push_back(Math::Lerp(temp[i], temp[i + 1], t));
+		}
+		temp = newTemp;
+	}
+
+	return temp[0];
+}
+
+///-------------------------------------------/// 
+/// ベジェ曲線上の回転を計算
+///-------------------------------------------///
+Quaternion PlayerHand::CalculateBezierRotation(const std::vector<BezierControlPointData>& controlPoints, float t) {
+	size_t n = controlPoints.size();
+	if (n == 0) {
+		// デフォルト quaternion（必要に応じて変更）
+		return Quaternion{ 0, 0, 0, 1 };
+	}
+	if (n == 1) {
+		return controlPoints[0].rotation;
+	}
+
+	// 2点の場合→SLerp
+	if (n == 2) {
+		return Math::SLerp(controlPoints[0].rotation, controlPoints[1].rotation, t);
+	}
+
+	// 3点以上→De Casteljau法   (SLerpで再帰的に作る)
+	std::vector<Quaternion> temp;
+	for (const auto& cp : controlPoints) {
+		temp.push_back(cp.rotation);
+	}
+
+	// 再帰的補間
+	while (temp.size() > 1) {
+		std::vector<Quaternion> nextLayer;
+		for (size_t i = 0; i < temp.size() - 1; ++i) {
+			nextLayer.push_back(Math::SLerp(temp[i], temp[i + 1], t));
+		}
+		temp = nextLayer;
+	}
+	return temp[0];
+}
+
+///-------------------------------------------/// 
+/// ベジェ曲線に沿った軌道更新
+///-------------------------------------------///
+void PlayerHand::UpdateBezierTrajectory() {
+	// イージング関数を適用（滑らかな加速・減速）
+	float t = attackInfo_.progress;
+	float easedT = Easing::EaseInOutQuad(t);
+
+	// ベジェ曲線上の位置を計算
+	transform_.translate = CalculateBezierPoint(attackInfo_.trajectoryPoints, easedT);
+	// ベジェ曲線上の回転を計算
+	transform_.rotate = CalculateBezierRotation(attackInfo_.trajectoryPoints, easedT);
+}
+
+============================================================
+File Path: Project/application/Game/Entity/Player/Hand/PlayerHand.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// OBB
+#include "Engine/Collider/OBBCollider.h"
+// AttackData
+#include "application/Game/Entity/Player/Editor/Data/AttackData.h"
+
+/// ===前方宣言=== ///
+class Player;
+
+///=====================================================/// 
+/// PlayerHand
+///=====================================================///
+class PlayerHand : public OBBCollider {
+public:
+
+	PlayerHand() = default;
+	~PlayerHand();
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	void Initialize() override;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	/// <param name="mode">描画に使用するブレンドモード。</param>
+	void Draw(BlendMode mode) override;
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
+	void Information() override;
+
+	/// <summary>
+	/// 親子関係を設定し、指定したオフセットで子オブジェクトの位置を調整
+	/// </summary>
+	/// <param name="parent">親となる Player オブジェクトへのポインタ。子をこの親に関連付けます。</param>
+	void SetUpParent(Player* parent);
+
+	/// <summary>
+	/// 攻撃を開始する（ベジェ曲線）
+	/// </summary>
+	/// <param name="trajectoryPoints">ベジェ曲線の制御点リスト</param>
+	/// <param name="duration">攻撃にかける時間（秒）</param>
+	/// <param name="startRotation">開始時の回転</param>
+	/// <param name="endRotation">終了時の回転</param>
+	void StartAttack(
+		const std::vector<BezierControlPointData>& trajectoryPoints,
+		float duration
+	);
+
+public: /// ===衝突=== ///
+	/// <summary>
+	/// 衝突処理
+	/// </summary>
+	/// <param name="collider">衝突した相手の Collider オブジェクトを指すポインター。</param>
+	void OnCollision(Collider* collider) override;
+
+private:
+
+	/// ===Player=== ///
+	Player* player_ = nullptr;
+
+	/// ===基本情報=== ///
+	struct BaseInfo {
+		bool isActive = false;                   // アクティブフラグ
+		float deltaTime = 0.0f;					 // デルタタイム
+	};
+	BaseInfo baseInfo_;
+
+	/// ===攻撃情報=== ///
+	struct AttackInfo {
+		bool isAttacking = false;							   // 攻撃中フラグ
+		std::vector<BezierControlPointData> trajectoryPoints;  // ベジェ曲線の制御点リスト
+		float timer = 0.0f;                                    // 攻撃タイマー
+		float duration = 0.0f;                                 // 攻撃の持続時間
+		float progress = 0.0f;                                 // 攻撃の進行度
+	};
+	AttackInfo attackInfo_;
+
+private:
+
+	/// <summary>
+	/// ベジェ曲線上の位置を計算
+	/// </summary>
+	/// <param name="controlPoints">制御点のリスト</param>
+	/// <param name="t">進行度（0.0～1.0）</param>
+	/// <returns>ベジェ曲線上の位置</returns>
+	Vector3 CalculateBezierPoint(const std::vector<BezierControlPointData>& controlPoints, float t);
+
+	/// <summary>
+	/// ベジェ曲線上の回転を計算
+	/// </summary>
+	/// <param name="controlPoints">制御点のリスト</param>
+	/// <param name="t">進行度（0.0～1.0）</param>
+	/// <returns>ベジェ曲線上の回転</returns>
+	Quaternion CalculateBezierRotation(const std::vector<BezierControlPointData>& controlPoints, float t);
+
+	/// <summary>
+	/// ベジェ曲線に沿った攻撃軌道の更新処理
+	/// </summary>
+	void UpdateBezierTrajectory();
+};
+
+
 
 ============================================================
 File Path: Project/application/Game/Entity/Player/Player.cpp
@@ -38896,7 +39635,17 @@ void Player::Initialize() {
 	// コライダーに追加
 	ColliderService::AddCollider(this);
 
-	// Weaponの初期化
+	/// ===Handの初期化=== ///
+	// 右手
+	rightHand_ = std::make_unique<PlayerHand>();
+	rightHand_->Initialize();
+	rightHand_->SetUpParent(this);
+	// 左手
+	leftHand_ = std::make_unique<PlayerHand>();
+	leftHand_->Initialize();
+	leftHand_->SetUpParent(this);
+
+	/// ===Weaponの初期化=== ///
 	weapon_ = std::make_unique<PlayerWeapon>();
 	weapon_->Initialize();
 	weapon_->SetUpParent(this);
@@ -38982,6 +39731,10 @@ void Player::Update() {
 ///-------------------------------------------///
 void Player::UpdateAnimation() {
 
+	/// ===Hand=== ///
+	rightHand_->Update();
+	leftHand_->Update();
+
 	/// ===Weapon=== ///
 	weapon_->Update();
 
@@ -38993,6 +39746,10 @@ void Player::UpdateAnimation() {
 /// 描画
 ///-------------------------------------------///
 void Player::Draw(BlendMode mode) {
+
+	/// ===Hand=== ///
+	rightHand_->Draw(mode);
+	leftHand_->Draw(mode);
 
 	/// ===Weapon=== ///
 	weapon_->Draw(mode);
@@ -39133,8 +39890,10 @@ File Path: Project/application/Game/Entity/Player/Player.h
 #include "Component/PlayerAttackComponent.h"
 // State
 #include "State/Base/PlayerState.h"
+// Hand
+#include "Hand/PlayerHand.h"
 // Weapon
-#include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
+#include "Weapon/PlayerWeapon.h"
 
 /// ===前方宣言=== ///
 class Enemy;
@@ -39182,7 +39941,9 @@ public: /// ===衝突判定=== ///
 	void OnCollision(Collider* collider) override;
 
 public: /// ===Getter=== ///
-
+	// Hand
+	PlayerHand* GetRightHand() const { return rightHand_.get(); };
+	PlayerHand* GetLeftHand() const { return leftHand_.get(); };
 	// Weapon
 	PlayerWeapon* GetWeapon() const { return weapon_.get(); };
 
@@ -39221,6 +39982,10 @@ public: /// ===State用関数=== ///
 private: /// ===変数の宣言=== ///
 	// カメラ
 	GameCamera* camera_ = nullptr; 
+
+	/// ===Hand=== ///
+	std::unique_ptr<PlayerHand> rightHand_;
+	std::unique_ptr<PlayerHand> leftHand_;
 
 	/// ===Weapon=== ///
 	std::unique_ptr<PlayerWeapon> weapon_;
@@ -39279,7 +40044,7 @@ void AttackState::Enter(Player* player, GameCamera* camera) {
 	camera_ = camera;
 
 	// 攻撃の開始
-	player_->GetAttackComponent()->StartAttack(0, player_->GetWeapon());
+	player_->GetAttackComponent()->StartAttack(0, player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand());
 }
 
 ///-------------------------------------------/// 
@@ -39303,7 +40068,7 @@ void AttackState::Update(Player* player, GameCamera* camera) {
 	// 攻撃ボタンが押されたらコンボを試行
 	if (InputService::TriggerButton(0, ControllerButtonType::X)) {
 		if (attackComp->CanCombo()) {
-			attackComp->TryCombo(player_->GetWeapon());
+			attackComp->TryCombo(player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand());
 		}
 	}
 
@@ -39846,7 +40611,6 @@ void PlayerWeapon::Initialize() {
 /// 更新
 ///-------------------------------------------///
 void PlayerWeapon::Update() {
-
 	// DeltaTime更新
 	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
 
@@ -39959,9 +40723,7 @@ void PlayerWeapon::SetUpParent(Player* parent) {
 ///-------------------------------------------///
 void PlayerWeapon::StartAttack(
 	const std::vector<BezierControlPointData>& trajectoryPoints,
-	float duration,
-	const Quaternion& startRotation,
-	const Quaternion& endRotation) {
+	float duration) {
 
 	// 制御点が2点未満の場合はエラー
 	if (trajectoryPoints.size() < 2) {
@@ -39976,10 +40738,6 @@ void PlayerWeapon::StartAttack(
 
 	// ベジェ曲線の制御点を保存
 	attackInfo_.trajectoryPoints = trajectoryPoints;
-
-	// 回転の設定
-	attackInfo_.startRotation = startRotation;
-	attackInfo_.endRotation = endRotation;
 
 	// コライダーに追加
 	ColliderService::AddCollider(this);
@@ -39998,9 +40756,9 @@ void PlayerWeapon::StartAttack(
 	attackParticle_ = ParticleService::Emit("WeaponAttack", trajectoryPoints.front().position);
 	attackParticle_->SetEmitterPosition(object3d_->GetWorldTranslate());
 
-	// 初期位置を設定
+	// 初期位置と回転を設定
 	transform_.translate = trajectoryPoints.front().position;
-	transform_.rotate = startRotation;
+	transform_.rotate = trajectoryPoints.front().rotation;
 }
 
 ///-------------------------------------------/// 
@@ -40077,6 +40835,41 @@ Vector3 PlayerWeapon::CalculateBezierPoint(const std::vector<BezierControlPointD
 }
 
 ///-------------------------------------------/// 
+/// ベジェ曲線上の回転を計算
+///-------------------------------------------///
+Quaternion PlayerWeapon::CalculateBezierRotation(const std::vector<BezierControlPointData>& controlPoints, float t) {
+	size_t n = controlPoints.size();
+	if (n == 0) {
+		// デフォルト quaternion（必要に応じて変更）
+		return Quaternion{ 0, 0, 0, 1 };
+	}
+	if (n == 1) {
+		return controlPoints[0].rotation;
+	}
+
+	// 2点の場合→SLerp
+	if (n == 2) {
+		return Math::SLerp(controlPoints[0].rotation, controlPoints[1].rotation, t);
+	}
+
+	// 3点以上→De Casteljau法   (SLerpで再帰的に作る)
+	std::vector<Quaternion> temp;
+	for (const auto& cp : controlPoints) {
+		temp.push_back(cp.rotation);
+	}
+
+	// 再帰的補間
+	while (temp.size() > 1) {
+		std::vector<Quaternion> nextLayer;
+		for (size_t i = 0; i < temp.size() - 1; ++i) {
+			nextLayer.push_back(Math::SLerp(temp[i], temp[i + 1], t));
+		}
+		temp = nextLayer;
+	}
+	return temp[0];
+}
+
+///-------------------------------------------/// 
 /// ベジェ曲線に沿った軌道更新
 ///-------------------------------------------///
 void PlayerWeapon::UpdateBezierTrajectory() {
@@ -40086,13 +40879,8 @@ void PlayerWeapon::UpdateBezierTrajectory() {
 
 	// ベジェ曲線上の位置を計算
 	transform_.translate = CalculateBezierPoint(attackInfo_.trajectoryPoints, easedT);
-
-	// 回転の補間（滑らかに回転）
-	transform_.rotate = Math::SLerp(
-		attackInfo_.startRotation,
-		attackInfo_.endRotation,
-		easedT
-	);
+	// ベジェ曲線上の回転を計算
+	transform_.rotate = CalculateBezierRotation(attackInfo_.trajectoryPoints, easedT);
 }
 
 ============================================================
@@ -40153,10 +40941,9 @@ public:
 	/// <param name="endRotation">終了時の回転</param>
 	void StartAttack(
 		const std::vector<BezierControlPointData>& trajectoryPoints,
-		float duration,
-		const Quaternion& startRotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f },
-		const Quaternion& endRotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f }
+		float duration
 	);
+
 
 public: /// ===衝突=== ///
 	/// <summary>
@@ -40186,8 +40973,6 @@ private:
 	/// ===基本情報=== ///
 	struct BaseInfo {
 		bool isActive = false;					 // アクティブフラグ
-		Vector3 offset = { 0.0f, 0.0f, 0.0f };   // プレイヤーからのオフセット
-		Vector3 velocity = { 0.0f, 0.0f, 0.0f }; // 速度
 		float deltaTime = 0.0f;					 // デルタタイム
 	};
 	BaseInfo baseInfo_;
@@ -40203,9 +40988,6 @@ private:
 
 		// ベジェ曲線の制御点
 		std::vector<BezierControlPointData> trajectoryPoints;
-
-		Quaternion startRotation;      // 開始時の回転
-		Quaternion endRotation;        // 終了時の回転
 	};
 	AttackInfo attackInfo_;
 
@@ -40217,6 +40999,14 @@ private:
 	/// <param name="t">進行度（0.0～1.0）</param>
 	/// <returns>ベジェ曲線上の位置</returns>
 	Vector3 CalculateBezierPoint(const std::vector<BezierControlPointData>& controlPoints, float t);
+
+	/// <summary>
+	/// ベジェ曲線上の回転を計算
+	/// </summary>
+	/// <param name="controlPoints">制御点のリスト</param>
+	/// <param name="t">進行度（0.0～1.0）</param>
+	/// <returns>ベジェ曲線上の回転</returns>
+	Quaternion CalculateBezierRotation(const std::vector<BezierControlPointData>& controlPoints, float t);
 
 	/// <summary>
 	/// ベジェ曲線に沿った攻撃軌道の更新処理
@@ -41935,6 +42725,8 @@ File Path: Project/application/Scene/Debug/AttackEditorScene.cpp
 ///-------------------------------------------///
 AttackEditorScene::~AttackEditorScene() {
     attackEditor_.reset();
+	previewRightHand_.reset();
+	previewLeftHand_.reset();
     previewWeapon_.reset();
     line_.reset();
     // ISceneのデストラクタ
@@ -41961,10 +42753,18 @@ void AttackEditorScene::Initialize() {
     line_ = std::make_unique<Line>();
 
     /// ===プレビュー用プレイヤーの初期化=== ///
+	previewLeftHand_ = std::make_unique<PlayerHand>();
+	previewLeftHand_->Initialize();
+
+	previewRightHand_ = std::make_unique<PlayerHand>();
+    previewRightHand_->Initialize();
+
     previewWeapon_ = std::make_unique<PlayerWeapon>();
     previewWeapon_->Initialize();
 
     // エディターにプレビュー用プレイヤーとカメラを設定
+	attackEditor_->SetPreviewLeftHand(previewLeftHand_.get());
+	attackEditor_->SetPreviewRightHand(previewRightHand_.get());
     attackEditor_->SetPreviewPlayer(previewWeapon_.get());
 
     // デフォルトカメラの位置を設定
@@ -41979,11 +42779,6 @@ void AttackEditorScene::Update() {
     /// ===エディターの更新=== ///
     if (attackEditor_) {
         attackEditor_->Update(DeltaTimeSevice::GetDeltaTime());
-    }
-
-    /// ===プレビュー用プレイヤーの更新=== ///
-    if (previewWeapon_) {
-		previewWeapon_->Update();
     }
 
     /// ===ImGui描画=== ///
@@ -42016,11 +42811,6 @@ void AttackEditorScene::Draw() {
     /// ===グリッドの描画=== ///
     if (showGrid_) {
         line_->DrawGrid({ 0.0f, 0.0f, 0.0f }, { 500.0f, 0.0f, 500.0f }, 100, { 1.0f, 1.0f, 1.0f, 1.0f });
-    }
-
-    /// ===プレビュー用プレイヤーの描画=== ///
-    if (previewWeapon_) {
-        previewWeapon_->Draw(BlendMode::KBlendModeNormal);
     }
 
     /// ===エディタープレビューの描画=== ///
@@ -42106,6 +42896,8 @@ File Path: Project/application/Scene/Debug/AttackEditorScene.h
 // Line 
 #include "application/Drawing/3d/Line.h"
 // Player
+#include "application/Game/Entity/Player/Player.h"
+#include "application/Game/Entity/Player/Hand/PlayerHand.h"
 #include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
 // c++
 #include <memory>
@@ -42140,6 +42932,8 @@ private:
     /// ===エディター=== ///
     std::unique_ptr<AttackEditor> attackEditor_;
     /// ===プレビュー用プレイヤー=== ///
+	std::unique_ptr<PlayerHand> previewRightHand_;
+	std::unique_ptr<PlayerHand> previewLeftHand_;
     std::unique_ptr<PlayerWeapon> previewWeapon_;
 
     /// ===エディター設定=== ///
