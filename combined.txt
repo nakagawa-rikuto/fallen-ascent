@@ -16959,7 +16959,7 @@ void Framework::Initialize(const wchar_t* title) {
 	/// ===初期化=== ///
 	// MiiEngine
 	MiiEngine_ = std::make_unique<Mii>();
-	MiiEngine_->Initialize(title, 1920, 1080);
+	MiiEngine_->Initialize(title, 1280, 720);
 	// CameraManager
 	cameraManager_ = std::make_unique<CameraManager>();
 	// ParticleManager
@@ -17413,6 +17413,8 @@ void MyGame::LoadTexture() {
 	Loader::LoadTexture("aButton", "GameUI/xbox_button_color_a.png");
 	Loader::LoadTexture("leftStick", "GameUI/xbox_stick_l.png");
 	Loader::LoadTexture("rightStick", "GameUI/xbox_stick_r.png");
+	Loader::LoadTexture("menuButton", "GameUI/xbox_button_menu.png");
+	
 	// OptionUI
 	Loader::LoadTexture("OptionTitle", "OptionUI/OptionTitle.png");
 	Loader::LoadTexture("OptionVolume", "OptionUI/Volume.png");
@@ -41749,6 +41751,7 @@ File Path: Project/application/Game/UI/Game/GameSceneUI.cpp
 #include "GameSceneUI.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
+#include "Engine/System/Service/GraphicsResourceGetter.h"
 
 ///-------------------------------------------/// 
 /// Setter
@@ -41765,6 +41768,21 @@ void GameSceneUI::Initialize() {
 	// PlayerUIの生成と初期化
 	playerUI_ = std::make_unique<PlayerUI>();
 	playerUI_->Initialize();
+
+	/// ===ウィンドウサイズの取得=== ///
+	Vector2 windowSize = {
+		static_cast<float>(GraphicsResourceGetter::GetWindowWidth()),
+		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
+	};
+
+	/// ===OptionSprite=== ///
+	optionMenuSprite_ = std::make_unique<Sprite>();
+	optionMenuSprite_->Initialize("menuButton");
+	optionMenuSprite_->SetPosition({ windowSize.x - 100.0f, 100.0f});
+	optionMenuSprite_->SetSize({ 100.0f, 100.0f });
+	optionMenuSprite_->SetAnchorPoint({ 0.5f, 0.5f });
+	optionMenuSprite_->Update();
+
 }
 
 ///-------------------------------------------/// 
@@ -41781,6 +41799,8 @@ void GameSceneUI::Update() {
 void GameSceneUI::Draw() {
 	// PlayerUIの描画
 	playerUI_->Draw();
+	// オプションメニュースプライトの描画
+	optionMenuSprite_->Draw();
 }
 
 ============================================================
@@ -41826,6 +41846,9 @@ private:
 	/// ===Class=== ///
 	// PlayerUI
 	std::unique_ptr<PlayerUI> playerUI_;
+
+	/// ===Sprite=== ///
+	std::unique_ptr<Sprite> optionMenuSprite_;
 };
 
 
