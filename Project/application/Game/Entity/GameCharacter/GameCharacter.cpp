@@ -1,4 +1,6 @@
 #include "GameCharacter.h"
+// Manager
+#include "Manager/GameCharacterManager.h"
 // DeltaTime
 #include "Engine/System/Service/DeltaTimeSevice.h"
 #include "Engine/Collider/AABBCollider.h"
@@ -14,10 +16,22 @@ template class GameCharacter<OBBCollider>;
 template class GameCharacter<SphereCollider>;
 
 ///-------------------------------------------/// 
+/// コンストラクタ
+///-------------------------------------------///
+template<typename TCollider> requires IsCollider<TCollider>
+GameCharacter<TCollider>::GameCharacter() {
+	// GameCharacterManagerに登録
+	GameCharacterManager::GetInstance()->RegisterCharacter(this);
+}
+
+///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
 template<typename TCollider> requires IsCollider<TCollider>
 GameCharacter<TCollider>::~GameCharacter() {
+	// GameCharacterManagerから登録解除
+	GameCharacterManager::GetInstance()->UnRegisterCharacter(this);
+	// 手動の解放
 	this->object3d_.reset();
 }
 
@@ -44,18 +58,29 @@ void GameCharacter<TCollider>::Initialize() {
 }
 
 ///-------------------------------------------/// 
-/// 更新
+/// 更新処理の前処理
 ///-------------------------------------------///
 template<typename TCollider> requires IsCollider<TCollider>
-void GameCharacter<TCollider>::Update() {
-
+void GameCharacter<TCollider>::PreUpdate() {
 	/// ===死亡処理=== ///
 	if (baseInfo_.HP <= 0 || this->transform_.translate.y < -50.0f) {
 		baseInfo_.isDead = true;
 	}
 
+	/// ===フラグのリセット=== ///
+	if (this->transform_.translate.y > groundInfo_.currentGroundYPos) {
+		groundInfo_.isGrounded = false;
+	}
+
 	/// ===デルタタイムの取得=== ///
 	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+}
+
+///-------------------------------------------/// 
+/// 更新
+///-------------------------------------------///
+template<typename TCollider> requires IsCollider<TCollider>
+void GameCharacter<TCollider>::Update() {
 
 	/// ===位置の更新=== ///
 	this->transform_.translate += baseInfo_.velocity;
@@ -63,13 +88,8 @@ void GameCharacter<TCollider>::Update() {
 	/// ===地面との衝突処理=== ///
 	GroundCollision();
 
-	/// ===TCollider=== ///
+	/// ===TColliderの更新処理=== ///
 	TCollider::Update();
-
-	/// ===フラグのリセット=== ///
-	if (this->transform_.translate.y > groundInfo_.currentGroundYPos) {
-		groundInfo_.isGrounded = false;
-	}
 }
 
 ///-------------------------------------------/// 

@@ -110,6 +110,9 @@ void Player::Initialize() {
 /// 更新
 ///-------------------------------------------///
 void Player::Update() {
+	/// ===GameCharacterの更新前=== ///
+	GameCharacter::PreUpdate();
+
 	// 早期リターン
 	if (baseInfo_.isDead) {
 		ApplyDeceleration(0.7f);
