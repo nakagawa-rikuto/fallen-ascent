@@ -4,7 +4,7 @@
 #include "Engine/Collider/OBBCollider.h"
 #include "Engine/Collider/SphereCollider.h"
 #include "Engine/Collider/ColliderConcept.h"
-
+// GameCharacterCollision
 #include "GameCharacterCollision.h"
 
 ///-------------------------------------------/// 
@@ -14,7 +14,7 @@ template<typename TCollider> requires IsCollider<TCollider>
 class GameCharacter : public TCollider {
 public:
 
-    GameCharacter() = default;
+    GameCharacter();
     virtual ~GameCharacter();
 
     /// <summary>
@@ -38,6 +38,12 @@ public:
     /// </summary>
     virtual void Information() override;
 
+    /// <summary>
+    /// 更新処理の前処理
+    /// </summary>
+    void PreUpdate();
+   
+
 public: /// ===衝突判定=== ///
     /// <summary>
     /// 衝突時の処理
@@ -60,7 +66,6 @@ public: /// ===Setter=== ///
     void SetVelocity(const Vector3 vel) { baseInfo_.velocity = vel; };
     // isDead
     void SetIsDead(const bool isDead) { baseInfo_.isDead = isDead; };
-
 protected:
     // Collisionクラス
     std::unique_ptr<ColliderCollision> collision_;

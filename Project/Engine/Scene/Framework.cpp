@@ -70,12 +70,10 @@ void Framework::Finalize() {
 ///-------------------------------------------///
 void Framework::Update() {
 	/// ===システムの更新処理=== ///
-	// MiiEngine
-	MiiEngine_->Update();
-	// ParticleManager
-	particleManager_->Update();
 	// CameraManager
 	cameraManager_->UpdateAllCameras();
+	// ParticleManager
+	particleManager_->Update();
 	// ColliderManager
 	colliderManager_->CheckAllCollisions();
 }
@@ -94,6 +92,9 @@ void Framework::Run(const wchar_t* title) {
 	// ウィンドウのxボタンが押されるまでループ
 	while (MiiEngine_->ProcessMessage() == 0) {
 		/// ===毎フレーム更新=== ///
+		// MiiEngineの更新処理
+		MiiEngine_->Update();
+		// フレームごとの更新処理
 		Update();
 		/// ===終了リクエストが来たら抜ける=== ///
 		if (IsEndRequest()) { break; }

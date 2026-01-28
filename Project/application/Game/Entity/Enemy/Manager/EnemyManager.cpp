@@ -64,7 +64,10 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 ///-------------------------------------------///
 void EnemyManager::Update() {
 	for (auto& e : enemies_) {
-		if (e) e->Update();
+		if (e) {
+			e->PreUpdate();
+			e->Update();
+		}
 	}
 
 	// 死亡した敵を削除
@@ -80,7 +83,10 @@ void EnemyManager::Update() {
 ///-------------------------------------------///
 void EnemyManager::UpdateAnimation() {
 	for (auto& e : enemies_) {
-		if (e) e->UpdateAnimation();
+		if (e) {
+			e->PreUpdate();
+			e->UpdateAnimation();
+		}
 	}
 }
 

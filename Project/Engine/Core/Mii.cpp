@@ -93,12 +93,13 @@ void Mii::Initialize(const wchar_t* title, int width, int height) {
 /// 更新
 ///=====================================================///
 void Mii::Update() {
+	// ImGui
+	imGuiManager_->Begin();
+
 	// Input
 	keyboard_->Update();
 	mouse_->Update();
 	controller_->Update();
-	// ImGui
-	imGuiManager_->Begin();
 	
 #ifdef USE_IMGUI
 	// OffScreenRendererのImGui

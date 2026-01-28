@@ -73,10 +73,11 @@ void MyGame::Finalize() {
 /// 更新
 ///-------------------------------------------///
 void MyGame::Update() {
-	// 基底クラスの更新処理
-	Framework::Update();
 	// シーンの更新
 	sceneManager_->Update();
+
+	// Frameworkの更新
+	Framework::Update();
 }
 
 ///-------------------------------------------/// 
