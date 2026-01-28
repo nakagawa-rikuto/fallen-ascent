@@ -1,6 +1,4 @@
 #include "GameCharacter.h"
-// Manager
-#include "Manager/GameCharacterManager.h"
 // DeltaTime
 #include "Engine/System/Service/DeltaTimeSevice.h"
 #include "Engine/Collider/AABBCollider.h"
@@ -19,18 +17,13 @@ template class GameCharacter<SphereCollider>;
 /// コンストラクタ
 ///-------------------------------------------///
 template<typename TCollider> requires IsCollider<TCollider>
-GameCharacter<TCollider>::GameCharacter() {
-	// GameCharacterManagerに登録
-	GameCharacterManager::GetInstance()->RegisterCharacter(this);
-}
+GameCharacter<TCollider>::GameCharacter() {}
 
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
 template<typename TCollider> requires IsCollider<TCollider>
 GameCharacter<TCollider>::~GameCharacter() {
-	// GameCharacterManagerから登録解除
-	GameCharacterManager::GetInstance()->UnRegisterCharacter(this);
 	// 手動の解放
 	this->object3d_.reset();
 }
