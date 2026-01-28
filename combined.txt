@@ -24314,6 +24314,7 @@ void SceneManager::Draw() {
 /// シーン変更
 ///-------------------------------------------///
 void SceneManager::ChangeScene(SceneType type) {
+
 	// 現在のシーンを更新
 	currentSceneType_ = type;
 	// 新しいシーンを生成
@@ -42188,6 +42189,11 @@ OptionUI::~OptionUI() {
 	// スプライトのリセット
 	dimSprite_.reset();
 	optionMenuSprite_.reset();
+	titleButtonSprite_.reset();
+	audioButtonSprite_.reset();
+	audioTextSprite_.reset();
+	audioSliderSprite_.reset();
+	audioHandleSprite_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -42251,6 +42257,10 @@ void OptionUI::Initialize() {
 	titleButtonSprite_->SetSize({ 400.0f * scale_.x, 150.0f * scale_.y });
 	titleButtonSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	titleButtonSprite_->Update();
+
+	// 初期値設定
+	returnToTitle_ = false;
+	optionState_ = OptionState::Audio;
 }
 
 ///-------------------------------------------/// 
@@ -43258,7 +43268,6 @@ GameScene::~GameScene() {
 	IScene::~IScene();
 	// BGMの停止
 	AudioService::StopSound("title");
-
 	// Colliderのリセット
 	ColliderService::Reset();
 	// State
@@ -43922,6 +43931,7 @@ File Path: Project/application/Scene/Game/State/GameSceneInGameState.cpp
 // State
 #include "GameSceneGameOverAnimationState.h"
 #include "GameSceneGameClearState.h"
+#include "GameSceneExitState.h"
 // Service
 #include "Engine/System/Service/InputService.h"
 #include "Engine/System/Service/DeltaTimeSevice.h"
@@ -43983,11 +43993,10 @@ void GameSceneInGameState::Update() {
 	} else if (gameScene_->GetEnemyManager()->GetTotalEnemyCount() <= 0) {
 		// ゲームクリアアニメーション状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
-	}
-
-	// タイトルに戻る処理
-	if (optionUI_->GetReturnToTitle()) {
-		sceneManager_->ChangeScene(SceneType::Title);
+	} else if (optionUI_->GetReturnToTitle()) {
+		DeltaTimeSevice::SetDeltaTime(1.0f / 60.0f);
+		// Exit状態に変更
+		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
 	}
 }
 
@@ -44007,6 +44016,8 @@ void GameSceneInGameState::Draw() {
 /// 終了処理
 ///-------------------------------------------///
 void GameSceneInGameState::Finalize() {
+	ui_.reset();
+	optionUI_.reset();
 	GameSceneFadeState::Finalize();
 }
 
