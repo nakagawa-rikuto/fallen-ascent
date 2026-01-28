@@ -28,7 +28,6 @@ GameScene::~GameScene() {
 	IScene::~IScene();
 	// BGMの停止
 	AudioService::StopSound("title");
-
 	// Colliderのリセット
 	ColliderService::Reset();
 	// State

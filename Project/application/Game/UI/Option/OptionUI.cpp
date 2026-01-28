@@ -16,6 +16,11 @@ OptionUI::~OptionUI() {
 	// スプライトのリセット
 	dimSprite_.reset();
 	optionMenuSprite_.reset();
+	titleButtonSprite_.reset();
+	audioButtonSprite_.reset();
+	audioTextSprite_.reset();
+	audioSliderSprite_.reset();
+	audioHandleSprite_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -79,6 +84,10 @@ void OptionUI::Initialize() {
 	titleButtonSprite_->SetSize({ 400.0f * scale_.x, 150.0f * scale_.y });
 	titleButtonSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	titleButtonSprite_->Update();
+
+	// 初期値設定
+	returnToTitle_ = false;
+	optionState_ = OptionState::Audio;
 }
 
 ///-------------------------------------------/// 

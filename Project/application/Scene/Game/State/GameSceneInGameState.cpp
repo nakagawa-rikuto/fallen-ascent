@@ -6,6 +6,7 @@
 // State
 #include "GameSceneGameOverAnimationState.h"
 #include "GameSceneGameClearState.h"
+#include "GameSceneExitState.h"
 // Service
 #include "Engine/System/Service/InputService.h"
 #include "Engine/System/Service/DeltaTimeSevice.h"
@@ -67,11 +68,10 @@ void GameSceneInGameState::Update() {
 	} else if (gameScene_->GetEnemyManager()->GetTotalEnemyCount() <= 0) {
 		// ゲームクリアアニメーション状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
-	}
-
-	// タイトルに戻る処理
-	if (optionUI_->GetReturnToTitle()) {
-		sceneManager_->ChangeScene(SceneType::Title);
+	} else if (optionUI_->GetReturnToTitle()) {
+		DeltaTimeSevice::SetDeltaTime(1.0f / 60.0f);
+		// Exit状態に変更
+		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
 	}
 }
 
@@ -91,5 +91,7 @@ void GameSceneInGameState::Draw() {
 /// 終了処理
 ///-------------------------------------------///
 void GameSceneInGameState::Finalize() {
+	ui_.reset();
+	optionUI_.reset();
 	GameSceneFadeState::Finalize();
 }

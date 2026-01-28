@@ -89,6 +89,7 @@ void SceneManager::Draw() {
 /// シーン変更
 ///-------------------------------------------///
 void SceneManager::ChangeScene(SceneType type) {
+
 	// 現在のシーンを更新
 	currentSceneType_ = type;
 	// 新しいシーンを生成
