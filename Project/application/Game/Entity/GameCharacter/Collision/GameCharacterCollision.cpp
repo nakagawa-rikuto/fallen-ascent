@@ -1,6 +1,6 @@
 #include "GameCharacterCollision.h"
 // GameCharacter
-#include "GameCharacter.h"
+#include "application/Game/Entity/GameCharacter/GameCharacter.h"
 // C++
 #include <algorithm>
 // Math
