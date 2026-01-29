@@ -5,7 +5,7 @@
 #include "Engine/Collider/SphereCollider.h"
 #include "Engine/Collider/ColliderConcept.h"
 // GameCharacterCollision
-#include "GameCharacterCollision.h"
+#include "Collision/GameCharacterCollision.h"
 
 ///-------------------------------------------/// 
 /// GameCharacterBase

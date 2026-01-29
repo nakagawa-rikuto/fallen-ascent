@@ -454,7 +454,7 @@
     <ClCompile Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.cpp">
       <Filter>application\Game\Entity\Enemy\State</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp">
+    <ClCompile Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.cpp">
       <Filter>application\Game\Entity\GameCharacter</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp">
@@ -595,7 +595,9 @@
     <ClCompile Include="application\Game\UI\Option\OptionUI.cpp">
       <Filter>application\Game\UI\Option</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Player\Hand\PlayerHand.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Hand\PlayerHand.cpp">
+      <Filter>application\Game\Entity\Player\Hand</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -1006,7 +1008,7 @@
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.h">
       <Filter>application\Game\Entity\Enemy\State</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h">
+    <ClInclude Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.h">
       <Filter>application\Game\Entity\GameCharacter</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h">
@@ -1156,7 +1158,9 @@
     <ClInclude Include="application\Game\UI\SpriteBaseScale.h">
       <Filter>application\Game\UI</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h" />
+    <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h">
+      <Filter>application\Game\Entity\Player\Hand</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -1439,6 +1443,9 @@
     </Filter>
     <Filter Include="application\Game\UI\Option">
       <UniqueIdentifier>{99f9a55d-539f-45b1-9770-1c1487a2ece7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Player\Hand">
+      <UniqueIdentifier>{9a77ee97-049d-4e63-a362-2a27182dd571}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
