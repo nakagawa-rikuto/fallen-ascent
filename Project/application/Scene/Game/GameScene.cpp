@@ -27,7 +27,7 @@ GameScene::~GameScene() {
 	// ISceneのデストラクタ
 	IScene::~IScene();
 	// BGMの停止
-	AudioService::StopSound("title");
+	//AudioService::StopSound("title");
 	// Colliderのリセット
 	ColliderService::Reset();
 	// State
@@ -77,7 +77,7 @@ void GameScene::Initialize() {
 	ChangState(std::make_unique<GameSceneInitializeState>());
 
 	// BGMの再生
-	AudioService::StartSound("title", true);
+	//AudioService::StartSound("title", true);
 }
 
 ///-------------------------------------------/// 
@@ -176,11 +176,11 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 			break;
 		case LevelData::ClassTypeLevel::Enemy1:
 			// Enemyの座標設定
-			enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.rotation), obbHalfSize);
+			enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
 			break;
 		case LevelData::ClassTypeLevel::Enemy2:
 			// Enemyの座標設定
-			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.rotation), obbHalfSize);
+			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
 			break;
 		}
 	}

@@ -15,8 +15,6 @@ void EnemyAttackState::Enter(BaseEnemy* enemy) {
 	enemy_ = enemy;
 	// 移動量を初期化
 	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
-	// 色の設定
-	enemy_->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f });
 	// 攻撃開始処理
 	enemy_->StartAttack();
 }
@@ -32,8 +30,6 @@ void EnemyAttackState::Update(BaseEnemy * enemy) {
 
 	/// ===Stateの変更=== ///
 	if (!enemy_->GetAttackInfo().isAttack) {
-		// 色の設定
-		enemy_->SetColor({ 1.0f, 0.0f, 1.0f, 1.0f }); // 元の色に戻す
 		// MoveStateに移行
 		enemy_->ChangeState(std::make_unique<EnemyMoveState>());
 		return;

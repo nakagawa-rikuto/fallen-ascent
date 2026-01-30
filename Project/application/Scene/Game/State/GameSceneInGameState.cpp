@@ -67,11 +67,11 @@ void GameSceneInGameState::Update() {
 		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
 	} else if (gameScene_->GetEnemyManager()->GetTotalEnemyCount() <= 0) {
 		// ゲームクリアアニメーション状態に変更
-		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
+		gameScene_->ChangState(std::make_unique<GameSceneGameClearState>());
 	} else if (optionUI_->GetReturnToTitle()) {
 		DeltaTimeSevice::SetDeltaTime(1.0f / 60.0f);
 		// Exit状態に変更
-		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
+		gameScene_->ChangState(std::make_unique<GameSceneExitState>());
 	}
 }
 

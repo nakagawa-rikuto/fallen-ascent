@@ -36,12 +36,13 @@ void LongRangeEnemy::Initialize() {
 	/// ===Object3d=== ///
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "player");
+	object3d_->Init(ObjectType::Model, "LongEnemy");
 
 	/// ===GameCharacter=== ///
 	// GameCharacterの初期化
 	GameCharacter::Initialize();
 	name_ = ColliderName::Enemy;
+	SetHalfSize({ 1.75f, 1.75f, 0.75f });
 
 	/// ===AttackInfoの設定=== ///
 	attackInfo_.range = 3.0f;

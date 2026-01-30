@@ -35,12 +35,13 @@ void CloseRangeEnemy::Initialize() {
 	/// ===Object=== ///
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "player");
+	object3d_->Init(ObjectType::Model, "CloseEnemy");
 
 	/// ===GameCharacter=== ///
 	// GameCharacterの初期化
 	GameCharacter::Initialize();
 	name_ = ColliderName::Enemy;
+	SetHalfSize({ 3.0f, 3.0f, 3.0f });
 
 	/// ===AttackInfoの設定=== ///
 	attackInfo_.range = 4.0f;

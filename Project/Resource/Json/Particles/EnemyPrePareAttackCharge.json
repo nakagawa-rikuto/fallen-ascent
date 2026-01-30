@@ -33,9 +33,9 @@
             "followEmitter": false,
             "followStrength": 1.0,
             "rotationInfluence": 1.2000000476837158,
-            "swirlingSpeed": 3.0,
+            "swirlingSpeed": 7.900000095367432,
             "useRotationInfluence": false,
-            "velocityDamping": 0.949999988079071
+            "velocityDamping": 0.8180000185966492
         },
         "scaleAnimation": {
             "endScale": 0.10000000149011612,
@@ -64,18 +64,18 @@
             1.0
         ],
         "startScaleMax": [
-            3.0,
-            3.0,
-            3.0
+            4.0,
+            4.0,
+            4.0
         ],
         "startScaleMin": [
-            3.0,
-            3.0,
-            3.0
+            4.0,
+            4.0,
+            4.0
         ],
         "texturePath": "gradationLine",
         "useColorGradient": true,
-        "useScaleAnimation": false
+        "useScaleAnimation": true
     },
     "emission": {
         "burstCount": 3,

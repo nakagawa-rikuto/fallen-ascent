@@ -21,7 +21,7 @@ void EnemyManager::SetPlayer(Player* player) {
 ///-------------------------------------------/// 
 /// 生成
 ///-------------------------------------------///
-BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quaternion& rot, const Vector3& halfSize) {
+BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quaternion& rot) {
 	std::unique_ptr<BaseEnemy> enemy; // 最終的に enemies_ へ move する器
 
 	switch (type) {
@@ -33,7 +33,6 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 		// 初期化
 		e->InitGameScene(pos);		// 出現位置を渡してゲームシーン用初期化
 		e->SetRotate(rot);			// 回転を設定
-		e->SetHalfSize(halfSize);	// サイズを設定
 		enemy = std::move(e);		// 所有権移動
 		break;
 	}
@@ -45,7 +44,6 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 		// 初期化
 		e->InitGameScene(pos);
 		e->SetRotate(rot); 
-		e->SetHalfSize(halfSize);
 		enemy = std::move(e);
 		break;
 	}

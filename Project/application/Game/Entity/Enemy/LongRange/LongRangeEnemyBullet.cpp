@@ -16,7 +16,7 @@ LongRangeEnemyBullet::~LongRangeEnemyBullet() {
 void LongRangeEnemyBullet::Initialize() {
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "player");
+	object3d_->Init(ObjectType::Model, "Player");
 	// Object3dの初期設定
 	object3d_->SetTranslate(transform_.translate);
 

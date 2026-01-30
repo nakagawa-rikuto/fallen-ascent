@@ -157,22 +157,23 @@ void MyGame::LoadTexture() {
 /// モデルの読み込み処理
 ///-------------------------------------------///
 void MyGame::LoadModel() {
-	/// ===Engine=== ///
-	Loader::LoadModel("MonsterBall", "MonsterBall/MonsterBall.obj");
-	Loader::LoadModel("terrain", "terrain/terrain.obj");
-	// Particle
+	/// ===Particle=== ///
 	Loader::LoadModel("plane", "Particle/Plane/ParticlePlane.gltf");
 	Loader::LoadModel("sphere", "Particle/Sphere/ParticleSphere.obj");
 	Loader::LoadModel("cube", "Particle/Cube/ParticleCube.obj");
 	Loader::LoadModel("triangle", "Particle/Triangle/ParticleTriangle.obj");
 	
-	/// ===Game=== ///
-	Loader::LoadModel("player", "player/player.gltf");
-	Loader::LoadModel("Ground", "Ground/Ground.obj");
-	Loader::LoadModel("Object1", "Object1/Object1.obj");
-	Loader::LoadModel("Object2", "Object2/Object2.obj");
-	Loader::LoadModel("PlayerWeapon", "PlayerWeapon/PlayerWeapon.obj");
-	Loader::LoadModel("PlayerHand", "PlayerHand/PlayerHand.gltf");
+	/// ===Entity=== ///
+	Loader::LoadModel("Player", "Entity/Player/Player.gltf");							// プレイヤー
+	Loader::LoadModel("PlayerHand", "Entity/Player/PlayerHand/PlayerHand.gltf");		// プレイヤー手
+	Loader::LoadModel("PlayerWeapon", "Entity/Player/PlayerWeapon/PlayerWeapon.obj");	// プレイヤー武器
+	Loader::LoadModel("LongEnemy", "Entity/Enemy/LongEnemy/LongEnemy.gltf");			// 遠距離敵
+	Loader::LoadModel("CloseEnemy", "Entity/Enemy/CloseEnemy/CloseEnemy.gltf");			// 近距離敵
+
+	/// ===Object=== ///
+	Loader::LoadModel("Ground", "Object/Ground/Ground.obj");				// 地面
+	Loader::LoadModel("Object1", "Object/Object1/Object1.obj");				// オブジェクト１
+	Loader::LoadModel("Object2", "Object/Object2/Object2.obj");				// オブジェクト２
 }
 
 ///-------------------------------------------/// 

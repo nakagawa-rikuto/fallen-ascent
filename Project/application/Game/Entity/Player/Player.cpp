@@ -42,7 +42,7 @@ void Player::Initialize() {
 
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "player");
+	object3d_->Init(ObjectType::Model, "Player");
 
 	// GameCharacterの設定
 	GameCharacter::Initialize();

@@ -34,7 +34,7 @@ public:
     /// <param name="pos">生成位置。Vector3 の const リファレンス。</param>
     /// <param name="rot">生成時の回転。Quaternion の const リファレンス。</param>
     /// <returns>生成された敵インスタンスへのポインタ (BaseEnemy*)。</returns>
-    BaseEnemy* Spawn(EnemyType type, const Vector3& pos, const Quaternion& rot, const Vector3& halfSize);
+    BaseEnemy* Spawn(EnemyType type, const Vector3& pos, const Quaternion& rot);
 
     /// <summary>
     /// 更新処理
