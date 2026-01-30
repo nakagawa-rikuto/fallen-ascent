@@ -66,9 +66,6 @@ void BaseEnemy::Initialize() {
 	};
 	hitReactionComponent_->Initialize(hitReactionConfig);
 
-	// オブジェクトの色設定
-	color_ = { 1.0f, 0.0f, 1.0f, 1.0f };
-
 	// カメラの取得
 	camera_ = CameraService::GetActiveCamera().get();
 

@@ -18,8 +18,6 @@ void EnemyPrePareAttackState::Enter(BaseEnemy* enemy) {
 	enemy_ = enemy;
 	// 移動量を初期化
 	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
-	// 色の設定
-	enemy_->SetColor({ 0.0f, 0.0f, 1.0f, 1.0f });
 	// 実行時間の設定
 	activeTimer_ = activeTime;
 	// 向きの初期化

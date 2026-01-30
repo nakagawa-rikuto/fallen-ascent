@@ -15,13 +15,18 @@
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"Plane"
+			"name":"\u7acb\u65b9\u4f53",
+			"scale":[
+				0.4000000059604645,
+				0.4000000059604645,
+				0.4000000059604645
+			]
 		}
 	],
 	"materials":[
 		{
 			"doubleSided":true,
-			"name":"Material.001",
+			"name":"\u30de\u30c6\u30ea\u30a2\u30eb.001",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
 					"index":0
@@ -33,15 +38,16 @@
 	],
 	"meshes":[
 		{
-			"name":"Plane",
+			"name":"\u7acb\u65b9\u4f53.002",
 			"primitives":[
 				{
 					"attributes":{
 						"POSITION":0,
 						"NORMAL":1,
-						"TEXCOORD_0":2
+						"TEXCOORD_0":2,
+						"TEXCOORD_1":3
 					},
-					"indices":3,
+					"indices":4,
 					"material":0
 				}
 			]
@@ -56,69 +62,81 @@
 	"images":[
 		{
 			"mimeType":"image/png",
-			"name":"Particle",
-			"uri":"Particle.png"
+			"name":"CloseEnemy",
+			"uri":"CloseEnemy.png"
 		}
 	],
 	"accessors":[
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":4,
+			"count":2506,
 			"max":[
-				1.0000003576278687,
-				1.0000003576278687,
-				4.371138828673793e-08
+				3.5,
+				3.125,
+				3.125
 			],
 			"min":[
-				-1.0000003576278687,
-				-1.0000003576278687,
-				-4.371138828673793e-08
+				-3.5,
+				-3.125,
+				-3.125
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":4,
+			"count":2506,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":4,
+			"count":2506,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
+			"componentType":5126,
+			"count":2506,
+			"type":"VEC2"
+		},
+		{
+			"bufferView":4,
 			"componentType":5123,
-			"count":6,
+			"count":3696,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":48,
+			"byteLength":30072,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":48,
-			"byteOffset":48,
+			"byteLength":30072,
+			"byteOffset":30072,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":32,
-			"byteOffset":96,
+			"byteLength":20048,
+			"byteOffset":60144,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":12,
-			"byteOffset":128,
+			"byteLength":20048,
+			"byteOffset":80192,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":7392,
+			"byteOffset":100240,
 			"target":34963
 		}
 	],
@@ -130,8 +148,8 @@
 	],
 	"buffers":[
 		{
-			"byteLength":140,
-			"uri":"ParticlePlane.bin"
+			"byteLength":107632,
+			"uri":"CloseEnemy.bin"
 		}
 	]
 }
