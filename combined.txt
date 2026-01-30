@@ -294,21 +294,22 @@
 └── └── └── ├── Level/
 └── └── └── └── Particles/
 └── └── ├── Models/
-└── └── └── ├── Ground/
-└── └── └── ├── Level/
-└── └── └── ├── LongEnemy/
-└── └── └── ├── MonsterBall/
-└── └── └── ├── Object1/
-└── └── └── ├── Object2/
-└── └── └── ├── Particle/
-└── └── └── └── ├── Cube/
-└── └── └── └── ├── Plane/
-└── └── └── └── ├── Sphere/
-└── └── └── └── └── Triangle/
-└── └── └── ├── Player/
-└── └── └── ├── PlayerHand/
-└── └── └── ├── PlayerWeapon/
-└── └── └── └── terrain/
+└── └── └── ├── Entity/
+└── └── └── └── ├── Enemy/
+└── └── └── └── └── ├── CloseEnemy/
+└── └── └── └── └── └── LongEnemy/
+└── └── └── └── └── Player/
+└── └── └── └──     ├── PlayerHand/
+└── └── └── └──     └── PlayerWeapon/
+└── └── └── ├── Object/
+└── └── └── └── ├── Ground/
+└── └── └── └── ├── Object1/
+└── └── └── └── └── Object2/
+└── └── └── └── Particle/
+└── └── └──     ├── Cube/
+└── └── └──     ├── Plane/
+└── └── └──     ├── Sphere/
+└── └── └──     └── Triangle/
 └── └── ├── Shaders/
 └── └── └── ├── 2D/
 └── └── └── ├── 3D/
@@ -17431,22 +17432,23 @@ void MyGame::LoadTexture() {
 /// モデルの読み込み処理
 ///-------------------------------------------///
 void MyGame::LoadModel() {
-	/// ===Engine=== ///
-	Loader::LoadModel("MonsterBall", "MonsterBall/MonsterBall.obj");
-	Loader::LoadModel("terrain", "terrain/terrain.obj");
-	// Particle
+	/// ===Particle=== ///
 	Loader::LoadModel("plane", "Particle/Plane/ParticlePlane.gltf");
 	Loader::LoadModel("sphere", "Particle/Sphere/ParticleSphere.obj");
 	Loader::LoadModel("cube", "Particle/Cube/ParticleCube.obj");
 	Loader::LoadModel("triangle", "Particle/Triangle/ParticleTriangle.obj");
 	
-	/// ===Game=== ///
-	Loader::LoadModel("player", "player/player.gltf");
-	Loader::LoadModel("Ground", "Ground/Ground.obj");
-	Loader::LoadModel("Object1", "Object1/Object1.obj");
-	Loader::LoadModel("Object2", "Object2/Object2.obj");
-	Loader::LoadModel("PlayerWeapon", "PlayerWeapon/PlayerWeapon.obj");
-	Loader::LoadModel("PlayerHand", "PlayerHand/PlayerHand.gltf");
+	/// ===Entity=== ///
+	Loader::LoadModel("Player", "Entity/Player/Player.gltf");							// プレイヤー
+	Loader::LoadModel("PlayerHand", "Entity/Player/PlayerHand/PlayerHand.gltf");		// プレイヤー手
+	Loader::LoadModel("PlayerWeapon", "Entity/Player/PlayerWeapon/PlayerWeapon.obj");	// プレイヤー武器
+	Loader::LoadModel("LongEnemy", "Entity/Enemy/LongEnemy/LongEnemy.gltf");			// 遠距離敵
+	Loader::LoadModel("CloseEnemy", "Entity/Enemy/CloseEnemy/CloseEnemy.gltf");			// 近距離敵
+
+	/// ===Object=== ///
+	Loader::LoadModel("Ground", "Object/Ground/Ground.obj");				// 地面
+	Loader::LoadModel("Object1", "Object/Object1/Object1.obj");				// オブジェクト１
+	Loader::LoadModel("Object2", "Object/Object2/Object2.obj");				// オブジェクト２
 }
 
 ///-------------------------------------------/// 
@@ -33417,9 +33419,6 @@ void BaseEnemy::Initialize() {
 	};
 	hitReactionComponent_->Initialize(hitReactionConfig);
 
-	// オブジェクトの色設定
-	color_ = { 1.0f, 0.0f, 1.0f, 1.0f };
-
 	// カメラの取得
 	camera_ = CameraService::GetActiveCamera().get();
 
@@ -33928,12 +33927,13 @@ void CloseRangeEnemy::Initialize() {
 	/// ===Object=== ///
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "player");
+	object3d_->Init(ObjectType::Model, "CloseEnemy");
 
 	/// ===GameCharacter=== ///
 	// GameCharacterの初期化
 	GameCharacter::Initialize();
 	name_ = ColliderName::Enemy;
+	SetHalfSize({ 3.0f, 3.0f, 3.0f });
 
 	/// ===AttackInfoの設定=== ///
 	attackInfo_.range = 4.0f;
@@ -34769,12 +34769,13 @@ void LongRangeEnemy::Initialize() {
 	/// ===Object3d=== ///
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "player");
+	object3d_->Init(ObjectType::Model, "LongEnemy");
 
 	/// ===GameCharacter=== ///
 	// GameCharacterの初期化
 	GameCharacter::Initialize();
 	name_ = ColliderName::Enemy;
+	SetHalfSize({ 1.75f, 1.75f, 0.75f });
 
 	/// ===AttackInfoの設定=== ///
 	attackInfo_.range = 3.0f;
@@ -34984,7 +34985,7 @@ LongRangeEnemyBullet::~LongRangeEnemyBullet() {
 void LongRangeEnemyBullet::Initialize() {
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "player");
+	object3d_->Init(ObjectType::Model, "Player");
 	// Object3dの初期設定
 	object3d_->SetTranslate(transform_.translate);
 
@@ -35203,7 +35204,7 @@ void EnemyManager::SetPlayer(Player* player) {
 ///-------------------------------------------/// 
 /// 生成
 ///-------------------------------------------///
-BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quaternion& rot, const Vector3& halfSize) {
+BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quaternion& rot) {
 	std::unique_ptr<BaseEnemy> enemy; // 最終的に enemies_ へ move する器
 
 	switch (type) {
@@ -35215,7 +35216,6 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 		// 初期化
 		e->InitGameScene(pos);		// 出現位置を渡してゲームシーン用初期化
 		e->SetRotate(rot);			// 回転を設定
-		e->SetHalfSize(halfSize);	// サイズを設定
 		enemy = std::move(e);		// 所有権移動
 		break;
 	}
@@ -35227,7 +35227,6 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 		// 初期化
 		e->InitGameScene(pos);
 		e->SetRotate(rot); 
-		e->SetHalfSize(halfSize);
 		enemy = std::move(e);
 		break;
 	}
@@ -35487,7 +35486,7 @@ public:
     /// <param name="pos">生成位置。Vector3 の const リファレンス。</param>
     /// <param name="rot">生成時の回転。Quaternion の const リファレンス。</param>
     /// <returns>生成された敵インスタンスへのポインタ (BaseEnemy*)。</returns>
-    BaseEnemy* Spawn(EnemyType type, const Vector3& pos, const Quaternion& rot, const Vector3& halfSize);
+    BaseEnemy* Spawn(EnemyType type, const Vector3& pos, const Quaternion& rot);
 
     /// <summary>
     /// 更新処理
@@ -35664,8 +35663,6 @@ void EnemyAttackState::Enter(BaseEnemy* enemy) {
 	enemy_ = enemy;
 	// 移動量を初期化
 	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
-	// 色の設定
-	enemy_->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f });
 	// 攻撃開始処理
 	enemy_->StartAttack();
 }
@@ -35681,8 +35678,6 @@ void EnemyAttackState::Update(BaseEnemy * enemy) {
 
 	/// ===Stateの変更=== ///
 	if (!enemy_->GetAttackInfo().isAttack) {
-		// 色の設定
-		enemy_->SetColor({ 1.0f, 0.0f, 1.0f, 1.0f }); // 元の色に戻す
 		// MoveStateに移行
 		enemy_->ChangeState(std::make_unique<EnemyMoveState>());
 		return;
@@ -35945,8 +35940,6 @@ void EnemyPrePareAttackState::Enter(BaseEnemy* enemy) {
 	enemy_ = enemy;
 	// 移動量を初期化
 	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
-	// 色の設定
-	enemy_->SetColor({ 0.0f, 0.0f, 1.0f, 1.0f });
 	// 実行時間の設定
 	activeTimer_ = activeTime;
 	// 向きの初期化
@@ -39706,7 +39699,7 @@ void Player::Initialize() {
 
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "player");
+	object3d_->Init(ObjectType::Model, "Player");
 
 	// GameCharacterの設定
 	GameCharacter::Initialize();
@@ -40671,7 +40664,7 @@ void PlayerWeapon::Initialize() {
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
 	object3d_->Init(ObjectType::Model, "PlayerWeapon");
-	object3d_->SetRotate({ 0.0f, 30.0f, 0.0f, 1.0f });
+	object3d_->SetRotate({ 0.0f, 40.0f, 0.0f, 1.0f });
 
 	/// ===OBBCollider=== ///
 	OBBCollider::Initialize();
@@ -43306,7 +43299,7 @@ GameScene::~GameScene() {
 	// ISceneのデストラクタ
 	IScene::~IScene();
 	// BGMの停止
-	AudioService::StopSound("title");
+	//AudioService::StopSound("title");
 	// Colliderのリセット
 	ColliderService::Reset();
 	// State
@@ -43356,7 +43349,7 @@ void GameScene::Initialize() {
 	ChangState(std::make_unique<GameSceneInitializeState>());
 
 	// BGMの再生
-	AudioService::StartSound("title", true);
+	//AudioService::StartSound("title", true);
 }
 
 ///-------------------------------------------/// 
@@ -43455,11 +43448,11 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 			break;
 		case LevelData::ClassTypeLevel::Enemy1:
 			// Enemyの座標設定
-			enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.rotation), obbHalfSize);
+			enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
 			break;
 		case LevelData::ClassTypeLevel::Enemy2:
 			// Enemyの座標設定
-			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.rotation), obbHalfSize);
+			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
 			break;
 		}
 	}
@@ -44031,11 +44024,11 @@ void GameSceneInGameState::Update() {
 		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
 	} else if (gameScene_->GetEnemyManager()->GetTotalEnemyCount() <= 0) {
 		// ゲームクリアアニメーション状態に変更
-		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
+		gameScene_->ChangState(std::make_unique<GameSceneGameClearState>());
 	} else if (optionUI_->GetReturnToTitle()) {
 		DeltaTimeSevice::SetDeltaTime(1.0f / 60.0f);
 		// Exit状態に変更
-		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
+		gameScene_->ChangState(std::make_unique<GameSceneExitState>());
 	}
 }
 
