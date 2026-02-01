@@ -46,7 +46,6 @@ private: /// ===メンバ変数=== ///
 
 	/// ===スプライト=== ///
 	std::unique_ptr<Sprite> dimSprite_;          // 薄暗いオーバーレイ
-	std::unique_ptr<Sprite> optionMenuSprite_;   // オプションメニュー
 	std::unique_ptr<Sprite> titleButtonSprite_;  // タイトルに戻るボタン
 	std::unique_ptr<Sprite> audioButtonSprite_;  // オーディオボタン
 	std::unique_ptr<Sprite> audioTextSprite_;    // 音量調整テキスト
