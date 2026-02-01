@@ -15,7 +15,6 @@
 OptionUI::~OptionUI() {
 	// スプライトのリセット
 	dimSprite_.reset();
-	optionMenuSprite_.reset();
 	titleButtonSprite_.reset();
 	audioButtonSprite_.reset();
 	audioTextSprite_.reset();
@@ -44,15 +43,6 @@ void OptionUI::Initialize() {
 	dimSprite_->SetSize({ windowSize.x, windowSize.y });
 	dimSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 0.7f }); // 半透明の黒
 	dimSprite_->Update();
-
-	// オプションメニュー
-	optionMenuSprite_ = std::make_unique<Sprite>();
-	optionMenuSprite_->Initialize("White");
-	optionMenuSprite_->SetPosition({ windowSize.x / 2.0f, windowSize.y / 2.0f });
-	optionMenuSprite_->SetSize({ 800.0f * scale_.x, 700.0f * scale_.y });
-	optionMenuSprite_->SetAnchorPoint({ 0.5f, 0.5f });
-	optionMenuSprite_->SetColor({ 0.3f, 0.3f, 0.5f, 1.0f }); // 青みがかった色
-	optionMenuSprite_->Update();
 
 	/// ===AudioSprite=== ///
 	audioButtonSprite_ = std::make_unique<Sprite>();
@@ -172,8 +162,7 @@ void OptionUI::GameUpdate() {
 /// 描画処理
 ///-------------------------------------------///
 void OptionUI::TitleDraw() {
-	dimSprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
-	//optionMenuSprite_->Draw(GroundType::Front);
+	dimSprite_->Draw(GroundType::Front, BlendMode::kBlendModeAdd);
 	audioButtonSprite_->Draw(GroundType::Front);
 	audioHandleSprite_->Draw(GroundType::Front);
 	audioTextSprite_->Draw(GroundType::Front);
@@ -181,11 +170,10 @@ void OptionUI::TitleDraw() {
 }
 
 ///-------------------------------------------/// 
-/// 描画処理
+/// 描画処理 
 ///-------------------------------------------///
 void OptionUI::GameDraw() {
-	dimSprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
-	//optionMenuSprite_->Draw(GroundType::Front);
+	dimSprite_->Draw(GroundType::Front, BlendMode::kBlendModeAdd);
 	audioButtonSprite_->Draw(GroundType::Front);
 	audioHandleSprite_->Draw(GroundType::Front);
 	audioTextSprite_->Draw(GroundType::Front);
