@@ -71,7 +71,7 @@ private:
 		float timer = 0.0f;           // ジャンプタイマー
 		float interval = 0.5f;        // ジャンプの間隔
 		Vector3 basePlayerPosition;   // プレイヤーの基準位置
-		float height = 6.0f;          // 小ジャンプの高さ
+		float height = 2.0f;          // 小ジャンプの高さ
 		int count = 0;                // ジャンプ回数
 	};
 	PlayerSmallJumpInfo smallJumpInfo_;

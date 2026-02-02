@@ -58,7 +58,7 @@ void GameClearAnimation::Initialize(Player* player, GameCamera* camera) {
 	camera_->SetOrbitingOffset(startOffset); 
 
 	/// ===Playerの設定=== ///
-	player_->SetGravity(-2.9f); 
+	player_->SetGravity(-9.8f); 
 	// 初期速度をリセット
 	player_->SetVelocity({ 0.0f, 0.0f, 0.0f }); 
 
@@ -134,7 +134,7 @@ void GameClearAnimation::UpdateCameraRotation() {
 	camera_->SetRotate(currentRotation);
 
 	// プレイヤーの小ジャンプ更新
-	UpdatePlayerSmallJump();
+	//UpdatePlayerSmallJump();
 
 	// 回転完了で最終ジャンプフェーズへ
 	if (cameraInfo_.timer >= cameraInfo_.duration) {
@@ -161,7 +161,7 @@ void GameClearAnimation::UpdatePlayerSmallJump() {
 	localT = (std::min)(localT, 1.0f);
 
 	// 放物線を描くジャンプ
-	float jumpProgress = -4.0f * smallJumpInfo_.height * (localT - 0.5f) * (localT - 0.5f) + smallJumpInfo_.height;
+	float jumpProgress = -1.0f * smallJumpInfo_.height * (localT - 0.5f) * (localT - 0.5f) + smallJumpInfo_.height;
 
 	// プレイヤーのVelocityを更新
 	Vector3 playerCurrentVelocity = player_->GetVelocity();

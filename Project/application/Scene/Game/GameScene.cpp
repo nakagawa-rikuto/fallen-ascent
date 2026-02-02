@@ -172,7 +172,6 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 			player_->Initialize();
 			player_->SetTranslate(obj.translation);
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
-			player_->SetHalfSize(obbHalfSize);
 			break;
 		case LevelData::ClassTypeLevel::Enemy1:
 			// Enemyの座標設定
