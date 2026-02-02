@@ -1,6 +1,6 @@
 #include "EnemyManager.h"
-#include "application/Game/Entity/Enemy/CloseRange/CloseRangeEnemy.h"
-#include "application/Game/Entity/Enemy/LongRange/LongRangeEnemy.h"
+#include "application/Game/Entity/Enemy/MobEnemy/CloseRange/CloseRangeEnemy.h"
+#include "application/Game/Entity/Enemy/MobEnemy/LongRange/LongRangeEnemy.h"
 // c++
 #include <algorithm> 
 // ImGui
@@ -71,7 +71,7 @@ void EnemyManager::Update() {
 	// 死亡した敵を削除
 	auto it = std::remove_if(enemies_.begin(), enemies_.end(),
 		[](const std::unique_ptr<BaseEnemy>& e) {
-			return !e || e->GetTentativeDeath();
+			return !e || e->GetIsTentativeDeath();
 		});
 	enemies_.erase(it, enemies_.end());
 }
@@ -122,14 +122,6 @@ void EnemyManager::UpdateImGui() {
 		if (closeRep) {
 			ImGui::Text("CloseRange Enemy Settings:");
 			closeRep->Information(); // 代表1体のImGuiを表示
-
-			if (ImGui::Button("Apply to All CloseRange")) {
-				ApplySettingsToType(EnemyType::CloseRange, closeRep);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Apply CloseRange to ALL Enemies")) {
-				ApplySettingsToAll(closeRep);
-			}
 		} else {
 			ImGui::TextDisabled("No CloseRange enemies exist.");
 		}
@@ -141,14 +133,6 @@ void EnemyManager::UpdateImGui() {
 		if (longRep) {
 			ImGui::Text("LongRange Enemy Settings:");
 			longRep->Information(); // 代表1体のImGuiを表示
-
-			if (ImGui::Button("Apply to All LongRange")) {
-				ApplySettingsToType(EnemyType::LongRange, longRep);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Apply LongRange to ALL Enemies")) {
-				ApplySettingsToAll(longRep);
-			}
 		} else {
 			ImGui::TextDisabled("No LongRange enemies exist.");
 		}
@@ -212,41 +196,6 @@ EnemyType EnemyManager::GetEnemyType(BaseEnemy* enemy) const {
 }
 
 #ifdef USE_IMGUI
-//-------------------------------------------/// 
-/// 指定タイプの全敵に設定をコピー
-///-------------------------------------------///
-void EnemyManager::ApplySettingsToType(EnemyType type, const BaseEnemy* sourceEnemy) {
-	if (!sourceEnemy) return;
-
-	for (auto& e : enemies_) {
-		if (!e) continue;
-
-		// 同じタイプかチェック
-		if (GetEnemyType(e.get()) == type) {
-			// ソースと同じオブジェクトは除外
-			if (e.get() != sourceEnemy) {
-				sourceEnemy->CopyTuningTo(e.get());
-			}
-		}
-	}
-}
-
-///-------------------------------------------/// 
-/// 全敵に設定をコピー
-///-------------------------------------------///
-void EnemyManager::ApplySettingsToAll(const BaseEnemy* sourceEnemy) {
-	if (!sourceEnemy) return;
-
-	for (auto& e : enemies_) {
-		if (!e) continue;
-
-		// ソースと同じオブジェクトは除外
-		if (e.get() != sourceEnemy) {
-			sourceEnemy->CopyTuningTo(e.get());
-		}
-	}
-}
-
 ///-------------------------------------------/// 
 /// 指定タイプの代表敵を取得
 ///-------------------------------------------///

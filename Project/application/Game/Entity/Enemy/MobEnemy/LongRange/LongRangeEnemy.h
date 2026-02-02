@@ -1,13 +1,13 @@
 #pragma once
 /// ===Include=== ///
-#include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
-#include "application/Game/Entity/Enemy/LongRange/LongRangeEnemyBullet.h"
+#include "application/Game/Entity/Enemy/MobEnemy/Base/MobEnemy.h"
+#include "application/Game/Entity/Enemy/MobEnemy/LongRange/LongRangeEnemyBullet.h"
 #include <list>
 
 ///=====================================================/// 
 /// 遠距離攻撃Enemy
 ///=====================================================///
-class LongRangeEnemy : public BaseEnemy {
+class LongRangeEnemy : public MobEnemy {
 public:
 	LongRangeEnemy() = default;
 	~LongRangeEnemy();
@@ -67,13 +67,4 @@ private: /// ===変数=== ///
 		bool isHit = false;		 // ヒット時のフラグ
 	};
 	BulletInfo bulletInfo_;
-
-#ifdef USE_IMGUI
-protected:
-	/// <summary>
-	/// 派生側で型固有のチューニング値をコピーするための関数
-	/// </summary>
-	/// <param name="dst">コピー先の BaseEnemy オブジェクトへのポインタ。nullptr でないことが期待されます。</param>
-	void CopyTypeTuningFromThisTo(BaseEnemy* dst) const override;
-#endif // USE_IMGUI
 };

@@ -1,21 +1,20 @@
 #include "EnemyHitReactionState.h"
-// BaseEnemy
-#include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
+// MobEnemy
+#include "application/Game/Entity/Enemy/MobEnemy/Base/MobEnemy.h"
 // State
 #include "EnemyMoveState.h"
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
 ///-------------------------------------------///
-void EnemyHitReactionState::Enter(BaseEnemy* enemy) {
+void EnemyHitReactionState::Enter(MobEnemy* enemy) {
 	enemy_ = enemy;
 }
 
 ///-------------------------------------------/// 
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void EnemyHitReactionState::Update(BaseEnemy* enemy) {
-	enemy_ = enemy;
+void EnemyHitReactionState::Update() {
 
 	/// ===HitReactionComponentの更新=== ///
 	// 更新コンテキストの作成

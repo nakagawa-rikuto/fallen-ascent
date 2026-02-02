@@ -3,7 +3,7 @@
 #include "Engine/Scene/IScene.h"
 // Entity
 #include "application/Game/Entity/Player/Player.h"
-#include "application/Game/Entity/Enemy/Manager/EnemyManager.h"
+#include "application/Game/Entity/Enemy/Base/EnemyManager.h"
 // Object
 #include "application/Game/Object/GameStage.h"
 // State

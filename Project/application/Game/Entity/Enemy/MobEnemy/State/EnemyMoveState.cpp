@@ -1,6 +1,6 @@
 #include "EnemyMoveState.h"
-// BaseEnemy
-#include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
+// MobEnemy
+#include "application/Game/Entity/Enemy/MobEnemy/Base/MobEnemy.h"
 // State
 #include "EnemyPrePareAttackState.h"
 
@@ -8,7 +8,7 @@
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
 ///-------------------------------------------///
-void EnemyMoveState::Enter(BaseEnemy* enemy) {
+void EnemyMoveState::Enter(MobEnemy* enemy) {
 	enemy_ = enemy;
 	// 移動範囲の中心を設定
 	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
@@ -19,9 +19,7 @@ void EnemyMoveState::Enter(BaseEnemy* enemy) {
 ///-------------------------------------------/// 
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void EnemyMoveState::Update(BaseEnemy * enemy) {
-	enemy_ = enemy;
-
+void EnemyMoveState::Update() {
     // コンテキストの準備
     EnemyMoveComponent::UpdateContext context{
         .currentPosition = enemy_->GetTransform().translate,

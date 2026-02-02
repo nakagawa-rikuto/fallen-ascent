@@ -97,25 +97,25 @@
     <ClCompile Include="application\Game\Entity\Enemy\Base\BaseEnemy.cpp">
       <Filter>application\Game\Entity\Enemy\Base</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\CloseRange\CloseRangeEnemy.cpp">
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\CloseRange\CloseRangeEnemy.cpp">
       <Filter>application\Game\Entity\Enemy\CloseRange</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemyBullet.cpp">
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\LongRange\LongRangeEnemyBullet.cpp">
       <Filter>application\Game\Entity\Enemy\LongRange</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemy.cpp">
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\LongRange\LongRangeEnemy.cpp">
       <Filter>application\Game\Entity\Enemy\LongRange</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\Manager\EnemyManager.cpp">
+    <ClCompile Include="application\Game\Entity\Enemy\Base\EnemyManager.cpp">
       <Filter>application\Game\Entity\Enemy\Manager</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\State\Base\EnemyState.cpp">
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\Base\EnemyState.cpp">
       <Filter>application\Game\Entity\Enemy\State\Base</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\State\EnemyAttackState.cpp">
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyAttackState.cpp">
       <Filter>application\Game\Entity\Enemy\State</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\State\EnemyMoveState.cpp">
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyMoveState.cpp">
       <Filter>application\Game\Entity\Enemy\State</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Player\Player.cpp">
@@ -442,16 +442,16 @@
     <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp">
       <Filter>application\Game\Animation</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.cpp">
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyHitReactionComponent.cpp">
       <Filter>application\Game\Entity\Enemy\Component</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.cpp">
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyMoveComponent.cpp">
       <Filter>application\Game\Entity\Enemy\Component</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.cpp">
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyHitReactionState.cpp">
       <Filter>application\Game\Entity\Enemy\State</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.cpp">
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyPrePareAttackState.cpp">
       <Filter>application\Game\Entity\Enemy\State</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.cpp">
@@ -598,6 +598,11 @@
     <ClCompile Include="application\Game\Entity\Player\Hand\PlayerHand.cpp">
       <Filter>application\Game\Entity\Player\Hand</Filter>
     </ClCompile>
+    <ClCompile Include="application\Game\Entity\BossEnemy\State\Base\BossStateBase.cpp" />
+    <ClCompile Include="application\Game\Entity\BossEnemy\BossEnemy.cpp" />
+    <ClCompile Include="application\Game\Entity\BossEnemy\Component\Move\BossMoveComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\BossEnemy\Component\Attack\BossAttackComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -609,25 +614,25 @@
     <ClInclude Include="application\Game\Entity\Enemy\Base\BaseEnemy.h">
       <Filter>application\Game\Entity\Enemy\Base</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\CloseRange\CloseRangeEnemy.h">
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\CloseRange\CloseRangeEnemy.h">
       <Filter>application\Game\Entity\Enemy\CloseRange</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemyBullet.h">
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\LongRange\LongRangeEnemyBullet.h">
       <Filter>application\Game\Entity\Enemy\LongRange</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\LongRange\LongRangeEnemy.h">
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\LongRange\LongRangeEnemy.h">
       <Filter>application\Game\Entity\Enemy\LongRange</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\Manager\EnemyManager.h">
+    <ClInclude Include="application\Game\Entity\Enemy\Base\EnemyManager.h">
       <Filter>application\Game\Entity\Enemy\Manager</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h">
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\Base\EnemyState.h">
       <Filter>application\Game\Entity\Enemy\State\Base</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\State\EnemyMoveState.h">
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyMoveState.h">
       <Filter>application\Game\Entity\Enemy\State</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\State\EnemyAttackState.h">
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyAttackState.h">
       <Filter>application\Game\Entity\Enemy\State</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Player\Player.h">
@@ -996,16 +1001,16 @@
     <ClInclude Include="application\Game\Animation\GameClearAnimation.h">
       <Filter>application\Game\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyHitReactionComponent.h">
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyHitReactionComponent.h">
       <Filter>application\Game\Entity\Enemy\Component</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\Component\EnemyMoveComponent.h">
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyMoveComponent.h">
       <Filter>application\Game\Entity\Enemy\Component</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\State\EnemyPrePareAttackState.h">
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyPrePareAttackState.h">
       <Filter>application\Game\Entity\Enemy\State</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\State\EnemyHitReactionState.h">
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyHitReactionState.h">
       <Filter>application\Game\Entity\Enemy\State</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.h">
@@ -1161,6 +1166,11 @@
     <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h">
       <Filter>application\Game\Entity\Player\Hand</Filter>
     </ClInclude>
+    <ClInclude Include="application\Game\Entity\BossEnemy\State\Base\BossStateBase.h" />
+    <ClInclude Include="application\Game\Entity\BossEnemy\BossEnemy.h" />
+    <ClInclude Include="application\Game\Entity\BossEnemy\Component\Move\BossMoveComponent.h" />
+    <ClInclude Include="application\Game\Entity\BossEnemy\Component\Attack\BossAttackComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

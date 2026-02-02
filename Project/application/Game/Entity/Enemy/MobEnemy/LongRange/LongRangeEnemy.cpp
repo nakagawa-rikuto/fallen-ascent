@@ -24,8 +24,8 @@ void LongRangeEnemy::InitGameScene(const Vector3& translate) {
 	Initialize();
 	// 位置の設定
 	transform_.translate = translate;
-	// BaseEnemyの初期化
-	BaseEnemy::Initialize();
+	// MobEnemyの初期化
+	MobEnemy::Initialize();
 }
 
 ///-------------------------------------------/// 
@@ -59,8 +59,8 @@ void LongRangeEnemy::Initialize() {
 ///-------------------------------------------///
 void LongRangeEnemy::Update() {
 
-	// BaseEnemyの更新
-	BaseEnemy::Update();
+	// MobEnemyの更新
+	MobEnemy::Update();
 
 	// 弾を更新（null ならスキップ）
 	for (auto& bullet : bulletInfo_.bullets_) {
@@ -80,7 +80,7 @@ void LongRangeEnemy::Update() {
 ///-------------------------------------------///
 void LongRangeEnemy::Draw(BlendMode mode) {
 	// Enemyの描画
-	BaseEnemy::Draw(mode);
+	MobEnemy::Draw(mode);
 
 	// バレットの描画
 	for (auto& bullet : bulletInfo_.bullets_) {
@@ -94,7 +94,7 @@ void LongRangeEnemy::Draw(BlendMode mode) {
 void LongRangeEnemy::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("LongRangeEnemy");
-	BaseEnemy::Information();
+	MobEnemy::Information();
 	ImGui::End();
 #endif // USE_IMGUI
 }
@@ -103,8 +103,8 @@ void LongRangeEnemy::Information() {
 /// 衝突判定
 ///-------------------------------------------///
 void LongRangeEnemy::OnCollision(Collider* collider) {
-	// BaseEnemyの当たり判定
-	BaseEnemy::OnCollision(collider);
+	// MobEnemyの当たり判定
+	MobEnemy::OnCollision(collider);
 }
 
 ///-------------------------------------------/// 
@@ -132,16 +132,3 @@ void LongRangeEnemy::Attack() {
 	// クールダウン再設定
 	attackInfo_.timer = attackInfo_.interval; 
 }
-
-#ifdef USE_IMGUI
-///-------------------------------------------/// 
-/// 派生用の拡張ポイント
-///-------------------------------------------///
-void LongRangeEnemy::CopyTypeTuningFromThisTo(BaseEnemy* dst) const {
-	if (auto* d = dynamic_cast<LongRangeEnemy*>(dst)) {
-		d->bulletInfo_.interval = this->bulletInfo_.interval;
-		d->bulletInfo_.reloadTime = this->bulletInfo_.reloadTime;
-		// isShot / isHit / bullets_ はランタイム値なのでコピーしない
-	}
-}
-#endif // USE_IMGUI

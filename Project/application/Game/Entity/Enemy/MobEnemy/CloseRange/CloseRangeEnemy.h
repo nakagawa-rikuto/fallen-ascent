@@ -1,6 +1,6 @@
 #pragma once
 /// ===Include=== ///
-#include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
+#include "application/Game/Entity/Enemy/MobEnemy/Base/MobEnemy.h"
 
 /// ===前方宣言=== ///
 class ParticleGroup;
@@ -8,7 +8,7 @@ class ParticleGroup;
 ///=====================================================/// 
 /// 近接戦闘Enemy
 ///=====================================================///
-class CloseRangeEnemy : public BaseEnemy {
+class CloseRangeEnemy : public MobEnemy {
 public:
 	CloseRangeEnemy() = default;
 	~CloseRangeEnemy();
@@ -67,13 +67,4 @@ private: /// ===変数=== ///
 		float moveSpeed;
 	};
 	ChargeInfo chargeInfo_;
-
-#ifdef USE_IMGUI
-protected:
-	/// <summary>
-	/// 派生側で型固有のチューニング値をコピーするための関数
-	/// </summary>
-	/// <param name="dst"></param>
-	void CopyTypeTuningFromThisTo(BaseEnemy* dst) const override;
-#endif // USE_IMGUI
 };
