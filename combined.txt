@@ -16963,7 +16963,7 @@ void Framework::Initialize(const wchar_t* title) {
 	/// ===初期化=== ///
 	// MiiEngine
 	MiiEngine_ = std::make_unique<Mii>();
-	MiiEngine_->Initialize(title, 1920, 1080);
+	MiiEngine_->Initialize(title, 1280, 720);
 	// CameraManager
 	cameraManager_ = std::make_unique<CameraManager>();
 	// ParticleManager
@@ -32164,7 +32164,7 @@ void GameClearAnimation::Initialize(Player* player, GameCamera* camera) {
 	camera_->SetOrbitingOffset(startOffset); 
 
 	/// ===Playerの設定=== ///
-	player_->SetGravity(-2.9f); 
+	player_->SetGravity(-9.8f); 
 	// 初期速度をリセット
 	player_->SetVelocity({ 0.0f, 0.0f, 0.0f }); 
 
@@ -32240,7 +32240,7 @@ void GameClearAnimation::UpdateCameraRotation() {
 	camera_->SetRotate(currentRotation);
 
 	// プレイヤーの小ジャンプ更新
-	UpdatePlayerSmallJump();
+	//UpdatePlayerSmallJump();
 
 	// 回転完了で最終ジャンプフェーズへ
 	if (cameraInfo_.timer >= cameraInfo_.duration) {
@@ -32267,7 +32267,7 @@ void GameClearAnimation::UpdatePlayerSmallJump() {
 	localT = (std::min)(localT, 1.0f);
 
 	// 放物線を描くジャンプ
-	float jumpProgress = -4.0f * smallJumpInfo_.height * (localT - 0.5f) * (localT - 0.5f) + smallJumpInfo_.height;
+	float jumpProgress = -1.0f * smallJumpInfo_.height * (localT - 0.5f) * (localT - 0.5f) + smallJumpInfo_.height;
 
 	// プレイヤーのVelocityを更新
 	Vector3 playerCurrentVelocity = player_->GetVelocity();
@@ -32375,7 +32375,7 @@ private:
 		float timer = 0.0f;           // ジャンプタイマー
 		float interval = 0.5f;        // ジャンプの間隔
 		Vector3 basePlayerPosition;   // プレイヤーの基準位置
-		float height = 6.0f;          // 小ジャンプの高さ
+		float height = 2.0f;          // 小ジャンプの高さ
 		int count = 0;                // ジャンプ回数
 	};
 	PlayerSmallJumpInfo smallJumpInfo_;
@@ -35029,7 +35029,8 @@ void LongRangeEnemyBullet::Update() {
 ///-------------------------------------------///
 void LongRangeEnemyBullet::Draw(BlendMode mode) {
 	if (isAlive_) {
-		SphereCollider::Draw(mode);
+		mode;
+		//SphereCollider::Draw(mode);
 	}
 }
 
@@ -39706,6 +39707,8 @@ void Player::Initialize() {
 	name_ = ColliderName::Player;
 	// コライダーに追加
 	ColliderService::AddCollider(this);
+	// OBBの設定
+	SetHalfSize({ 2.0f, 2.0f, 3.0f });
 
 	/// ===Handの初期化=== ///
 	// 右手
@@ -39888,7 +39891,7 @@ void Player::OnCollision(Collider* collider) {
 			ChangState(std::make_unique<RootState>());
 
 			// ダメージ処理
-			//baseInfo_.HP--;
+			baseInfo_.HP--;
 			// 無敵状態にする
 			SetInvincibleTime(0.5f);
 		}
@@ -43431,7 +43434,6 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 			player_->Initialize();
 			player_->SetTranslate(obj.translation);
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
-			player_->SetHalfSize(obbHalfSize);
 			break;
 		case LevelData::ClassTypeLevel::Enemy1:
 			// Enemyの座標設定
