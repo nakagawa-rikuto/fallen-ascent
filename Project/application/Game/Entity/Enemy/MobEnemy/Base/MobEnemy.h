@@ -43,7 +43,7 @@ private: /// ===型定義=== ///
 public:
 
 	MobEnemy() = default;
-	~MobEnemy();
+	virtual ~MobEnemy();
 
 	/// <summary>
 	/// ゲームシーンを初期化

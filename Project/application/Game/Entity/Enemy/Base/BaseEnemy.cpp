@@ -28,9 +28,6 @@ void BaseEnemy::Initialize() {
 
 	// コライダーに追加
 	ColliderService::AddCollider(this);
-
-	// object3dの更新を一回行う
-	UpdateAnimation();
 }
 
 ///-------------------------------------------/// 

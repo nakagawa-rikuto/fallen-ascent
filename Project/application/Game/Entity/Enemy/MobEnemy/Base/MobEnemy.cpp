@@ -26,6 +26,9 @@ MobEnemy::~MobEnemy() {
 	// 状態を解放
 	currentState_->Finalize();
 	currentState_.reset();
+	// Componentの解放
+	moveComponent_.reset();
+	hitReactionComponent_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -40,6 +43,9 @@ void MobEnemy::SetInvincibleTime() {
 /// 初期化処理
 ///-------------------------------------------///
 void MobEnemy::Initialize() {
+	// BaseEnemyの初期化
+	BaseEnemy::Initialize();
+
 	/// ===Componentの生成=== ///
 	moveComponent_ = std::make_unique<EnemyMoveComponent>();
 	hitReactionComponent_ = std::make_unique<EnemyHitReactionComponent>();
