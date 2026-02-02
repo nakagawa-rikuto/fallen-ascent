@@ -60,7 +60,8 @@ void LongRangeEnemyBullet::Update() {
 ///-------------------------------------------///
 void LongRangeEnemyBullet::Draw(BlendMode mode) {
 	if (isAlive_) {
-		SphereCollider::Draw(mode);
+		mode;
+		//SphereCollider::Draw(mode);
 	}
 }
 

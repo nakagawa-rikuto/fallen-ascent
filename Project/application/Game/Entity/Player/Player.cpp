@@ -49,6 +49,8 @@ void Player::Initialize() {
 	name_ = ColliderName::Player;
 	// コライダーに追加
 	ColliderService::AddCollider(this);
+	// OBBの設定
+	SetHalfSize({ 2.0f, 2.0f, 3.0f });
 
 	/// ===Handの初期化=== ///
 	// 右手
@@ -231,7 +233,7 @@ void Player::OnCollision(Collider* collider) {
 			ChangState(std::make_unique<RootState>());
 
 			// ダメージ処理
-			//baseInfo_.HP--;
+			baseInfo_.HP--;
 			// 無敵状態にする
 			SetInvincibleTime(0.5f);
 		}
