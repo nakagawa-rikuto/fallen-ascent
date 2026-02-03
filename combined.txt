@@ -44288,7 +44288,7 @@ void GameSceneGameOverAnimationState::Update() {
 	// EnemyManagerの更新
 	gameScene_->GetEnemyManager()->UpdateAnimation();
 	// Playerの更新
-	gameScene_->GetPlayer()->UpdateAnimation();
+	gameScene_->GetPlayer()->Update();
 
 	// アニメーション完了を確認
 	if (gameOverAnimation_->IsCompleted()) {
