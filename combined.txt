@@ -514,7 +514,9 @@ File Path: Project/Engine/Camera/FollowCamera.cpp
 // ImGUi
 #ifdef USE_IMGUI
 #include <imgui.h>
+#include "Engine/System/Service/InputService.h"
 #endif // USE_IMGUI
+#include <algorithm>
 
 
 ///-------------------------------------------/// 
@@ -595,6 +597,84 @@ void FollowCamera::ImGuiUpdate() {
 }
 
 ///-------------------------------------------/// 
+/// デバッグ用の更新
+///-------------------------------------------///
+void FollowCamera::DebugUpdate() {
+#ifdef USE_IMGUI
+
+	// 回転可能型カメラのデバッグ操作
+	if (cameraType_ == FollowCameraType::Orbiting) {
+
+		// マウスの移動量を取得
+		Vector2 mouseDelta = {
+			static_cast<float>(InputService::GetMouseDeltaX()),
+			static_cast<float>(InputService::GetMouseDeltaY())
+		};
+
+		// 右クリック状態でマウスを操作することでカメラを回転させる。（例ブレンダー）
+		if (InputService::PushMouse(MouseButtonType::Right)) {
+			// マウス感度の設定
+			const float mouseSensitivity = 0.003f;
+
+			// マウスの移動量を回転角度に変換
+			float deltaYaw = mouseDelta.x * mouseSensitivity;    // 左右回転（Yaw）
+			float deltaPitch = -mouseDelta.y * mouseSensitivity; // 上下回転（Pitch）
+
+			// ターゲット位置からカメラ位置へのベクトルを取得
+			Vector3 toCamera = transform_.translate - *targetPos_;
+
+			// Yaw回転（ワールドのY軸周り）
+			Quaternion yawRotation = Math::MakeRotateAxisAngle(Vector3(0, 1, 0), deltaYaw);
+
+			// Pitch回転（カメラの右方向軸周り）
+			Vector3 rightAxis = Math::RotateVector(Vector3(1, 0, 0), transform_.rotate);
+			Quaternion pitchRotation = Math::MakeRotateAxisAngle(rightAxis, deltaPitch);
+
+			// 回転を適用
+			Quaternion totalRotation = yawRotation * pitchRotation;
+			transform_.rotate = Normalize(totalRotation * transform_.rotate);
+
+			// ターゲットを中心にカメラ位置を回転
+			Vector3 newOffset = Math::RotateVector(toCamera, totalRotation);
+			transform_.translate = *targetPos_ + newOffset;
+		}
+
+		// 中クリック（ホイールクリック）でパン移動
+		if (InputService::PushMouse(MouseButtonType::Scroll)) {
+
+			// マウス感度の設定
+			const float mouseSensitivity = 0.005f;
+
+			// カメラの右方向と上方向のベクトルを取得
+			Vector3 rightAxis = Math::RotateVector(Vector3(1, 0, 0), transform_.rotate);
+			Vector3 upAxis = Math::RotateVector(Vector3(0, 1, 0), transform_.rotate);
+
+			// マウスの移動量に応じて移動オフセットを計算
+			Vector3 moveOffset =
+				rightAxis * (-mouseDelta.x * mouseSensitivity) +
+				upAxis * (mouseDelta.y * mouseSensitivity);
+
+			// カメラとターゲットを同時に移動（相対位置を維持）
+			transform_.translate += moveOffset;
+			if (targetPos_) {
+				*targetPos_ += moveOffset;
+			}
+		}
+
+		// マウスホイールでズーム
+		float wheelDelta = static_cast<float>(InputService::GetMouseDeltaScroll());
+		if (wheelDelta != 0.0f) {
+
+			// ズーム感度の設定
+			const float zoomSensitivity = 0.05f;
+
+			OrbitingOffset_.z += wheelDelta * zoomSensitivity;
+		}
+	}
+#endif // USE_IMGUI
+}
+
+///-------------------------------------------/// 
 /// 追従処理
 ///-------------------------------------------///
 void FollowCamera::UpdateFollowCamera() {
@@ -650,7 +730,7 @@ void FollowCamera::FollowInterpolated() {
 	// カメラの位置を補間（Lerp）で滑らかに移動
 	transform_.translate = Math::Lerp(transform_.translate, targetCameraPos, followSpeed_);
 
-	// カメラの回転をスムーズに補間（Slerp を使用）
+	// カメラの回転をスムーズに補間（SLerp を使用）
 	//transform_.rotate = Math::SLerp(transform_.rotate, targetRotation, rotationLerpSpeed_);
 }
 
@@ -787,6 +867,11 @@ public:
 	/// ImGui情報の更新
 	/// </summary>
 	virtual void ImGuiUpdate() override;
+
+	/// <summary>
+	/// デバッグ用の更新処理を実行します。
+	/// </summary>
+	virtual void DebugUpdate() override;
 
 	/// <summary>
 	/// 追従カメラの種類を設定
@@ -1114,7 +1199,7 @@ public:
 	/// <summary>
 	/// デバッグ用の更新
 	/// </summary>
-	void DebugUpdate();
+	virtual void DebugUpdate();
 
 	/// <summary>
 	/// シェイク（振動）効果を開始する処理
@@ -38578,6 +38663,9 @@ void AttackEditor::CreateNew() {
     newAttack.attackID = static_cast<int>(attacks_.size());
     attacks_.push_back(newAttack);
     selectedAttackIndex_ = static_cast<int>(attacks_.size()) - 1;
+
+	// 回転データを初期化
+	UpdateRotationEditData();
 }
 
 ///-------------------------------------------/// 
@@ -38615,7 +38703,7 @@ void AttackEditor::SaveAllAttacks() {
 ///-------------------------------------------///
 void AttackEditor::LoadAllAttacks() {
     attacks_.clear();
-    attackFilePaths_.clear();  // ← クリア
+    attackFilePaths_.clear();  // クリア
 
     if (!std::filesystem::exists(kDefaultSavePath)) {
         return;
@@ -38633,6 +38721,11 @@ void AttackEditor::LoadAllAttacks() {
                 attackFilePaths_[data.attackID] = filepath;
             }
         }
+    }
+
+    // 最初の攻撃が選択されている場合、回転データを更新
+    if (selectedAttackIndex_ >= 0 && selectedAttackIndex_ < static_cast<int>(attacks_.size())) {
+        UpdateRotationEditData();
     }
 }
 
@@ -38734,6 +38827,8 @@ void AttackEditor::RenderAttackList() {
         bool isSelected = (selectedAttackIndex_ == i);
         if (ImGui::Selectable(attacks_[i].attackName.c_str(), isSelected)) {
             selectedAttackIndex_ = i;
+            // 選択された攻撃の回転データをオイラー角に変換
+            UpdateRotationEditData();
         }
     }
 
@@ -39200,6 +39295,36 @@ void AttackEditor::UpdateTrajectoryPreview(const float deltaTime) {
     }
 }
 
+///-------------------------------------------/// 
+/// 選択中の攻撃の回転データをオイラー角に変換して保存
+///-------------------------------------------///
+void AttackEditor::UpdateRotationEditData() {
+    if (selectedAttackIndex_ < 0 || selectedAttackIndex_ >= static_cast<int>(attacks_.size())) {
+        return;
+    }
+
+    AttackData& currentAttack = attacks_[selectedAttackIndex_];
+
+    // 武器の回転データを変換
+    rotationEditData_.weaponEuler.clear();
+    for (const auto& point : currentAttack.weaponTrajectoryPoints) {
+        rotationEditData_.weaponEuler.push_back(Math::QuaternionToEuler(point.rotation));
+    }
+
+    // 右手の回転データを変換
+    rotationEditData_.rightHandEuler.clear();
+    for (const auto& point : currentAttack.rightHandTrajectoryPoints) {
+        rotationEditData_.rightHandEuler.push_back(Math::QuaternionToEuler(point.rotation));
+    }
+
+    // 左手の回転データを変換
+    rotationEditData_.leftHandEuler.clear();
+    for (const auto& point : currentAttack.leftHandTrajectoryPoints) {
+        rotationEditData_.leftHandEuler.push_back(Math::QuaternionToEuler(point.rotation));
+    }
+}
+
+
 ============================================================
 File Path: Project/application/Game/Entity/Player/Editor/AttackEditor.h
 ============================================================
@@ -39445,6 +39570,11 @@ private:
     /// 軌道のプレビュー更新
     /// </summary>
     void UpdateTrajectoryPreview(const float deltaTime);
+
+    /// <summary>
+    /// 選択中の攻撃の回転データをオイラー角に変換
+    /// </summary>
+    void UpdateRotationEditData();
 };
 
 ============================================================
@@ -39963,6 +40093,8 @@ File Path: Project/application/Game/Entity/Player/Player.cpp
 ///-------------------------------------------///
 Player::~Player() {
 	weapon_.reset();
+	rightHand_.reset();
+	leftHand_.reset();
 	object3d_.reset();
 }
 
@@ -43295,6 +43427,8 @@ File Path: Project/application/Scene/Debug/AttackEditorScene.cpp
 // ServiceLocator
 #include "Engine/System/Service/DeltaTimeSevice.h"
 #include "Engine/System/Service/ParticleService.h"
+#include "Engine/System/Service/CameraService.h"
+#include "Engine/System/Service/ColliderService.h"
 // ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
@@ -43305,10 +43439,10 @@ File Path: Project/application/Scene/Debug/AttackEditorScene.cpp
 ///-------------------------------------------///
 AttackEditorScene::~AttackEditorScene() {
     attackEditor_.reset();
-	previewRightHand_.reset();
-	previewLeftHand_.reset();
-    previewWeapon_.reset();
+	previewPlayer_.reset();
     line_.reset();
+    // Colliderのリセット
+    ColliderService::Reset();
     // ISceneのデストラクタ
     IScene::~IScene();
 }
@@ -43323,6 +43457,15 @@ void AttackEditorScene::Initialize() {
 	// パーティクルの定義を読み込み
     ParticleService::LoadParticleDefinition("WeaponAttack.json");
 
+    /// ===カメラ=== ///
+    camera_ = std::make_shared<GameCamera>();
+    camera_->Init(CameraType::Follow);
+    camera_->SetTranslate(cameraPosition_);
+    camera_->SetRotate(cameraRotation_);
+    camera_->SetFollowCamera(FollowCameraType::Orbiting);
+    // カメラの設定
+    CameraService::AddCamera("Editor", camera_);
+    CameraService::SetActiveCamera("Editor");
 
     /// ===エディターの初期化=== ///
     attackEditor_ = std::make_unique<AttackEditor>();
@@ -43333,23 +43476,15 @@ void AttackEditorScene::Initialize() {
     line_ = std::make_unique<Line>();
 
     /// ===プレビュー用プレイヤーの初期化=== ///
-	previewLeftHand_ = std::make_unique<PlayerHand>();
-	previewLeftHand_->Initialize();
-
-	previewRightHand_ = std::make_unique<PlayerHand>();
-    previewRightHand_->Initialize();
-
-    previewWeapon_ = std::make_unique<PlayerWeapon>();
-    previewWeapon_->Initialize();
+    previewPlayer_ = std::make_unique<Player>();
+    previewPlayer_->Initialize();
+    // プレビュー用プレイヤーにカメラを設定
+    previewPlayer_->SetCameraTargetPlayer();
 
     // エディターにプレビュー用プレイヤーとカメラを設定
-	attackEditor_->SetPreviewLeftHand(previewLeftHand_.get());
-	attackEditor_->SetPreviewRightHand(previewRightHand_.get());
-    attackEditor_->SetPreviewPlayer(previewWeapon_.get());
-
-    // デフォルトカメラの位置を設定
-    defaultCamera_->SetTranslate(cameraPosition_);
-    defaultCamera_->SetRotate(cameraRotation_);
+	attackEditor_->SetPreviewLeftHand(previewPlayer_->GetLeftHand());
+	attackEditor_->SetPreviewRightHand(previewPlayer_->GetRightHand());
+    attackEditor_->SetPreviewPlayer(previewPlayer_->GetWeapon());
 }
 
 ///-------------------------------------------/// 
@@ -43365,8 +43500,8 @@ void AttackEditorScene::Update() {
 #ifdef USE_IMGUI
     RenderMenuBar();
     /// ===デバッグ時のカメラ=== ///
-    defaultCamera_->ImGuiUpdate();
-	defaultCamera_->DebugUpdate();
+    camera_->ImGuiUpdate();
+    camera_->DebugUpdate();
 
     // エディターメインウィンドウ
     attackEditor_->Render();
@@ -43390,13 +43525,15 @@ void AttackEditorScene::Update() {
 void AttackEditorScene::Draw() {
     /// ===グリッドの描画=== ///
     if (showGrid_) {
-        line_->DrawGrid({ 0.0f, 0.0f, 0.0f }, { 500.0f, 0.0f, 500.0f }, 100, { 1.0f, 1.0f, 1.0f, 1.0f });
+        line_->DrawGrid({ 0.0f, 0.0f, 0.0f }, { 500.0f, 0.0f, 500.0f }, 25, { 1.0f, 1.0f, 1.0f, 1.0f });
     }
 
     /// ===エディタープレビューの描画=== ///
     if (attackEditor_) {
         attackEditor_->DrawPreview();
     }
+
+    previewPlayer_->Draw();
 
     /// ===ISceneの描画=== ///
     IScene::Draw();
@@ -43477,8 +43614,6 @@ File Path: Project/application/Scene/Debug/AttackEditorScene.h
 #include "application/Drawing/3d/Line.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
-#include "application/Game/Entity/Player/Hand/PlayerHand.h"
-#include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
 // c++
 #include <memory>
 
@@ -43507,14 +43642,14 @@ public:
     void Draw() override;
 
 private:
+    /// ===Camera=== ///
+    std::shared_ptr<GameCamera> camera_;
     /// ===Line=== ///
     std::unique_ptr<Line> line_;
     /// ===エディター=== ///
     std::unique_ptr<AttackEditor> attackEditor_;
     /// ===プレビュー用プレイヤー=== ///
-	std::unique_ptr<PlayerHand> previewRightHand_;
-	std::unique_ptr<PlayerHand> previewLeftHand_;
-    std::unique_ptr<PlayerWeapon> previewWeapon_;
+    std::unique_ptr<Player> previewPlayer_;
 
     /// ===エディター設定=== ///
     bool showHelp_ = false;              // ヘルプ表示フラグ
