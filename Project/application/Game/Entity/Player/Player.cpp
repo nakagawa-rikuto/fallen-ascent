@@ -19,6 +19,8 @@
 ///-------------------------------------------///
 Player::~Player() {
 	weapon_.reset();
+	rightHand_.reset();
+	leftHand_.reset();
 	object3d_.reset();
 }
 

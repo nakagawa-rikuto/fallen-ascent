@@ -4,6 +4,8 @@
 // ServiceLocator
 #include "Engine/System/Service/DeltaTimeSevice.h"
 #include "Engine/System/Service/ParticleService.h"
+#include "Engine/System/Service/CameraService.h"
+#include "Engine/System/Service/ColliderService.h"
 // ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
@@ -14,10 +16,10 @@
 ///-------------------------------------------///
 AttackEditorScene::~AttackEditorScene() {
     attackEditor_.reset();
-	previewRightHand_.reset();
-	previewLeftHand_.reset();
-    previewWeapon_.reset();
+	previewPlayer_.reset();
     line_.reset();
+    // Colliderのリセット
+    ColliderService::Reset();
     // ISceneのデストラクタ
     IScene::~IScene();
 }
@@ -32,6 +34,15 @@ void AttackEditorScene::Initialize() {
 	// パーティクルの定義を読み込み
     ParticleService::LoadParticleDefinition("WeaponAttack.json");
 
+    /// ===カメラ=== ///
+    camera_ = std::make_shared<GameCamera>();
+    camera_->Init(CameraType::Follow);
+    camera_->SetTranslate(cameraPosition_);
+    camera_->SetRotate(cameraRotation_);
+    camera_->SetFollowCamera(FollowCameraType::Orbiting);
+    // カメラの設定
+    CameraService::AddCamera("Editor", camera_);
+    CameraService::SetActiveCamera("Editor");
 
     /// ===エディターの初期化=== ///
     attackEditor_ = std::make_unique<AttackEditor>();
@@ -42,23 +53,15 @@ void AttackEditorScene::Initialize() {
     line_ = std::make_unique<Line>();
 
     /// ===プレビュー用プレイヤーの初期化=== ///
-	previewLeftHand_ = std::make_unique<PlayerHand>();
-	previewLeftHand_->Initialize();
-
-	previewRightHand_ = std::make_unique<PlayerHand>();
-    previewRightHand_->Initialize();
-
-    previewWeapon_ = std::make_unique<PlayerWeapon>();
-    previewWeapon_->Initialize();
+    previewPlayer_ = std::make_unique<Player>();
+    previewPlayer_->Initialize();
+    // プレビュー用プレイヤーにカメラを設定
+    previewPlayer_->SetCameraTargetPlayer();
 
     // エディターにプレビュー用プレイヤーとカメラを設定
-	attackEditor_->SetPreviewLeftHand(previewLeftHand_.get());
-	attackEditor_->SetPreviewRightHand(previewRightHand_.get());
-    attackEditor_->SetPreviewPlayer(previewWeapon_.get());
-
-    // デフォルトカメラの位置を設定
-    defaultCamera_->SetTranslate(cameraPosition_);
-    defaultCamera_->SetRotate(cameraRotation_);
+	attackEditor_->SetPreviewLeftHand(previewPlayer_->GetLeftHand());
+	attackEditor_->SetPreviewRightHand(previewPlayer_->GetRightHand());
+    attackEditor_->SetPreviewPlayer(previewPlayer_->GetWeapon());
 }
 
 ///-------------------------------------------/// 
@@ -74,8 +77,8 @@ void AttackEditorScene::Update() {
 #ifdef USE_IMGUI
     RenderMenuBar();
     /// ===デバッグ時のカメラ=== ///
-    defaultCamera_->ImGuiUpdate();
-	defaultCamera_->DebugUpdate();
+    camera_->ImGuiUpdate();
+    camera_->DebugUpdate();
 
     // エディターメインウィンドウ
     attackEditor_->Render();
@@ -99,13 +102,15 @@ void AttackEditorScene::Update() {
 void AttackEditorScene::Draw() {
     /// ===グリッドの描画=== ///
     if (showGrid_) {
-        line_->DrawGrid({ 0.0f, 0.0f, 0.0f }, { 500.0f, 0.0f, 500.0f }, 100, { 1.0f, 1.0f, 1.0f, 1.0f });
+        line_->DrawGrid({ 0.0f, 0.0f, 0.0f }, { 500.0f, 0.0f, 500.0f }, 25, { 1.0f, 1.0f, 1.0f, 1.0f });
     }
 
     /// ===エディタープレビューの描画=== ///
     if (attackEditor_) {
         attackEditor_->DrawPreview();
     }
+
+    previewPlayer_->Draw();
 
     /// ===ISceneの描画=== ///
     IScene::Draw();

@@ -6,7 +6,9 @@
 // ImGUi
 #ifdef USE_IMGUI
 #include <imgui.h>
+#include "Engine/System/Service/InputService.h"
 #endif // USE_IMGUI
+#include <algorithm>
 
 
 ///-------------------------------------------/// 
@@ -87,6 +89,84 @@ void FollowCamera::ImGuiUpdate() {
 }
 
 ///-------------------------------------------/// 
+/// デバッグ用の更新
+///-------------------------------------------///
+void FollowCamera::DebugUpdate() {
+#ifdef USE_IMGUI
+
+	// 回転可能型カメラのデバッグ操作
+	if (cameraType_ == FollowCameraType::Orbiting) {
+
+		// マウスの移動量を取得
+		Vector2 mouseDelta = {
+			static_cast<float>(InputService::GetMouseDeltaX()),
+			static_cast<float>(InputService::GetMouseDeltaY())
+		};
+
+		// 右クリック状態でマウスを操作することでカメラを回転させる。（例ブレンダー）
+		if (InputService::PushMouse(MouseButtonType::Right)) {
+			// マウス感度の設定
+			const float mouseSensitivity = 0.003f;
+
+			// マウスの移動量を回転角度に変換
+			float deltaYaw = mouseDelta.x * mouseSensitivity;    // 左右回転（Yaw）
+			float deltaPitch = -mouseDelta.y * mouseSensitivity; // 上下回転（Pitch）
+
+			// ターゲット位置からカメラ位置へのベクトルを取得
+			Vector3 toCamera = transform_.translate - *targetPos_;
+
+			// Yaw回転（ワールドのY軸周り）
+			Quaternion yawRotation = Math::MakeRotateAxisAngle(Vector3(0, 1, 0), deltaYaw);
+
+			// Pitch回転（カメラの右方向軸周り）
+			Vector3 rightAxis = Math::RotateVector(Vector3(1, 0, 0), transform_.rotate);
+			Quaternion pitchRotation = Math::MakeRotateAxisAngle(rightAxis, deltaPitch);
+
+			// 回転を適用
+			Quaternion totalRotation = yawRotation * pitchRotation;
+			transform_.rotate = Normalize(totalRotation * transform_.rotate);
+
+			// ターゲットを中心にカメラ位置を回転
+			Vector3 newOffset = Math::RotateVector(toCamera, totalRotation);
+			transform_.translate = *targetPos_ + newOffset;
+		}
+
+		// 中クリック（ホイールクリック）でパン移動
+		if (InputService::PushMouse(MouseButtonType::Scroll)) {
+
+			// マウス感度の設定
+			const float mouseSensitivity = 0.005f;
+
+			// カメラの右方向と上方向のベクトルを取得
+			Vector3 rightAxis = Math::RotateVector(Vector3(1, 0, 0), transform_.rotate);
+			Vector3 upAxis = Math::RotateVector(Vector3(0, 1, 0), transform_.rotate);
+
+			// マウスの移動量に応じて移動オフセットを計算
+			Vector3 moveOffset =
+				rightAxis * (-mouseDelta.x * mouseSensitivity) +
+				upAxis * (mouseDelta.y * mouseSensitivity);
+
+			// カメラとターゲットを同時に移動（相対位置を維持）
+			transform_.translate += moveOffset;
+			if (targetPos_) {
+				*targetPos_ += moveOffset;
+			}
+		}
+
+		// マウスホイールでズーム
+		float wheelDelta = static_cast<float>(InputService::GetMouseDeltaScroll());
+		if (wheelDelta != 0.0f) {
+
+			// ズーム感度の設定
+			const float zoomSensitivity = 0.05f;
+
+			OrbitingOffset_.z += wheelDelta * zoomSensitivity;
+		}
+	}
+#endif // USE_IMGUI
+}
+
+///-------------------------------------------/// 
 /// 追従処理
 ///-------------------------------------------///
 void FollowCamera::UpdateFollowCamera() {
@@ -142,7 +222,7 @@ void FollowCamera::FollowInterpolated() {
 	// カメラの位置を補間（Lerp）で滑らかに移動
 	transform_.translate = Math::Lerp(transform_.translate, targetCameraPos, followSpeed_);
 
-	// カメラの回転をスムーズに補間（Slerp を使用）
+	// カメラの回転をスムーズに補間（SLerp を使用）
 	//transform_.rotate = Math::SLerp(transform_.rotate, targetRotation, rotationLerpSpeed_);
 }
 
