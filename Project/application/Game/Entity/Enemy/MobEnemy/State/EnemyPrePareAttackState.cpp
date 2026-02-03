@@ -1,6 +1,6 @@
 #include "EnemyPrePareAttackState.h"
-// BaseEnemy
-#include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
+// MobEnemy
+#include "application/Game/Entity/Enemy/MobEnemy/Base/MobEnemy.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // Service
@@ -14,7 +14,8 @@
 ///-------------------------------------------/// 
 /// ステートに入った時に呼ばれる処理
 ///-------------------------------------------///
-void EnemyPrePareAttackState::Enter(BaseEnemy* enemy) {
+void EnemyPrePareAttackState::Enter(MobEnemy* enemy) {
+	// Enemyのセット
 	enemy_ = enemy;
 	// 移動量を初期化
 	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
@@ -33,8 +34,7 @@ void EnemyPrePareAttackState::Enter(BaseEnemy* enemy) {
 ///-------------------------------------------/// 
 /// 更新処理
 ///-------------------------------------------///
-void EnemyPrePareAttackState::Update(BaseEnemy* enemy) {
-	enemy_ = enemy;
+void EnemyPrePareAttackState::Update() {
 
 	// タイマーが残っている場合
 	if (activeTimer_ > 0.0f) {

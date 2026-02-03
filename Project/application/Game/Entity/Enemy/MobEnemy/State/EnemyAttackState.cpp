@@ -1,7 +1,7 @@
 #include "EnemyAttackState.h"
-// BaseEnemy
-#include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
-#include "application/Game/Entity/Enemy/LongRange/LongRangeEnemy.h"
+// MobEnemy
+#include "application/Game/Entity/Enemy/MobEnemy/Base/MobEnemy.h"
+#include "application/Game/Entity/Enemy/MobEnemy/LongRange/LongRangeEnemy.h"
 // Service
 #include "Engine/System/Service/ParticleService.h"
 // State
@@ -11,7 +11,7 @@
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
 ///-------------------------------------------///
-void EnemyAttackState::Enter(BaseEnemy* enemy) {
+void EnemyAttackState::Enter(MobEnemy* enemy) {
 	enemy_ = enemy;
 	// 移動量を初期化
 	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
@@ -22,8 +22,7 @@ void EnemyAttackState::Enter(BaseEnemy* enemy) {
 ///-------------------------------------------/// 
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void EnemyAttackState::Update(BaseEnemy * enemy) {
-	enemy_ = enemy;
+void EnemyAttackState::Update() {
 
 	// Attackの処理
 	enemy_->Attack();

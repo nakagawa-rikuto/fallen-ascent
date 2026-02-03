@@ -19,29 +19,12 @@ CloseRangeEnemy::~CloseRangeEnemy() {}
 /// GameScene用初期化
 ///-------------------------------------------///
 void CloseRangeEnemy::InitGameScene(const Vector3& translate) {
-	// CloseRangeEnemyの初期化
+
+	/// ===CloseRangeEnemyの初期化=== ///
 	Initialize();
-	// 位置の設定
-	transform_.translate = translate;
-	// BaseEnemyの初期化
-	BaseEnemy::Initialize();
-}
 
-///-------------------------------------------/// 
-/// 初期化
-///-------------------------------------------///
-void CloseRangeEnemy::Initialize() {
-
-	/// ===Object=== ///
-	// Object3dの初期化
-	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "CloseEnemy");
-
-	/// ===GameCharacter=== ///
-	// GameCharacterの初期化
-	GameCharacter::Initialize();
-	name_ = ColliderName::Enemy;
-	SetHalfSize({ 3.0f, 3.0f, 3.0f });
+	/// ===MobEnemyのInitGameScene=== ///
+	MobEnemy::InitGameScene(translate);
 
 	/// ===AttackInfoの設定=== ///
 	attackInfo_.range = 4.0f;
@@ -54,22 +37,41 @@ void CloseRangeEnemy::Initialize() {
 
 	/// ===ChargeInfo=== ///
 	chargeInfo_.moveSpeed = 0.9f;
+
+	/// ===更新処理を一回だけ=== ///
+	UpdateAnimation();
+}
+
+///-------------------------------------------/// 
+/// 初期化
+///-------------------------------------------///
+void CloseRangeEnemy::Initialize() {
+
+	/// ===Object=== ///
+	object3d_ = std::make_unique<Object3d>();
+	object3d_->Init(ObjectType::Model, "CloseEnemy");
+
+	/// ===MobEnemyの初期化=== ///
+	MobEnemy::Initialize();
+
+	/// ===OBBのサイズを設定=== ///
+	SetHalfSize({ 3.0f, 3.0f, 3.0f });
 }
 
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
 void CloseRangeEnemy::Update() {
-	// BaseEnemyの更新
-	BaseEnemy::Update();
+	// MobEnemyの更新
+	MobEnemy::Update();
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
 void CloseRangeEnemy::Draw(BlendMode mode) {
-	// BaseEnemyの描画
-	BaseEnemy::Draw(mode);
+	// MobEnemyの描画
+	MobEnemy::Draw(mode);
 }
 
 ///-------------------------------------------/// 
@@ -78,9 +80,10 @@ void CloseRangeEnemy::Draw(BlendMode mode) {
 void CloseRangeEnemy::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("近距離攻撃のEnemy");
-	BaseEnemy::Information();
+	MobEnemy::Information();
 	ImGui::Text("突進情報");
 	ImGui::DragFloat("移動速度", &chargeInfo_.moveSpeed, 0.1f);
+	ImGui::DragFloat3("T", &transform_.translate.x);
 	ImGui::End();
 #endif // USE_IMGUI
 }
@@ -89,8 +92,8 @@ void CloseRangeEnemy::Information() {
 /// 衝突判定
 ///-------------------------------------------///
 void CloseRangeEnemy::OnCollision(Collider* collider) {
-	// BaseEnemyの当たり判定
-	BaseEnemy::OnCollision(collider);
+	// MobEnemyの当たり判定
+	MobEnemy::OnCollision(collider);
 }
 
 ///-------------------------------------------/// 
@@ -138,14 +141,3 @@ void CloseRangeEnemy::Attack() {
 		attackInfo_.timer = attackInfo_.interval;
 	}
 }
-
-#ifdef USE_IMGUI
-///-------------------------------------------/// 
-/// 派生用の拡張ポイント
-///-------------------------------------------///
-void CloseRangeEnemy::CopyTypeTuningFromThisTo(BaseEnemy* dst) const {
-	if (auto* d = dynamic_cast<CloseRangeEnemy*>(dst)) {
-		d->chargeInfo_.moveSpeed = this->chargeInfo_.moveSpeed;
-	}
-}
-#endif // USE_IMGUI

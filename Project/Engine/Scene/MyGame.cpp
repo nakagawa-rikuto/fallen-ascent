@@ -32,12 +32,14 @@ void MyGame::Initialize(const wchar_t* title) {
 
 	/// ===読み込み処理=== ///
 	// 各読み込み処理用のスレッドを生成
-	LoadTexture(); // テクスチャの読み込みはメインスレッドで実行
+	LoadAudio();	// Soundの読み込み
 	std::vector<std::thread> loadingThreads;
-	loadingThreads.emplace_back([this] { LoadAudio(); });     // Soundの読み込み
-	loadingThreads.emplace_back([this] { LoadModel(); });	  // モデルの読み込み
-	loadingThreads.emplace_back([this] { LoadAnimation(); }); // アニメーションの読み込み
 	loadingThreads.emplace_back([this] { LoadJson(); });	  // Jsonデータの読み込み
+	loadingThreads.emplace_back([this] { 
+		LoadTexture();   // Textureの読み込み
+		LoadModel();     // Modelの読み込み
+		LoadAnimation(); // Animationの読み込み
+	});
 	// すべてのスレッドの終了を待機
 	for (auto& thread : loadingThreads) {
 		thread.join();
