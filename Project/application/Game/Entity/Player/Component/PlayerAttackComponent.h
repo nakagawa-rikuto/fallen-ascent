@@ -1,6 +1,6 @@
 #pragma once
 /// ===Include=== ///
-#include "application/Game/Entity/Player/Editor/Data/AttackData.h"
+#include "application/Game/Editor/Data/AttackData.h"
 // C++
 #include <memory>
 #include <unordered_map>
