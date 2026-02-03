@@ -428,6 +428,9 @@ void AttackEditor::CreateNew() {
     newAttack.attackID = static_cast<int>(attacks_.size());
     attacks_.push_back(newAttack);
     selectedAttackIndex_ = static_cast<int>(attacks_.size()) - 1;
+
+	// 回転データを初期化
+	UpdateRotationEditData();
 }
 
 ///-------------------------------------------/// 
@@ -465,7 +468,7 @@ void AttackEditor::SaveAllAttacks() {
 ///-------------------------------------------///
 void AttackEditor::LoadAllAttacks() {
     attacks_.clear();
-    attackFilePaths_.clear();  // ← クリア
+    attackFilePaths_.clear();  // クリア
 
     if (!std::filesystem::exists(kDefaultSavePath)) {
         return;
@@ -483,6 +486,11 @@ void AttackEditor::LoadAllAttacks() {
                 attackFilePaths_[data.attackID] = filepath;
             }
         }
+    }
+
+    // 最初の攻撃が選択されている場合、回転データを更新
+    if (selectedAttackIndex_ >= 0 && selectedAttackIndex_ < static_cast<int>(attacks_.size())) {
+        UpdateRotationEditData();
     }
 }
 
@@ -584,6 +592,8 @@ void AttackEditor::RenderAttackList() {
         bool isSelected = (selectedAttackIndex_ == i);
         if (ImGui::Selectable(attacks_[i].attackName.c_str(), isSelected)) {
             selectedAttackIndex_ = i;
+            // 選択された攻撃の回転データをオイラー角に変換
+            UpdateRotationEditData();
         }
     }
 
@@ -1047,5 +1057,34 @@ void AttackEditor::UpdateTrajectoryPreview(const float deltaTime) {
         } else {
             isPlaying_ = false;
         }
+    }
+}
+
+///-------------------------------------------/// 
+/// 選択中の攻撃の回転データをオイラー角に変換して保存
+///-------------------------------------------///
+void AttackEditor::UpdateRotationEditData() {
+    if (selectedAttackIndex_ < 0 || selectedAttackIndex_ >= static_cast<int>(attacks_.size())) {
+        return;
+    }
+
+    AttackData& currentAttack = attacks_[selectedAttackIndex_];
+
+    // 武器の回転データを変換
+    rotationEditData_.weaponEuler.clear();
+    for (const auto& point : currentAttack.weaponTrajectoryPoints) {
+        rotationEditData_.weaponEuler.push_back(Math::QuaternionToEuler(point.rotation));
+    }
+
+    // 右手の回転データを変換
+    rotationEditData_.rightHandEuler.clear();
+    for (const auto& point : currentAttack.rightHandTrajectoryPoints) {
+        rotationEditData_.rightHandEuler.push_back(Math::QuaternionToEuler(point.rotation));
+    }
+
+    // 左手の回転データを変換
+    rotationEditData_.leftHandEuler.clear();
+    for (const auto& point : currentAttack.leftHandTrajectoryPoints) {
+        rotationEditData_.leftHandEuler.push_back(Math::QuaternionToEuler(point.rotation));
     }
 }

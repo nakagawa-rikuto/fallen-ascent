@@ -7,8 +7,6 @@
 #include "application/Drawing/3d/Line.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
-#include "application/Game/Entity/Player/Hand/PlayerHand.h"
-#include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
 // c++
 #include <memory>
 
@@ -37,14 +35,14 @@ public:
     void Draw() override;
 
 private:
+    /// ===Camera=== ///
+    std::shared_ptr<GameCamera> camera_;
     /// ===Line=== ///
     std::unique_ptr<Line> line_;
     /// ===エディター=== ///
     std::unique_ptr<AttackEditor> attackEditor_;
     /// ===プレビュー用プレイヤー=== ///
-	std::unique_ptr<PlayerHand> previewRightHand_;
-	std::unique_ptr<PlayerHand> previewLeftHand_;
-    std::unique_ptr<PlayerWeapon> previewWeapon_;
+    std::unique_ptr<Player> previewPlayer_;
 
     /// ===エディター設定=== ///
     bool showHelp_ = false;              // ヘルプ表示フラグ

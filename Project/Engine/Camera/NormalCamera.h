@@ -28,7 +28,7 @@ public:
 	/// <summary>
 	/// デバッグ用の更新
 	/// </summary>
-	void DebugUpdate();
+	virtual void DebugUpdate();
 
 	/// <summary>
 	/// シェイク（振動）効果を開始する処理

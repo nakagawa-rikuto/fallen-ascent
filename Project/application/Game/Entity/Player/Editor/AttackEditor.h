@@ -240,4 +240,9 @@ private:
     /// 軌道のプレビュー更新
     /// </summary>
     void UpdateTrajectoryPreview(const float deltaTime);
+
+    /// <summary>
+    /// 選択中の攻撃の回転データをオイラー角に変換
+    /// </summary>
+    void UpdateRotationEditData();
 };

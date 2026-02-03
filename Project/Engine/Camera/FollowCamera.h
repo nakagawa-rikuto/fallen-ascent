@@ -35,6 +35,11 @@ public:
 	virtual void ImGuiUpdate() override;
 
 	/// <summary>
+	/// デバッグ用の更新処理を実行します。
+	/// </summary>
+	virtual void DebugUpdate() override;
+
+	/// <summary>
 	/// 追従カメラの種類を設定
 	/// </summary>
 	/// <param name="type">設定するフォローカメラの種類（FollowCameraType 型）。</param>
