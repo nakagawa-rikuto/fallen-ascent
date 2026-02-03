@@ -6,10 +6,10 @@ class Boss;
 /// ボスのベースステート
 /// 移動は決めていない、攻撃はジャンプ攻撃と回りながら進む処理、遠距離攻撃のモブを出しす
 ///=====================================================///
-class BossStateBase {
+class BossState {
 public:
 
-	virtual ~BossStateBase() = default;
+	virtual ~BossState() = default;
 
 	/// <summary>
 	/// ステートに入った時に呼ばれる処理、純粋仮想関数

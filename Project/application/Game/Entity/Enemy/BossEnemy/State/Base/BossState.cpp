@@ -1,8 +1,8 @@
-#include "BossStateBase.h"
+#include "BossState.h"
 
 ///-------------------------------------------/// 
 /// 終了処理
 ///-------------------------------------------///
-void BossStateBase::Finalize() {
+void BossState::Finalize() {
 	boss_ = nullptr;
 }

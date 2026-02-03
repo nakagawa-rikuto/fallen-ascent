@@ -7,6 +7,10 @@ BossEnemy::~BossEnemy() {
 	// 状態を解放
 	currentState_->Finalize();
 	currentState_.reset();
+	// Componentの解放
+	moveComponent_.reset();
+	attackComponent_.reset();
+	// Object3Dの解放
 	object3d_.reset();
 }
 
@@ -14,22 +18,34 @@ BossEnemy::~BossEnemy() {
 /// ゲームシーンで呼び出す初期化処理
 ///-------------------------------------------///
 void BossEnemy::InitGameScene(const Vector3& translate) {
-	// 位置の設定
+
+	/// ===BossEnemyの初期化=== ///
+	Initialize();
+
+	/// ===位置の設定=== ///
 	transform_.translate = translate;
+
+	/// ===初回更新=== ///
+	UpdateAnimation();
 }
 
 ///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///
 void BossEnemy::Initialize() {
-	// GameCharacterの初期化
-	GameCharacter::Initialize();
+
+	/// ===Object3Dの初期化=== ///
+	object3d_ = std::make_unique<Object3d>();
+	object3d_->Init(ObjectType::AnimationModel, "Player");
+
+	/// ===BaseEnemyの初期化=== ///
+	BaseEnemy::Initialize();
+
 	// Stateの設定
 	//ChangeState(std::make_unique<EnemyMoveState>());
+	
 	// HP 
 	baseInfo_.HP = 50;
-	// object3dの更新を一回行う
-	UpdateAnimation();
 }
 
 ///-------------------------------------------/// 
@@ -42,14 +58,8 @@ void BossEnemy::Update() {
 	if (currentState_) {
 		currentState_->Update();
 	}
-}
 
-///-------------------------------------------/// 
-/// アニメーション時の更新処理
-///-------------------------------------------///
-void BossEnemy::UpdateAnimation() {
-	// GameCharacterの更新
-	GameCharacter::Update();
+	UpdateAnimation();
 }
 
 ///-------------------------------------------/// 

@@ -26,7 +26,11 @@ void BaseEnemy::Initialize() {
 	// カメラの取得
 	camera_ = CameraService::GetActiveCamera().get();
 
-	// コライダーに追加
+	/// ===GameCharacter=== ///
+	GameCharacter::Initialize();
+	name_ = ColliderName::Enemy;
+
+	// ColliderServiceに登録
 	ColliderService::AddCollider(this);
 }
 

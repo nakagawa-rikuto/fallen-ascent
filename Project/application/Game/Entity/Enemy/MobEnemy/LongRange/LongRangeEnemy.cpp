@@ -20,29 +20,12 @@ LongRangeEnemy::~LongRangeEnemy() {
 /// GameScene用初期化
 ///-------------------------------------------///
 void LongRangeEnemy::InitGameScene(const Vector3& translate) {
-	// CloseRangeEnemyの初期化
+
+	/// ===LongRangeEnemyの初期化=== ///
 	Initialize();
-	// 位置の設定
-	transform_.translate = translate;
-	// MobEnemyの初期化
-	MobEnemy::Initialize();
-}
 
-///-------------------------------------------/// 
-/// 初期化
-///-------------------------------------------///
-void LongRangeEnemy::Initialize() {
-
-	/// ===Object3d=== ///
-	// Object3dの初期化
-	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "LongEnemy");
-
-	/// ===GameCharacter=== ///
-	// GameCharacterの初期化
-	GameCharacter::Initialize();
-	name_ = ColliderName::Enemy;
-	SetHalfSize({ 1.75f, 1.75f, 0.75f });
+	/// ===MobEnemyのInitGameScene=== ///
+	MobEnemy::InitGameScene(translate);
 
 	/// ===AttackInfoの設定=== ///
 	attackInfo_.range = 3.0f;
@@ -52,6 +35,25 @@ void LongRangeEnemy::Initialize() {
 	attackInfo_.power = 1;
 	attackInfo_.direction = { 0.0f, 0.0f, 0.0f };
 	attackInfo_.isAttack = false;
+
+	/// ===更新処理を一回だけ=== ///
+	UpdateAnimation();
+}
+
+///-------------------------------------------/// 
+/// 初期化
+///-------------------------------------------///
+void LongRangeEnemy::Initialize() {
+
+	/// ===Object3d=== ///
+	object3d_ = std::make_unique<Object3d>();
+	object3d_->Init(ObjectType::Model, "LongEnemy");
+
+	/// ===MobEnemyの初期化=== ///
+	MobEnemy::Initialize();
+
+	/// ===OBBのサイズを設定=== ///
+	SetHalfSize({ 1.75f, 1.75f, 0.75f });
 }
 
 ///-------------------------------------------/// 

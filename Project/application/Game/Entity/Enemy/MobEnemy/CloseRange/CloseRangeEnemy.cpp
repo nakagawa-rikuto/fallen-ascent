@@ -19,29 +19,12 @@ CloseRangeEnemy::~CloseRangeEnemy() {}
 /// GameScene用初期化
 ///-------------------------------------------///
 void CloseRangeEnemy::InitGameScene(const Vector3& translate) {
-	// CloseRangeEnemyの初期化
+
+	/// ===CloseRangeEnemyの初期化=== ///
 	Initialize();
-	// 位置の設定
-	transform_.translate = translate;
-	// MobEnemyの初期化
-	MobEnemy::Initialize();
-}
 
-///-------------------------------------------/// 
-/// 初期化
-///-------------------------------------------///
-void CloseRangeEnemy::Initialize() {
-
-	/// ===Object=== ///
-	// Object3dの初期化
-	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "CloseEnemy");
-
-	/// ===GameCharacter=== ///
-	// GameCharacterの初期化
-	GameCharacter::Initialize();
-	name_ = ColliderName::Enemy;
-	SetHalfSize({ 3.0f, 3.0f, 3.0f });
+	/// ===MobEnemyのInitGameScene=== ///
+	MobEnemy::InitGameScene(translate);
 
 	/// ===AttackInfoの設定=== ///
 	attackInfo_.range = 4.0f;
@@ -54,6 +37,25 @@ void CloseRangeEnemy::Initialize() {
 
 	/// ===ChargeInfo=== ///
 	chargeInfo_.moveSpeed = 0.9f;
+
+	/// ===更新処理を一回だけ=== ///
+	UpdateAnimation();
+}
+
+///-------------------------------------------/// 
+/// 初期化
+///-------------------------------------------///
+void CloseRangeEnemy::Initialize() {
+
+	/// ===Object=== ///
+	object3d_ = std::make_unique<Object3d>();
+	object3d_->Init(ObjectType::Model, "CloseEnemy");
+
+	/// ===MobEnemyの初期化=== ///
+	MobEnemy::Initialize();
+
+	/// ===OBBのサイズを設定=== ///
+	SetHalfSize({ 3.0f, 3.0f, 3.0f });
 }
 
 ///-------------------------------------------/// 

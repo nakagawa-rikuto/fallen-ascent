@@ -40,52 +40,25 @@ void MobEnemy::SetInvincibleTime() {
 }
 
 ///-------------------------------------------/// 
+/// ゲームシーンの初期化
+///-------------------------------------------///
+void MobEnemy::InitGameScene(const Vector3& translate) {
+	/// ===位置の設定=== ///
+	transform_.translate = translate;
+
+	/// ===パラメータ設定=== ///
+	SettingParamita();
+
+	/// ===Stateの設定=== ///
+	ChangeState(std::make_unique<EnemyMoveState>());
+}
+
+///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///
 void MobEnemy::Initialize() {
-	// BaseEnemyの初期化
-	BaseEnemy::Initialize();
-
-	/// ===Componentの生成=== ///
-	moveComponent_ = std::make_unique<EnemyMoveComponent>();
-	hitReactionComponent_ = std::make_unique<EnemyHitReactionComponent>();
-	// MoveComponentの初期化
-	EnemyMoveComponent::MoveConfig moveConfig{
-			.speed = 0.05f,
-			.range = 20.0f,
-			.interval = 5.0f,
-			.waitTime = 1.5f,
-			. rotationSpeed = 0.1f
-	};
-	moveComponent_->Initialize(transform_.translate, moveConfig);
-	// HitReactionComponentの初期化
-	EnemyHitReactionComponent::KnockBackConfig hitReactionConfig{
-		.knockBackForce = 1.5f,
-		.slowdownFactor = 0.5f,
-		.slowdownDuration = 0.2f,
-		.alphaDuration = 0.2f,
-		.hitAlpha = 0.1f,
-		.flashSpeed = 10.0f
-	};
-	hitReactionComponent_->Initialize(hitReactionConfig);
-
-	// Stateの設定
-	ChangeState(std::make_unique<EnemyMoveState>());
-
-	// 無敵情報の初期化
-	invincibleInfo_.time = 0.5f;
-	invincibleInfo_.timer = 0.0f;
-	invincibleInfo_.isInvincible = false;
-
-	// 消滅タイマー
-	disappearTimer_ = 3.0f;
-	isTentativeDeath_ = false;
-
-	// HP 
-	baseInfo_.HP = 2;
-
 	/// ===BaseEnemyの初期化=== ///
-	UpdateAnimation();
+	BaseEnemy::Initialize();
 }
 
 ///-------------------------------------------/// 
@@ -226,6 +199,46 @@ bool MobEnemy::CheckAttackable() {
 	} else {
 		return false;
 	}
+}
+
+///-------------------------------------------/// 
+/// パラメータ設定
+///-------------------------------------------///
+void MobEnemy::SettingParamita() {
+	/// ===Componentの生成=== ///
+	moveComponent_ = std::make_unique<EnemyMoveComponent>();
+	hitReactionComponent_ = std::make_unique<EnemyHitReactionComponent>();
+	// MoveComponentの初期化
+	EnemyMoveComponent::MoveConfig moveConfig{
+			.speed = 0.05f,
+			.range = 20.0f,
+			.interval = 5.0f,
+			.waitTime = 1.5f,
+			. rotationSpeed = 0.1f
+	};
+	moveComponent_->Initialize(transform_.translate, moveConfig);
+	// HitReactionComponentの初期化
+	EnemyHitReactionComponent::KnockBackConfig hitReactionConfig{
+		.knockBackForce = 1.5f,
+		.slowdownFactor = 0.5f,
+		.slowdownDuration = 0.2f,
+		.alphaDuration = 0.2f,
+		.hitAlpha = 0.1f,
+		.flashSpeed = 10.0f
+	};
+	hitReactionComponent_->Initialize(hitReactionConfig);
+
+	// 無敵情報の初期化
+	invincibleInfo_.time = 0.5f;
+	invincibleInfo_.timer = 0.0f;
+	invincibleInfo_.isInvincible = false;
+
+	// 消滅タイマー
+	disappearTimer_ = 3.0f;
+	isTentativeDeath_ = false;
+
+	// HP 
+	baseInfo_.HP = 2;
 }
 
 ///-------------------------------------------/// 

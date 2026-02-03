@@ -49,7 +49,7 @@ public:
 	/// ゲームシーンを初期化
 	/// </summary>
 	/// <param name="translate">初期位置を表す3次元ベクトル。</param>
-	virtual void InitGameScene(const Vector3& translate) override = 0;
+	virtual void InitGameScene(const Vector3& translate) override;
 
 	/// <summary>
 	/// 初期化処理
@@ -62,7 +62,7 @@ public:
 	virtual void Update() override;
 
 	/// <summary>
-	/// 描画を実行します。
+	/// 描画を実行します
 	/// </summary>
 	/// <param name="mode">使用するブレンドモード。デフォルトは通常ブレンドモードです。</param>
 	virtual void Draw(BlendMode mode = BlendMode::KBlendModeNormal) override;
@@ -92,7 +92,10 @@ public: /// ===衝突=== ///
 
 public: /// ===その他関数=== ///
 
-	// Stateの変更
+	/// <summary>
+	/// 敵の状態を変更します。
+	/// </summary>
+	/// <param name="nextState">次の敵の状態を表すユニークポインタ。</param>
 	void ChangeState(std::unique_ptr<EnemyState> nextState);
 
 	/// <summary>
@@ -145,6 +148,10 @@ private:
 	// 消えるまでの時間
 	float disappearTimer_ = 2.0f;
 private:
+	/// <summary>
+	/// パラメータを設定する処理
+	/// </summary>
+	void SettingParamita();
 
 	/// <summary>
 	/// タイマーを進める処理
