@@ -484,10 +484,10 @@
     <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp">
       <Filter>Engine\Scene\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Player\Editor\AttackDataSerializer.cpp">
+    <ClCompile Include="application\Game\Editor\AttackDataSerializer.cpp">
       <Filter>application\Game\Entity\Player\Editor</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Player\Editor\AttackEditor.cpp">
+    <ClCompile Include="application\Game\Editor\AttackEditor.cpp">
       <Filter>application\Game\Entity\Player\Editor</Filter>
     </ClCompile>
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp">
@@ -1044,13 +1044,13 @@
     <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h">
       <Filter>Engine\Scene\Debug</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Player\Editor\Data\AttackData.h">
+    <ClInclude Include="application\Game\Editor\Data\AttackData.h">
       <Filter>application\Game\Entity\Player\Editor\Data</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Player\Editor\AttackDataSerializer.h">
+    <ClInclude Include="application\Game\Editor\AttackDataSerializer.h">
       <Filter>application\Game\Entity\Player\Editor</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Player\Editor\AttackEditor.h">
+    <ClInclude Include="application\Game\Editor\AttackEditor.h">
       <Filter>application\Game\Entity\Player\Editor</Filter>
     </ClInclude>
     <ClInclude Include="application\Scene\Debug\AttackEditorScene.h">

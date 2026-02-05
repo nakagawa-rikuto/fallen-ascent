@@ -4,7 +4,7 @@
 // PlayerWeapon
 #include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
 // AttackDataSerializer
-#include "application/Game/Entity/Player/Editor/AttackDataSerializer.h"
+#include "application/Game/Editor/AttackDataSerializer.h"
 // ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>

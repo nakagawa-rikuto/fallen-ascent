@@ -121,8 +121,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Scene\Game\GameScene.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyMoveComponent.cpp" />
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Editor\AttackDataSerializer.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Editor\AttackEditor.cpp" />
+    <ClCompile Include="application\Game\Editor\AttackDataSerializer.cpp" />
+    <ClCompile Include="application\Game\Editor\AttackEditor.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyHitReactionComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyHitReactionState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.cpp" />
@@ -295,7 +295,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.h" />
     <ClInclude Include="Engine\Collider\ColliderConcept.h" />
-    <ClInclude Include="application\Game\Entity\Player\Editor\Data\AttackData.h" />
+    <ClInclude Include="application\Game\Editor\Data\AttackData.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\Base\EnemyState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyMoveState.h" />
@@ -304,8 +304,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyMoveComponent.h" />
     <ClInclude Include="application\Scene\Debug\AttackEditorScene.h" />
-    <ClInclude Include="application\Game\Entity\Player\Editor\AttackDataSerializer.h" />
-    <ClInclude Include="application\Game\Entity\Player\Editor\AttackEditor.h" />
+    <ClInclude Include="application\Game\Editor\AttackDataSerializer.h" />
+    <ClInclude Include="application\Game\Editor\AttackEditor.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyHitReactionComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyHitReactionState.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
