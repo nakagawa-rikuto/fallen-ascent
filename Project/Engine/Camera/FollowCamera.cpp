@@ -10,313 +10,314 @@
 #endif // USE_IMGUI
 #include <algorithm>
 
-
-///-------------------------------------------/// 
-/// デストラクタ
-///-------------------------------------------///
-FollowCamera::~FollowCamera() {
-	targetPos_ = nullptr;
-	targetRot_ = nullptr;
-}
-
-///-------------------------------------------/// 
-/// FollowCameraの設定
-///-------------------------------------------///
-void FollowCamera::SetFollowCamera(FollowCameraType type) {
-	cameraType_ = type;
-}
-
-///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-// 追従のオフセットを取得
-const Vector3& FollowCamera::GetOffset() const { return offset_; }
-// 回転型追従カメラのオフセットを取得
-const Vector3& FollowCamera::GetOrbitingOffset() const { return OrbitingOffset_; }
-
-///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-// 追従対象の座標を設定
-void FollowCamera::SetTarget(Vector3* position, Quaternion* rotation) {
-	targetPos_ = position;
-	targetRot_ = rotation;
-}
-// 追従のオフセット
-void FollowCamera::SetOffset(const Vector3& offset) { offset_ = offset; }
-void FollowCamera::SetOrbitingOffset(const Vector3& offset) { OrbitingOffset_ = offset; }
-// 追従速度を設定
-void FollowCamera::SetFollowSpeed(float speed) { followSpeed_ = speed; }
-// 回転補間速度
-void FollowCamera::SetLerpSpeed(float speed) { rotationLerpSpeed_ = speed; }
-// 回転の重み
-void FollowCamera::SetStick(const Vector2& stickValue) { stickValue_ = stickValue; }
-
-///-------------------------------------------/// 
-/// 初期化
-///-------------------------------------------///
-void FollowCamera::Initialize() {
-	// 基底クラスの初期化を呼ぶ
-	NormalCamera::Initialize();
-}
-
-///-------------------------------------------/// 
-/// 更新
-///-------------------------------------------///
-void FollowCamera::Update() {
-	if (targetPos_ && targetRot_) {
-		// 追従処理
-		UpdateFollowCamera();
+namespace MiiEngine {
+	///-------------------------------------------/// 
+	/// デストラクタ
+	///-------------------------------------------///
+	FollowCamera::~FollowCamera() {
+		targetPos_ = nullptr;
+		targetRot_ = nullptr;
 	}
 
-	// 基底クラスの更新を呼ぶ（行列計算）
-	NormalCamera::Update();
-}
+	///-------------------------------------------/// 
+	/// FollowCameraの設定
+	///-------------------------------------------///
+	void FollowCamera::SetFollowCamera(FollowCameraType type) {
+		cameraType_ = type;
+	}
 
-///-------------------------------------------/// 
-/// ImGui情報の更新
-///-------------------------------------------///
-void FollowCamera::ImGuiUpdate() {
-#ifdef USE_IMGUI
-	ImGui::Begin("FollowCamera");
-	ImGui::DragFloat3("Offset", &offset_.x, 0.01f);
-	ImGui::DragFloat3("OrbitingOffset_", &OrbitingOffset_.x, 0.01f);
-	ImGui::DragFloat("followSpeed_", &followSpeed_, 0.01f);
-	ImGui::DragFloat("rotationLerpSpeed_", &rotationLerpSpeed_, 0.01f);
-	ImGui::End();
-	NormalCamera::ImGuiUpdate();
-#endif // USE_IMGUI
-}
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	// 追従のオフセットを取得
+	const Vector3& FollowCamera::GetOffset() const { return offset_; }
+	// 回転型追従カメラのオフセットを取得
+	const Vector3& FollowCamera::GetOrbitingOffset() const { return OrbitingOffset_; }
 
-///-------------------------------------------/// 
-/// デバッグ用の更新
-///-------------------------------------------///
-void FollowCamera::DebugUpdate() {
-#ifdef USE_IMGUI
+	///-------------------------------------------/// 
+	/// Setter
+	///-------------------------------------------///
+	// 追従対象の座標を設定
+	void FollowCamera::SetTarget(Vector3* position, Quaternion* rotation) {
+		targetPos_ = position;
+		targetRot_ = rotation;
+	}
+	// 追従のオフセット
+	void FollowCamera::SetOffset(const Vector3& offset) { offset_ = offset; }
+	void FollowCamera::SetOrbitingOffset(const Vector3& offset) { OrbitingOffset_ = offset; }
+	// 追従速度を設定
+	void FollowCamera::SetFollowSpeed(float speed) { followSpeed_ = speed; }
+	// 回転補間速度
+	void FollowCamera::SetLerpSpeed(float speed) { rotationLerpSpeed_ = speed; }
+	// 回転の重み
+	void FollowCamera::SetStick(const Vector2& stickValue) { stickValue_ = stickValue; }
 
-	// 回転可能型カメラのデバッグ操作
-	if (cameraType_ == FollowCameraType::Orbiting) {
+	///-------------------------------------------/// 
+	/// 初期化
+	///-------------------------------------------///
+	void FollowCamera::Initialize() {
+		// 基底クラスの初期化を呼ぶ
+		NormalCamera::Initialize();
+	}
 
-		// マウスの移動量を取得
-		Vector2 mouseDelta = {
-			static_cast<float>(InputService::GetMouseDeltaX()),
-			static_cast<float>(InputService::GetMouseDeltaY())
-		};
-
-		// 右クリック状態でマウスを操作することでカメラを回転させる。（例ブレンダー）
-		if (InputService::PushMouse(MouseButtonType::Right)) {
-			// マウス感度の設定
-			const float mouseSensitivity = 0.003f;
-
-			// マウスの移動量を回転角度に変換
-			float deltaYaw = mouseDelta.x * mouseSensitivity;    // 左右回転（Yaw）
-			float deltaPitch = -mouseDelta.y * mouseSensitivity; // 上下回転（Pitch）
-
-			// ターゲット位置からカメラ位置へのベクトルを取得
-			Vector3 toCamera = transform_.translate - *targetPos_;
-
-			// Yaw回転（ワールドのY軸周り）
-			Quaternion yawRotation = Math::MakeRotateAxisAngle(Vector3(0, 1, 0), deltaYaw);
-
-			// Pitch回転（カメラの右方向軸周り）
-			Vector3 rightAxis = Math::RotateVector(Vector3(1, 0, 0), transform_.rotate);
-			Quaternion pitchRotation = Math::MakeRotateAxisAngle(rightAxis, deltaPitch);
-
-			// 回転を適用
-			Quaternion totalRotation = yawRotation * pitchRotation;
-			transform_.rotate = Normalize(totalRotation * transform_.rotate);
-
-			// ターゲットを中心にカメラ位置を回転
-			Vector3 newOffset = Math::RotateVector(toCamera, totalRotation);
-			transform_.translate = *targetPos_ + newOffset;
+	///-------------------------------------------/// 
+	/// 更新
+	///-------------------------------------------///
+	void FollowCamera::Update() {
+		if (targetPos_ && targetRot_) {
+			// 追従処理
+			UpdateFollowCamera();
 		}
 
-		// 中クリック（ホイールクリック）でパン移動
-		if (InputService::PushMouse(MouseButtonType::Scroll)) {
+		// 基底クラスの更新を呼ぶ（行列計算）
+		NormalCamera::Update();
+	}
 
-			// マウス感度の設定
-			const float mouseSensitivity = 0.005f;
+	///-------------------------------------------/// 
+	/// ImGui情報の更新
+	///-------------------------------------------///
+	void FollowCamera::ImGuiUpdate() {
+#ifdef USE_IMGUI
+		ImGui::Begin("FollowCamera");
+		ImGui::DragFloat3("Offset", &offset_.x, 0.01f);
+		ImGui::DragFloat3("OrbitingOffset_", &OrbitingOffset_.x, 0.01f);
+		ImGui::DragFloat("followSpeed_", &followSpeed_, 0.01f);
+		ImGui::DragFloat("rotationLerpSpeed_", &rotationLerpSpeed_, 0.01f);
+		ImGui::End();
+		NormalCamera::ImGuiUpdate();
+#endif // USE_IMGUI
+	}
 
-			// カメラの右方向と上方向のベクトルを取得
-			Vector3 rightAxis = Math::RotateVector(Vector3(1, 0, 0), transform_.rotate);
-			Vector3 upAxis = Math::RotateVector(Vector3(0, 1, 0), transform_.rotate);
+	///-------------------------------------------/// 
+	/// デバッグ用の更新
+	///-------------------------------------------///
+	void FollowCamera::DebugUpdate() {
+#ifdef USE_IMGUI
 
-			// マウスの移動量に応じて移動オフセットを計算
-			Vector3 moveOffset =
-				rightAxis * (-mouseDelta.x * mouseSensitivity) +
-				upAxis * (mouseDelta.y * mouseSensitivity);
+		// 回転可能型カメラのデバッグ操作
+		if (cameraType_ == FollowCameraType::Orbiting) {
 
-			// カメラとターゲットを同時に移動（相対位置を維持）
-			transform_.translate += moveOffset;
-			if (targetPos_) {
-				*targetPos_ += moveOffset;
+			// マウスの移動量を取得
+			Vector2 mouseDelta = {
+				static_cast<float>(Service::InputService::GetMouseDeltaX()),
+				static_cast<float>(Service::InputService::GetMouseDeltaY())
+			};
+
+			// 右クリック状態でマウスを操作することでカメラを回転させる。（例ブレンダー）
+			if (Service::InputService::PushMouse(MouseButtonType::Right)) {
+				// マウス感度の設定
+				const float mouseSensitivity = 0.003f;
+
+				// マウスの移動量を回転角度に変換
+				float deltaYaw = mouseDelta.x * mouseSensitivity;    // 左右回転（Yaw）
+				float deltaPitch = -mouseDelta.y * mouseSensitivity; // 上下回転（Pitch）
+
+				// ターゲット位置からカメラ位置へのベクトルを取得
+				Vector3 toCamera = transform_.translate - *targetPos_;
+
+				// Yaw回転（ワールドのY軸周り）
+				Quaternion yawRotation = Math::MakeRotateAxisAngle(Vector3(0, 1, 0), deltaYaw);
+
+				// Pitch回転（カメラの右方向軸周り）
+				Vector3 rightAxis = Math::RotateVector(Vector3(1, 0, 0), transform_.rotate);
+				Quaternion pitchRotation = Math::MakeRotateAxisAngle(rightAxis, deltaPitch);
+
+				// 回転を適用
+				Quaternion totalRotation = yawRotation * pitchRotation;
+				transform_.rotate = Normalize(totalRotation * transform_.rotate);
+
+				// ターゲットを中心にカメラ位置を回転
+				Vector3 newOffset = Math::RotateVector(toCamera, totalRotation);
+				transform_.translate = *targetPos_ + newOffset;
+			}
+
+			// 中クリック（ホイールクリック）でパン移動
+			if (Service::InputService::PushMouse(MouseButtonType::Scroll)) {
+
+				// マウス感度の設定
+				const float mouseSensitivity = 0.005f;
+
+				// カメラの右方向と上方向のベクトルを取得
+				Vector3 rightAxis = Math::RotateVector(Vector3(1, 0, 0), transform_.rotate);
+				Vector3 upAxis = Math::RotateVector(Vector3(0, 1, 0), transform_.rotate);
+
+				// マウスの移動量に応じて移動オフセットを計算
+				Vector3 moveOffset =
+					rightAxis * (-mouseDelta.x * mouseSensitivity) +
+					upAxis * (mouseDelta.y * mouseSensitivity);
+
+				// カメラとターゲットを同時に移動（相対位置を維持）
+				transform_.translate += moveOffset;
+				if (targetPos_) {
+					*targetPos_ += moveOffset;
+				}
+			}
+
+			// マウスホイールでズーム
+			float wheelDelta = static_cast<float>(Service::InputService::GetMouseDeltaScroll());
+			if (wheelDelta != 0.0f) {
+
+				// ズーム感度の設定
+				const float zoomSensitivity = 0.05f;
+
+				OrbitingOffset_.z += wheelDelta * zoomSensitivity;
 			}
 		}
+#endif // USE_IMGUI
+	}
 
-		// マウスホイールでズーム
-		float wheelDelta = static_cast<float>(InputService::GetMouseDeltaScroll());
-		if (wheelDelta != 0.0f) {
-
-			// ズーム感度の設定
-			const float zoomSensitivity = 0.05f;
-
-			OrbitingOffset_.z += wheelDelta * zoomSensitivity;
+	///-------------------------------------------/// 
+	/// 追従処理
+	///-------------------------------------------///
+	void FollowCamera::UpdateFollowCamera() {
+		switch (cameraType_) {
+		case FollowCameraType::FixedOffset:
+			FollowFixedOffset();
+			break;
+		case FollowCameraType::Interpolated:
+			FollowInterpolated();
+			break;
+		case FollowCameraType::Orbiting:
+			FollowOrbiting();
+			break;
+		case FollowCameraType::CollisionAvoidance:
+			FollowCollisionAvoidance();
+			break;
+		case FollowCameraType::TopDown:
+			FollowTopDown();
+			break;
 		}
 	}
-#endif // USE_IMGUI
-}
 
-///-------------------------------------------/// 
-/// 追従処理
-///-------------------------------------------///
-void FollowCamera::UpdateFollowCamera() {
-	switch (cameraType_) {
-	case FollowCameraType::FixedOffset:
-		FollowFixedOffset();
-		break;
-	case FollowCameraType::Interpolated:
-		FollowInterpolated();
-		break;
-	case FollowCameraType::Orbiting:
-		FollowOrbiting();
-		break;
-	case FollowCameraType::CollisionAvoidance:
-		FollowCollisionAvoidance();
-		break;
-	case FollowCameraType::TopDown:
-		FollowTopDown();
-		break;
-	}
-}
+	// 回転軸がY座標だけの追従処理
+	void FollowCamera::FollowFixedOffset() {
+		// 目標の回転（Quaternion）の Yaw 成分のみを取得
+		float targetYaw = Math::GetYAngle(*targetRot_);
+		Quaternion targetYawRotation = Math::MakeRotateAxisAngle(Vector3(0, 1, 0), targetYaw);
 
-// 回転軸がY座標だけの追従処理
-void FollowCamera::FollowFixedOffset() {
-	// 目標の回転（Quaternion）の Yaw 成分のみを取得
-	float targetYaw = Math::GetYAngle(*targetRot_);
-	Quaternion targetYawRotation = Math::MakeRotateAxisAngle(Vector3(0, 1, 0), targetYaw);
+		// オフセットをターゲットの Y 軸回転に基づいて回転
+		Vector3 rotatedOffset = Math::RotateVector(offset_, targetYawRotation);
 
-	// オフセットをターゲットの Y 軸回転に基づいて回転
-	Vector3 rotatedOffset = Math::RotateVector(offset_, targetYawRotation);
+		// 目標位置を算出
+		Vector3 targetCameraPos = *targetPos_ + rotatedOffset;
 
-	// 目標位置を算出
-	Vector3 targetCameraPos = *targetPos_ + rotatedOffset;
-
-	// カメラの位置を補間（Lerp）で滑らかに移動
-	transform_.translate = Math::Lerp(transform_.translate, targetCameraPos, followSpeed_);
-
-	// カメラの回転を Yaw のみに制限して補間
-	transform_.rotate = Math::SLerp(transform_.rotate, targetYawRotation, rotationLerpSpeed_);
-}
-
-// 回転軸がXとY座標の追従処理
-void FollowCamera::FollowInterpolated() {
-	// 目標の回転（Quaternion）を取得
-	Quaternion targetRotation = *targetRot_;
-
-	// オフセットをターゲットの回転に基づいて回転
-	Vector3 rotatedOffset = Math::RotateVector(offset_, targetRotation);
-
-	// 目標位置を算出
-	Vector3 targetCameraPos = *targetPos_ + rotatedOffset;
-
-	// カメラの位置を補間（Lerp）で滑らかに移動
-	transform_.translate = Math::Lerp(transform_.translate, targetCameraPos, followSpeed_);
-
-	// カメラの回転をスムーズに補間（SLerp を使用）
-	//transform_.rotate = Math::SLerp(transform_.rotate, targetRotation, rotationLerpSpeed_);
-}
-
-// 自分の周りをまわるカメラの追従処理
-void FollowCamera::FollowOrbiting() {
-	// クォータニオンで回転を管理
-	Quaternion rotationDelta = Math::IdentityQuaternion();
-
-	// 右スティックのX・Y軸の値を取得 (-32768 ～ 32767)
-	float rightStickX = stickValue_.x; // Yaw（左右回転）
-	float rightStickY = stickValue_.y; // Pitch（上下回転）
-
-	// デッドゾーン処理（スティックがわずかに傾いたときの無効化）
-	const float DEADZONE = 0.2f;
-	if (fabs(rightStickX) < DEADZONE) rightStickX = 0.0f;
-	if (fabs(rightStickY) < DEADZONE) rightStickY = 0.0f;
-
-	// スティックの入力を回転量に変換
-	float deltaYaw = rightStickX * 0.05f;  // 感度調整
-	float deltaPitch = rightStickY * 0.05f;
-
-	// クォータニオンを用いた回転計算
-	Quaternion yawRotation = Math::MakeRotateAxisAngle(
-		Vector3(0, 1, 0), deltaYaw);
-	Quaternion pitchRotation = Math::MakeRotateAxisAngle(
-		Math::RotateVector(Vector3(1, 0, 0), yawRotation * transform_.rotate), deltaPitch);
-
-	// 回転の補間
-	rotationDelta = pitchRotation * yawRotation;
-
-	// 累積回転を更新
-	transform_.rotate = rotationDelta * transform_.rotate;
-
-	offset_ = OrbitingOffset_;
-
-	// 回転を適用
-	offset_ = Math::RotateVector(offset_, transform_.rotate);
-	transform_.translate = offset_ + *targetPos_;
-
-	transform_.rotate = Normalize(transform_.rotate); // クォータニオンを正規化して数値誤差を防ぐ
-}
-
-// 障害物を避ける追従処理
-void FollowCamera::FollowCollisionAvoidance() {
-	// プレイヤーの回転を基にY軸回転行列を作成
-	Matrix4x4 rotationMatrix = Math::MakeRotateYMatrix(targetRot_->y);
-
-	// オフセットを回転行列で変換し、適切な位置に調整
-	Vector3 rotatedOffset = Math::TransformVector(offset_, rotationMatrix);
-
-	// 目標位置を算出
-	Vector3 targetCameraPos = *targetPos_ + rotatedOffset;
-
-	// 障害物の有無をチェック（レイキャストを使用予定）
-	bool hitWall = false; // ここにレイキャストを実装する（仮）
-
-	// 壁がある場合はターゲットに寄る
-	if (hitWall) {
-		transform_.translate = Math::Lerp(transform_.translate, *targetPos_, followSpeed_);
-	} else {
+		// カメラの位置を補間（Lerp）で滑らかに移動
 		transform_.translate = Math::Lerp(transform_.translate, targetCameraPos, followSpeed_);
+
+		// カメラの回転を Yaw のみに制限して補間
+		transform_.rotate = Math::SLerp(transform_.rotate, targetYawRotation, rotationLerpSpeed_);
 	}
 
-	// カメラの向きをプレイヤーの回転に合わせる
-	transform_.rotate = *targetRot_;
-}
+	// 回転軸がXとY座標の追従処理
+	void FollowCamera::FollowInterpolated() {
+		// 目標の回転（Quaternion）を取得
+		Quaternion targetRotation = *targetRot_;
 
-///-------------------------------------------/// 
-/// 上からの見下ろしカメラの追従処理
-///-------------------------------------------///
-void FollowCamera::FollowTopDown() {
-	const float deadzone = 0.1f;
-	const float radius = 15.0f; // 回転半径（お好みで）
+		// オフセットをターゲットの回転に基づいて回転
+		Vector3 rotatedOffset = Math::RotateVector(offset_, targetRotation);
 
-	Vector3 desiredPosition = *targetPos_ + offset_; // デフォルト位置（追従対象の真上）
+		// 目標位置を算出
+		Vector3 targetCameraPos = *targetPos_ + rotatedOffset;
 
-	// スティック入力がある場合はカメラを円運動させる
-	if (fabsf(stickValue_.x) > deadzone || fabsf(stickValue_.y) > deadzone) {
-		// 入力ベクトルの正規化（方向ベクトル）
-		Vector2 norm = Normalize(stickValue_);
+		// カメラの位置を補間（Lerp）で滑らかに移動
+		transform_.translate = Math::Lerp(transform_.translate, targetCameraPos, followSpeed_);
 
-		// 円上の位置を計算
-		Vector3 offsetCircle = {
-			norm.x * radius,
-			offset_.y,           // Y（高さ）は固定
-			norm.y * radius
-		};
-
-		Vector3 translate = offset_ + *targetPos_;
-		translate.y = 1.0f;
-
-		desiredPosition = translate + offsetCircle;
+		// カメラの回転をスムーズに補間（SLerp を使用）
+		//transform_.rotate = Math::SLerp(transform_.rotate, targetRotation, rotationLerpSpeed_);
 	}
 
-	// カメラの位置を補間で滑らかに移動
-	transform_.translate = Math::Lerp(transform_.translate, desiredPosition, followSpeed_);
+	// 自分の周りをまわるカメラの追従処理
+	void FollowCamera::FollowOrbiting() {
+		// クォータニオンで回転を管理
+		Quaternion rotationDelta = Math::IdentityQuaternion();
+
+		// 右スティックのX・Y軸の値を取得 (-32768 ～ 32767)
+		float rightStickX = stickValue_.x; // Yaw（左右回転）
+		float rightStickY = stickValue_.y; // Pitch（上下回転）
+
+		// デッドゾーン処理（スティックがわずかに傾いたときの無効化）
+		const float DEADZONE = 0.2f;
+		if (fabs(rightStickX) < DEADZONE) rightStickX = 0.0f;
+		if (fabs(rightStickY) < DEADZONE) rightStickY = 0.0f;
+
+		// スティックの入力を回転量に変換
+		float deltaYaw = rightStickX * 0.05f;  // 感度調整
+		float deltaPitch = rightStickY * 0.05f;
+
+		// クォータニオンを用いた回転計算
+		Quaternion yawRotation = Math::MakeRotateAxisAngle(
+			Vector3(0, 1, 0), deltaYaw);
+		Quaternion pitchRotation = Math::MakeRotateAxisAngle(
+			Math::RotateVector(Vector3(1, 0, 0), yawRotation * transform_.rotate), deltaPitch);
+
+		// 回転の補間
+		rotationDelta = pitchRotation * yawRotation;
+
+		// 累積回転を更新
+		transform_.rotate = rotationDelta * transform_.rotate;
+
+		offset_ = OrbitingOffset_;
+
+		// 回転を適用
+		offset_ = Math::RotateVector(offset_, transform_.rotate);
+		transform_.translate = offset_ + *targetPos_;
+
+		transform_.rotate = Normalize(transform_.rotate); // クォータニオンを正規化して数値誤差を防ぐ
+	}
+
+	// 障害物を避ける追従処理
+	void FollowCamera::FollowCollisionAvoidance() {
+		// プレイヤーの回転を基にY軸回転行列を作成
+		Matrix4x4 rotationMatrix = Math::MakeRotateYMatrix(targetRot_->y);
+
+		// オフセットを回転行列で変換し、適切な位置に調整
+		Vector3 rotatedOffset = Math::TransformVector(offset_, rotationMatrix);
+
+		// 目標位置を算出
+		Vector3 targetCameraPos = *targetPos_ + rotatedOffset;
+
+		// 障害物の有無をチェック（レイキャストを使用予定）
+		bool hitWall = false; // ここにレイキャストを実装する（仮）
+
+		// 壁がある場合はターゲットに寄る
+		if (hitWall) {
+			transform_.translate = Math::Lerp(transform_.translate, *targetPos_, followSpeed_);
+		} else {
+			transform_.translate = Math::Lerp(transform_.translate, targetCameraPos, followSpeed_);
+		}
+
+		// カメラの向きをプレイヤーの回転に合わせる
+		transform_.rotate = *targetRot_;
+	}
+
+	///-------------------------------------------/// 
+	/// 上からの見下ろしカメラの追従処理
+	///-------------------------------------------///
+	void FollowCamera::FollowTopDown() {
+		const float deadzone = 0.1f;
+		const float radius = 15.0f; // 回転半径（お好みで）
+
+		Vector3 desiredPosition = *targetPos_ + offset_; // デフォルト位置（追従対象の真上）
+
+		// スティック入力がある場合はカメラを円運動させる
+		if (fabsf(stickValue_.x) > deadzone || fabsf(stickValue_.y) > deadzone) {
+			// 入力ベクトルの正規化（方向ベクトル）
+			Vector2 norm = Normalize(stickValue_);
+
+			// 円上の位置を計算
+			Vector3 offsetCircle = {
+				norm.x * radius,
+				offset_.y,           // Y（高さ）は固定
+				norm.y * radius
+			};
+
+			Vector3 translate = offset_ + *targetPos_;
+			translate.y = 1.0f;
+
+			desiredPosition = translate + offsetCircle;
+		}
+
+		// カメラの位置を補間で滑らかに移動
+		transform_.translate = Math::Lerp(transform_.translate, desiredPosition, followSpeed_);
+	}
 }

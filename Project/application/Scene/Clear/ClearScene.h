@@ -5,7 +5,7 @@
 ///=====================================================/// 
 /// クリアシーン
 ///=====================================================///
-class ClearScene : public IScene {
+class ClearScene : public MiiEngine::IScene {
 public:/// ===メンバ関数=== ///
 
 	ClearScene() = default;

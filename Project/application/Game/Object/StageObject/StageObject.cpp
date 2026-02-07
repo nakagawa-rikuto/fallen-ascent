@@ -19,9 +19,9 @@ void StageObject::GameInit(const std::string& modelName) {
 	object3d_->Init(ObjectType::Model, modelName);
 	// 初期化処理
 	GameObject::Initialize();
-	name_ = ColliderName::Object; // コライダー名を設定
+	name_ = MiiEngine::ColliderName::Object; // コライダー名を設定
 	// コライダーサービスに登録
-	ColliderService::AddCollider(this);
+	Service::ColliderService::AddCollider(this);
 }
 
 ///-------------------------------------------/// 
@@ -43,7 +43,7 @@ void StageObject::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void StageObject::Draw(BlendMode mode) {
+void StageObject::Draw(MiiEngine::BlendMode mode) {
 	// GameObjectの描画
 	GameObject::Draw(mode);
 }
@@ -51,7 +51,7 @@ void StageObject::Draw(BlendMode mode) {
 ///-------------------------------------------/// 
 /// 衝突処理
 ///-------------------------------------------///
-void StageObject::OnCollision(Collider* collider) {
+void StageObject::OnCollision(MiiEngine::Collider* collider) {
 	collider;
 }
 

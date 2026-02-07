@@ -95,6 +95,6 @@ void TitleScene::UpdateFadeOut() {
 	/// ===シーンの切り替え=== ///
 	if (sceneManager_->GetTransitionFinished()) {
 		// ゲームシーンへ遷移
-		sceneManager_->ChangeScene(SceneType::Game);
+		sceneManager_->ChangeScene(MiiEngine::SceneType::Game);
 	}
 }

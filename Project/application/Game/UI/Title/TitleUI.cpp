@@ -26,8 +26,8 @@ TitleUI::~TitleUI() {
 void TitleUI::Initialize() {
 	/// ===ウィンドウサイズの取得=== ///
 	Vector2 windowSize = {
-		static_cast<float>(GraphicsResourceGetter::GetWindowWidth()),
-		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
+		static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()),
+		static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight())
 	};
 
 	/// ===基準スケール=== ///
@@ -132,13 +132,13 @@ void TitleUI::Update() {
 ///-------------------------------------------///
 void TitleUI::Draw() {
 	// スプライトの描画
-	bgSprite_->Draw(GroundType::Back);
+	bgSprite_->Draw(MiiEngine::GroundType::Back);
 	//bgKiriSprite_->Draw(GroundType::Back);
-	titleSprite_->Draw(GroundType::Front);
-	selectSprite_.start_->Draw(GroundType::Front);
-	selectSprite_.option_->Draw(GroundType::Front);
-	selectSprite_.exit_->Draw(GroundType::Front);
-	selectSprite_.overlay_->Draw(GroundType::Front, BlendMode::kBlendModeAdd);
+	titleSprite_->Draw(MiiEngine::GroundType::Front);
+	selectSprite_.start_->Draw(MiiEngine::GroundType::Front);
+	selectSprite_.option_->Draw(MiiEngine::GroundType::Front);
+	selectSprite_.exit_->Draw(MiiEngine::GroundType::Front);
+	selectSprite_.overlay_->Draw(MiiEngine::GroundType::Front, MiiEngine::BlendMode::kBlendModeAdd);
 
 	// オプションの描画
 	if (isOptionOpen_) {
@@ -159,7 +159,7 @@ void TitleUI::UpdateSelecting() {
 		UpdateMenuSelection();
 
 		/// ===決定処理=== ///
-		if (InputService::TriggerButton(0, ControllerButtonType::A) || InputService::TriggerKey(DIK_SPACE)) {
+		if (Service::InputService::TriggerButton(0, ControllerButtonType::A) || Service::InputService::TriggerKey(DIK_SPACE)) {
 			ConfirmSelection();
 		}
 	}
@@ -170,7 +170,7 @@ void TitleUI::UpdateSelecting() {
 ///-------------------------------------------///
 void TitleUI::UpdateMenuSelection() {
 	// 十字キー上
-	if (InputService::TriggerButton(0, ControllerButtonType::DPadUP) || InputService::TriggerKey(DIK_UP)) {
+	if (Service::InputService::TriggerButton(0, ControllerButtonType::DPadUP) || Service::InputService::TriggerKey(DIK_UP)) {
 		switch (currentSelection_) {
 		case MenuSelection::Start:
 			currentSelection_ = MenuSelection::Exit; // 一番上から一番下へ
@@ -186,7 +186,7 @@ void TitleUI::UpdateMenuSelection() {
 	}
 
 	// 十字キー下
-	if (InputService::TriggerButton(0, ControllerButtonType::DPadDOWN) || InputService::TriggerKey(DIK_DOWN)) {
+	if (Service::InputService::TriggerButton(0, ControllerButtonType::DPadDOWN) || Service::InputService::TriggerKey(DIK_DOWN)) {
 		switch (currentSelection_) {
 		case MenuSelection::Start:
 			currentSelection_ = MenuSelection::Option;
@@ -247,7 +247,7 @@ void TitleUI::UpdateSelectOverlayPosition() {
 ///-------------------------------------------///
 void TitleUI::UpdateOptionMenu() {
 	// Bボタンでオプション画面を閉じる
-	if (InputService::TriggerButton(0, ControllerButtonType::B) || InputService::TriggerKey(DIK_SPACE)) {
+	if (Service::InputService::TriggerButton(0, ControllerButtonType::B) || Service::InputService::TriggerKey(DIK_SPACE)) {
 		isOptionOpen_ = false;
 	}
 }

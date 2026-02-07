@@ -15,7 +15,7 @@ void GameSceneGameClearState::Enter(GameScene* gameScene) {
 
 	/// ===GameClearAnimation=== ///
 	gameClearAnimation_ = std::make_unique<GameClearAnimation>();
-	gameClearAnimation_->Initialize(gameScene_->GetPlayer(), CameraService::GetActiveCamera().get());
+	gameClearAnimation_->Initialize(gameScene_->GetPlayer(), Service::CameraService::GetActiveCamera().get());
 }
 
 ///-------------------------------------------/// 

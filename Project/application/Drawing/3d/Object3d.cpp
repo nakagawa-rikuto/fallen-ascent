@@ -1,7 +1,8 @@
 #include "Object3d.h"
-
+// C++
 #include <cassert>
 
+using namespace MiiEngine;
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
@@ -16,7 +17,7 @@ Object3d::~Object3d() {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void Object3d::Init(ObjectType type, const std::string& modelName, LightType light) {
+void Object3d::Init(ObjectType type, const std::string& modelName, MiiEngine::LightType light) {
 	// タイプの確認
 	type_ = type;
 	// それぞれ対応した方を生成
@@ -44,7 +45,7 @@ void Object3d::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void Object3d::Draw(BlendMode mode) {
+void Object3d::Draw(MiiEngine::BlendMode mode) {
 	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		model_->Draw(mode);
@@ -57,7 +58,7 @@ void Object3d::Draw(BlendMode mode) {
 /// 親子関係
 ///-------------------------------------------///
 // SetParent
-void Object3d::SetParent(ModelCommon* parent) {
+void Object3d::SetParent(MiiEngine::ModelCommon* parent) {
 	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		model_->SetParent(parent);
@@ -124,7 +125,7 @@ const Vector3& Object3d::GetWorldScale() const {
 	}
 }
 // Transform
-const QuaternionTransform& Object3d::GetWorldTransform() const {
+const MiiEngine::QuaternionTransform& Object3d::GetWorldTransform() const {
 	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		return model_->GetWorldTransform();
@@ -142,7 +143,7 @@ const Vector4& Object3d::GetColor() const {
 	}
 }
 // ModelCommon
-ModelCommon* Object3d::GetModelCommon() {
+MiiEngine::ModelCommon* Object3d::GetModelCommon() {
 	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		return model_.get();
@@ -192,7 +193,7 @@ void Object3d::SetColor(const Vector4& color) {
 	}
 }
 // LightInfo
-void Object3d::SetLightData(LightInfo light) { 
+void Object3d::SetLightData(MiiEngine::LightInfo light) {
 	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		model_->SetLightData(light);
@@ -201,7 +202,7 @@ void Object3d::SetLightData(LightInfo light) {
 	}
 }
 // Light
-void Object3d::SetLight(LightType type) {
+void Object3d::SetLight(MiiEngine::LightType type) {
 	// タイプで分岐
 	if (type_ == ObjectType::Model) {
 		model_->SetLightType(type);

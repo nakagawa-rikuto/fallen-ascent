@@ -19,7 +19,7 @@ class Enemy;
 ///=====================================================/// 
 /// Player
 ///=====================================================///
-class Player : public GameCharacter<OBBCollider> {
+class Player : public GameCharacter<MiiEngine::OBBCollider> {
 public:
 
 	Player() = default;
@@ -44,7 +44,7 @@ public:
 	/// 描画処理
 	/// </summary>
 	/// <param name="mode"></param>
-	void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
+	void Draw(MiiEngine::BlendMode mode = MiiEngine::BlendMode::KBlendModeNormal)override;
 
 	/// <summary>
 	/// ImGui情報の表示
@@ -56,7 +56,7 @@ public: /// ===衝突判定=== ///
 	/// 衝突処理
 	/// </summary>
 	/// <param name="collider">衝突した相手の Collider へのポインター。</param>
-	void OnCollision(Collider* collider) override;
+	void OnCollision(MiiEngine::Collider* collider) override;
 
 public: /// ===Getter=== ///
 	// Hand

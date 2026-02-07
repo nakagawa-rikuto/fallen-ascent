@@ -25,13 +25,13 @@ void PlayerHand::Initialize() {
 
 	/// ===OBBCollider=== ///
 	OBBCollider::Initialize();
-	name_ = ColliderName::None;
+	name_ = MiiEngine::ColliderName::None;
 	OBBCollider::SetHalfSize({ 0.5f, 0.5f, 3.0f });
 
 	attackInfo_.isAttacking = false;
 
 	// DeltaTime初期化
-	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+	baseInfo_.deltaTime = Service::DeltaTimeSevice::GetDeltaTime();
 
 	// 初回更新
 	Update();
@@ -42,7 +42,7 @@ void PlayerHand::Initialize() {
 ///-------------------------------------------///
 void PlayerHand::Update() {
 	// DeltaTime更新
-	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+	baseInfo_.deltaTime = Service::DeltaTimeSevice::GetDeltaTime();
 
 	// 攻撃中でない場合は早期リターン
 	if (!attackInfo_.isAttacking) {
@@ -72,7 +72,7 @@ void PlayerHand::Update() {
 ///-------------------------------------------/// 
 /// 描画処理
 ///-------------------------------------------///
-void PlayerHand::Draw(BlendMode mode) {
+void PlayerHand::Draw(MiiEngine::BlendMode mode) {
 	// 攻撃中のみ描画
 	if (attackInfo_.isAttacking) {
 		OBBCollider::Draw(mode);
@@ -104,7 +104,7 @@ void PlayerHand::SetUpParent(Player* parent) {
 /// 攻撃の開始処理（ベジェ曲線）
 ///-------------------------------------------///
 void PlayerHand::StartAttack(
-	const std::vector<BezierControlPointData>& trajectoryPoints, 
+	const std::vector<MiiEngine::BezierControlPointData>& trajectoryPoints,
 	float duration) {
 
 	// 制御点が2点未満の場合は処理を行わない
@@ -129,7 +129,7 @@ void PlayerHand::StartAttack(
 ///-------------------------------------------/// 
 /// ベジェ曲線上の位置を計算
 ///-------------------------------------------///
-Vector3 PlayerHand::CalculateBezierPoint(const std::vector<BezierControlPointData>& controlPoints, float t) {
+Vector3 PlayerHand::CalculateBezierPoint(const std::vector<MiiEngine::BezierControlPointData>& controlPoints, float t) {
 	size_t n = controlPoints.size();
 
 	// 制御点が2点の場合は線形補間
@@ -202,7 +202,7 @@ Vector3 PlayerHand::CalculateBezierPoint(const std::vector<BezierControlPointDat
 ///-------------------------------------------/// 
 /// ベジェ曲線上の回転を計算
 ///-------------------------------------------///
-Quaternion PlayerHand::CalculateBezierRotation(const std::vector<BezierControlPointData>& controlPoints, float t) {
+Quaternion PlayerHand::CalculateBezierRotation(const std::vector<MiiEngine::BezierControlPointData>& controlPoints, float t) {
 	size_t n = controlPoints.size();
 	if (n == 0) {
 		// デフォルト quaternion（必要に応じて変更）

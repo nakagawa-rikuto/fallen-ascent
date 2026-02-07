@@ -6,7 +6,7 @@
 ///=====================================================/// 
 /// Ground
 ///=====================================================///
-class Ground : public GameObject<AABBCollider> {
+class Ground : public GameObject<MiiEngine::AABBCollider> {
 public:
 	Ground() = default;
 	~Ground();
@@ -31,12 +31,12 @@ public:
 	/// 描画処理
 	/// </summary>
 	/// <param name="mode">BlendModeの適用</param>
-	void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
+	void Draw(MiiEngine::BlendMode mode = MiiEngine::BlendMode::KBlendModeNormal)override;
 
 public:
 	/// <summary>
 	/// 衝突処理
 	/// </summary>
 	/// <param name="collider">衝突先のCollider</param>
-	void OnCollision(Collider* collider)override;
+	void OnCollision(MiiEngine::Collider* collider)override;
 };

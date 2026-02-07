@@ -6,7 +6,7 @@
 ///=====================================================/// 
 /// ゲームオーバーシーン
 ///=====================================================///
-class GameOverScene : public IScene {
+class GameOverScene : public MiiEngine::IScene {
 public:/// ===メンバ関数=== ///
 
 	GameOverScene() = default;

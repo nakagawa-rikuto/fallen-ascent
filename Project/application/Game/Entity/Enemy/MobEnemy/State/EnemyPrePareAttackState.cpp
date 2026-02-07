@@ -27,8 +27,8 @@ void EnemyPrePareAttackState::Enter(MobEnemy* enemy) {
 	// フラグをリセット
 	enemy_->SetIsRotationComplete(false);
 	// パーティクルの再生
-	activeParticle_ = ParticleService::Emit("EnemyPrePareAttack", enemy_->GetTransform().translate);
-	prePareAttackParticle_ = ParticleService::Emit("EnemyPrePareAttackCharge", enemy_->GetTransform().translate);
+	activeParticle_ = Service::ParticleService::Emit("EnemyPrePareAttack", enemy_->GetTransform().translate);
+	prePareAttackParticle_ = Service::ParticleService::Emit("EnemyPrePareAttackCharge", enemy_->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 

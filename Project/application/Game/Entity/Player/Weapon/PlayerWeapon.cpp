@@ -32,11 +32,11 @@ void PlayerWeapon::Initialize() {
 
 	/// ===OBBCollider=== ///
 	OBBCollider::Initialize();
-	name_ = ColliderName::PlayerWeapon;
+	name_ = MiiEngine::ColliderName::PlayerWeapon;
 	OBBCollider::SetHalfSize({ 2.0f, 0.5f, 5.0f });
 
 	// DeltaTime初期化
-	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+	baseInfo_.deltaTime = Service::DeltaTimeSevice::GetDeltaTime();
 
 	// 初期状態では非アクティブ
 	SetActive(false);
@@ -51,7 +51,7 @@ void PlayerWeapon::Initialize() {
 ///-------------------------------------------///
 void PlayerWeapon::Update() {
 	// DeltaTime更新
-	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+	baseInfo_.deltaTime = Service::DeltaTimeSevice::GetDeltaTime();
 
 	// 攻撃中でない場合は早期リターン
 	if (!attackInfo_.isAttacking) {
@@ -69,7 +69,7 @@ void PlayerWeapon::Update() {
 		attackInfo_.isAttacking = false;
 		attackInfo_.progress = 1.0f;
 		SetActive(false);
-		ColliderService::RemoveCollider(this);
+		Service::ColliderService::RemoveCollider(this);
 		OBBCollider::Update();
 		// パーティクルの削除
 		attackParticle_->Stop();
@@ -93,7 +93,7 @@ void PlayerWeapon::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void PlayerWeapon::Draw(BlendMode mode) {
+void PlayerWeapon::Draw(MiiEngine::BlendMode mode) {
 	// 攻撃中のみ描画
 	if (attackInfo_.isAttacking) {
 		OBBCollider::Draw(mode);
@@ -141,7 +141,7 @@ void PlayerWeapon::OnCollision(Collider* collider) {
 	}
 
 	// 敵に当たった場合
-	if (collider->GetColliderName() == ColliderName::Enemy) {
+	if (collider->GetColliderName() == MiiEngine::ColliderName::Enemy) {
 		// ヒットフラグを立てる（1回の攻撃で複数ヒットを防ぐ）
 		attackInfo_.hasHit = true;
 		// ここでヒットエフェクトやサウンドの再生などを行う
@@ -161,7 +161,7 @@ void PlayerWeapon::SetUpParent(Player* parent) {
 /// 攻撃開始処理（ベジェ曲線版）
 ///-------------------------------------------///
 void PlayerWeapon::StartAttack(
-	const std::vector<BezierControlPointData>& trajectoryPoints,
+	const std::vector<MiiEngine::BezierControlPointData>& trajectoryPoints,
 	float duration) {
 
 	// 制御点が2点未満の場合はエラー
@@ -179,7 +179,7 @@ void PlayerWeapon::StartAttack(
 	attackInfo_.trajectoryPoints = trajectoryPoints;
 
 	// コライダーに追加
-	ColliderService::AddCollider(this);
+	Service::ColliderService::AddCollider(this);
 
 	// 当たり判定フラグをリセット
 	attackInfo_.hasHit = false;
@@ -192,7 +192,7 @@ void PlayerWeapon::StartAttack(
 		attackParticle_->Stop();
 		attackParticle_ = nullptr;
 	}
-	attackParticle_ = ParticleService::Emit("WeaponAttack", trajectoryPoints.front().position);
+	attackParticle_ = Service::ParticleService::Emit("WeaponAttack", trajectoryPoints.front().position);
 	attackParticle_->SetEmitterPosition(object3d_->GetWorldTranslate());
 
 	// 初期位置と回転を設定
@@ -203,7 +203,7 @@ void PlayerWeapon::StartAttack(
 ///-------------------------------------------/// 
 /// ベジェ曲線上の位置を計算
 ///-------------------------------------------///
-Vector3 PlayerWeapon::CalculateBezierPoint(const std::vector<BezierControlPointData>& controlPoints, float t) {
+Vector3 PlayerWeapon::CalculateBezierPoint(const std::vector<MiiEngine::BezierControlPointData>& controlPoints, float t) {
 	size_t n = controlPoints.size();
 
 	// 制御点が2点の場合は線形補間
@@ -276,7 +276,7 @@ Vector3 PlayerWeapon::CalculateBezierPoint(const std::vector<BezierControlPointD
 ///-------------------------------------------/// 
 /// ベジェ曲線上の回転を計算
 ///-------------------------------------------///
-Quaternion PlayerWeapon::CalculateBezierRotation(const std::vector<BezierControlPointData>& controlPoints, float t) {
+Quaternion PlayerWeapon::CalculateBezierRotation(const std::vector<MiiEngine::BezierControlPointData>& controlPoints, float t) {
 	size_t n = controlPoints.size();
 	if (n == 0) {
 		// デフォルト quaternion（必要に応じて変更）

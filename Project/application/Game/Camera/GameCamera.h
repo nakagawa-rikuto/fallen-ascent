@@ -102,8 +102,8 @@ public: /// ===Setter=== ///
 private:
 
 	/// ===クラス=== ///
-	std::shared_ptr<NormalCamera> normal_; // 通常カメラ
-	std::shared_ptr<FollowCamera> follow_; // 追従カメラ
+	std::shared_ptr<MiiEngine::NormalCamera> normal_; // 通常カメラ
+	std::shared_ptr<MiiEngine::FollowCamera> follow_; // 追従カメラ
 
 	/// ===カメラタイプ=== ///
 	CameraType type_ = CameraType::Normal;

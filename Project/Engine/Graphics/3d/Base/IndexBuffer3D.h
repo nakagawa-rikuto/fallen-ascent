@@ -2,38 +2,40 @@
 /// ===Include=== ///
 #include "Engine/DataInfo/FunctionData.h"
 
-///=====================================================/// 
-/// IndexBuffer3D
-///=====================================================///
-class IndexBuffer3D {
-public:
+namespace MiiEngine {
+	///=====================================================/// 
+	/// IndexBuffer3D
+	///=====================================================///
+	class IndexBuffer3D {
+	public:
 
-	IndexBuffer3D() = default;
-	~IndexBuffer3D();
+		IndexBuffer3D() = default;
+		~IndexBuffer3D();
 
-	/// <summary>
-	/// Resourceの生成
-	/// </summary>
-	/// <param name="device"></param>
-	/// <param name="sizeInBytes"></param>
-	void Create(ID3D12Device* device, size_t sizeInBytes);
+		/// <summary>
+		/// Resourceの生成
+		/// </summary>
+		/// <param name="device"></param>
+		/// <param name="sizeInBytes"></param>
+		void Create(ID3D12Device* device, size_t sizeInBytes);
 
-	/// <summary>
-	/// リソースの取得
-	/// </summary>
-	/// <returns></returns>
-	ID3D12Resource* GetBuffer();
+		/// <summary>
+		/// リソースの取得
+		/// </summary>
+		/// <returns></returns>
+		ID3D12Resource* GetBuffer();
 
-	/// <summary>
-	/// データの取得
-	/// </summary>
-	/// <returns></returns>
-	uint32_t* GetData();
+		/// <summary>
+		/// データの取得
+		/// </summary>
+		/// <returns></returns>
+		uint32_t* GetData();
 
-private:
+	private:
 
-	ComPtr<ID3D12Resource> buffer_;
+		ComPtr<ID3D12Resource> buffer_;
 
-	uint32_t* data_;
-};
+		uint32_t* data_;
+	};
+}
 

@@ -50,7 +50,7 @@ public:
     /// 描画処理
     /// </summary>
     /// <param name="mode">描画に使用するブレンドモード。省略した場合は BlendMode::KBlendModeNormal が使用されます。</param>
-    void Draw(BlendMode mode = BlendMode::KBlendModeNormal);
+    void Draw(MiiEngine::BlendMode mode = MiiEngine::BlendMode::KBlendModeNormal);
 
     /// <summary>
 	/// ImGui情報の表示

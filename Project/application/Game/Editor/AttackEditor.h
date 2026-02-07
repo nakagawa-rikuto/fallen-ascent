@@ -219,7 +219,7 @@ private:
     /// <summary>
     /// ベジェ曲線制御点リストのUI描画
     /// </summary>
-    void RenderBezierControlPointList(std::vector<BezierControlPointData>& points, const char* label, TrajectoryType type);
+    void RenderBezierControlPointList(std::vector<MiiEngine::BezierControlPointData>& points, const char* label, TrajectoryType type);
 
     /// <summary>
     /// 選択中の攻撃を削除

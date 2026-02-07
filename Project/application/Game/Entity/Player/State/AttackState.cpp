@@ -40,7 +40,7 @@ void AttackState::Update(Player* player, GameCamera* camera) {
 	attackComp->Update(player_->GetDeltaTime());
 
 	// 攻撃ボタンが押されたらコンボを試行
-	if (InputService::TriggerButton(0, ControllerButtonType::X)) {
+	if (Service::InputService::TriggerButton(0, ControllerButtonType::X)) {
 		if (attackComp->CanCombo()) {
 			attackComp->TryCombo(player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand());
 		}

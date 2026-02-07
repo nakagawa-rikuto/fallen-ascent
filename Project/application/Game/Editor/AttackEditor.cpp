@@ -242,9 +242,9 @@ void AttackEditor::DrawPreview() {
     /// ===右手=== ///
     if (currentAttack.isRightHandAttack) {
         // Dataの取得
-        std::vector<BezierControlPointData> HandWorld;
+        std::vector<MiiEngine::BezierControlPointData> HandWorld;
         for (const auto& point : currentAttack.rightHandTrajectoryPoints) {
-            BezierControlPointData worldPoint = {};
+            MiiEngine::BezierControlPointData worldPoint = {};
             worldPoint.position = point.position;
             worldPoint.rotation = point.rotation;
             worldPoint.time = point.time;
@@ -254,7 +254,7 @@ void AttackEditor::DrawPreview() {
         Vector4 color = { currentAttack.rightHandColor.x, currentAttack.rightHandColor.y, currentAttack.rightHandColor.z, 1.0f };
         line_->CreateSmoothCurve(HandWorld, color, currentAttack.curveSegments);
         // 制御点を可視化（右手）
-        ServiceLocator::GetLineObject3D()->DrawBezierControlPoints(
+        Service::ServiceLocator::GetLineObject3D()->DrawBezierControlPoints(
             HandWorld,
             Vector4{ 0.5f, 1.0f, 0.5f, 1.0f },  // 明るい緑
             Vector4{ 0.2f, 0.8f, 0.2f, 0.5f },  // 半透明緑
@@ -265,9 +265,9 @@ void AttackEditor::DrawPreview() {
     /// ===左手=== ///
     if (currentAttack.isLeftHandAttack) {
         // Dataの取得
-        std::vector<BezierControlPointData> HandWorld;
+        std::vector<MiiEngine::BezierControlPointData> HandWorld;
         for (const auto& point : currentAttack.leftHandTrajectoryPoints) {
-            BezierControlPointData worldPoint = {};
+            MiiEngine::BezierControlPointData worldPoint = {};
             worldPoint.position = point.position;
 			worldPoint.rotation = point.rotation;
             worldPoint.time = point.time;
@@ -277,7 +277,7 @@ void AttackEditor::DrawPreview() {
         Vector4 color = { currentAttack.leftHandColor.x, currentAttack.leftHandColor.y, currentAttack.leftHandColor.z, 1.0f };
         line_->CreateSmoothCurve(HandWorld, color, currentAttack.curveSegments);
         // 制御点を可視化（左手）
-        ServiceLocator::GetLineObject3D()->DrawBezierControlPoints(
+        Service::ServiceLocator::GetLineObject3D()->DrawBezierControlPoints(
             HandWorld,
             Vector4{ 0.5f, 0.5f, 1.0f, 1.0f },  // 明るい青
             Vector4{ 0.2f, 0.2f, 0.8f, 0.5f },  // 半透明青
@@ -287,9 +287,9 @@ void AttackEditor::DrawPreview() {
 
     /// ===武器=== ///
     // Dataの取得
-    std::vector<BezierControlPointData> WeaponWorld;
+    std::vector<MiiEngine::BezierControlPointData> WeaponWorld;
     for (const auto& point : currentAttack.weaponTrajectoryPoints) {
-        BezierControlPointData worldPoint = {};
+        MiiEngine::BezierControlPointData worldPoint = {};
         worldPoint.position = point.position;
         worldPoint.rotation = point.rotation;
         worldPoint.time = point.time;
@@ -299,7 +299,7 @@ void AttackEditor::DrawPreview() {
     Vector4 weaponColor = { currentAttack.weaponColor.x, currentAttack.weaponColor.y, currentAttack.weaponColor.z, 1.0f };
     line_->CreateSmoothCurve(WeaponWorld, weaponColor, currentAttack.curveSegments);
     // 制御点を可視化（武器）
-    ServiceLocator::GetLineObject3D()->DrawBezierControlPoints(
+    Service::ServiceLocator::GetLineObject3D()->DrawBezierControlPoints(
         WeaponWorld,
         Vector4{ 1.0f, 0.5f, 0.5f, 1.0f },  // 明るい赤
         Vector4{ 0.8f, 0.2f, 0.2f, 0.5f },  // 半透明赤
@@ -308,9 +308,9 @@ void AttackEditor::DrawPreview() {
 
     // プレビュー用武器の描画（オプション）
     if (previewWeapon_ && previewRightHand_ && previewLeftHand_&& isPlaying_) {
-        previewWeapon_->Draw(BlendMode::KBlendModeNormal);
-		previewLeftHand_->Draw(BlendMode::KBlendModeNormal);
-		previewRightHand_->Draw(BlendMode::KBlendModeNormal);
+        previewWeapon_->Draw(MiiEngine::BlendMode::KBlendModeNormal);
+		previewLeftHand_->Draw(MiiEngine::BlendMode::KBlendModeNormal);
+		previewRightHand_->Draw(MiiEngine::BlendMode::KBlendModeNormal);
     }
 }
 
@@ -844,9 +844,9 @@ void AttackEditor::RenderPreviewControl() {
             if (currentAttack.weaponTrajectoryPoints.size() >= 2) {
 
                 // 全ての制御点にオフセットを適用
-                std::vector<BezierControlPointData> weaponPoints;
+                std::vector<MiiEngine::BezierControlPointData> weaponPoints;
                 for (const auto& point : currentAttack.weaponTrajectoryPoints) {
-                    BezierControlPointData weaponPoint = {};
+                    MiiEngine::BezierControlPointData weaponPoint = {};
                     weaponPoint.position = previewPlayerPosition_ + point.position;
 					weaponPoint.rotation = point.rotation;
                     weaponPoint.time = point.time;
@@ -863,9 +863,9 @@ void AttackEditor::RenderPreviewControl() {
 				// 右手の軌道ポイントが2つ以上あることを確認
                 if (currentAttack.rightHandTrajectoryPoints.size() >= 2) {
 					// 全ての制御点にオフセットを適用
-                    std::vector<BezierControlPointData> rightHandPoints;
+                    std::vector<MiiEngine::BezierControlPointData> rightHandPoints;
                     for (const auto& point : currentAttack.rightHandTrajectoryPoints) {
-                        BezierControlPointData handPoint = {};
+                        MiiEngine::BezierControlPointData handPoint = {};
                         handPoint.position = previewPlayerPosition_ + point.position;
 						handPoint.rotation = point.rotation;
                         handPoint.time = point.time;
@@ -882,9 +882,9 @@ void AttackEditor::RenderPreviewControl() {
                 // 左手の軌道ポイントが2つ以上あることを確認
                 if (currentAttack.leftHandTrajectoryPoints.size() >= 2) {
                     // 全ての制御点にオフセットを適用
-                    std::vector<BezierControlPointData> leftHandPoints;
+                    std::vector<MiiEngine::BezierControlPointData> leftHandPoints;
                     for (const auto& point : currentAttack.leftHandTrajectoryPoints) {
-                        BezierControlPointData handPoint = {};
+                        MiiEngine::BezierControlPointData handPoint = {};
                         handPoint.position = previewPlayerPosition_ + point.position;
                         handPoint.rotation = point.rotation;
                         handPoint.time = point.time;
@@ -907,7 +907,7 @@ void AttackEditor::RenderPreviewControl() {
 ///-------------------------------------------/// 
 /// ベジェ曲線制御点リストのUI描画
 ///-------------------------------------------///
-void AttackEditor::RenderBezierControlPointList(std::vector<BezierControlPointData>& points, const char* label, TrajectoryType type) {
+void AttackEditor::RenderBezierControlPointList(std::vector<MiiEngine::BezierControlPointData>& points, const char* label, TrajectoryType type) {
 	points;
 	label;
     type;
@@ -971,7 +971,7 @@ void AttackEditor::RenderBezierControlPointList(std::vector<BezierControlPointDa
 
     // 制御点追加ボタン
     if (ImGui::Button((std::string("+ 制御点を追加_") + label).c_str())) {
-        BezierControlPointData newPoint = {};
+        MiiEngine::BezierControlPointData newPoint = {};
         newPoint.position = Vector3{ 0.0f, 0.0f, 0.0f };
         newPoint.rotation = Math::QuaternionFromVector(Vector3{ 0.0f, 0.0f, 0.0f });
         newPoint.time = 0.5f;

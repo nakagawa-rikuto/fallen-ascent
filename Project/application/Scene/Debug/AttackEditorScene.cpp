@@ -19,7 +19,7 @@ AttackEditorScene::~AttackEditorScene() {
 	previewPlayer_.reset();
     line_.reset();
     // Colliderのリセット
-    ColliderService::Reset();
+    Service::ColliderService::Reset();
     // ISceneのデストラクタ
     IScene::~IScene();
 }
@@ -32,7 +32,7 @@ void AttackEditorScene::Initialize() {
     IScene::Initialize();
 
 	// パーティクルの定義を読み込み
-    ParticleService::LoadParticleDefinition("WeaponAttack.json");
+    Service::ParticleService::LoadParticleDefinition("WeaponAttack.json");
 
     /// ===カメラ=== ///
     camera_ = std::make_shared<GameCamera>();
@@ -41,8 +41,8 @@ void AttackEditorScene::Initialize() {
     camera_->SetRotate(cameraRotation_);
     camera_->SetFollowCamera(FollowCameraType::Orbiting);
     // カメラの設定
-    CameraService::AddCamera("Editor", camera_);
-    CameraService::SetActiveCamera("Editor");
+    Service::CameraService::AddCamera("Editor", camera_);
+    Service::CameraService::SetActiveCamera("Editor");
 
     /// ===エディターの初期化=== ///
     attackEditor_ = std::make_unique<AttackEditor>();
@@ -70,7 +70,7 @@ void AttackEditorScene::Initialize() {
 void AttackEditorScene::Update() {
     /// ===エディターの更新=== ///
     if (attackEditor_) {
-        attackEditor_->Update(DeltaTimeSevice::GetDeltaTime());
+        attackEditor_->Update(Service::DeltaTimeSevice::GetDeltaTime());
     }
 
     /// ===ImGui描画=== ///
@@ -173,7 +173,7 @@ void AttackEditorScene::RenderStatsWindow() {
     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
     ImGui::Text("フレーム時間: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
     ImGui::Separator();
-    ImGui::Text("デルタタイム: %.3f", DeltaTimeSevice::GetDeltaTime());
+    ImGui::Text("デルタタイム: %.3f", Service::DeltaTimeSevice::GetDeltaTime());
 
     ImGui::End();
 #endif

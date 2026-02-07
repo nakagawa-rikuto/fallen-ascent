@@ -42,7 +42,7 @@ public:
 	/// 描画処理
 	/// </summary>
 	/// <param name="mode">描画に使用するブレンドモード。既定値は BlendMode::KBlendModeNormal。</param>
-	virtual void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
+	virtual void Draw(MiiEngine::BlendMode mode = MiiEngine::BlendMode::KBlendModeNormal)override;
 
 	/// <summary>
 	/// ImGui情報の表示

@@ -4,16 +4,18 @@
 // ServiceLocator
 #include "ServiceLocator.h"
 
-///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-void DeltaTimeSevice::SetDeltaTime(const float& deltaTime) {ServiceLocator::GetDeltaTime()->SetDeltaTime(deltaTime);}
+using namespace MiiEngine;
+namespace Service {
+	///-------------------------------------------/// 
+	/// Setter
+	///-------------------------------------------///
+	void DeltaTimeSevice::SetDeltaTime(const float& deltaTime) { ServiceLocator::GetDeltaTime()->SetDeltaTime(deltaTime); }
 
-///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-const float& DeltaTimeSevice::GetDeltaTime() {return ServiceLocator::GetDeltaTime()->GetDeltaTime();}
-
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	const float& DeltaTimeSevice::GetDeltaTime() { return ServiceLocator::GetDeltaTime()->GetDeltaTime(); }
+}
 
 
 

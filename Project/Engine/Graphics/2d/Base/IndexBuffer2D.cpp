@@ -1,21 +1,23 @@
 #include "IndexBuffer2D.h"
-
+// C++
 #include <cassert>
 
-///-------------------------------------------/// 
-/// デストラクタ
-///-------------------------------------------///
-IndexBuffer2D::~IndexBuffer2D() { buffer_.Reset(); }
+namespace MiiEngine {
+	///-------------------------------------------/// 
+	/// デストラクタ
+	///-------------------------------------------///
+	IndexBuffer2D::~IndexBuffer2D() { buffer_.Reset(); }
 
-///-------------------------------------------/// 
-///リソースの作成
-///-------------------------------------------///
-void IndexBuffer2D::Create(ID3D12Device* device, size_t sizeInBytes) {
-	buffer_ = CreateBufferResourceComPtr(device, sizeInBytes);
+	///-------------------------------------------/// 
+	///リソースの作成
+	///-------------------------------------------///
+	void IndexBuffer2D::Create(ID3D12Device* device, size_t sizeInBytes) {
+		buffer_ = CreateBufferResourceComPtr(device, sizeInBytes);
+	}
+
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	ID3D12Resource* IndexBuffer2D::GetBuffer() { return buffer_.Get(); }
+	uint32_t* IndexBuffer2D::GetData() { return data_; }
 }
-
-///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-ID3D12Resource* IndexBuffer2D::GetBuffer() { return buffer_.Get(); }
-uint32_t* IndexBuffer2D::GetData() { return data_; }

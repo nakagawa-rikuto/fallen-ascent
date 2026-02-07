@@ -25,21 +25,21 @@ public:
 	/// </summary>
 	/// <param name="obb">描画するOBB</param>
 	/// <param name="color">線の色（RGBA）</param>
-	void DrawOBB(const OBB& obb, const Vector4& color);
+	void DrawOBB(const MiiEngine::OBB& obb, const Vector4& color);
 
 	/// <summary>
 	/// AABBを線で描画
 	/// </summary>
 	/// <param name="aabb">描画するAABB</param>
 	/// <param name="color">線の色（RGBA）</param>
-	void DrawAABB(const AABB& aabb, const Vector4& color);
+	void DrawAABB(const MiiEngine::AABB& aabb, const Vector4& color);
 
 	/// <summary>
 	/// 球体を線で描画
 	/// </summary>
 	/// <param name="sphere">描画する球体</param>
 	/// <param name="color">線の色（RGBA）</param>
-	void DrawSphere(const Sphere& sphere, const Vector4& color);
+	void DrawSphere(const MiiEngine::Sphere& sphere, const Vector4& color);
 
 	/// <summary>
 	/// グリッドを描画
@@ -57,7 +57,7 @@ public:
 	/// <param name="division">分割数</param>
 	/// <param name="center">グリッドの中心座標</param>
 	/// <param name="color">線の色（RGBA）</param>
-	void DrawGirdBox(const AABB& aabb, uint32_t division, const Vector3& center, const Vector4& color);
+	void DrawGirdBox(const MiiEngine::AABB& aabb, uint32_t division, const Vector3& center, const Vector4& color);
 
 	/// <summary>
 	/// 1方向に対して分割されたグリッド線を描画するユーティリティ関数
@@ -96,7 +96,7 @@ public:
 	/// <param name="controlPoints">制御点のリスト</param>
 	/// <param name="color">線の色</param>
 	/// <param name="segments">各セグメントの分割数</param>
-	void CreateSmoothCurve(const std::vector<BezierControlPointData>& controlPoints, const Vector4& color, int segments = 20);
+	void CreateSmoothCurve(const std::vector<MiiEngine::BezierControlPointData>& controlPoints, const Vector4& color, int segments = 20);
 
 private:
 
@@ -113,6 +113,6 @@ private:
 	/// <summary>
 	/// De Casteljauのアルゴリズムでベジェ曲線上の点を計算（任意の制御点数に対応）
 	/// </summary>
-	Vector3 CalculateBezierPointDeCasteljau(const std::vector<BezierControlPointData>& controlPoints, float t);
+	Vector3 CalculateBezierPointDeCasteljau(const std::vector<MiiEngine::BezierControlPointData>& controlPoints, float t);
 };
 

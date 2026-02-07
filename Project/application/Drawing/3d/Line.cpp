@@ -10,13 +10,13 @@
 /// Line
 ///-------------------------------------------///
 void Line::DrawLine(const Vector3& start, const Vector3& end, const Vector4& color) {
-	ServiceLocator::GetLineObject3D()->CreateLine(start, end, color);
+	Service::ServiceLocator::GetLineObject3D()->CreateLine(start, end, color);
 }
 
 ///-------------------------------------------/// 
 /// OBB
 ///-------------------------------------------///
-void Line::DrawOBB(const OBB& obb, const Vector4& color) {
+void Line::DrawOBB(const MiiEngine::OBB& obb, const Vector4& color) {
 	// OBBの各頂点を定義（ローカル座標）
 	Vector3 localVertices[8] = {
 		{-obb.halfSize.x, -obb.halfSize.y, -obb.halfSize.z}, {obb.halfSize.x, -obb.halfSize.y, -obb.halfSize.z},
@@ -50,7 +50,7 @@ void Line::DrawOBB(const OBB& obb, const Vector4& color) {
 ///-------------------------------------------/// 
 /// AABB
 ///-------------------------------------------///
-void Line::DrawAABB(const AABB & aabb, const Vector4& color) {
+void Line::DrawAABB(const MiiEngine::AABB & aabb, const Vector4& color) {
 	// グリッドを6面描画
 	Vector3 size = aabb.max - aabb.min;
 	Vector3 halfSize = size * 0.5f;
@@ -111,7 +111,7 @@ void Line::DrawAABB(const AABB & aabb, const Vector4& color) {
 ///-------------------------------------------/// 
 /// Sphere
 ///-------------------------------------------///
-void Line::DrawSphere(const Sphere& sphere, const Vector4 & color) {
+void Line::DrawSphere(const MiiEngine::Sphere& sphere, const Vector4 & color) {
 	// 分割数
 	const uint32_t div = 8;
 	// 緯度・経度のステップ角度
@@ -182,7 +182,7 @@ void Line::DrawGrid(const Vector3 & center, const Vector3 & size, uint32_t divis
 ///-------------------------------------------/// 
 /// GridBox
 ///-------------------------------------------///
-void Line::DrawGirdBox(const AABB& aabb, uint32_t division, const Vector3& center, const Vector4& color) {
+void Line::DrawGirdBox(const MiiEngine::AABB& aabb, uint32_t division, const Vector3& center, const Vector4& color) {
 	// グリッドを6面描画
 	Vector3 size = aabb.max - aabb.min;
 	Vector3 halfSize = size * 0.5f;
@@ -306,7 +306,7 @@ void Line::CreateCubicBezier(const Vector3& p0, const Vector3& p1, const Vector3
 ///-------------------------------------------/// 
 /// 滑らかな曲線の作成
 ///-------------------------------------------///
-void Line::CreateSmoothCurve(const std::vector<BezierControlPointData>& controlPoints, const Vector4& color, int segments) {
+void Line::CreateSmoothCurve(const std::vector<MiiEngine::BezierControlPointData>& controlPoints, const Vector4& color, int segments) {
 	// 制御点が2つ未満の場合は描画しない
 	if (controlPoints.size() < 2) {
 		return;
@@ -398,7 +398,7 @@ Vector3 Line::CalculateCubicBezier(const Vector3& p0, const Vector3& p1, const V
 ///-------------------------------------------/// 
 /// ベジェ曲線の計算（De Casteljauのアルゴリズム）
 ///-------------------------------------------///
-Vector3 Line::CalculateBezierPointDeCasteljau(const std::vector<BezierControlPointData>& controlPoints, float t) {
+Vector3 Line::CalculateBezierPointDeCasteljau(const std::vector<MiiEngine::BezierControlPointData>& controlPoints, float t) {
 	// 制御点の位置のみを抽出
 	std::vector<Vector3> temp;
 	for (const auto& cp : controlPoints) {

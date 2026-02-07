@@ -3,76 +3,78 @@
 #include "imgui.h"
 #endif // USE_IMGUI
 
-///-------------------------------------------/// 
-/// 初期化
-///-------------------------------------------///
-void SphereCollider::Initialize() {
-	type_ = ColliderType::Sphere;
-	sphere_.center = object3d_->GetWorldTranslate();
+namespace MiiEngine {
+	///-------------------------------------------/// 
+	/// 初期化
+	///-------------------------------------------///
+	void SphereCollider::Initialize() {
+		type_ = ColliderType::Sphere;
+		sphere_.center = object3d_->GetWorldTranslate();
 
-	// Colliderの初期化
-	Collider::Initialize();
-}
+		// Colliderの初期化
+		Collider::Initialize();
+	}
 
-///-------------------------------------------/// 
-/// 更新
-///-------------------------------------------///
-void SphereCollider::Update() {
-	
-	/// ===Object3Dの更新=== ///
-	object3d_->SetTranslate(transform_.translate);
-	object3d_->SetRotate(transform_.rotate);
-	object3d_->SetScale(transform_.scale);
-	object3d_->SetColor(color_);
+	///-------------------------------------------/// 
+	/// 更新
+	///-------------------------------------------///
+	void SphereCollider::Update() {
 
-	// Sphereのセンター座標を更新
-	sphere_.center = object3d_->GetWorldTranslate();
+		/// ===Object3Dの更新=== ///
+		object3d_->SetTranslate(transform_.translate);
+		object3d_->SetRotate(transform_.rotate);
+		object3d_->SetScale(transform_.scale);
+		object3d_->SetColor(color_);
 
-	// Colliderの更新処理
-	Collider::Update();
-}
+		// Sphereのセンター座標を更新
+		sphere_.center = object3d_->GetWorldTranslate();
 
-///-------------------------------------------/// 
-/// 描画
-///-------------------------------------------///
-void SphereCollider::Draw(BlendMode mode) {
+		// Colliderの更新処理
+		Collider::Update();
+	}
 
-	// Line
-#ifdef _DEBUG
+	///-------------------------------------------/// 
+	/// 描画
+	///-------------------------------------------///
+	void SphereCollider::Draw(BlendMode mode) {
+
+		// Line
+	#ifdef _DEBUG
 	// デバッグ時のみ描画
-	line_->DrawSphere(sphere_, lineColor_);
+		line_->DrawSphere(sphere_, lineColor_);
 
-#endif // DEBUG
+	#endif // DEBUG
 
-	// Colliderの描画処理
-	Collider::Draw(mode);
-}
+		// Colliderの描画処理
+		Collider::Draw(mode);
+	}
 
-///-------------------------------------------/// 
-/// 情報
-///-------------------------------------------///
-void SphereCollider::Information() {
-#ifdef USE_IMGUI
-	Collider::Information();
-	ImGui::Text("SphereInfo");
-	ImGui::DragFloat("Radius", &sphere_.radius, 0.1f, 0.0f);
-#endif // USE_IMGUI
-}
+	///-------------------------------------------/// 
+	/// 情報
+	///-------------------------------------------///
+	void SphereCollider::Information() {
+	#ifdef USE_IMGUI
+		Collider::Information();
+		ImGui::Text("SphereInfo");
+		ImGui::DragFloat("Radius", &sphere_.radius, 0.1f, 0.0f);
+	#endif // USE_IMGUI
+	}
 
-///-------------------------------------------/// 
-/// 衝突処理
-///-------------------------------------------///
-void SphereCollider::OnCollision(Collider* collider) { collider; }
+	///-------------------------------------------/// 
+	/// 衝突処理
+	///-------------------------------------------///
+	void SphereCollider::OnCollision(Collider* collider) { collider; }
 
-///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-void SphereCollider::SetRadius(const float& radius) { sphere_.radius = radius; }
+	///-------------------------------------------/// 
+	/// Setter
+	///-------------------------------------------///
+	void SphereCollider::SetRadius(const float& radius) { sphere_.radius = radius; }
 
-///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-// Radius
-Sphere SphereCollider::GetSphere() const {
-	return sphere_;
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	// Radius
+	Sphere SphereCollider::GetSphere() const {
+		return sphere_;
+	}
 }

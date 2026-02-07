@@ -30,7 +30,7 @@ void GameSceneInitializeState::Update() {
 	gameScene_->GetPlayer()->UpdateAnimation();
 
 	if (sceneManager_->GetTransitionFinished()) {
-		OffScreenService::SetOffScreenType(OffScreenType::CopyImage);
+		Service::OffScreenService::SetOffScreenType(MiiEngine::OffScreenType::CopyImage);
 		// InGame状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneStartAnimationState>());
 	}

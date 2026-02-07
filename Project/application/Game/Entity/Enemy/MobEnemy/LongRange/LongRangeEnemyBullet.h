@@ -3,12 +3,14 @@
 #include "Engine/Collider/SphereCollider.h"
 
 /// ===前方宣言=== ///
-class ParticleGroup;
+namespace MiiEngine {
+	class ParticleGroup;
+}
 
 ///=====================================================/// 
 /// 遠距離攻撃Enemyの弾
 ///=====================================================///
-class LongRangeEnemyBullet : public SphereCollider{
+class LongRangeEnemyBullet : public MiiEngine::SphereCollider{
 public:
 
 	LongRangeEnemyBullet() = default;
@@ -28,7 +30,7 @@ public:
 	/// 描画処理
 	/// </summary>
 	/// <param name="mode">描画時に使用するブレンドモード。省略時は BlendMode::KBlendModeNormal が使われます。</param>
-	void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
+	void Draw(MiiEngine::BlendMode mode = MiiEngine::BlendMode::KBlendModeNormal)override;
 
 	/// <summary>
 	/// 生成処理
@@ -47,7 +49,7 @@ public: /// ===衝突判定=== ///
 	/// 衝突処理
 	/// </summary>
 	/// <param name="collider">衝突したオブジェクトを表す Collider へのポインタ。衝突処理に使用される対象を示します。</param>
-	void OnCollision(Collider* collider) override;
+	void OnCollision(MiiEngine::Collider* collider) override;
 
 public: /// ===Getter=== ///
 	// 生存フラグの取得
@@ -63,7 +65,7 @@ private: /// ===変数=== ///
 	BaseInfo info_;
 
 	// ParticleGroup
-	ParticleGroup* bulletParticle_ = nullptr;
+	MiiEngine::ParticleGroup* bulletParticle_ = nullptr;
 
 	// 速度
 	float speed_ = 1.5f;

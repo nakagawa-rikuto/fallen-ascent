@@ -31,7 +31,7 @@ void StartAnimation::Initialize(Player* player, GameCamera* camera) {
 	timer_ = 0.0f;
 	isCompleted_ = false;
 	currentPhase_ = AnimationPhase::Falling;
-	kDeltaTime_ = DeltaTimeSevice::GetDeltaTime();
+	kDeltaTime_ = Service::DeltaTimeSevice::GetDeltaTime();
 	// 落下アニメーション情報
 	fallInfo_.playerStartPos = { 0.0f, 50.0f, 0.0f };
 	fallInfo_.playerEndPos = { 0.0f, 1.0f, 0.0f };
@@ -53,7 +53,7 @@ void StartAnimation::Update() {
 	if (isCompleted_ && !player_ && !camera_) return;
 
 	/// ===デルタタイム取得=== ///
-	kDeltaTime_ = DeltaTimeSevice::GetDeltaTime();
+	kDeltaTime_ = Service::DeltaTimeSevice::GetDeltaTime();
 
 	/// ===タイマーを進める=== ///
 	timer_ += kDeltaTime_;

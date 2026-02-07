@@ -4,15 +4,18 @@
 #include "Engine/Collider/OBBCollider.h"
 // AttackData
 #include "application/Game/Editor/Data/AttackData.h"
+#include "Engine/DataInfo/LineObjectData.h"
 
 /// ===前方宣言=== ///
 class Player;
-class ParticleGroup;
+namespace MiiEngine {
+	class ParticleGroup;
+}
 
 ///=====================================================/// 
 /// PlayerWeapon
 ///=====================================================///
-class PlayerWeapon : public OBBCollider {
+class PlayerWeapon : public MiiEngine::OBBCollider {
 public:
 	PlayerWeapon() = default;
 	~PlayerWeapon() override;
@@ -31,7 +34,7 @@ public:
 	/// 描画処理
 	/// </summary>
 	/// <param name="mode">描画に使用するブレンドモード。</param>
-	void Draw(BlendMode mode) override;
+	void Draw(MiiEngine::BlendMode mode) override;
 
 	/// <summary>
 	/// ImGui情報の表示
@@ -52,7 +55,7 @@ public:
 	/// <param name="startRotation">開始時の回転</param>
 	/// <param name="endRotation">終了時の回転</param>
 	void StartAttack(
-		const std::vector<BezierControlPointData>& trajectoryPoints,
+		const std::vector<MiiEngine::BezierControlPointData>& trajectoryPoints,
 		float duration
 	);
 
@@ -62,7 +65,7 @@ public: /// ===衝突=== ///
 	/// 衝突処理
 	/// </summary>
 	/// <param name="collider">衝突した相手の Collider オブジェクトを指すポインター。</param>
-	void OnCollision(Collider* collider) override;
+	void OnCollision(MiiEngine::Collider* collider) override;
 
 public: /// ===Getter=== ///
 	// 攻撃中かどうか
@@ -80,7 +83,7 @@ private:
 	Player* player_ = nullptr;
 
 	// Particle
-	ParticleGroup* attackParticle_ = nullptr;
+	MiiEngine::ParticleGroup* attackParticle_ = nullptr;
 
 	/// ===基本情報=== ///
 	struct BaseInfo {
@@ -99,7 +102,7 @@ private:
 		float progress = 0.0f;          // 攻撃の進行度（0.0～1.0）
 
 		// ベジェ曲線の制御点
-		std::vector<BezierControlPointData> trajectoryPoints;
+		std::vector<MiiEngine::BezierControlPointData> trajectoryPoints;
 	};
 	AttackInfo attackInfo_;
 
@@ -110,7 +113,7 @@ private:
 	/// <param name="controlPoints">制御点のリスト</param>
 	/// <param name="t">進行度（0.0～1.0）</param>
 	/// <returns>ベジェ曲線上の位置</returns>
-	Vector3 CalculateBezierPoint(const std::vector<BezierControlPointData>& controlPoints, float t);
+	Vector3 CalculateBezierPoint(const std::vector<MiiEngine::BezierControlPointData>& controlPoints, float t);
 
 	/// <summary>
 	/// ベジェ曲線上の回転を計算
@@ -118,7 +121,7 @@ private:
 	/// <param name="controlPoints">制御点のリスト</param>
 	/// <param name="t">進行度（0.0～1.0）</param>
 	/// <returns>ベジェ曲線上の回転</returns>
-	Quaternion CalculateBezierRotation(const std::vector<BezierControlPointData>& controlPoints, float t);
+	Quaternion CalculateBezierRotation(const std::vector<MiiEngine::BezierControlPointData>& controlPoints, float t);
 
 	/// <summary>
 	/// ベジェ曲線に沿った攻撃軌道の更新処理

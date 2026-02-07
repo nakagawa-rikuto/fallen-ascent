@@ -40,7 +40,7 @@ void Player::SetInvincibleTime(const float& time) {
 ///-------------------------------------------///
 void Player::Initialize() {
 	// Cameraの設定
-	camera_ = CameraService::GetActiveCamera().get();
+	camera_ = Service::CameraService::GetActiveCamera().get();
 
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
@@ -48,9 +48,9 @@ void Player::Initialize() {
 
 	// GameCharacterの設定
 	GameCharacter::Initialize();
-	name_ = ColliderName::Player;
+	name_ = MiiEngine::ColliderName::Player;
 	// コライダーに追加
-	ColliderService::AddCollider(this);
+	Service::ColliderService::AddCollider(this);
 	// OBBの設定
 	SetHalfSize({ 2.0f, 2.0f, 3.0f });
 
@@ -125,8 +125,8 @@ void Player::Update() {
 	}
 
 	/// ===スティックの取得=== ///
-	StickState leftStick = InputService::GetLeftStickState(0);
-	StickState rightStick = InputService::GetRightStickState(0);
+	StickState leftStick = Service::InputService::GetLeftStickState(0);
+	StickState rightStick = Service::InputService::GetRightStickState(0);
 	// スティック情報を保存
 	stickState_ = {
 		.leftStick = { leftStick.x, leftStick.y },
@@ -167,7 +167,7 @@ void Player::UpdateAnimation() {
 ///-------------------------------------------///  
 /// 描画
 ///-------------------------------------------///
-void Player::Draw(BlendMode mode) {
+void Player::Draw(MiiEngine::BlendMode mode) {
 
 	/// ===Hand=== ///
 	rightHand_->Draw(mode);
@@ -201,13 +201,13 @@ void Player::Information() {
 ///-------------------------------------------/// 
 /// 衝突
 ///-------------------------------------------///
-void Player::OnCollision(Collider* collider) {
+void Player::OnCollision(MiiEngine::Collider* collider) {
 
 	/// ===GameCharacterの衝突=== ///
 	GameCharacter::OnCollision(collider);
 
 	// Colliderによって処理を変更
-	if (collider->GetColliderName() == ColliderName::Enemy || collider->GetColliderName() == ColliderName::EnemyBullet) {
+	if (collider->GetColliderName() == MiiEngine::ColliderName::Enemy || collider->GetColliderName() == MiiEngine::ColliderName::EnemyBullet) {
 
 		// 無敵状態でなければダメージを受ける
 		if (!invincibleInfo_.isFlag) {

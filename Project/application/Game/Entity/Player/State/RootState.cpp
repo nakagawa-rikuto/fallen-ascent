@@ -26,7 +26,7 @@ void RootState::Update(Player * player, GameCamera* camera) {
 	camera_ = camera;
 
 	/// ===左スティックの取得=== ///
-	StickState leftStick = InputService::GetLeftStickState(0);
+	StickState leftStick = Service::InputService::GetLeftStickState(0);
 
 	/// ===減速処理(数値を下げるほどゆっくり止まる)=== ///
 	player_->ApplyDeceleration(player_->GetMoveComponent()->GetConfig().deceleration);
@@ -35,16 +35,16 @@ void RootState::Update(Player * player, GameCamera* camera) {
 	if (!player_->GetIsDead()) {
 		/// ===Stateの変更=== ///
 		// 攻撃ボタンが押されたら攻撃状態へ
-		if (InputService::TriggerButton(0, ControllerButtonType::X)) {
+		if (Service::InputService::TriggerButton(0, ControllerButtonType::X)) {
 			// 攻撃の準備ができていれば
 			if (!player_->GetAttackComponent()->GetState().isActive) {
 				player_->ChangState(std::make_unique<AttackState>());
 			}
 			// RBボタンが押されたら進んでいる突進状態へ
-		} else if (InputService::TriggerButton(0, ControllerButtonType::RB)) {
+		} else if (Service::InputService::TriggerButton(0, ControllerButtonType::RB)) {
 
 			// Aボタンが押されたら回避状態へ
-		} else if (InputService::TriggerButton(0, ControllerButtonType::A)) {
+		} else if (Service::InputService::TriggerButton(0, ControllerButtonType::A)) {
 			// 回避の準備ができていれば
 			if (player_->GetAvoidanceComponent()->GetState().isPreparation) {
 				// パーティクル発生

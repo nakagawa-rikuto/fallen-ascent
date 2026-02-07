@@ -1,6 +1,8 @@
 #pragma once
 /// ===Include=== ///
 #include "Engine/Scene/IScene.h"
+// Camera
+#include "application/Game/Camera/GameCamera.h"
 // Entity
 #include "application/Game/Entity/Player/Player.h"
 #include "application/Game/Entity/Enemy/Base/EnemyManager.h"
@@ -12,7 +14,7 @@
 ///=====================================================/// 
 /// ゲームシーン
 ///=====================================================///
-class GameScene : public IScene {
+class GameScene : public MiiEngine::IScene {
 public:/// ===メンバ関数=== ///
 
 	GameScene();

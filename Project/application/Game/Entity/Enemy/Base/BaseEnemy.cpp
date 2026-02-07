@@ -15,7 +15,7 @@
 /// デストラクタ
 ///-------------------------------------------///
 BaseEnemy::~BaseEnemy() {
-	ColliderService::RemoveCollider(this);
+	Service::ColliderService::RemoveCollider(this);
 	object3d_.reset();
 }
 
@@ -24,14 +24,14 @@ BaseEnemy::~BaseEnemy() {
 ///-------------------------------------------///
 void BaseEnemy::Initialize() {
 	// カメラの取得
-	camera_ = CameraService::GetActiveCamera().get();
+	camera_ = Service::CameraService::GetActiveCamera().get();
 
 	/// ===GameCharacter=== ///
 	GameCharacter::Initialize();
-	name_ = ColliderName::Enemy;
+	name_ = MiiEngine::ColliderName::Enemy;
 
 	// ColliderServiceに登録
-	ColliderService::AddCollider(this);
+	Service::ColliderService::AddCollider(this);
 }
 
 ///-------------------------------------------/// 
@@ -45,7 +45,7 @@ void BaseEnemy::UpdateAnimation() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void BaseEnemy::Draw(BlendMode mode) {
+void BaseEnemy::Draw(MiiEngine::BlendMode mode) {
 	/// ===GameCharacterの描画=== ///
 	GameCharacter::Draw(mode);
 }
@@ -53,7 +53,7 @@ void BaseEnemy::Draw(BlendMode mode) {
 ///-------------------------------------------/// 
 /// 当たり判定
 ///-------------------------------------------///
-void BaseEnemy::OnCollision(Collider* collider) {
+void BaseEnemy::OnCollision(MiiEngine::Collider* collider) {
 	// 攻撃用のフラグを立てる
 	isCollision_ = true;
 

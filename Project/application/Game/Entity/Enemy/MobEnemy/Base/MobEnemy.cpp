@@ -84,7 +84,7 @@ void MobEnemy::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void MobEnemy::Draw(BlendMode mode) {
+void MobEnemy::Draw(MiiEngine::BlendMode mode) {
 	/// ===BaseEnemyの描画=== ///
 	BaseEnemy::Draw(mode);
 }
@@ -126,7 +126,7 @@ void MobEnemy::OnCollision(Collider* collider) {
 	BaseEnemy::OnCollision(collider);
 
 	// Weaponとの当たり判定
-	if (collider->GetColliderName() == ColliderName::PlayerWeapon) {
+	if (collider->GetColliderName() == MiiEngine::ColliderName::PlayerWeapon) {
 		// クールタイム中でなければノックバック処理を実行
 		if (!invincibleInfo_.isInvincible) {
 			// 通常攻撃の時
@@ -142,7 +142,7 @@ void MobEnemy::OnCollision(Collider* collider) {
 
 				// HPを減少
 				baseInfo_.HP--;
-				hitParticle_ = ParticleService::Emit("Game", transform_.translate);
+				hitParticle_ = Service::ParticleService::Emit("Game", transform_.translate);
 
 				// 無敵時間のセット
 				SetInvincibleTime();
@@ -250,7 +250,7 @@ void MobEnemy::advanceTimer() {
 		// 消えるまでの時間を進める
 		disappearTimer_ -= baseInfo_.deltaTime;
 		if (disappearTimer_ <= 0) {
-			deathParticle_ = ParticleService::Emit("nakagawa", transform_.translate);
+			deathParticle_ = Service::ParticleService::Emit("nakagawa", transform_.translate);
 			isTentativeDeath_ = true;
 			if (hitParticle_ != nullptr) {
 				hitParticle_->Stop();

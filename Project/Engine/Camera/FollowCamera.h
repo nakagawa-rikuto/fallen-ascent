@@ -11,100 +11,102 @@ enum class FollowCameraType {
 	TopDown,           // 上からの視点
 };
 
-///=====================================================/// 
-/// 追従カメラクラス
-///=====================================================///
-class FollowCamera : public NormalCamera {
-public:
-	FollowCamera() = default;
-	~FollowCamera() override;
+namespace MiiEngine {
+	///=====================================================/// 
+	/// 追従カメラクラス
+	///=====================================================///
+	class FollowCamera : public NormalCamera {
+	public:
+		FollowCamera() = default;
+		~FollowCamera() override;
 
-	/// <summary>
-	/// 初期化
-	/// </summary>
-	void Initialize() override;
+		/// <summary>
+		/// 初期化
+		/// </summary>
+		void Initialize() override;
 
-	/// <summary>
-	/// 更新
-	/// </summary>
-	void Update() override;
+		/// <summary>
+		/// 更新
+		/// </summary>
+		void Update() override;
 
-	/// <summary>
-	/// ImGui情報の更新
-	/// </summary>
-	virtual void ImGuiUpdate() override;
+		/// <summary>
+		/// ImGui情報の更新
+		/// </summary>
+		virtual void ImGuiUpdate() override;
 
-	/// <summary>
-	/// デバッグ用の更新処理を実行します。
-	/// </summary>
-	virtual void DebugUpdate() override;
+		/// <summary>
+		/// デバッグ用の更新処理を実行します。
+		/// </summary>
+		virtual void DebugUpdate() override;
 
-	/// <summary>
-	/// 追従カメラの種類を設定
-	/// </summary>
-	/// <param name="type">設定するフォローカメラの種類（FollowCameraType 型）。</param>
-	void SetFollowCamera(FollowCameraType type);
+		/// <summary>
+		/// 追従カメラの種類を設定
+		/// </summary>
+		/// <param name="type">設定するフォローカメラの種類（FollowCameraType 型）。</param>
+		void SetFollowCamera(FollowCameraType type);
 
-public: /// ===Getter=== ///
+	public: /// ===Getter=== ///
 
-	const Vector3& GetOffset() const;
-	const Vector3& GetOrbitingOffset() const;
+		const Vector3& GetOffset() const;
+		const Vector3& GetOrbitingOffset() const;
 
-public:/// ===Setter=== ///
-	// 追従対象の座標を設定
-	void SetTarget(Vector3* position, Quaternion* rotation);
-	// 追従オフセット
-	void SetOffset(const Vector3& offset);
-	// 回転型追従カメラのオフセット
-	void SetOrbitingOffset(const Vector3& offset);
-	// 追従速度を設定
-	void SetFollowSpeed(float speed);
-	// 回転補間速度を設定
-	void SetLerpSpeed(float speed);
-	// スティック入力
-	void SetStick(const Vector2& stickValue);
+	public:/// ===Setter=== ///
+		// 追従対象の座標を設定
+		void SetTarget(Vector3* position, Quaternion* rotation);
+		// 追従オフセット
+		void SetOffset(const Vector3& offset);
+		// 回転型追従カメラのオフセット
+		void SetOrbitingOffset(const Vector3& offset);
+		// 追従速度を設定
+		void SetFollowSpeed(float speed);
+		// 回転補間速度を設定
+		void SetLerpSpeed(float speed);
+		// スティック入力
+		void SetStick(const Vector2& stickValue);
 
-private:/// ===変数=== ///
-	/// ===追従=== ///
-	Vector3* targetPos_ = nullptr;  // 追従対象の座標ポインタ
-	Quaternion* targetRot_ = nullptr;  // 追従対象の回転ポインタ
-	Vector3 offset_ = { 0.0f, 0.0f, -20.0f }; // カメラの初期オフセット
-	Vector3 OrbitingOffset_ = { 0.0f, 0.5f, -20.0f }; // 回転カメラ用オフセット
-	float followSpeed_ = 0.1f;      // 追従速度
-	float rotationLerpSpeed_ = 0.1f; // 回転補間速度
+	private:/// ===変数=== ///
+		/// ===追従=== ///
+		Vector3* targetPos_ = nullptr;  // 追従対象の座標ポインタ
+		Quaternion* targetRot_ = nullptr;  // 追従対象の回転ポインタ
+		Vector3 offset_ = { 0.0f, 0.0f, -20.0f }; // カメラの初期オフセット
+		Vector3 OrbitingOffset_ = { 0.0f, 0.5f, -20.0f }; // 回転カメラ用オフセット
+		float followSpeed_ = 0.1f;      // 追従速度
+		float rotationLerpSpeed_ = 0.1f; // 回転補間速度
 
-	Vector2 stickValue_ = { 0.0f, 0.0f }; // スティック入力値
+		Vector2 stickValue_ = { 0.0f, 0.0f }; // スティック入力値
 
-	FollowCameraType cameraType_ = FollowCameraType::FixedOffset; // デフォルトカメラタイプ
+		FollowCameraType cameraType_ = FollowCameraType::FixedOffset; // デフォルトカメラタイプ
 
-private:
-	/// <summary>
-	/// 追従カメラの更新処理
-	/// </summary>
-	void UpdateFollowCamera();
+	private:
+		/// <summary>
+		/// 追従カメラの更新処理
+		/// </summary>
+		void UpdateFollowCamera();
 
-	/// <summary>
-	/// 固定オフセット型カメラの処理 
-	/// </summary>
-	void FollowFixedOffset();
+		/// <summary>
+		/// 固定オフセット型カメラの処理 
+		/// </summary>
+		void FollowFixedOffset();
 
-	/// <summary>
-	/// スムージング追従型カメラの処理 
-	/// </summary>
-	void FollowInterpolated();
+		/// <summary>
+		/// スムージング追従型カメラの処理 
+		/// </summary>
+		void FollowInterpolated();
 
-	/// <summary>
-	/// 回転可能型カメラの処理 
-	/// </summary>
-	void FollowOrbiting();
+		/// <summary>
+		/// 回転可能型カメラの処理 
+		/// </summary>
+		void FollowOrbiting();
 
-	/// <summary>
-	/// 衝突回避型カメラの処理 
-	/// </summary>
-	void FollowCollisionAvoidance();
+		/// <summary>
+		/// 衝突回避型カメラの処理 
+		/// </summary>
+		void FollowCollisionAvoidance();
 
-	/// <summary>
-	/// 上からの見下ろし追従カメラの処理
-	/// </summary>
-	void FollowTopDown();
-};
+		/// <summary>
+		/// 上からの見下ろし追従カメラの処理
+		/// </summary>
+		void FollowTopDown();
+	};
+}

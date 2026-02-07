@@ -152,7 +152,7 @@ bool AttackDataSerializer::LoadFromJson(AttackData& data, const std::string& fil
         data.weaponTrajectoryPoints.clear();
         if (j.contains("weaponTrajectoryPoints")) {
             for (const auto& pointJson : j["weaponTrajectoryPoints"]) {
-                BezierControlPointData point;
+                MiiEngine::BezierControlPointData point;
                 point.position.x = pointJson["position"][0];
                 point.position.y = pointJson["position"][1];
                 point.position.z = pointJson["position"][2];
@@ -169,7 +169,7 @@ bool AttackDataSerializer::LoadFromJson(AttackData& data, const std::string& fil
         data.rightHandTrajectoryPoints.clear();
         if (j.contains("rightHandTrajectoryPoints")) {
             for (const auto& pointJson : j["rightHandTrajectoryPoints"]) {
-                BezierControlPointData point;
+                MiiEngine::BezierControlPointData point;
                 point.position.x = pointJson["position"][0];
                 point.position.y = pointJson["position"][1];
                 point.position.z = pointJson["position"][2];
@@ -186,7 +186,7 @@ bool AttackDataSerializer::LoadFromJson(AttackData& data, const std::string& fil
         data.leftHandTrajectoryPoints.clear();
         if (j.contains("leftHandTrajectoryPoints")) {
             for (const auto& pointJson : j["leftHandTrajectoryPoints"]) {
-                BezierControlPointData point;
+                MiiEngine::BezierControlPointData point;
                 point.position.x = pointJson["position"][0];
                 point.position.y = pointJson["position"][1];
                 point.position.z = pointJson["position"][2];

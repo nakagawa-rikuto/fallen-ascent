@@ -9,6 +9,8 @@
 #include "imgui.h"
 #endif // USE_IMGUI
 
+using namespace MiiEngine;
+
 /// ===テンプレート候補=== ///
 template class GameCharacter<OBBCollider>;
 template class GameCharacter<SphereCollider>;
@@ -39,7 +41,7 @@ void GameCharacter<TCollider>::Initialize() {
 
 	/// ===BaseInfoの初期化設定=== ///
 	baseInfo_.velocity = { 0.0f, 0.0f, 0.0f };
-	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+	baseInfo_.deltaTime = Service::DeltaTimeSevice::GetDeltaTime();
 	baseInfo_.gravity = -9.8f;
 	baseInfo_.isDead = false;
 
@@ -66,7 +68,7 @@ void GameCharacter<TCollider>::PreUpdate() {
 	}
 
 	/// ===デルタタイムの取得=== ///
-	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+	baseInfo_.deltaTime = Service::DeltaTimeSevice::GetDeltaTime();
 }
 
 ///-------------------------------------------/// 

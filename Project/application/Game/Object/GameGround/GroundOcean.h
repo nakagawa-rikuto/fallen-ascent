@@ -8,7 +8,7 @@
 ///=====================================================/// 
 /// GroundOcean
 ///=====================================================///
-class GroundOcean : public GameObject<AABBCollider> {
+class GroundOcean : public GameObject<MiiEngine::AABBCollider> {
 public: 
 
 	GroundOcean() = default;
@@ -28,7 +28,7 @@ public:
 	/// 描画処理
 	/// </summary>
 	/// <param name="mode">BlendModeの適用</param>
-	void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
+	void Draw(MiiEngine::BlendMode mode = MiiEngine::BlendMode::KBlendModeNormal)override;
 
 	/// <summary>
 	/// ImGui情報の表示
@@ -41,11 +41,11 @@ public: /// ===衝突処理=== ///
 	/// 衝突処理
 	/// </summary>
 	/// <param name="collider">衝突先のCollider</param>
-	void OnCollision(Collider* collider)override;
+	void OnCollision(MiiEngine::Collider* collider)override;
 
 private:
 
 	/// ===オーシャン=== ///
-	std::unique_ptr<Ocean> ocean_;
+	std::unique_ptr<MiiEngine::Ocean> ocean_;
 };
 

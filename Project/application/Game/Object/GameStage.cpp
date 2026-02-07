@@ -50,7 +50,7 @@ void GameStage::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void GameStage::Draw(BlendMode mode) {
+void GameStage::Draw(MiiEngine::BlendMode mode) {
 
 	// GroundOceanの更新
 	for (const auto& ground : grounds_) {
@@ -79,7 +79,7 @@ void GameStage::Draw(BlendMode mode) {
 ///-------------------------------------------///
 void GameStage::LoadStageData(const std::string& stageData) {
 	// レベルデータの取得
-	LevelData* levelData = GraphicsResourceGetter::GetLevelData(stageData);
+	LevelData* levelData = Service::GraphicsResourceGetter::GetLevelData(stageData);
 
 	// オブジェクト分回す
 	for (const auto& stage : levelData->objects) {

@@ -9,7 +9,7 @@ const wchar_t kWindowTitle[] = L"Fallen Ascent";
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 宣言
-	std::unique_ptr<Framework> game = std::make_unique<MyGame>();
+	std::unique_ptr<MiiEngine::Framework> game = std::make_unique<MiiEngine::MyGame>();
 	// 実行
 	game->Run(kWindowTitle);
 	// 解放

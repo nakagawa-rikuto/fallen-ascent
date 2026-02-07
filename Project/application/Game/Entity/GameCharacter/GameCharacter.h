@@ -31,7 +31,7 @@ public:
     /// 描画処理
     /// </summary>
     /// <param name="mode">描画に使用するブレンドモード。</param>
-    virtual void Draw(BlendMode mode) override;
+    virtual void Draw(MiiEngine::BlendMode mode) override;
 
     /// <summary>
     /// ImGui情報の表示
@@ -49,7 +49,7 @@ public: /// ===衝突判定=== ///
     /// 衝突時の処理
     /// </summary>
     /// <param name="collider">衝突した相手を表す Collider へのポインター。</param>
-    virtual void OnCollision(Collider* collider) override;
+    virtual void OnCollision(MiiEngine::Collider* collider) override;
 
 public: /// ===Getter=== ///
     // Velocity
@@ -68,7 +68,7 @@ public: /// ===Setter=== ///
     void SetIsDead(const bool isDead) { baseInfo_.isDead = isDead; };
 protected:
     // Collisionクラス
-    std::unique_ptr<ColliderCollision> collision_;
+    std::unique_ptr<MiiEngine::ColliderCollision> collision_;
     std::unique_ptr<GameCharacterCollision> gCollision_;
 
     /// ===基本情報=== ///
@@ -85,7 +85,7 @@ private: /// ===地面との衝突処理=== ///
 
     /// ===GroundInfo=== ///
     struct GroundInfo {
-		ColliderType currentGroundType;    // 現在の地面のコライダータイプ
+        MiiEngine::ColliderType currentGroundType;    // 現在の地面のコライダータイプ
         Vector3 currentGroundFirst{};      // 現在の地面の情報1
 		Vector3 currentGroundSecond{};     // 現在の地面の情報2
         float currentGroundYPos = 0.0f;    // 現在の地面のY軸
@@ -105,7 +105,7 @@ private: /// ===地面との衝突処理=== ///
     ///  地面に衝突した際の処理
     /// </summary>
     /// <param name="collider">衝突したコライダーへのポインタ。</param>
-    void GroundOnCollision(Collider* collider);
+    void GroundOnCollision(MiiEngine::Collider* collider);
 
 };
 

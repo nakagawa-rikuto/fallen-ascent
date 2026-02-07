@@ -7,7 +7,7 @@
 /// デストラクタ
 ///-------------------------------------------///
 LongRangeEnemyBullet::~LongRangeEnemyBullet() {
-	ColliderService::RemoveCollider(this);
+	Service::ColliderService::RemoveCollider(this);
 }
 
 ///-------------------------------------------/// 
@@ -22,11 +22,11 @@ void LongRangeEnemyBullet::Initialize() {
 
 	// Sphereの設定
 	SphereCollider::Initialize();
-	name_ = ColliderName::EnemyBullet;
+	name_ = MiiEngine::ColliderName::EnemyBullet;
 	SphereCollider::SetRadius(0.5f);
 
 	// コライダーに追加
-	ColliderService::AddCollider(this);
+	Service::ColliderService::AddCollider(this);
 
 	object3d_->Update();
 }
@@ -58,7 +58,7 @@ void LongRangeEnemyBullet::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void LongRangeEnemyBullet::Draw(BlendMode mode) {
+void LongRangeEnemyBullet::Draw(MiiEngine::BlendMode mode) {
 	if (isAlive_) {
 		mode;
 		//SphereCollider::Draw(mode);
@@ -86,7 +86,7 @@ void LongRangeEnemyBullet::Create(const Vector3& pos, const Vector3& vel) {
 		bulletParticle_ = nullptr;
 	}
 	// パーティクルの再生
-	bulletParticle_ = ParticleService::Emit("LongEnemyAttack", transform_.translate);
+	bulletParticle_ = Service::ParticleService::Emit("LongEnemyAttack", transform_.translate);
 	bulletParticle_->SetEmitterPosition(transform_.translate);
 }
 

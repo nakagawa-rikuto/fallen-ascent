@@ -24,8 +24,8 @@ PlayerUI::~PlayerUI() {
 void PlayerUI::Initialize() {
 	// windowサイズの取得
 	Vector2 windowSize = {
-		static_cast<float>(GraphicsResourceGetter::GetWindowWidth()),
-		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
+		static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()),
+		static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight())
 	};
 	
 	/// ===基準スケール=== ///

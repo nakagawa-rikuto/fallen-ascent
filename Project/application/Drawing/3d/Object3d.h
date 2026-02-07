@@ -23,7 +23,7 @@ public:
 	/// <param name="type">初期化するオブジェクトの種類を指定します。</param>
 	/// <param name="modelName">使用するモデルの名前（識別またはロードに使われる文字列）。</param>
 	/// <param name="light">照明の種類を指定します。省略時は LightType::None（照明なし）が使用されます。</param>
-	void Init(ObjectType type, const std::string& modelName, LightType light = LightType::None);
+	void Init(ObjectType type, const std::string& modelName, MiiEngine::LightType light = MiiEngine::LightType::None);
 
 	/// <summary>
 	/// 更新処理
@@ -34,14 +34,14 @@ public:
 	/// 描画処理
 	/// </summary>
 	/// <param name="mode">描画に使用するブレンドモード。省略した場合は BlendMode::KBlendModeNormal が使用される。</param>
-	void Draw(BlendMode mode = BlendMode::KBlendModeNormal);
+	void Draw(MiiEngine::BlendMode mode = MiiEngine::BlendMode::KBlendModeNormal);
 
 public: /// ===親子関係=== ///
 	/// <summary>
 	/// ModelCommon 型の親オブジェクトを設定
 	/// </summary>
 	/// <param name="parent">設定する親オブジェクトへのポインタ。</param>
-	void SetParent(ModelCommon* parent);
+	void SetParent(MiiEngine::ModelCommon* parent);
 
 	/// <summary>
 	/// 親オブジェクトへの参照をクリア
@@ -58,11 +58,11 @@ public: /// ===Getter=== ///
 	const Vector3& GetWorldTranslate() const;
 	const Quaternion& GetWorldRotate() const;
 	const Vector3& GetWorldScale() const;
-	const QuaternionTransform& GetWorldTransform() const;
+	const MiiEngine::QuaternionTransform& GetWorldTransform() const;
 	// Color（色）を取得
 	const Vector4& GetColor() const;
 	// ModelCommonオブジェクトへのポインターを取得
-	ModelCommon* GetModelCommon();
+	MiiEngine::ModelCommon* GetModelCommon();
 
 public: /// ===Setter=== ///
 	// モデルTransform
@@ -72,9 +72,9 @@ public: /// ===Setter=== ///
 	// モデルColor
 	void SetColor(const Vector4& color);
 	// Light
-	void SetLight(LightType type);
+	void SetLight(MiiEngine::LightType type);
 	// LightData
-	void SetLightData(LightInfo light);
+	void SetLightData(MiiEngine::LightInfo light);
 	// 環境マップ
 	void SetEnvironmentMapData(bool flag, float string);
 	// Animation
@@ -83,8 +83,8 @@ public: /// ===Setter=== ///
 private: /// ===Variables(変数)=== ///
 
 	/// ===クラス=== ///
-	std::unique_ptr<Model> model_;
-	std::unique_ptr<AnimationModel> animationModel_;
+	std::unique_ptr<MiiEngine::Model> model_;
+	std::unique_ptr<MiiEngine::AnimationModel> animationModel_;
 
 	/// ===モデルかアニメーションモデルかを判断するフラグ=== ///
 	ObjectType type_ = ObjectType::Model;
