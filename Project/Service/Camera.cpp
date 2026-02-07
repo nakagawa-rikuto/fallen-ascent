@@ -1,44 +1,44 @@
-#include "CameraService.h"
+#include "Camera.h"
 // CameraManager
 #include "Engine/System/Managers/CameraManager.h"
-// ServiceLocator
-#include "ServiceLocator.h"
+// Locator
+#include "Locator.h"
 
 using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// 追加
 	///-------------------------------------------///
-	void CameraService::AddCamera(const std::string& name, std::shared_ptr<GameCamera> camera) {
-		ServiceLocator::GetCameraManager()->AddCamera(name, camera);
+	void Camera::AddCamera(const std::string& name, std::shared_ptr<GameCamera> camera) {
+		Locator::GetCameraManager()->AddCamera(name, camera);
 	}
 
 	///-------------------------------------------/// 
 	/// 削除
 	///-------------------------------------------///
-	void CameraService::Remove(const std::string& name) {
-		ServiceLocator::GetCameraManager()->RemoveCamera(name);
+	void Camera::Remove(const std::string& name) {
+		Locator::GetCameraManager()->RemoveCamera(name);
 	}
 
 	///-------------------------------------------///  
 	/// カメラのチェック
 	///-------------------------------------------///
-	void CameraService::HasCamera(const std::string& name) {
-		ServiceLocator::GetCameraManager()->HasCamera(name);
+	void Camera::HasCamera(const std::string& name) {
+		Locator::GetCameraManager()->HasCamera(name);
 	}
 
 	///-------------------------------------------/// 
 	/// アクティブカメラのGetter
 	///-------------------------------------------///
-	std::shared_ptr<GameCamera> CameraService::GetActiveCamera() {
-		return ServiceLocator::GetCameraManager()->GetActiveCamera();
+	std::shared_ptr<GameCamera> Camera::GetActiveCamera() {
+		return Locator::GetCameraManager()->GetActiveCamera();
 	}
 
 	///-------------------------------------------/// 
 	/// アクティブカメラのSetter
 	///-------------------------------------------///
-	void CameraService::SetActiveCamera(const std::string& name) {
-		ServiceLocator::GetCameraManager()->SetActiveCamera(name);
+	void Camera::SetActiveCamera(const std::string& name) {
+		Locator::GetCameraManager()->SetActiveCamera(name);
 	}
 
 }

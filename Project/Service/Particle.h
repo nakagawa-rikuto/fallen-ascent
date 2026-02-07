@@ -14,10 +14,9 @@ enum class ParticleParameter;
 
 namespace Service {
 	///=====================================================/// 
-	/// ParticleService（新方式対応）
-	/// ParticleManagerへの静的アクセスを提供
+	/// Particle
 	///=====================================================///
-	class ParticleService {
+	class Particle {
 	public:
 
 		/// ===定義の管理=== ///

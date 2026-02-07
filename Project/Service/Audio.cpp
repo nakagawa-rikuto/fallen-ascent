@@ -1,39 +1,39 @@
-#include "AudioService.h"
+#include "Audio.h"
 #include "Engine/System/Managers/AudioManager.h"
-// ServiceLocator
-#include "ServiceLocator.h"
+// Locator
+#include "Locator.h"
 
 using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// 音声の再生
 	///-------------------------------------------///
-	void AudioService::StartSound(const std::string& key, bool loop) {
-		ServiceLocator::GetAudioManager()->Play(key, loop);
+	void Audio::StartSound(const std::string& key, bool loop) {
+		Locator::GetAudioManager()->Play(key, loop);
 	}
 	
 	///-------------------------------------------/// 
 	/// 音声の停止
 	///-------------------------------------------///
-	void AudioService::StopSound(const std::string& key) {
-		ServiceLocator::GetAudioManager()->Stop(key);
+	void Audio::StopSound(const std::string& key) {
+		Locator::GetAudioManager()->Stop(key);
 	}
 	///-------------------------------------------/// 
 	/// 音声のボリュームの調整
 	///-------------------------------------------///
-	void AudioService::VolumeSound(const std::string& key, float volume) {
-		ServiceLocator::GetAudioManager()->SetVolume(key, volume);
+	void Audio::VolumeSound(const std::string& key, float volume) {
+		Locator::GetAudioManager()->SetVolume(key, volume);
 	}
 	///-------------------------------------------/// 
 	/// 全ての音声のボリュームの調整
 	///-------------------------------------------///
-	void AudioService::AllVolumeSound(float volume) {
-		ServiceLocator::GetAudioManager()->SetVolumeAll(volume);
+	void Audio::AllVolumeSound(float volume) {
+		Locator::GetAudioManager()->SetVolumeAll(volume);
 	}
 	///-------------------------------------------/// 
 	/// 音声の再生速度の調整
 	///-------------------------------------------///
-	void AudioService::PitchSound(const std::string& key, float pitch) {
-		ServiceLocator::GetAudioManager()->setPitch(key, pitch);
+	void Audio::PitchSound(const std::string& key, float pitch) {
+		Locator::GetAudioManager()->setPitch(key, pitch);
 	}
 }

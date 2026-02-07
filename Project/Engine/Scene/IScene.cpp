@@ -1,7 +1,7 @@
 #include "IScene.h"
 // Service
-#include "Engine/System/Service/ServiceLocator.h"
-#include "Engine/System/Service/CameraService.h"
+#include "Service/Locator.h"
+#include "Service/Camera.h"
 // Line
 #include "Engine/Graphics/3d/Line/LineObject3D.h"
 
@@ -30,8 +30,8 @@ namespace MiiEngine {
 		defaultCamera_->SetRotate({ 0.0f, 0.0f, 0.0f });
 
 		// デフォルトカメラの設定
-		Service::CameraService::AddCamera("Default", defaultCamera_);
-		Service::CameraService::SetActiveCamera("Default");
+		Service::Camera::AddCamera("Default", defaultCamera_);
+		Service::Camera::SetActiveCamera("Default");
 	}
 
 	///-------------------------------------------/// 
@@ -40,7 +40,7 @@ namespace MiiEngine {
 	void IScene::Update() {
 
 		// Line更新
-		Service::ServiceLocator::GetLineObject3D()->Update();
+		Service::Locator::GetLineObject3D()->Update();
 	}
 
 	///-------------------------------------------/// 
@@ -49,7 +49,7 @@ namespace MiiEngine {
 	void IScene::Draw() {
 
 		// Lineの描画
-		Service::ServiceLocator::GetLineObject3D()->Draw();
+		Service::Locator::GetLineObject3D()->Draw();
 	}
 }
 

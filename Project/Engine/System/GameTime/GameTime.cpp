@@ -1,13 +1,13 @@
-#include "DeltaTime.h"
+#include "GameTime.h"
 
 namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// Getter
 	///-------------------------------------------///
-	const float& DeltaTime::GetDeltaTime() const { return deltaTime_; }
+	const float& GameTime::GetGameTime() const { return gameTime_; }
 
 	///-------------------------------------------/// 
 	/// Setter
 	///-------------------------------------------///
-	void DeltaTime::SetDeltaTime(const float& deltaTime) { deltaTime_ = deltaTime; }
+	void GameTime::SetGameTime(const float& deltaTime) { gameTime_ = deltaTime; }
 }

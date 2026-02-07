@@ -2,7 +2,7 @@
 // GameScene
 #include "application/Scene/Game/GameScene.h"
 // Service
-#include "Engine/System/Service/CameraService.h"
+#include "Service/Camera.h"
 // State
 #include "GameSceneExitState.h"
 
@@ -15,7 +15,7 @@ void GameSceneGameClearState::Enter(GameScene* gameScene) {
 
 	/// ===GameClearAnimation=== ///
 	gameClearAnimation_ = std::make_unique<GameClearAnimation>();
-	gameClearAnimation_->Initialize(gameScene_->GetPlayer(), Service::CameraService::GetActiveCamera().get());
+	gameClearAnimation_->Initialize(gameScene_->GetPlayer(), Service::Camera::GetActiveCamera().get());
 }
 
 ///-------------------------------------------/// 

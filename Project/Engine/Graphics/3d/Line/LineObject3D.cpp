@@ -1,8 +1,8 @@
 #include "LineObject3D.h"
 // Service
-#include "Engine/System/Service/GraphicsResourceGetter.h"
-#include "Engine/System/Service/Render.h"
-#include "Engine/System/Service/CameraService.h"
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/Render.h"
+#include "Service/Camera.h"
 // Camera
 #include "application/Game/Camera/GameCamera.h"
 // DXCommon
@@ -61,7 +61,7 @@ namespace MiiEngine {
 	void LineObject3D::Update() {
 
 		/// ===カメラの設定=== ///
-		camera_ = Service::CameraService::GetActiveCamera().get();
+		camera_ = Service::Camera::GetActiveCamera().get();
 
 		/// ===Matrixの作成=== ///
 		const Matrix4x4& viewProjectionMatrix = camera_->GetViewProjectionMatrix();

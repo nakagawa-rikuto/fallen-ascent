@@ -6,8 +6,8 @@
 #include "Engine/System/Managers/CSVManager.h"
 #include "Engine/System/Managers/AnimationManager.h"
 #include "Engine/system/Managers/LevelManager.h"
-// ServiceLocator
-#include "ServiceLocator.h"
+// Locator
+#include "Locator.h"
 
 using namespace MiiEngine;
 namespace Service {
@@ -17,7 +17,7 @@ namespace Service {
 	void Loader::LoadTexture(const std::string& key, const std::string& filePath) {
 		// ベースのディレクトリパス
 		const std::string& baseDirectorPath = "./Resource/Textures";
-		ServiceLocator::GetTextureManager()->LoadTexture(key, baseDirectorPath + "/" + filePath);
+		Locator::GetTextureManager()->LoadTexture(key, baseDirectorPath + "/" + filePath);
 	}
 
 	///-------------------------------------------/// 
@@ -26,7 +26,7 @@ namespace Service {
 	void Loader::LoadModel(const std::string& Key, const std::string& filename) {
 		// ベースのディレクトリパス
 		const std::string& baseDirectorPath = "./Resource/Models";
-		ServiceLocator::GetModelManager()->Load(baseDirectorPath, Key, filename);
+		Locator::GetModelManager()->Load(baseDirectorPath, Key, filename);
 	}
 
 	///-------------------------------------------/// 
@@ -34,7 +34,7 @@ namespace Service {
 	///-------------------------------------------///
 	void Loader::LoadCSV(const std::string& filename) {
 		const std::string& baseDirectorPath = "./Resource/CSV";
-		ServiceLocator::GetCSVManager()->Load(baseDirectorPath + "/" + filename);
+		Locator::GetCSVManager()->Load(baseDirectorPath + "/" + filename);
 	}
 
 	///-------------------------------------------/// 
@@ -43,7 +43,7 @@ namespace Service {
 	void Loader::LoadLevelJson(const std::string& filename) {
 		// ベースのディレクトリパス
 		const std::string& baseDirectorPath = "./Resource/Json";
-		ServiceLocator::GetLevelManager()->LoadLevelJson(baseDirectorPath, filename);
+		Locator::GetLevelManager()->LoadLevelJson(baseDirectorPath, filename);
 	}
 
 	///-------------------------------------------/// 
@@ -52,14 +52,14 @@ namespace Service {
 	void Loader::LoadAnimation(const std::string& key, const std::string& filename) {
 		// ベースのディレクトリパス
 		const std::string& baseDirectorPath = "./Resource/Animations";
-		ServiceLocator::GetModelManager()->Load(baseDirectorPath, key, filename);
-		ServiceLocator::GetAnimationManager()->Load(baseDirectorPath, key, filename);
+		Locator::GetModelManager()->Load(baseDirectorPath, key, filename);
+		Locator::GetAnimationManager()->Load(baseDirectorPath, key, filename);
 	}
 	void Loader::LoadAnimationdifferentModel(const std::string& key, const std::string& ModelFilename, const std::string& AnimationFilename) {
 		// ベースのディレクトリパス
 		const std::string& baseDirectorPath = "./Resource/Animations";
-		ServiceLocator::GetModelManager()->Load(baseDirectorPath, key, ModelFilename);
-		ServiceLocator::GetAnimationManager()->Load(baseDirectorPath, key, AnimationFilename);
+		Locator::GetModelManager()->Load(baseDirectorPath, key, ModelFilename);
+		Locator::GetAnimationManager()->Load(baseDirectorPath, key, AnimationFilename);
 	}
 
 	///-------------------------------------------/// 
@@ -67,7 +67,7 @@ namespace Service {
 	///-------------------------------------------///
 	void Loader::LoadWave(const std::string& key, const std::string& filename) {
 		const std::string& directorPath = "./Resource/BGM";
-		ServiceLocator::GetAudioManager()->Load(key, directorPath + "/" + filename, false);
+		Locator::GetAudioManager()->Load(key, directorPath + "/" + filename, false);
 	}
 
 	///-------------------------------------------/// 
@@ -75,20 +75,20 @@ namespace Service {
 	///-------------------------------------------///
 	void Loader::LoadMP3(const std::string& key, const std::string& filename) {
 		const std::string& directorPath = "./Resource/BGM";
-		ServiceLocator::GetAudioManager()->Load(key, directorPath + "/" + filename, true);
+		Locator::GetAudioManager()->Load(key, directorPath + "/" + filename, true);
 	}
 
 	///-------------------------------------------/// 
 	/// 音声データの解放
 	///-------------------------------------------///
 	void Loader::UnloadSound(const std::string& key) {
-		ServiceLocator::GetAudioManager()->Unload(key);
+		Locator::GetAudioManager()->Unload(key);
 	}
 
 	///-------------------------------------------/// 
 	/// 音声データの一括開放
 	///-------------------------------------------///
 	void Loader::AllUnloadSound() {
-		ServiceLocator::GetAudioManager()->UnloadAll();
+		Locator::GetAudioManager()->UnloadAll();
 	}
 }

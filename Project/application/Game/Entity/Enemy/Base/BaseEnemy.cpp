@@ -4,8 +4,8 @@
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // Service
-#include "Engine/System/Service/CameraService.h"
-#include "Engine/System/Service/ColliderService.h"
+#include "Service/Camera.h"
+#include "Service/Collision.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
@@ -15,7 +15,7 @@
 /// デストラクタ
 ///-------------------------------------------///
 BaseEnemy::~BaseEnemy() {
-	Service::ColliderService::RemoveCollider(this);
+	Service::Collision::RemoveCollider(this);
 	object3d_.reset();
 }
 
@@ -24,14 +24,14 @@ BaseEnemy::~BaseEnemy() {
 ///-------------------------------------------///
 void BaseEnemy::Initialize() {
 	// カメラの取得
-	camera_ = Service::CameraService::GetActiveCamera().get();
+	camera_ = Service::Camera::GetActiveCamera().get();
 
 	/// ===GameCharacter=== ///
 	GameCharacter::Initialize();
 	name_ = MiiEngine::ColliderName::Enemy;
 
-	// ColliderServiceに登録
-	Service::ColliderService::AddCollider(this);
+	// Colliderに登録
+	Service::Collision::AddCollider(this);
 }
 
 ///-------------------------------------------/// 

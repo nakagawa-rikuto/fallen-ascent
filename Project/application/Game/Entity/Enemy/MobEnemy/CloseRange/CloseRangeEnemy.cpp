@@ -2,7 +2,7 @@
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // Service
-#include "Engine/System/Service/ParticleService.h"
+#include "Service/Particle.h"
 // c++
 #include <cstdlib>
 // ImGui
@@ -112,7 +112,7 @@ void CloseRangeEnemy::StartAttack() {
 		attackParticle_ = nullptr;
 	}
 	// パーティクルの再生
-	attackParticle_ = Service::ParticleService::Emit("CloseEnemyAttack", transform_.translate);
+	attackParticle_ = Service::Particle::Emit("CloseEnemyAttack", transform_.translate);
 	attackParticle_->SetEmitterPosition(transform_.translate);
 }
 

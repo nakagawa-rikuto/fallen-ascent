@@ -4,9 +4,9 @@
 
 namespace Service {
 	///=====================================================/// 
-	/// InputService
+	/// Input
 	///=====================================================///
-	class InputService {
+	class Input {
 	public: // メンバ関数
 
 		/// <summary>

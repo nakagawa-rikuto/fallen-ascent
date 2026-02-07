@@ -1,6 +1,6 @@
 #include "Framework.h"
 // Service
-#include "Engine/System/Service/ServiceLocator.h"
+#include "Service/Locator.h"
 
 namespace MiiEngine {
 	///-------------------------------------------/// 
@@ -19,10 +19,10 @@ namespace MiiEngine {
 		colliderManager_ = std::make_unique<ColliderManager>();
 		colliderManager_->Initialize();
 		// DeltaTime
-		deltaTime_ = std::make_unique<DeltaTime>();
+		gameTime_ = std::make_unique<GameTime>();
 
-		// ServiceLocator
-		Service::ServiceRegister registry = {
+		// Locator
+		Service::Register registry = {
 			Engine_->GetWinApp(),
 			Engine_->GetDXCommon(),
 			Engine_->GetSRVManager(),
@@ -43,9 +43,9 @@ namespace MiiEngine {
 			cameraManager_.get(),
 			particleManager_.get(),
 			colliderManager_.get(),
-			deltaTime_.get()
+			gameTime_.get()
 		};
-		Service::ServiceLocator::ProvideAll(registry);
+		Service::Locator::ProvideAll(registry);
 	}
 
 	///-------------------------------------------/// 
@@ -54,7 +54,7 @@ namespace MiiEngine {
 	void Framework::Finalize() {
 		/// ===終了処理=== ///
 		// サービスロケータ
-		Service::ServiceLocator::Finalize();
+		Service::Locator::Finalize();
 		// CameraManager
 		cameraManager_.reset();
 		// ParticleManager

@@ -2,11 +2,11 @@
 // SceneManager
 #include "Engine/System/Managers/SceneManager.h"
 // Service
-#include "Engine/System/Service/CameraService.h"
-#include "Engine/System/Service/ParticleService.h"
-#include "Engine/System/Service/ColliderService.h"
-#include "Engine/System/Service/GraphicsResourceGetter.h"
-#include "Engine/System/Service/AudioService.h"
+#include "Service/Camera.h"
+#include "Service/Particle.h"
+#include "Service/Collision.h"
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/Audio.h"
 // State
 #include "State/GameSceneInitializeState.h"
 // Math
@@ -30,7 +30,7 @@ GameScene::~GameScene() {
 	// BGMの停止
 	//AudioService::StopSound("title");
 	// Colliderのリセット
-	Service::ColliderService::Reset();
+	Service::Collision::Reset();
 	// State
 	currentState_.reset();
 	// Camera
@@ -55,8 +55,8 @@ void GameScene::Initialize() {
 	camera_->Init(CameraType::Follow);
 	SetUpCamera();
 	// Managerに追加,アクティブに
-	Service::CameraService::AddCamera("Game", camera_);
-	Service::CameraService::SetActiveCamera("Game");
+	Service::Camera::AddCamera("Game", camera_);
+	Service::Camera::SetActiveCamera("Game");
 
 	/// ===Playerの生成=== ///
 	player_ = std::make_unique<Player>();
@@ -207,13 +207,13 @@ void GameScene::SetUpCamera() {
 /// パーティクルの読み込み
 ///-------------------------------------------///
 void GameScene::LoadParticle() {
-	Service::ParticleService::LoadParticleDefinition("Game.json");
-	Service::ParticleService::LoadParticleDefinition("WeaponAttack.json");
-	Service::ParticleService::LoadParticleDefinition("nakagawa.json");
-	Service::ParticleService::LoadParticleDefinition("PlayerWarke.json");
-	Service::ParticleService::LoadParticleDefinition("EnemyAttack.json");
-	Service::ParticleService::LoadParticleDefinition("EnemyPrePareAttack.json");
-	Service::ParticleService::LoadParticleDefinition("EnemyPrePareAttackCharge.json");
-	Service::ParticleService::LoadParticleDefinition("CloseEnemyAttack.json");
-	Service::ParticleService::LoadParticleDefinition("LongEnemyAttack.json");
+	Service::Particle::LoadParticleDefinition("Game.json");
+	Service::Particle::LoadParticleDefinition("WeaponAttack.json");
+	Service::Particle::LoadParticleDefinition("nakagawa.json");
+	Service::Particle::LoadParticleDefinition("PlayerWarke.json");
+	Service::Particle::LoadParticleDefinition("EnemyAttack.json");
+	Service::Particle::LoadParticleDefinition("EnemyPrePareAttack.json");
+	Service::Particle::LoadParticleDefinition("EnemyPrePareAttackCharge.json");
+	Service::Particle::LoadParticleDefinition("CloseEnemyAttack.json");
+	Service::Particle::LoadParticleDefinition("LongEnemyAttack.json");
 }

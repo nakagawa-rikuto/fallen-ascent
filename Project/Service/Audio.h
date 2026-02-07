@@ -4,9 +4,9 @@
 
 namespace Service {
 	///=====================================================/// 
-	/// AudioService
+	/// Audio
 	///=====================================================///
-	class AudioService {
+	class Audio {
 	public:
 
 		/// <summary>

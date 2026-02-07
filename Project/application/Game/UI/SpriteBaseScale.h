@@ -3,7 +3,7 @@
 // Vector2
 #include "Math/Vector2.h"
 // Service
-#include "Engine/System/Service/GraphicsResourceGetter.h"
+#include "Service/GraphicsResourceGetter.h"
 
 ///-------------------------------------------/// 
 /// 基準スケールの取得

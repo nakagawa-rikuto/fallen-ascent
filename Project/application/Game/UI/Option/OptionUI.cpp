@@ -2,8 +2,8 @@
 // SpriteBaseScale
 #include "application/Game/UI/SpriteBaseScale.h"
 // Service
-#include "Engine/System/Service/InputService.h"
-#include "Engine/System/Service/AudioService.h"
+#include "Service/Input.h"
+#include "Service/Audio.h"
 #ifdef USE_IMGUI
 // ImGui
 #include <imgui.h>
@@ -99,13 +99,13 @@ void OptionUI::TitleUpdate() {
 
 
 	// 音量調整（左右）
-	if (Service::InputService::PushButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
+	if (Service::Input::PushButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
 		volumeBGM_ = (std::min)(volumeBGM_ + 1, 100);
-		Service::AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
+		Service::Audio::AllVolumeSound(volumeBGM_ / 100.0f);
 	}
-	if (Service::InputService::PushButton(stickNo_, ControllerButtonType::DPadLEFT)) {
+	if (Service::Input::PushButton(stickNo_, ControllerButtonType::DPadLEFT)) {
 		volumeBGM_ = (std::max)(volumeBGM_ - 1, 0);
-		Service::AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
+		Service::Audio::AllVolumeSound(volumeBGM_ / 100.0f);
 	}
 
 	// スプライトの更新
@@ -119,8 +119,8 @@ void OptionUI::TitleUpdate() {
 void OptionUI::GameUpdate() {
 
 	// 項目選択（上下）
-	if (Service::InputService::TriggerButton(stickNo_, ControllerButtonType::DPadUP) ||
-		Service::InputService::TriggerButton(stickNo_, ControllerButtonType::DPadDOWN)) {
+	if (Service::Input::TriggerButton(stickNo_, ControllerButtonType::DPadUP) ||
+		Service::Input::TriggerButton(stickNo_, ControllerButtonType::DPadDOWN)) {
 		// Audio <-> Title をトグル
 		if (optionState_ == OptionState::Audio) {
 			optionState_ = OptionState::Title;
@@ -137,13 +137,13 @@ void OptionUI::GameUpdate() {
 
     // 音量調整（左右）
     if (optionState_ == OptionState::Audio) { // BGM
-        if (Service::InputService::PushButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
+        if (Service::Input::PushButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
             volumeBGM_ = (std::min)(volumeBGM_ + 1, 100);
-			Service::AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
+			Service::Audio::AllVolumeSound(volumeBGM_ / 100.0f);
         }
-        if (Service::InputService::PushButton(stickNo_, ControllerButtonType::DPadLEFT)) {
+        if (Service::Input::PushButton(stickNo_, ControllerButtonType::DPadLEFT)) {
             volumeBGM_ = (std::max)(volumeBGM_ - 1, 0);
-			Service::AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
+			Service::Audio::AllVolumeSound(volumeBGM_ / 100.0f);
         }
     }
 
@@ -153,7 +153,7 @@ void OptionUI::GameUpdate() {
 	UpdateAudioSprite();
 
     // タイトルに戻る
-    if (optionState_ == OptionState::Title && Service::InputService::TriggerButton(stickNo_, ControllerButtonType::A)) {
+    if (optionState_ == OptionState::Title && Service::Input::TriggerButton(stickNo_, ControllerButtonType::A)) {
         returnToTitle_ = true;
     }
 }

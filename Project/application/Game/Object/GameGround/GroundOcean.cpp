@@ -1,6 +1,6 @@
 #include "GroundOcean.h"
 // Service
-#include "Engine/System/Service/InputService.h"
+#include "Service/Input.h"
 
 
 ///-------------------------------------------/// 
@@ -36,7 +36,7 @@ void GroundOcean::Update() {
 
 #ifdef _DEBUG
 	// デバッグ用
-	if (Service::InputService::TriggerKey(DIK_SPACE)) {
+	if (Service::Input::TriggerKey(DIK_SPACE)) {
 		// 波紋を追加
 		Vector3 ripplePos = { 0.0f, 0.0f, 0.0f };
 		ocean_->AddCircularRipple(ripplePos, 1.0f, 1.0f, 4.0f);

@@ -3,9 +3,9 @@
 #include <cassert>
 #include <fstream>
 // Engine
-#include "Engine/System/Service/GraphicsResourceGetter.h"
-#include "Engine/System/Service/Render.h"
-#include "Engine/System/Service/CameraService.h"
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/Render.h"
+#include "Service/Camera.h"
 // camera
 #include "application/Game/Camera/GameCamera.h"
 // Math
@@ -103,7 +103,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void SkyBox::Update() {
 		/// ===カメラの設定=== ///
-		camera_ = Service::CameraService::GetActiveCamera().get();
+		camera_ = Service::Camera::GetActiveCamera().get();
 
 		/// ===データの書き込み=== ///
 		VertexDataWrite();

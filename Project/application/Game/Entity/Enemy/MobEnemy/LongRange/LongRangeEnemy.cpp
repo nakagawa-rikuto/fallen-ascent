@@ -1,8 +1,6 @@
 #include "LongRangeEnemy.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
-// Service
-#include "Engine/System/Service/ParticleService.h"
 // ImGui
 #ifdef USE_IMGUI
 #include "imgui.h"

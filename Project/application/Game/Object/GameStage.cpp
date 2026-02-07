@@ -1,8 +1,9 @@
 #include "GameStage.h"
 // Service
-#include "Engine/System/Service/GraphicsResourceGetter.h"
+#include "Service/GraphicsResourceGetter.h"
 // Math
 #include "Math/sMath.h"
+// ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
 #endif // USE_IMGUI

@@ -9,9 +9,9 @@ class GameCamera;
 
 namespace Service {
 	///=====================================================/// 
-	/// CameraService
+	/// Camera
 	///=====================================================///
-	class CameraService {
+	class Camera {
 	public:
 
 		/// <summary>

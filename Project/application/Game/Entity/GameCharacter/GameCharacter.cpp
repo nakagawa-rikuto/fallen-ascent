@@ -1,6 +1,7 @@
 #include "GameCharacter.h"
 // DeltaTime
-#include "Engine/System/Service/DeltaTimeSevice.h"
+#include "Service/DeltaTime.h"
+// Collider
 #include "Engine/Collider/AABBCollider.h"
 // C++
 #include <algorithm>
@@ -41,7 +42,7 @@ void GameCharacter<TCollider>::Initialize() {
 
 	/// ===BaseInfoの初期化設定=== ///
 	baseInfo_.velocity = { 0.0f, 0.0f, 0.0f };
-	baseInfo_.deltaTime = Service::DeltaTimeSevice::GetDeltaTime();
+	baseInfo_.deltaTime = Service::DeltaTime::GetDeltaTime();
 	baseInfo_.gravity = -9.8f;
 	baseInfo_.isDead = false;
 
@@ -68,7 +69,7 @@ void GameCharacter<TCollider>::PreUpdate() {
 	}
 
 	/// ===デルタタイムの取得=== ///
-	baseInfo_.deltaTime = Service::DeltaTimeSevice::GetDeltaTime();
+	baseInfo_.deltaTime = Service::DeltaTime::GetDeltaTime();
 }
 
 ///-------------------------------------------/// 

@@ -1,7 +1,9 @@
 #include "ParticleEditor.h"
+// Particle
 #include "Engine/Graphics/Particle/ParticleFactory.h"
 #include "Engine/Graphics/Particle/ParticleGroup.h"
-#include "Engine/System/Service/DeltaTimeSevice.h"
+// Service
+#include "Service/DeltaTime.h"
 
 #ifdef USE_IMGUI
 // ImGui
@@ -1080,7 +1082,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void ParticleEditor::UpdateTrajectoryPreview() {
 #ifdef USE_IMGUI
-		float deltaTime = Service::DeltaTimeSevice::GetDeltaTime();
+		float deltaTime = Service::DeltaTime::GetDeltaTime();
 
 		// 進行度を更新
 		trajectoryProgress_ += deltaTime * trajectorySpeed_;

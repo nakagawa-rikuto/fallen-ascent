@@ -3,12 +3,13 @@
 #include "application/Game/Entity/Player/Player.h"
 // Camera
 #include "application/Game/Camera/GameCamera.h"
+// Service
+#include "Service/DeltaTime.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
 #include "Math/MatrixMath.h"
-// Service
-#include "Engine/System/Service/DeltaTimeSevice.h"
+
 
 ///-------------------------------------------/// 
 /// 初期化
@@ -71,7 +72,7 @@ void GameClearAnimation::Initialize(Player* player, GameCamera* camera) {
 ///-------------------------------------------///
 void GameClearAnimation::Update() {
 	/// ===DeltaTimeの取得=== ///
-	deltaTime_ = Service::DeltaTimeSevice::GetDeltaTime();
+	deltaTime_ = Service::DeltaTime::GetDeltaTime();
 
 	/// ===フェーズごとの更新=== ///
 	switch (currentPhase_) {

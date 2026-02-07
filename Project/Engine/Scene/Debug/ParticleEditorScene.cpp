@@ -2,8 +2,8 @@
 // SceneManager
 #include "Engine/System/Managers/SceneManager.h"
 // Service
-#include "Engine/System/Service/ParticleService.h"
-#include "Engine/System/Service/DeltaTimeSevice.h"
+#include "Service/Particle.h"
+#include "Service/DeltaTime.h"
 #ifdef USE_IMGUI
 // ImGui
 #include <imgui.h>
@@ -197,7 +197,7 @@ namespace MiiEngine {
 		ImGui::Begin("統計情報", &showStats_);
 
 		// FPS表示
-		float deltaTime = Service::DeltaTimeSevice::GetDeltaTime();
+		float deltaTime = Service::DeltaTime::GetDeltaTime();
 		float fps = 1.0f / deltaTime;
 		ImGui::Text("FPS: %.1f", fps);
 		ImGui::Text("デルタタイム: %.3f ms", deltaTime * 1000.0f);
@@ -206,7 +206,7 @@ namespace MiiEngine {
 
 		// 登録されているパーティクル定義一覧
 		ImGui::Text("登録済みパーティクル:");
-		std::vector<std::string> names = Service::ParticleService::GetDefinitionNames();
+		std::vector<std::string> names = Service::Particle::GetDefinitionNames();
 		if (names.empty()) {
 			ImGui::TextDisabled("（なし）");
 		} else {
@@ -215,8 +215,8 @@ namespace MiiEngine {
 				ImGui::Indent();
 
 				// アクティブなグループ数とパーティクル数
-				size_t groupCount = Service::ParticleService::GetActiveGroupCount(name);
-				uint32_t particleCount = Service::ParticleService::GetActiveParticleCount(name);
+				size_t groupCount = Service::Particle::GetActiveGroupCount(name);
+				uint32_t particleCount = Service::Particle::GetActiveParticleCount(name);
 
 				ImGui::Text("グループ数: %zu", groupCount);
 				ImGui::Text("パーティクル数: %u", particleCount);

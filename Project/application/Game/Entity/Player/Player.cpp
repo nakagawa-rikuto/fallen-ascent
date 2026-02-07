@@ -4,9 +4,9 @@
 // State
 #include "State/RootState.h"
 // Service
-#include "Engine/System/Service/InputService.h"
-#include "Engine/System/Service/CameraService.h"
-#include "Engine/System/Service/ColliderService.h"
+#include "Service/Input.h"
+#include "Service/Camera.h"
+#include "Service/Collision.h"
 // Math
 #include "Math/sMath.h"
 // ImGui
@@ -40,7 +40,7 @@ void Player::SetInvincibleTime(const float& time) {
 ///-------------------------------------------///
 void Player::Initialize() {
 	// Cameraの設定
-	camera_ = Service::CameraService::GetActiveCamera().get();
+	camera_ = Service::Camera::GetActiveCamera().get();
 
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
@@ -50,7 +50,7 @@ void Player::Initialize() {
 	GameCharacter::Initialize();
 	name_ = MiiEngine::ColliderName::Player;
 	// コライダーに追加
-	Service::ColliderService::AddCollider(this);
+	Service::Collision::AddCollider(this);
 	// OBBの設定
 	SetHalfSize({ 2.0f, 2.0f, 3.0f });
 
@@ -125,8 +125,8 @@ void Player::Update() {
 	}
 
 	/// ===スティックの取得=== ///
-	StickState leftStick = Service::InputService::GetLeftStickState(0);
-	StickState rightStick = Service::InputService::GetRightStickState(0);
+	StickState leftStick = Service::Input::GetLeftStickState(0);
+	StickState rightStick = Service::Input::GetRightStickState(0);
 	// スティック情報を保存
 	stickState_ = {
 		.leftStick = { leftStick.x, leftStick.y },

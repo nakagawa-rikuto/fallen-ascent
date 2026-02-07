@@ -2,7 +2,7 @@
 // SpriteBaseScale
 #include "application/Game/UI/SpriteBaseScale.h"
 // Service
-#include "Engine/System/Service/InputService.h"
+#include "Service/Input.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -159,7 +159,7 @@ void TitleUI::UpdateSelecting() {
 		UpdateMenuSelection();
 
 		/// ===決定処理=== ///
-		if (Service::InputService::TriggerButton(0, ControllerButtonType::A) || Service::InputService::TriggerKey(DIK_SPACE)) {
+		if (Service::Input::TriggerButton(0, ControllerButtonType::A) || Service::Input::TriggerKey(DIK_SPACE)) {
 			ConfirmSelection();
 		}
 	}
@@ -170,7 +170,7 @@ void TitleUI::UpdateSelecting() {
 ///-------------------------------------------///
 void TitleUI::UpdateMenuSelection() {
 	// 十字キー上
-	if (Service::InputService::TriggerButton(0, ControllerButtonType::DPadUP) || Service::InputService::TriggerKey(DIK_UP)) {
+	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadUP) || Service::Input::TriggerKey(DIK_UP)) {
 		switch (currentSelection_) {
 		case MenuSelection::Start:
 			currentSelection_ = MenuSelection::Exit; // 一番上から一番下へ
@@ -186,7 +186,7 @@ void TitleUI::UpdateMenuSelection() {
 	}
 
 	// 十字キー下
-	if (Service::InputService::TriggerButton(0, ControllerButtonType::DPadDOWN) || Service::InputService::TriggerKey(DIK_DOWN)) {
+	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadDOWN) || Service::Input::TriggerKey(DIK_DOWN)) {
 		switch (currentSelection_) {
 		case MenuSelection::Start:
 			currentSelection_ = MenuSelection::Option;
@@ -247,7 +247,7 @@ void TitleUI::UpdateSelectOverlayPosition() {
 ///-------------------------------------------///
 void TitleUI::UpdateOptionMenu() {
 	// Bボタンでオプション画面を閉じる
-	if (Service::InputService::TriggerButton(0, ControllerButtonType::B) || Service::InputService::TriggerKey(DIK_SPACE)) {
+	if (Service::Input::TriggerButton(0, ControllerButtonType::B) || Service::Input::TriggerKey(DIK_SPACE)) {
 		isOptionOpen_ = false;
 	}
 }

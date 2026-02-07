@@ -3,8 +3,8 @@
 #include "Math/MatrixMath.h"
 #include "Math/sMath.h"
 // Service
-#include "Engine/System/Service/Render.h"
-#include "Engine/System/Service/CameraService.h"
+#include "Service/Render.h"
+#include "Service/Camera.h"
 // Camera
 #include "application/Game/Camera/GameCamera.h"
 
@@ -220,7 +220,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void ModelCommon::Update() {
 		/// ===カメラの設定=== ///
-		camera_ = Service::CameraService::GetActiveCamera().get();
+		camera_ = Service::Camera::GetActiveCamera().get();
 
 		// MaterialDataの書き込み
 		MaterialDataWrite();

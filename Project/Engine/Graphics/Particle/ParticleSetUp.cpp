@@ -4,9 +4,9 @@
 #include <fstream>
 #include <numbers>
 // Service
-#include "Engine/System/Service/ServiceLocator.h"
-#include "Engine/System/Service/GraphicsResourceGetter.h"
-#include "Engine/System/Service/Render.h"
+#include "Service/Locator.h"
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/Render.h"
 // Managers
 #include "Engine/System/Managers/SRVManager.h"
 // camera
@@ -111,7 +111,7 @@ namespace MiiEngine {
 		common_->Initialize(device, kNumMaxInstance_);
 
 		/// ===SRV=== ///
-		srvData_.srvManager_ = Service::ServiceLocator::GetSRVManager(); // SRVManagerの取得
+		srvData_.srvManager_ = Service::Locator::GetSRVManager(); // SRVManagerの取得
 		// SRVを作成するDescriptorHeapの場所設定
 		srvData_.srvIndex = srvData_.srvManager_->Allocate();
 		srvData_.srvHandleCPU = srvData_.srvManager_->GetCPUDescriptorHandle(srvData_.srvIndex);

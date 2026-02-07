@@ -35,13 +35,13 @@ namespace MiiEngine {
 	class ParticleManager;
 	// ColliderManager
 	class ColliderManager;
-	// DeltaTime
-	class DeltaTime;
+	// GameTime
+	class GameTime;
 }
 
 namespace Service {
 	/// ===サービス候補=== ///
-	struct ServiceRegister {
+	struct Register {
 		MiiEngine::WinApp* winApp = nullptr;
 		MiiEngine::DXCommon* dxCommon = nullptr;
 		MiiEngine::SRVManager* srvManager = nullptr;
@@ -62,16 +62,16 @@ namespace Service {
 		MiiEngine::CameraManager* cameraManager = nullptr;
 		MiiEngine::ParticleManager* particleManager = nullptr;
 		MiiEngine::ColliderManager* colliderManager = nullptr;
-		MiiEngine::DeltaTime* deltaTime = nullptr;
+		MiiEngine::GameTime* gameTime = nullptr;
 	};
 
 	///=====================================================/// 
 	/// サービスロケータ
 	///=====================================================///
-	class ServiceLocator {
+	class Locator {
 	public:
 		// 全てのサービスを提供
-		static void ProvideAll(const ServiceRegister& registry);
+		static void ProvideAll(const Register& registry);
 		// 全てのサービスを終了
 		static void Finalize();
 
@@ -113,8 +113,8 @@ namespace Service {
 		static MiiEngine::ParticleManager* GetParticleManager();
 		// ColliderManager
 		static MiiEngine::ColliderManager* GetColliderManager();
-		// DeltaTime
-		static MiiEngine::DeltaTime* GetDeltaTime();
+		// GameTime
+		static MiiEngine::GameTime* GetGameTime();
 
 	private:
 		// Core
@@ -142,6 +142,6 @@ namespace Service {
 		static inline MiiEngine::CameraManager* cameraManager_ = nullptr;
 		static inline MiiEngine::ParticleManager* particleManager_ = nullptr;
 		static inline MiiEngine::ColliderManager* colliderManager_ = nullptr;
-		static inline MiiEngine::DeltaTime* deltaTime_ = nullptr;
+		static inline MiiEngine::GameTime* gameTime_ = nullptr;
 	};
 }

@@ -4,7 +4,7 @@
 // PlayerHand
 #include "application/Game/Entity/Player/Hand/PlayerHand.h"
 // Service
-#include "Engine/System/Service/ServiceLocator.h"
+#include "Service/Locator.h"
 // Line
 #include "Engine/Graphics/3d/Line/LineObject3D.h"
 // ImGui
@@ -254,7 +254,7 @@ void AttackEditor::DrawPreview() {
         Vector4 color = { currentAttack.rightHandColor.x, currentAttack.rightHandColor.y, currentAttack.rightHandColor.z, 1.0f };
         line_->CreateSmoothCurve(HandWorld, color, currentAttack.curveSegments);
         // 制御点を可視化（右手）
-        Service::ServiceLocator::GetLineObject3D()->DrawBezierControlPoints(
+        Service::Locator::GetLineObject3D()->DrawBezierControlPoints(
             HandWorld,
             Vector4{ 0.5f, 1.0f, 0.5f, 1.0f },  // 明るい緑
             Vector4{ 0.2f, 0.8f, 0.2f, 0.5f },  // 半透明緑
@@ -277,7 +277,7 @@ void AttackEditor::DrawPreview() {
         Vector4 color = { currentAttack.leftHandColor.x, currentAttack.leftHandColor.y, currentAttack.leftHandColor.z, 1.0f };
         line_->CreateSmoothCurve(HandWorld, color, currentAttack.curveSegments);
         // 制御点を可視化（左手）
-        Service::ServiceLocator::GetLineObject3D()->DrawBezierControlPoints(
+        Service::Locator::GetLineObject3D()->DrawBezierControlPoints(
             HandWorld,
             Vector4{ 0.5f, 0.5f, 1.0f, 1.0f },  // 明るい青
             Vector4{ 0.2f, 0.2f, 0.8f, 0.5f },  // 半透明青
@@ -299,7 +299,7 @@ void AttackEditor::DrawPreview() {
     Vector4 weaponColor = { currentAttack.weaponColor.x, currentAttack.weaponColor.y, currentAttack.weaponColor.z, 1.0f };
     line_->CreateSmoothCurve(WeaponWorld, weaponColor, currentAttack.curveSegments);
     // 制御点を可視化（武器）
-    Service::ServiceLocator::GetLineObject3D()->DrawBezierControlPoints(
+    Service::Locator::GetLineObject3D()->DrawBezierControlPoints(
         WeaponWorld,
         Vector4{ 1.0f, 0.5f, 0.5f, 1.0f },  // 明るい赤
         Vector4{ 0.8f, 0.2f, 0.2f, 0.5f },  // 半透明赤

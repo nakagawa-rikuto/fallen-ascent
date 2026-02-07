@@ -1,11 +1,9 @@
 #pragma once
-/// ===Include=== ///
-
 namespace Service {
 	///=====================================================/// 
-	/// DeltaTimeService
+	/// DeltaTime
 	///=====================================================///
-	class DeltaTimeSevice {
+	class DeltaTime {
 	public:
 
 		/// <summary>

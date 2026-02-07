@@ -1,6 +1,6 @@
 #include "StageObject.h"
 // Service
-#include "Engine/System/Service/ColliderService.h"
+#include "Service/Collision.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -21,7 +21,7 @@ void StageObject::GameInit(const std::string& modelName) {
 	GameObject::Initialize();
 	name_ = MiiEngine::ColliderName::Object; // コライダー名を設定
 	// コライダーサービスに登録
-	Service::ColliderService::AddCollider(this);
+	Service::Collision::AddCollider(this);
 }
 
 ///-------------------------------------------/// 

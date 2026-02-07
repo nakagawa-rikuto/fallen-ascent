@@ -1,7 +1,7 @@
 #include "OceanCommon.h"
 // Service
-#include "Engine/System/Service/Render.h"
-#include "Engine/System/Service/CameraService.h"
+#include "Service/Render.h"
+#include "Service/Camera.h"
 // camera
 #include "application/Game/Camera/GameCamera.h"
 // Math
@@ -86,7 +86,7 @@ namespace MiiEngine {
 	/// 更新
 	///-------------------------------------------///
 	void OceanCommon::Update() {
-		camera_ = Service::CameraService::GetActiveCamera().get();
+		camera_ = Service::Camera::GetActiveCamera().get();
 
 		MaterialDataWrite();
 		TransformDataWrite();

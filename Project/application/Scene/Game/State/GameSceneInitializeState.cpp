@@ -4,7 +4,7 @@
 // SceneManager
 #include "Engine/System/Managers/SceneManager.h"
 // Service
-#include "Engine/System/Service/OffScreenService.h"
+#include "Service/PostEffect.h"
 // State
 #include "GameSceneStartAnimationState.h"
 
@@ -30,7 +30,7 @@ void GameSceneInitializeState::Update() {
 	gameScene_->GetPlayer()->UpdateAnimation();
 
 	if (sceneManager_->GetTransitionFinished()) {
-		Service::OffScreenService::SetOffScreenType(MiiEngine::OffScreenType::CopyImage);
+		Service::PostEffect::SetOffScreenType(MiiEngine::OffScreenType::CopyImage);
 		// InGame状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneStartAnimationState>());
 	}

@@ -2,9 +2,9 @@
 // c++
 #include <cassert>
 // Service
-#include "Engine/System/Service/GraphicsResourceGetter.h"
-#include "Engine/System/Service/Render.h"
-#include "Engine/System/Service/DeltaTimeSevice.h"
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/Render.h"
+#include "Service/DeltaTime.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/MatrixMath.h"
@@ -175,7 +175,7 @@ namespace MiiEngine {
     /// 更新
     ///-------------------------------------------///
     void Ocean::Update() {
-        currentTime_ += Service::DeltaTimeSevice::GetDeltaTime();
+        currentTime_ += Service::DeltaTime::GetDeltaTime();
 
         /// ===時間の更新=== ///
         for (int i = 0; i < kWaveCount_; ++i) {

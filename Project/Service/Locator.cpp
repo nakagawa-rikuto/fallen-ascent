@@ -1,4 +1,4 @@
-#include "ServiceLocator.h"
+#include "Locator.h"
 // c++
 #include <cassert>
 
@@ -6,7 +6,7 @@ namespace Service {
 	///-------------------------------------------/// 
 	/// 全てのサービスを提供
 	///-------------------------------------------///
-	void ServiceLocator::ProvideAll(const ServiceRegister& registry) {
+	void Locator::ProvideAll(const Register& registry) {
 		/// ===nullチェック=== ///
 		// WinApp
 		assert(registry.winApp);
@@ -45,7 +45,7 @@ namespace Service {
 		// ColliderManager
 		assert(registry.colliderManager);
 		// DeltaTime
-		assert(registry.deltaTime);
+		assert(registry.gameTime);
 
 		/// ===代入=== ///
 		// WinApp
@@ -85,13 +85,13 @@ namespace Service {
 		// ColliderManager
 		colliderManager_ = registry.colliderManager;
 		// DeltaTime
-		deltaTime_ = registry.deltaTime;
+		gameTime_ = registry.gameTime;
 	}
 
 	///-------------------------------------------/// 
 	/// 全てのサービスを終了
 	///-------------------------------------------///
-	void ServiceLocator::Finalize() {
+	void Locator::Finalize() {
 		colliderManager_ = nullptr;
 		particleManager_ = nullptr;
 		cameraManager_ = nullptr;
@@ -110,7 +110,7 @@ namespace Service {
 		dsvManager_ = nullptr;
 		rtvManager_ = nullptr;
 		srvManager_ = nullptr;
-		deltaTime_ = nullptr;
+		gameTime_ = nullptr;
 		winApp_ = nullptr;
 		dxCommon_ = nullptr;
 	}
@@ -118,97 +118,97 @@ namespace Service {
 	///-------------------------------------------/// 
 	/// DXCommon
 	///-------------------------------------------///
-	MiiEngine::DXCommon* ServiceLocator::GetDXCommon() { return dxCommon_; }
+	MiiEngine::DXCommon* Locator::GetDXCommon() { return dxCommon_; }
 
 	///-------------------------------------------/// 
 	/// WinApp
 	///-------------------------------------------///
-	MiiEngine::WinApp* ServiceLocator::GetWinApp() { return winApp_; }
+	MiiEngine::WinApp* Locator::GetWinApp() { return winApp_; }
 
 	///-------------------------------------------/// 
 	/// SRVManager
 	///-------------------------------------------///
-	MiiEngine::SRVManager* ServiceLocator::GetSRVManager() { return srvManager_; }
+	MiiEngine::SRVManager* Locator::GetSRVManager() { return srvManager_; }
 
 	///-------------------------------------------/// 
 	/// RTVManager
 	///-------------------------------------------///
-	MiiEngine::RTVManager* ServiceLocator::GetRTVManager() { return rtvManager_; }
+	MiiEngine::RTVManager* Locator::GetRTVManager() { return rtvManager_; }
 
 	///-------------------------------------------/// 
 	/// DSVManager
 	///-------------------------------------------///
-	MiiEngine::DSVManager* ServiceLocator::GetDSVManager() { return dsvManager_; }
+	MiiEngine::DSVManager* Locator::GetDSVManager() { return dsvManager_; }
 
 	///-------------------------------------------/// 
 	/// PipelineManager
 	///-------------------------------------------///
-	MiiEngine::PipelineManager* ServiceLocator::GetPipelineManager() { return pipelineManager_; }
+	MiiEngine::PipelineManager* Locator::GetPipelineManager() { return pipelineManager_; }
 
 	///-------------------------------------------/// 
 	/// TextureManager
 	///-------------------------------------------///
-	MiiEngine::TextureManager* ServiceLocator::GetTextureManager() { return textureManager_; }
+	MiiEngine::TextureManager* Locator::GetTextureManager() { return textureManager_; }
 
 	///-------------------------------------------/// 
 	/// ModelManager
 	///-------------------------------------------///
-	MiiEngine::ModelManager* ServiceLocator::GetModelManager() { return modelManager_; }
+	MiiEngine::ModelManager* Locator::GetModelManager() { return modelManager_; }
 
 	///-------------------------------------------/// 
 	/// AnimationManager
 	///-------------------------------------------///
-	MiiEngine::AnimationManager* ServiceLocator::GetAnimationManager() { return animationManager_; }
+	MiiEngine::AnimationManager* Locator::GetAnimationManager() { return animationManager_; }
 
 	///-------------------------------------------/// 
 	/// CSVManager
 	///-------------------------------------------///
-	MiiEngine::CSVManager* ServiceLocator::GetCSVManager() { return csvManager_; }
+	MiiEngine::CSVManager* Locator::GetCSVManager() { return csvManager_; }
 
 	///-------------------------------------------/// 
 	/// LevelManager
 	///-------------------------------------------///
-	MiiEngine::LevelManager* ServiceLocator::GetLevelManager() { return levelManager_; }
+	MiiEngine::LevelManager* Locator::GetLevelManager() { return levelManager_; }
 
 	///-------------------------------------------/// 
 	/// AudioManager
 	///-------------------------------------------///
-	MiiEngine::AudioManager* ServiceLocator::GetAudioManager() { return audioManager_; }
+	MiiEngine::AudioManager* Locator::GetAudioManager() { return audioManager_; }
 
 	///-------------------------------------------/// 
 	/// LineObject3D
 	///-------------------------------------------///
-	MiiEngine::LineObject3D* ServiceLocator::GetLineObject3D() { return lineObject3D_; }
+	MiiEngine::LineObject3D* Locator::GetLineObject3D() { return lineObject3D_; }
 
 	///-------------------------------------------/// 
 	/// OffScreenRenderer
 	///-------------------------------------------///
-	MiiEngine::OffScreenRenderer* ServiceLocator::GetOffScreenRenderer() { return offScreenRenderer_; }
+	MiiEngine::OffScreenRenderer* Locator::GetOffScreenRenderer() { return offScreenRenderer_; }
 
 	///-------------------------------------------/// 
 	/// Input
 	///-------------------------------------------///
-	MiiEngine::Keyboard* ServiceLocator::GetKeyboard() { return keyboard_; }
-	MiiEngine::Mouse* ServiceLocator::GetMouse() { return mouse_; }
-	MiiEngine::Controller* ServiceLocator::GetController() { return controller_; }
+	MiiEngine::Keyboard* Locator::GetKeyboard() { return keyboard_; }
+	MiiEngine::Mouse* Locator::GetMouse() { return mouse_; }
+	MiiEngine::Controller* Locator::GetController() { return controller_; }
 
 	///-------------------------------------------/// 
 	/// CameraManager
 	///-------------------------------------------///
-	MiiEngine::CameraManager* ServiceLocator::GetCameraManager() { return cameraManager_; }
+	MiiEngine::CameraManager* Locator::GetCameraManager() { return cameraManager_; }
 
 	///-------------------------------------------/// 
 	/// particleManager
 	///-------------------------------------------///
-	MiiEngine::ParticleManager* ServiceLocator::GetParticleManager() { return particleManager_; }
+	MiiEngine::ParticleManager* Locator::GetParticleManager() { return particleManager_; }
 
 	///-------------------------------------------/// 
 	/// ColliderManager
 	///-------------------------------------------///
-	MiiEngine::ColliderManager* ServiceLocator::GetColliderManager() { return colliderManager_; }
+	MiiEngine::ColliderManager* Locator::GetColliderManager() { return colliderManager_; }
 
 	///-------------------------------------------/// 
-	/// DeltaTime
+	/// GameTime
 	///-------------------------------------------///
-	MiiEngine::DeltaTime* ServiceLocator::GetDeltaTime() { return deltaTime_; }
+	MiiEngine::GameTime* Locator::GetGameTime() { return gameTime_; }
 }

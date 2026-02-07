@@ -3,9 +3,9 @@
 // Camera
 #include "application/Game/Camera/GameCamera.h"
 // Service
-#include "Engine/System/Service/GraphicsResourceGetter.h"
-#include "Engine/System/Service/CameraService.h"
-#include "Engine/System/Service/DeltaTimeSevice.h"
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/Camera.h"
+#include "Service/DeltaTime.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/MatrixMath.h"
@@ -53,14 +53,14 @@ namespace MiiEngine {
         InstancingInit(definition_.modelName, translate, group_.maxInstance, definition_.shape);
 
         /// ===Cameraの設定=== ///
-        group_.camera = Service::CameraService::GetActiveCamera().get();
+        group_.camera = Service::Camera::GetActiveCamera().get();
 
         /// ===発生タイマーの初期化=== ///
         group_.frequencyTimer = 0.0f;
         group_.hasEmitted = false;
 
         // デルタタイムの取得
-        kDeltaTime_ = Service::DeltaTimeSevice::GetDeltaTime();
+        kDeltaTime_ = Service::DeltaTime::GetDeltaTime();
 
         // テクスチャの設定
         if (!definition_.appearance.texturePath.empty()) {
@@ -76,7 +76,7 @@ namespace MiiEngine {
     ///-------------------------------------------///
     void ParticleGroup::Update() {
         // デルタタイムの取得
-        kDeltaTime_ = Service::DeltaTimeSevice::GetDeltaTime();
+        kDeltaTime_ = Service::DeltaTime::GetDeltaTime();
 
         // 停止中の場合は新規発生を止めて、既存パーティクルの寿命を短縮
         if (isStopped_) {

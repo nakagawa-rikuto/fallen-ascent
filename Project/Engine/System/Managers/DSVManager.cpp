@@ -3,7 +3,7 @@
 #include "Engine/Core/DXCommon.h"
 #include "Engine/Core/WinApp.h"
 // Service
-#include "Engine/System/Service/GraphicsResourceGetter.h"
+#include "Service/GraphicsResourceGetter.h"
 
 namespace MiiEngine {
     ///-------------------------------------------/// 

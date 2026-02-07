@@ -1,7 +1,8 @@
 #include "GameSceneUI.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
-#include "Engine/System/Service/GraphicsResourceGetter.h"
+// Service
+#include "Service/GraphicsResourceGetter.h"
 
 ///-------------------------------------------/// 
 /// Setter

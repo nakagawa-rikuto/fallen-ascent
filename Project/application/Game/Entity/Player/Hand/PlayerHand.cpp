@@ -5,8 +5,7 @@
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
 // Service
-#include "Engine/System/Service/ColliderService.h"
-#include "Engine/System/Service/DeltaTimeSevice.h"
+#include "Service/DeltaTime.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -31,7 +30,7 @@ void PlayerHand::Initialize() {
 	attackInfo_.isAttacking = false;
 
 	// DeltaTime初期化
-	baseInfo_.deltaTime = Service::DeltaTimeSevice::GetDeltaTime();
+	baseInfo_.deltaTime = Service::DeltaTime::GetDeltaTime();
 
 	// 初回更新
 	Update();
@@ -42,7 +41,7 @@ void PlayerHand::Initialize() {
 ///-------------------------------------------///
 void PlayerHand::Update() {
 	// DeltaTime更新
-	baseInfo_.deltaTime = Service::DeltaTimeSevice::GetDeltaTime();
+	baseInfo_.deltaTime = Service::DeltaTime::GetDeltaTime();
 
 	// 攻撃中でない場合は早期リターン
 	if (!attackInfo_.isAttacking) {

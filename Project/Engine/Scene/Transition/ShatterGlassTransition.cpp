@@ -1,8 +1,8 @@
 #include "ShatterGlassTransition.h"
 #include <algorithm>
 // Service
-#include "Engine/System/Service/OffScreenService.h"
-#include "Engine/System/Service/GraphicsResourceGetter.h"
+#include "Service/PostEffect.h"
+#include "Service/GraphicsResourceGetter.h"
 // Math
 #include "Math/EasingMath.h"
 
@@ -11,7 +11,7 @@ namespace MiiEngine {
 	/// デストラクタ
 	///-------------------------------------------///
 	ShatterGlassTransition::~ShatterGlassTransition() {
-		Service::OffScreenService::SetOffScreenType(OffScreenType::CopyImage);
+		Service::PostEffect::SetOffScreenType(OffScreenType::CopyImage);
 		if (sprite_) {
 			sprite_.reset();
 		}
@@ -22,7 +22,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void ShatterGlassTransition::StartFadeIn(float duration) {
 		// エフェクトタイプの設定
-		Service::OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
+		Service::PostEffect::SetOffScreenType(OffScreenType::ShatterGlass);
 		// Spriteの色をリセット
 		if (sprite_) {
 			sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 透明で初期化
@@ -92,7 +92,7 @@ namespace MiiEngine {
 				data_.progress = 0.25f + Easing::EaseOutCubic(phaseTime) * 0.3f;
 			}
 		} else {
-			Service::OffScreenService::SetOffScreenType(OffScreenType::CopyImage);
+			Service::PostEffect::SetOffScreenType(OffScreenType::CopyImage);
 			data_.progress = 1.0f;
 			// エフェクト終了判定
 			animation_.isPlaying = false;
@@ -100,7 +100,7 @@ namespace MiiEngine {
 		}
 
 		// 設定
-		Service::OffScreenService::SetShatterGlassData(data_);
+		Service::PostEffect::SetShatterGlassData(data_);
 		if (sprite_) {
 			sprite_->Update();
 		}

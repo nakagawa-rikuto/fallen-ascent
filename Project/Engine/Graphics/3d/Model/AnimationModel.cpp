@@ -7,9 +7,9 @@
 #include <vector>
 #include <algorithm>
 // Service
-#include "Engine/System/Service/ServiceLocator.h"
-#include "Engine/System/Service/GraphicsResourceGetter.h"
-#include "Engine/System/Service/Render.h"
+#include "Service/Locator.h"
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/Render.h"
 // Manager
 #include "Engine/System/Managers/SRVManager.h"
 // Math
@@ -257,13 +257,13 @@ namespace MiiEngine {
 
 		SkinCluster skinCluster;
 		/// ===Palette用のResourceを確保=== ///
-		uint32_t paletteIndex = Service::ServiceLocator::GetSRVManager()->Allocate();
+		uint32_t paletteIndex = Service::Locator::GetSRVManager()->Allocate();
 		skinCluster.paletteResource = CreateBufferResourceComPtr(device.Get(), sizeof(WellForGPU) * skeleton.joints.size());
 		WellForGPU* mappedPalette = nullptr;
 		skinCluster.paletteResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedPalette));
 		skinCluster.mappedPalette = { mappedPalette, skeleton.joints.size() }; // spanを使ってアクセスするようにする
-		skinCluster.paletteSrvHandle.first = Service::ServiceLocator::GetSRVManager()->GetCPUDescriptorHandle(paletteIndex);
-		skinCluster.paletteSrvHandle.second = Service::ServiceLocator::GetSRVManager()->GetGPUDescriptorHandle(paletteIndex);
+		skinCluster.paletteSrvHandle.first = Service::Locator::GetSRVManager()->GetCPUDescriptorHandle(paletteIndex);
+		skinCluster.paletteSrvHandle.second = Service::Locator::GetSRVManager()->GetGPUDescriptorHandle(paletteIndex);
 
 		/// ===Palette用のSRVを作成。StructuredBufferでアクセスできるようにする=== ///
 		D3D12_SHADER_RESOURCE_VIEW_DESC paletteSrvDesc{};

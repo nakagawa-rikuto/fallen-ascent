@@ -5,9 +5,9 @@
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
 // Service
-#include "Engine/System/Service/ColliderService.h"
-#include "Engine/System/Service/DeltaTimeSevice.h"
-#include "Engine/System/Service/ParticleService.h"
+#include "Service/Collision.h"
+#include "Service/DeltaTime.h"
+#include "Service/Particle.h"
 // ImGui
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -36,7 +36,7 @@ void PlayerWeapon::Initialize() {
 	OBBCollider::SetHalfSize({ 2.0f, 0.5f, 5.0f });
 
 	// DeltaTime初期化
-	baseInfo_.deltaTime = Service::DeltaTimeSevice::GetDeltaTime();
+	baseInfo_.deltaTime = Service::DeltaTime::GetDeltaTime();
 
 	// 初期状態では非アクティブ
 	SetActive(false);
@@ -51,7 +51,7 @@ void PlayerWeapon::Initialize() {
 ///-------------------------------------------///
 void PlayerWeapon::Update() {
 	// DeltaTime更新
-	baseInfo_.deltaTime = Service::DeltaTimeSevice::GetDeltaTime();
+	baseInfo_.deltaTime = Service::DeltaTime::GetDeltaTime();
 
 	// 攻撃中でない場合は早期リターン
 	if (!attackInfo_.isAttacking) {
@@ -69,7 +69,7 @@ void PlayerWeapon::Update() {
 		attackInfo_.isAttacking = false;
 		attackInfo_.progress = 1.0f;
 		SetActive(false);
-		Service::ColliderService::RemoveCollider(this);
+		Service::Collision::RemoveCollider(this);
 		OBBCollider::Update();
 		// パーティクルの削除
 		attackParticle_->Stop();
@@ -179,7 +179,7 @@ void PlayerWeapon::StartAttack(
 	attackInfo_.trajectoryPoints = trajectoryPoints;
 
 	// コライダーに追加
-	Service::ColliderService::AddCollider(this);
+	Service::Collision::AddCollider(this);
 
 	// 当たり判定フラグをリセット
 	attackInfo_.hasHit = false;
@@ -192,7 +192,7 @@ void PlayerWeapon::StartAttack(
 		attackParticle_->Stop();
 		attackParticle_ = nullptr;
 	}
-	attackParticle_ = Service::ParticleService::Emit("WeaponAttack", trajectoryPoints.front().position);
+	attackParticle_ = Service::Particle::Emit("WeaponAttack", trajectoryPoints.front().position);
 	attackParticle_->SetEmitterPosition(object3d_->GetWorldTranslate());
 
 	// 初期位置と回転を設定

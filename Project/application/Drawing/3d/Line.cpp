@@ -1,7 +1,9 @@
 #include "Line.h"
-#include "Engine/System/Service/ServiceLocator.h"
+// LineObject3D
 #include "Engine/Graphics/3d/Line/LineObject3D.h"
-
+// Service
+#include "Service/Locator.h"
+// Math
 #include "Math/MatrixMath.h"
 #include "Math/EasingMath.h"
 #include "Math/sMath.h"
@@ -10,7 +12,7 @@
 /// Line
 ///-------------------------------------------///
 void Line::DrawLine(const Vector3& start, const Vector3& end, const Vector4& color) {
-	Service::ServiceLocator::GetLineObject3D()->CreateLine(start, end, color);
+	Service::Locator::GetLineObject3D()->CreateLine(start, end, color);
 }
 
 ///-------------------------------------------/// 

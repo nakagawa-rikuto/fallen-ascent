@@ -1,13 +1,13 @@
 #include "LongRangeEnemyBullet.h"
 // Service
-#include "Engine/System/Service/ParticleService.h"
-#include "Engine/System/Service/ColliderService.h"
+#include "Service/Particle.h"
+#include "Service/Collision.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
 LongRangeEnemyBullet::~LongRangeEnemyBullet() {
-	Service::ColliderService::RemoveCollider(this);
+	Service::Collision::RemoveCollider(this);
 }
 
 ///-------------------------------------------/// 
@@ -26,7 +26,7 @@ void LongRangeEnemyBullet::Initialize() {
 	SphereCollider::SetRadius(0.5f);
 
 	// コライダーに追加
-	Service::ColliderService::AddCollider(this);
+	Service::Collision::AddCollider(this);
 
 	object3d_->Update();
 }
@@ -86,7 +86,7 @@ void LongRangeEnemyBullet::Create(const Vector3& pos, const Vector3& vel) {
 		bulletParticle_ = nullptr;
 	}
 	// パーティクルの再生
-	bulletParticle_ = Service::ParticleService::Emit("LongEnemyAttack", transform_.translate);
+	bulletParticle_ = Service::Particle::Emit("LongEnemyAttack", transform_.translate);
 	bulletParticle_->SetEmitterPosition(transform_.translate);
 }
 

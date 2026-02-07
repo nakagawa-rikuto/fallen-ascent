@@ -2,8 +2,8 @@
 // Math
 #include "Math/MatrixMath.h"
 // Service
-#include "Engine/System/Service/Render.h"
-#include "Engine/System/Service/CameraService.h"
+#include "Service/Render.h"
+#include "Service/Camera.h"
 // camera
 #include "application/Game/Camera/GameCamera.h"
 
@@ -54,7 +54,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void Primitive3DCommon::Update() {
 		/// ===カメラの設定=== ///
-		camera_ = Service::CameraService::GetActiveCamera().get();
+		camera_ = Service::Camera::GetActiveCamera().get();
 
 		// MaterialDataの書き込み
 		MaterialDataWrite();

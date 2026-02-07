@@ -6,7 +6,7 @@
 // ImGUi
 #ifdef USE_IMGUI
 #include <imgui.h>
-#include "Engine/System/Service/InputService.h"
+#include "Service/Input.h"
 #endif // USE_IMGUI
 #include <algorithm>
 
@@ -99,12 +99,12 @@ namespace MiiEngine {
 
 			// マウスの移動量を取得
 			Vector2 mouseDelta = {
-				static_cast<float>(Service::InputService::GetMouseDeltaX()),
-				static_cast<float>(Service::InputService::GetMouseDeltaY())
+				static_cast<float>(Service::Input::GetMouseDeltaX()),
+				static_cast<float>(Service::Input::GetMouseDeltaY())
 			};
 
 			// 右クリック状態でマウスを操作することでカメラを回転させる。（例ブレンダー）
-			if (Service::InputService::PushMouse(MouseButtonType::Right)) {
+			if (Service::Input::PushMouse(MouseButtonType::Right)) {
 				// マウス感度の設定
 				const float mouseSensitivity = 0.003f;
 
@@ -132,7 +132,7 @@ namespace MiiEngine {
 			}
 
 			// 中クリック（ホイールクリック）でパン移動
-			if (Service::InputService::PushMouse(MouseButtonType::Scroll)) {
+			if (Service::Input::PushMouse(MouseButtonType::Scroll)) {
 
 				// マウス感度の設定
 				const float mouseSensitivity = 0.005f;
@@ -154,7 +154,7 @@ namespace MiiEngine {
 			}
 
 			// マウスホイールでズーム
-			float wheelDelta = static_cast<float>(Service::InputService::GetMouseDeltaScroll());
+			float wheelDelta = static_cast<float>(Service::Input::GetMouseDeltaScroll());
 			if (wheelDelta != 0.0f) {
 
 				// ズーム感度の設定

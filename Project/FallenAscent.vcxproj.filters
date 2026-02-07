@@ -322,22 +322,22 @@
     <ClCompile Include="Engine\System\Managers\PiplineManager.cpp">
       <Filter>Engine\System\Manager</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\Service\AudioService.cpp">
+    <ClCompile Include="Service\Audio.cpp">
       <Filter>Engine\System\Service</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\Service\CameraService.cpp">
+    <ClCompile Include="Service\Camera.cpp">
       <Filter>Engine\System\Service</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\Service\ColliderService.cpp">
+    <ClCompile Include="Service\Collision.cpp">
       <Filter>Engine\System\Service</Filter>
     </ClCompile>
     <ClCompile Include="Math\EasingMath.cpp">
       <Filter>Math</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\Service\GraphicsResourceGetter.cpp">
+    <ClCompile Include="Service\GraphicsResourceGetter.cpp">
       <Filter>Engine\System\Service</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\Service\InputService.cpp">
+    <ClCompile Include="Service\Input.cpp">
       <Filter>Engine\System\Service</Filter>
     </ClCompile>
     <ClCompile Include="Engine\System\Managers\LevelManager.cpp">
@@ -352,16 +352,16 @@
     <ClCompile Include="Math\MatrixMath.cpp">
       <Filter>Math</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\Service\OffScreenService.cpp">
+    <ClCompile Include="Service\PostEffect.cpp">
       <Filter>Engine\System\Service</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\Service\ServiceLocator.cpp">
+    <ClCompile Include="Service\Locator.cpp">
       <Filter>Engine\System\Service</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\Service\ParticleService.cpp">
+    <ClCompile Include="Service\Particle.cpp">
       <Filter>Engine\System\Service</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\Service\Render.cpp">
+    <ClCompile Include="Service\Render.cpp">
       <Filter>Engine\System\Service</Filter>
     </ClCompile>
     <ClCompile Include="Math\Quaternion.cpp">
@@ -385,7 +385,7 @@
     <ClCompile Include="Math\Vector4.cpp">
       <Filter>Math</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\Service\Loader.cpp">
+    <ClCompile Include="Service\Loader.cpp">
       <Filter>Engine\System\Service</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp">
@@ -418,10 +418,10 @@
     <ClCompile Include="application\Game\Animation\GameOverAnimation.cpp">
       <Filter>application\Game\Animation</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\DeltraTime\DeltaTime.cpp">
+    <ClCompile Include="Engine\System\GameTime\GameTime.cpp">
       <Filter>Engine\System\DeltaTime</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\Service\DeltaTimeSevice.cpp">
+    <ClCompile Include="Service\DeltaTime.cpp">
       <Filter>Engine\System\Service</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Object\GameGround\Ground.cpp">
@@ -879,22 +879,22 @@
     <ClInclude Include="Engine\System\Managers\PiplineManager.h">
       <Filter>Engine\System\Manager</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\Service\AudioService.h">
+    <ClInclude Include="Service\Audio.h">
       <Filter>Engine\System\Service</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\Service\CameraService.h">
+    <ClInclude Include="Service\Camera.h">
       <Filter>Engine\System\Service</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\Service\ColliderService.h">
+    <ClInclude Include="Service\Collision.h">
       <Filter>Engine\System\Service</Filter>
     </ClInclude>
     <ClInclude Include="Math\EasingMath.h">
       <Filter>Math</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\Service\GraphicsResourceGetter.h">
+    <ClInclude Include="Service\GraphicsResourceGetter.h">
       <Filter>Engine\System\Service</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\Service\InputService.h">
+    <ClInclude Include="Service\Input.h">
       <Filter>Engine\System\Service</Filter>
     </ClInclude>
     <ClInclude Include="Engine\System\Managers\LevelManager.h">
@@ -909,16 +909,16 @@
     <ClInclude Include="Math\MatrixMath.h">
       <Filter>Math</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\Service\OffScreenService.h">
+    <ClInclude Include="Service\PostEffect.h">
       <Filter>Engine\System\Service</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\Service\ServiceLocator.h">
+    <ClInclude Include="Service\Locator.h">
       <Filter>Engine\System\Service</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\Service\ParticleService.h">
+    <ClInclude Include="Service\Particle.h">
       <Filter>Engine\System\Service</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\Service\Render.h">
+    <ClInclude Include="Service\Render.h">
       <Filter>Engine\System\Service</Filter>
     </ClInclude>
     <ClInclude Include="Math\Quaternion.h">
@@ -942,7 +942,7 @@
     <ClInclude Include="Math\Vector3.h">
       <Filter>Math</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\Service\Loader.h">
+    <ClInclude Include="Service\Loader.h">
       <Filter>Engine\System\Service</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h">
@@ -975,10 +975,10 @@
     <ClInclude Include="application\Game\Animation\GameOverAnimation.h">
       <Filter>application\Game\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\DeltraTime\DeltaTime.h">
+    <ClInclude Include="Engine\System\GameTime\GameTime.h">
       <Filter>Engine\System\DeltaTime</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\Service\DeltaTimeSevice.h">
+    <ClInclude Include="Service\DeltaTime.h">
       <Filter>Engine\System\Service</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Object\GameGround\Ground.h">

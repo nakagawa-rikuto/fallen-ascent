@@ -2,7 +2,7 @@
 // GameScene
 #include "application/Scene/Game/GameScene.h"
 // Service
-#include "Engine/System/Service/CameraService.h"
+#include "Service/Camera.h"
 // State
 #include "GameSceneExitState.h"
 
@@ -15,7 +15,7 @@ void GameSceneGameOverAnimationState::Enter(GameScene* gameScene) {
 
 	/// ===GameOverAnimation=== ///
 	gameOverAnimation_ = std::make_unique<GameOverAnimation>();
-	gameOverAnimation_->Initialize(Service::CameraService::GetActiveCamera().get());
+	gameOverAnimation_->Initialize(Service::Camera::GetActiveCamera().get());
 }
 
 ///-------------------------------------------/// 

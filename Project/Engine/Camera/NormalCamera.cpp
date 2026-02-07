@@ -4,8 +4,8 @@
 #include "Math/EasingMath.h"
 #include "Math/MatrixMath.h"
 // Service
-#include "Engine/System/Service/GraphicsResourceGetter.h"
-#include "Engine/System/Service/DeltaTimeSevice.h"
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/DeltaTime.h"
 // C++
 #include <random>
 #include <ctime>
@@ -15,7 +15,7 @@
 #endif // USE_IMGUI
 // Debug
 #ifdef _DEBUG
-#include "Engine/System/Service/InputService.h"
+#include "Service/Input.h"
 #endif // _DEBUG
 
 namespace MiiEngine {
@@ -97,36 +97,36 @@ namespace MiiEngine {
 		Vector3 right = Math::RotateVector({ 1.0f, 0.0f, 0.0f }, transform_.rotate);
 
 		/// ===カメラの移動=== ///
-		if (Service::InputService::PushKey(DIK_D)) {
+		if (Service::Input::PushKey(DIK_D)) {
 			transform_.translate.x += 0.01f;
-		} else if (Service::InputService::PushKey(DIK_A)) {
+		} else if (Service::Input::PushKey(DIK_A)) {
 			transform_.translate.x -= 0.01f;
 		}
-		if (Service::InputService::PushKey(DIK_W)) {
+		if (Service::Input::PushKey(DIK_W)) {
 			transform_.translate.z += 0.01f;
-		} else if (Service::InputService::PushKey(DIK_S)) {
+		} else if (Service::Input::PushKey(DIK_S)) {
 			transform_.translate.z -= 0.01f;
 		}
-		if (Service::InputService::PushKey(DIK_SPACE)) {
+		if (Service::Input::PushKey(DIK_SPACE)) {
 			transform_.translate.y += 0.01f;
-		} else if (Service::InputService::PushKey(DIK_LSHIFT)) {
+		} else if (Service::Input::PushKey(DIK_LSHIFT)) {
 			transform_.translate.y -= 0.01f;
 		}
 
 		// ピッチ（縦回転）
-		if (Service::InputService::PushKey(DIK_UP)) {
+		if (Service::Input::PushKey(DIK_UP)) {
 			Quaternion delta = Math::MakeRotateAxisAngle(right, -0.01f);
 			transform_.rotate = delta * transform_.rotate;
-		} else if (Service::InputService::PushKey(DIK_DOWN)) {
+		} else if (Service::Input::PushKey(DIK_DOWN)) {
 			Quaternion delta = Math::MakeRotateAxisAngle(right, +0.01f);
 			transform_.rotate = delta * transform_.rotate;
 		}
 
 		// ヨー（左右回転）
-		if (Service::InputService::PushKey(DIK_LEFT)) {
+		if (Service::Input::PushKey(DIK_LEFT)) {
 			Quaternion delta = Math::RotateY(-0.01f);
 			transform_.rotate = delta * transform_.rotate;
-		} else if (Service::InputService::PushKey(DIK_RIGHT)) {
+		} else if (Service::Input::PushKey(DIK_RIGHT)) {
 			Quaternion delta = Math::RotateY(+0.01f);
 			transform_.rotate = delta * transform_.rotate;
 		}
@@ -189,7 +189,7 @@ namespace MiiEngine {
 			return;
 		}
 
-		shakeTimer_ += Service::DeltaTimeSevice::GetDeltaTime();
+		shakeTimer_ += Service::DeltaTime::GetDeltaTime();
 
 		// シェイク終了判定
 		if (shakeTimer_ >= shakeDuration_) {

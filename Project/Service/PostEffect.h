@@ -18,9 +18,9 @@ namespace MiiEngine {
 
 namespace Service {
 	///=====================================================/// 
-	/// OffScreenService
+	/// PostEffect
 	///=====================================================///
-	class OffScreenService {
+	class PostEffect {
 	public: /// ===OffScreen=== ///
 
 		/// <summary>

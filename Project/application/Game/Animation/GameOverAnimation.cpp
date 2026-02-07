@@ -1,6 +1,9 @@
 #include "GameOverAnimation.h"
+// Camera
 #include "application/Game/Camera/GameCamera.h"
-#include "Engine/System/Service/GraphicsResourceGetter.h"
+// Service
+#include "Service/GraphicsResourceGetter.h"
+// C++
 #include <cmath>
 
 // 定数定義

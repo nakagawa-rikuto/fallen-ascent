@@ -1,5 +1,5 @@
 #include "SceneTransitionBase.h"
-#include "Engine/System/Service/DeltaTimeSevice.h"
+#include "Service/DeltaTime.h"
 
 namespace MiiEngine {
 	///-------------------------------------------/// 
@@ -44,7 +44,7 @@ namespace MiiEngine {
 		}
 
 		// 経過時間を加算
-		animation_.currentTime += Service::DeltaTimeSevice::GetDeltaTime();
+		animation_.currentTime += Service::DeltaTime::GetDeltaTime();
 
 		/// ===フェードインの更新処理=== ///
 		OnFadeInUpdate();
@@ -60,7 +60,7 @@ namespace MiiEngine {
 		}
 
 		// 経過時間を加算
-		animation_.currentTime += Service::DeltaTimeSevice::GetDeltaTime();
+		animation_.currentTime += Service::DeltaTime::GetDeltaTime();
 
 		/// ===フェードアウトの更新処理=== ///
 		OnFadeOutUpdate();

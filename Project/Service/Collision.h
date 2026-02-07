@@ -10,9 +10,9 @@ namespace MiiEngine {
 
 namespace Service {
 	///-------------------------------------------/// 
-	/// ColliderService
+	/// Collision
 	///-------------------------------------------///
-	class ColliderService {
+	class Collision {
 	public:
 
 		/// <summary>

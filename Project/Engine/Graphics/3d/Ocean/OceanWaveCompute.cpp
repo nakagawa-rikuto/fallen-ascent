@@ -2,7 +2,8 @@
 // C++
 #include <cassert>
 // Service
-#include "Engine/System/Service/ServiceLocator.h"
+#include "Service/Locator.h"
+// SRVManager
 #include "Engine/System/Managers/SRVManager.h"
 // Math
 #include "Math/sMath.h"
@@ -39,7 +40,7 @@ namespace MiiEngine {
         vertexCount_ = (gridSize_ + 1) * (gridSize_ + 1);
 
         // SRVManagerを取得
-        srvManager_ = Service::ServiceLocator::GetSRVManager();
+        srvManager_ = Service::Locator::GetSRVManager();
 
         // === 波情報バッファ（12個の波）StructuredBuffer === //
         waveInfoBuffer_ = std::make_unique<BufferBase>();

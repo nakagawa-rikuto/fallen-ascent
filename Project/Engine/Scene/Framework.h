@@ -11,7 +11,7 @@
 // ColliderManager
 #include "Engine/System/Managers/ColliderManager.h"
 // DeltaTime
-#include "Engine/System/DeltraTime/DeltaTime.h"
+#include "Engine/System/GameTime/GameTime.h"
 // ｃ++
 #include <memory>
 
@@ -74,8 +74,8 @@ namespace MiiEngine {
 		std::unique_ptr<ParticleManager> particleManager_;
 		// ColliderManager
 		std::unique_ptr<ColliderManager> colliderManager_;
-		// DeltaTime
-		std::unique_ptr<DeltaTime> deltaTime_;
+		// GameTime
+		std::unique_ptr<GameTime> gameTime_;
 	protected:
 		// ゲーム終了フラグ
 		bool endRequest_ = false;

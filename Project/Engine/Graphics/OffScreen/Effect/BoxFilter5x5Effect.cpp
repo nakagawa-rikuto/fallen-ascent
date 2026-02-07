@@ -1,6 +1,6 @@
 #include "BoxFilter5x5Effect.h"
 // Service
-#include "Engine/System/Service/Render.h"
+#include "Service/Render.h"
 
 namespace MiiEngine {
 	///-------------------------------------------/// 
