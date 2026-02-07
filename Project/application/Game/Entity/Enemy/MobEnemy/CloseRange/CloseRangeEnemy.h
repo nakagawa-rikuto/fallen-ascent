@@ -2,9 +2,6 @@
 /// ===Include=== ///
 #include "application/Game/Entity/Enemy/MobEnemy/Base/MobEnemy.h"
 
-/// ===前方宣言=== ///
-class ParticleGroup;
-
 ///=====================================================/// 
 /// 近接戦闘Enemy
 ///=====================================================///
@@ -33,7 +30,7 @@ public:
 	/// 描画処理
 	/// </summary>
 	/// <param name="mode">適用するブレンドモード。省略した場合は BlendMode::KBlendModeNormal が使用されます。</param>
-	void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
+	void Draw(MiiEngine::BlendMode mode = MiiEngine::BlendMode::KBlendModeNormal)override;
 
 	/// <summary>
 	/// ImGui情報の表示
@@ -55,12 +52,12 @@ public: /// ===衝突判定=== ///
 	/// 衝突時の処理
 	/// </summary>
 	/// <param name="collider">衝突した相手を表す Collider へのポインター。</param>
-	void OnCollision(Collider* collider) override;
+	void OnCollision(MiiEngine::Collider* collider) override;
 
 private: /// ===変数=== ///
 
 	// ParticleGroup
-	ParticleGroup* attackParticle_ = nullptr;
+	MiiEngine::ParticleGroup* attackParticle_ = nullptr;
 
 	/// ===突進情報=== ///
 	struct ChargeInfo {

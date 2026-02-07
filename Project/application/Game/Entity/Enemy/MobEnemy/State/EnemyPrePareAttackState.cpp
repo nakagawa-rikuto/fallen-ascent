@@ -4,7 +4,7 @@
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // Service
-#include "Engine/System/Service/ParticleService.h"
+#include "Service/Particle.h"
 // State
 #include "EnemyAttackState.h"
 // Math
@@ -27,8 +27,8 @@ void EnemyPrePareAttackState::Enter(MobEnemy* enemy) {
 	// フラグをリセット
 	enemy_->SetIsRotationComplete(false);
 	// パーティクルの再生
-	activeParticle_ = ParticleService::Emit("EnemyPrePareAttack", enemy_->GetTransform().translate);
-	prePareAttackParticle_ = ParticleService::Emit("EnemyPrePareAttackCharge", enemy_->GetTransform().translate);
+	activeParticle_ = Service::Particle::Emit("EnemyPrePareAttack", enemy_->GetTransform().translate);
+	prePareAttackParticle_ = Service::Particle::Emit("EnemyPrePareAttackCharge", enemy_->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 

@@ -1,6 +1,9 @@
 #include "GameOverAnimation.h"
+// Camera
 #include "application/Game/Camera/GameCamera.h"
-#include "Engine/System/Service/GraphicsResourceGetter.h"
+// Service
+#include "Service/GraphicsResourceGetter.h"
+// C++
 #include <cmath>
 
 // 定数定義
@@ -32,8 +35,8 @@ void GameOverAnimation::Initialize(GameCamera* camera) {
     gameOverSprite_->Initialize("GameOverAnimation");
 
     // ウィンドウサイズの取得
-    float windowWidth = static_cast<float>(GraphicsResourceGetter::GetWindowWidth());
-    float windowHeight = static_cast<float>(GraphicsResourceGetter::GetWindowHeight());
+    float windowWidth = static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth());
+    float windowHeight = static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight());
 
     // スプライトの初期設定（画面中央）
     gameOverSprite_->SetPosition({ windowWidth / 2.0f, windowHeight / 2.0f });
@@ -45,7 +48,7 @@ void GameOverAnimation::Initialize(GameCamera* camera) {
     blackSprite_ = std::make_unique<Sprite>();
     blackSprite_->Initialize("White"); // 1x1の白テクスチャ
     blackSprite_->SetPosition({ windowWidth / 2.0f, windowHeight /2.0f });
-    GraphicsResourceGetter::GetWindowWidth();
+    Service::GraphicsResourceGetter::GetWindowWidth();
     blackSprite_->SetSize({ windowWidth, windowHeight }); // 画面全体
     blackSprite_->SetAnchorPoint({ 0.5f, 0.5f });
     blackSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 0.0f }); // 黒、初期は透明
@@ -103,14 +106,14 @@ void GameOverAnimation::Draw() {
     // スプライト描画フェーズ以降でゲームオーバースプライトを描画
     if (phase_ == Phase::DrawSprite || phase_ == Phase::ShakeSprite) {
         if (gameOverSprite_) {
-            gameOverSprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
+            gameOverSprite_->Draw(MiiEngine::GroundType::Front, MiiEngine::BlendMode::KBlendModeNormal);
         }
     }
 
     // ブラックアウトの描画（最前面）
     if (phase_ == Phase::ShakeSprite && blackAlpha_ > 0.0f) {
         if (blackSprite_) {
-            blackSprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
+            blackSprite_->Draw(MiiEngine::GroundType::Front, MiiEngine::BlendMode::KBlendModeNormal);
         }
     }
 }

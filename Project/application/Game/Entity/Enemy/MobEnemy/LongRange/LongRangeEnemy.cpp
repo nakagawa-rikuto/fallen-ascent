@@ -1,8 +1,6 @@
 #include "LongRangeEnemy.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
-// Service
-#include "Engine/System/Service/ParticleService.h"
 // ImGui
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -80,7 +78,7 @@ void LongRangeEnemy::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void LongRangeEnemy::Draw(BlendMode mode) {
+void LongRangeEnemy::Draw(MiiEngine::BlendMode mode) {
 	// Enemyの描画
 	MobEnemy::Draw(mode);
 
@@ -104,7 +102,7 @@ void LongRangeEnemy::Information() {
 ///-------------------------------------------/// 
 /// 衝突判定
 ///-------------------------------------------///
-void LongRangeEnemy::OnCollision(Collider* collider) {
+void LongRangeEnemy::OnCollision(MiiEngine::Collider* collider) {
 	// MobEnemyの当たり判定
 	MobEnemy::OnCollision(collider);
 }

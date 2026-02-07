@@ -11,7 +11,7 @@
 ///=====================================================/// 
 /// タイトルシーン
 ///=====================================================///
-class TitleScene : public IScene {
+class TitleScene : public MiiEngine::IScene {
 public:/// ===メンバ関数=== ///
 
 	TitleScene() = default;

@@ -5,7 +5,9 @@
 #include "Math/Vector3.h"
 
 /// ===前方宣言=== ///
-class ParticleGroup;
+namespace MiiEngine {
+	class ParticleGroup;
+}
 
 ///=====================================================/// 
 /// MoveState
@@ -35,7 +37,7 @@ public:
 	void Finalize() override;	
 
 private:
-	ParticleGroup* moveParticle_ = nullptr;
+	MiiEngine::ParticleGroup* moveParticle_ = nullptr;
 
 private:
 

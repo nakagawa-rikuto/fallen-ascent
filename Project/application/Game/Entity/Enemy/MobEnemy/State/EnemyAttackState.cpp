@@ -2,8 +2,6 @@
 // MobEnemy
 #include "application/Game/Entity/Enemy/MobEnemy/Base/MobEnemy.h"
 #include "application/Game/Entity/Enemy/MobEnemy/LongRange/LongRangeEnemy.h"
-// Service
-#include "Engine/System/Service/ParticleService.h"
 // State
 #include "EnemyMoveState.h"
 

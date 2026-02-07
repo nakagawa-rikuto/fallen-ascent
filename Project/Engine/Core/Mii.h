@@ -29,136 +29,136 @@
 // LineObject
 #include "Engine/Graphics/3d/Line/LineObject3D.h"
 
-
-///=====================================================///
-/// システム
-///=====================================================///
-class Mii {
-public:
-
-	Mii() = default;
-	~Mii() = default;
-
-public:/// ===開発者用関数(システム)=== ///
-
-	/// <summary>
-	/// システム全体の初期化処理
-	/// </summary>
-	/// <param name="title">初期化に使用するタイトルのヌル終端ワイド文字列（const wchar_t*）。</param>
-	/// <param name="width">幅（ピクセル）。省略時の既定値は1920。</param>
-	/// <param name="height">高さ（ピクセル）。省略時の既定値は1080。</param>
-	void Initialize(const wchar_t* title, int width = 1920, int height = 1080);
-
-	/// <summary>
-	/// システム全体の更新処理
-	/// </summary>
-	void Update();
-			
-	/// <summary>
-	/// システム全体の終了処理
-	/// </summary>
-	void Finalize();
-
-	/// <summary>
-	/// フレーム開始処理
-	/// </summary>
-	void BeginFrame();
-
-	/// <summary>
-	/// フレーム終了処理
-	/// </summary>
-	void EndFrame();
-
-	/// <summary>
-	/// Windowsのメッセージを処理
-	/// </summary>
-	/// <returns>処理結果を表す整数値（意味は実装に依存します）。</returns>
-	int ProcessMessage();
-
-public:/// ===開発者用関数(Getter)=== ///
-	// DXCommonの取得
-	DXCommon* GetDXCommon();
-	// WinAppの取得
-	WinApp* GetWinApp();
-	// SRVManagerの取得
-	SRVManager* GetSRVManager();
-	// RTVManagerの取得
-	RTVManager* GetRTVManager();
-	// DSVManagerの取得
-	DSVManager* GetDSVManager();
-	// PipelineManagerの取得
-	PipelineManager* GetPipelineManager();
-	// TextureManagerの取得
-	TextureManager* GetTextureManager();
-	// ModelManagerの取得
-	ModelManager* GetModelManager();
-	// AudioManagerの取得
-	AudioManager* GetAudioManager();
-	// CSVManagerの取得
-	CSVManager* GetCSVManager();
-	// LevelManagerの取得
-	LevelManager* GetLevelManager();
-	// AnimationManagerの取得
-	AnimationManager* GetAnimationManager();
-	// OffScreenRendererの取得
-	OffScreenRenderer* GetOffScreenRenderer();
-	// LineObject3Dの取得
-	LineObject3D* GetLineObject3D();
-	// Keyboardの取得
-	Keyboard* GetKeyboard();
-	// Mouseの取得
-	Mouse* GetMouse();
-	// Controllerの取得
-	Controller* GetController();
-
-private:/// ===Variables(変数)=== ///
-	// Core
-	std::unique_ptr<WinApp> winApp_;                     // WinApp
-	std::unique_ptr<DXCommon> dXCommon_;                 // DirectXCommon
-	// Input
-	std::unique_ptr<InputCommon> inputCommon_;           // inputCommon
-	std::unique_ptr<Keyboard> keyboard_;                 // Keyboard
-	std::unique_ptr<Mouse> mouse_;                       // Mouse
-	std::unique_ptr<Controller> controller_;             // Controller
-	// Manager
-	std::unique_ptr<SRVManager> srvManager_;             // SRVManager
-	std::unique_ptr<RTVManager> rtvManager_;             // RTVManager
-	std::unique_ptr<DSVManager> dsvManager_;             // DSVManager
-	std::unique_ptr<PipelineManager> pipelineManager_;   // PipelineManager
-	std::unique_ptr<TextureManager> textureManager_;     // TextureManager
-	std::unique_ptr<ModelManager> modelManager_;         // ModelManager
-	std::unique_ptr<ImGuiManager> imGuiManager_;         // ImGuiManager
-	std::unique_ptr<AudioManager> audioManager_;         // AudioManager
-	std::unique_ptr<CSVManager> csvManager_;             // CSVManager
-	std::unique_ptr<AnimationManager> animationManager_; // AnimationManager
-	// OffScreen
-	std::unique_ptr<OffScreenRenderer> offScreenRenderer_;// OffScreen
-	// ImGui
-	std::unique_ptr<SceneView> sceneView_;                // SceneView
-	// Line
-	std::unique_ptr<LineObject3D> lineObject3D_;          // LineObject3D
-	// Level
-	std::unique_ptr<LevelManager> levelManager_;			  // LevelLoader
-
-private:
-	///=====================================================/// 
-	/// ReportLiveObjects()
+namespace MiiEngine {
 	///=====================================================///
-	struct D3DResourceLeakChecker {
+	/// システム
+	///=====================================================///
+	class Mii {
+	public:
 
-		~D3DResourceLeakChecker() {
+		Mii() = default;
+		~Mii() = default;
 
-			// リソースリークチェック
-			ComPtr<IDXGIDebug1> debug;
-			if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
-				debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
-				debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
-				debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
+	public:/// ===開発者用関数(システム)=== ///
+
+		/// <summary>
+		/// システム全体の初期化処理
+		/// </summary>
+		/// <param name="title">初期化に使用するタイトルのヌル終端ワイド文字列（const wchar_t*）。</param>
+		/// <param name="width">幅（ピクセル）。省略時の既定値は1920。</param>
+		/// <param name="height">高さ（ピクセル）。省略時の既定値は1080。</param>
+		void Initialize(const wchar_t* title, int width = 1920, int height = 1080);
+
+		/// <summary>
+		/// システム全体の更新処理
+		/// </summary>
+		void Update();
+
+		/// <summary>
+		/// システム全体の終了処理
+		/// </summary>
+		void Finalize();
+
+		/// <summary>
+		/// フレーム開始処理
+		/// </summary>
+		void BeginFrame();
+
+		/// <summary>
+		/// フレーム終了処理
+		/// </summary>
+		void EndFrame();
+
+		/// <summary>
+		/// Windowsのメッセージを処理
+		/// </summary>
+		/// <returns>処理結果を表す整数値（意味は実装に依存します）。</returns>
+		int ProcessMessage();
+
+	public:/// ===開発者用関数(Getter)=== ///
+		// DXCommonの取得
+		DXCommon* GetDXCommon();
+		// WinAppの取得
+		WinApp* GetWinApp();
+		// SRVManagerの取得
+		SRVManager* GetSRVManager();
+		// RTVManagerの取得
+		RTVManager* GetRTVManager();
+		// DSVManagerの取得
+		DSVManager* GetDSVManager();
+		// PipelineManagerの取得
+		PipelineManager* GetPipelineManager();
+		// TextureManagerの取得
+		TextureManager* GetTextureManager();
+		// ModelManagerの取得
+		ModelManager* GetModelManager();
+		// AudioManagerの取得
+		AudioManager* GetAudioManager();
+		// CSVManagerの取得
+		CSVManager* GetCSVManager();
+		// LevelManagerの取得
+		LevelManager* GetLevelManager();
+		// AnimationManagerの取得
+		AnimationManager* GetAnimationManager();
+		// OffScreenRendererの取得
+		OffScreenRenderer* GetOffScreenRenderer();
+		// LineObject3Dの取得
+		LineObject3D* GetLineObject3D();
+		// Keyboardの取得
+		Keyboard* GetKeyboard();
+		// Mouseの取得
+		Mouse* GetMouse();
+		// Controllerの取得
+		Controller* GetController();
+
+	private:/// ===Variables(変数)=== ///
+		// Core
+		std::unique_ptr<WinApp> winApp_;                     // WinApp
+		std::unique_ptr<DXCommon> dXCommon_;                 // DirectXCommon
+		// Input
+		std::unique_ptr<InputCommon> inputCommon_;           // inputCommon
+		std::unique_ptr<Keyboard> keyboard_;                 // Keyboard
+		std::unique_ptr<Mouse> mouse_;                       // Mouse
+		std::unique_ptr<Controller> controller_;             // Controller
+		// Manager
+		std::unique_ptr<SRVManager> srvManager_;             // SRVManager
+		std::unique_ptr<RTVManager> rtvManager_;             // RTVManager
+		std::unique_ptr<DSVManager> dsvManager_;             // DSVManager
+		std::unique_ptr<PipelineManager> pipelineManager_;   // PipelineManager
+		std::unique_ptr<TextureManager> textureManager_;     // TextureManager
+		std::unique_ptr<ModelManager> modelManager_;         // ModelManager
+		std::unique_ptr<ImGuiManager> imGuiManager_;         // ImGuiManager
+		std::unique_ptr<AudioManager> audioManager_;         // AudioManager
+		std::unique_ptr<CSVManager> csvManager_;             // CSVManager
+		std::unique_ptr<AnimationManager> animationManager_; // AnimationManager
+		// OffScreen
+		std::unique_ptr<OffScreenRenderer> offScreenRenderer_;// OffScreen
+		// ImGui
+		std::unique_ptr<SceneView> sceneView_;                // SceneView
+		// Line
+		std::unique_ptr<LineObject3D> lineObject3D_;          // LineObject3D
+		// Level
+		std::unique_ptr<LevelManager> levelManager_;			  // LevelLoader
+
+	private:
+		///=====================================================/// 
+		/// ReportLiveObjects()
+		///=====================================================///
+		struct D3DResourceLeakChecker {
+
+			~D3DResourceLeakChecker() {
+
+				// リソースリークチェック
+				ComPtr<IDXGIDebug1> debug;
+				if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
+					debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+					debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
+					debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
+				}
 			}
-		}
+		};
+
+		// ReportLiveObjects
+		D3DResourceLeakChecker leakCheck;
 	};
-
-	// ReportLiveObjects
-	D3DResourceLeakChecker leakCheck;
-};
-
+}

@@ -6,7 +6,7 @@
 ///=====================================================/// 
 /// セレクトシーン
 ///=====================================================///
-class SelectScene : public IScene {
+class SelectScene : public MiiEngine::IScene {
 public:/// ===メンバ関数=== ///
 
 	SelectScene() = default;

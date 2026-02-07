@@ -13,7 +13,7 @@
 ///=====================================================/// 
 /// 攻撃エディターシーン
 ///=====================================================///
-class AttackEditorScene : public IScene {
+class AttackEditorScene : public MiiEngine::IScene {
 public:
 
     AttackEditorScene() = default;

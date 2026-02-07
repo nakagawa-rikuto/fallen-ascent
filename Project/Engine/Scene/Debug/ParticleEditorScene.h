@@ -8,71 +8,73 @@
 // c++
 #include <memory>
 
-///=====================================================/// 
-/// パーティクルエディターシーン
-///=====================================================///
-class ParticleEditorScene : public IScene {
-public:
+namespace MiiEngine {
+	///=====================================================/// 
+	/// パーティクルエディターシーン
+	///=====================================================///
+	class ParticleEditorScene : public IScene {
+	public:
 
-	ParticleEditorScene() = default;
-	~ParticleEditorScene();
+		ParticleEditorScene() = default;
+		~ParticleEditorScene();
 
-	/// <summary>
-	/// 初期化処理
-	/// </summary>
-	void Initialize() override;
+		/// <summary>
+		/// 初期化処理
+		/// </summary>
+		void Initialize() override;
 
-	/// <summary>
-	/// 更新処理
-	/// </summary>
-	void Update() override;
+		/// <summary>
+		/// 更新処理
+		/// </summary>
+		void Update() override;
 
-	/// <summary>
-	/// 描画処理
-	/// </summary>
-	void Draw() override;
+		/// <summary>
+		/// 描画処理
+		/// </summary>
+		void Draw() override;
 
-private:
-	/// ===Line=== ///
-	std::unique_ptr<Line> line_;
-	/// ===エディター=== ///
-	std::unique_ptr<ParticleEditor> particleEditor_;
+	private:
+		/// ===Line=== ///
+		std::unique_ptr<Line> line_;
+		/// ===エディター=== ///
+		std::unique_ptr<ParticleEditor> particleEditor_;
 
-	/// ===エディター設定=== ///
-	bool showHelp_ = false;              // ヘルプ表示フラグ
-	bool showStats_ = true;              // 統計情報表示フラグ
-	bool showGrid_ = true;               // グリッド表示フラグ
+		/// ===エディター設定=== ///
+		bool showHelp_ = false;              // ヘルプ表示フラグ
+		bool showStats_ = true;              // 統計情報表示フラグ
+		bool showGrid_ = true;               // グリッド表示フラグ
 
-	/// ===カメラ制御=== ///
-	Vector3 cameraPosition_ = { 0.0f, 5.0f, -10.0f };
-	Vector3 cameraRotation_ = { 0.3f, 0.0f, 0.0f };
-	float cameraSpeed_ = 0.1f;
-	float cameraRotationSpeed_ = 0.02f;
+		/// ===カメラ制御=== ///
+		Vector3 cameraPosition_ = { 0.0f, 5.0f, -10.0f };
+		Vector3 cameraRotation_ = { 0.3f, 0.0f, 0.0f };
+		float cameraSpeed_ = 0.1f;
+		float cameraRotationSpeed_ = 0.02f;
 
-private:
+	private:
 
-	/// <summary>
-	/// メニューバーの描画
-	/// </summary>
-	void RenderMenuBar();
+		/// <summary>
+		/// メニューバーの描画
+		/// </summary>
+		void RenderMenuBar();
 
-	/// <summary>
-	/// ヘルプウィンドウの描画
-	/// </summary>
-	void RenderHelpWindow();
+		/// <summary>
+		/// ヘルプウィンドウの描画
+		/// </summary>
+		void RenderHelpWindow();
 
-	/// <summary>
-	/// 統計情報ウィンドウの描画
-	/// </summary>
-	void RenderStatsWindow();
+		/// <summary>
+		/// 統計情報ウィンドウの描画
+		/// </summary>
+		void RenderStatsWindow();
 
-	/// <summary>
-	/// カメラコントロールウィンドウの描画
-	/// </summary>
-	void RenderCameraControl();
+		/// <summary>
+		/// カメラコントロールウィンドウの描画
+		/// </summary>
+		void RenderCameraControl();
 
-	/// <summary>
-	/// カメラの更新
-	/// </summary>
-	void UpdateCamera();
-};
+		/// <summary>
+		/// カメラの更新
+		/// </summary>
+		void UpdateCamera();
+	};
+}

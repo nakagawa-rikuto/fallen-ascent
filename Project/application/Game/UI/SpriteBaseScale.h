@@ -3,7 +3,7 @@
 // Vector2
 #include "Math/Vector2.h"
 // Service
-#include "Engine/System/Service/GraphicsResourceGetter.h"
+#include "Service/GraphicsResourceGetter.h"
 
 ///-------------------------------------------/// 
 /// 基準スケールの取得
@@ -14,8 +14,8 @@ inline Vector2 GetBaseScale() {
 	constexpr float BASE_HEIGHT = 1080.0f;
 	// ウィンドウサイズの取得
 	Vector2 windowSize = {
-		static_cast<float>(GraphicsResourceGetter::GetWindowWidth()),
-		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
+		static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()),
+		static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight())
 	};
 	// スケール計算
 	Vector2 scale = { windowSize.x / BASE_WIDTH, windowSize.y / BASE_HEIGHT };

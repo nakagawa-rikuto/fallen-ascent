@@ -6,7 +6,7 @@
 ///=====================================================/// 
 /// スプライト
 ///=====================================================///
-class Sprite : public SpriteCommon {
+class Sprite : public MiiEngine::SpriteCommon {
 public: /// ===基本的な関数=== ///
 
 	Sprite() = default;
@@ -28,7 +28,7 @@ public: /// ===基本的な関数=== ///
 	/// </summary>
 	/// <param name="type">描画するグラウンドの種類。既定値は GroundType::Front。</param>
 	/// <param name="mode">使用するブレンドモード。既定値は BlendMode::KBlendModeNormal。</param>
-	void Draw(GroundType type = GroundType::Front, BlendMode mode = BlendMode::KBlendModeNormal) override;
+	void Draw(MiiEngine::GroundType type = MiiEngine::GroundType::Front, MiiEngine::BlendMode mode = MiiEngine::BlendMode::KBlendModeNormal) override;
 
 public:/// ===Getter=== ///
 

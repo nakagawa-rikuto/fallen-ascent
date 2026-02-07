@@ -1,53 +1,56 @@
 #pragma once
-/// ===Includ=== ///
+/// ===Include=== ///
 // Engine
 #include "Engine/Core/ComPtr.h"
 #include "Engine/DataInfo/InputData.h"
 
-/// ===前方宣言=== ///
-class WinApp;
+namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class WinApp;
 
-///-------------------------------------------///
-/// キーボード
-///-------------------------------------------///
-class Keyboard {
-public:
 
-	Keyboard() = default;
-	~Keyboard();
+	///-------------------------------------------///
+	/// キーボード
+	///-------------------------------------------///
+	class Keyboard {
+	public:
 
-	/// <summary>
-	/// 初期化処理
-	/// </summary>
-	/// <param name="winApp">Class WinApp</param>
-	/// <param name="input">DirectInput</param>
-	void Initialize(WinApp* winApp, IDirectInput8* input);
-	
-	/// <summary>
-	/// 更新処理
-	/// </summary>
-	void Update();
+		Keyboard() = default;
+		~Keyboard();
 
-	/// <summary>
-	/// キーの押下をチェック
-	/// </summary>
-	/// <param name="keyNum">キーのタイプ</param>
-	/// <returns>フラグを返す</returns>
-	bool PushKey(BYTE keyNum);
+		/// <summary>
+		/// 初期化処理
+		/// </summary>
+		/// <param name="winApp">Class WinApp</param>
+		/// <param name="input">DirectInput</param>
+		void Initialize(WinApp* winApp, IDirectInput8* input);
 
-	/// <summary>
-	/// キーのトリガーをチェック
-	/// </summary>
-	/// <param name="keyNum">キーのタイプ</param>
-	/// <returns>フラグを返す</returns>
-	bool TriggerKey(BYTE keyNum);
+		/// <summary>
+		/// 更新処理
+		/// </summary>
+		void Update();
 
-private:
-	// キーボード用のDirectInputデバイス
-	ComPtr<IDirectInputDevice8> keyboard_; 
-	// 現在の全キーの状態
-	BYTE key_[256] = {}; 
-	// 前回の全キーの状態
-	BYTE preKey_[256] = {}; 
-};
+		/// <summary>
+		/// キーの押下をチェック
+		/// </summary>
+		/// <param name="keyNum">キーのタイプ</param>
+		/// <returns>フラグを返す</returns>
+		bool PushKey(BYTE keyNum);
+
+		/// <summary>
+		/// キーのトリガーをチェック
+		/// </summary>
+		/// <param name="keyNum">キーのタイプ</param>
+		/// <returns>フラグを返す</returns>
+		bool TriggerKey(BYTE keyNum);
+
+	private:
+		// キーボード用のDirectInputデバイス
+		ComPtr<IDirectInputDevice8> keyboard_;
+		// 現在の全キーの状態
+		BYTE key_[256] = {};
+		// 前回の全キーの状態
+		BYTE preKey_[256] = {};
+	};
+}
 

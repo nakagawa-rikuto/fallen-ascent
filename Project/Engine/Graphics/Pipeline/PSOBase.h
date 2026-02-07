@@ -16,14 +16,13 @@
 class DXCommon;
 class Compiler;
 
-///=====================================================/// 
-/// PipelineStateObjectBase
-///=====================================================///
-class PSOBase {
-public:
-	
-	virtual ~PSOBase() = default;
-
-
-};
+namespace MiiEngine {
+	///=====================================================/// 
+	/// PipelineStateObjectBase
+	///=====================================================///
+	class PSOBase {
+	public:
+		virtual ~PSOBase() = default;
+	};
+}
 

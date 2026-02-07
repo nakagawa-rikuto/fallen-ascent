@@ -2,17 +2,16 @@
 // c++
 #include <cassert>
 // Engine
-#include "Engine/System/Service/GraphicsResourceGetter.h"
-#include "Engine/System/Service/Render.h"
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/Render.h"
 // Math
 #include "Math/MatrixMath.h"
 
-
+using namespace MiiEngine;
 ///-------------------------------------------/// 
 /// コンストラクタ、デストラクタ
 ///-------------------------------------------///
 Sprite::~Sprite() = default;
-
 
 ///-------------------------------------------/// 
 /// Getter

@@ -3,7 +3,10 @@
 #include "Base/EnemyState.h"
 #include "Math/Vector3.h"
 
-class ParticleGroup;
+/// ===前方宣言=== ///
+namespace MiiEngine {
+	class ParticleGroup;
+}
 
 ///-------------------------------------------/// 
 /// PrePareAttackState
@@ -30,8 +33,8 @@ public:
 	void Finalize() override;
 
 private:
-	ParticleGroup* activeParticle_ = nullptr;
-	ParticleGroup* prePareAttackParticle_ = nullptr;
+	MiiEngine::ParticleGroup* activeParticle_ = nullptr;
+	MiiEngine::ParticleGroup* prePareAttackParticle_ = nullptr;
 
 	/// ===タイマー=== ///
 	float activeTimer_ = 0.0f;	// アクティブタイマー

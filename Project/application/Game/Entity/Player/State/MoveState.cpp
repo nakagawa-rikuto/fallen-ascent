@@ -1,7 +1,7 @@
 #include "MoveState.h"
 // Service
-#include "Engine/System/Service/InputService.h"
-#include "Engine/System/Service/ParticleService.h"
+#include "Service/Input.h"
+#include "Service/Particle.h"
 // Player, Camera
 #include "application/Game/Entity/Player/Player.h"
 #include "application/Game/Camera/GameCamera.h"
@@ -27,7 +27,7 @@ void MoveState::Enter(Player* player, GameCamera* camera) {
 		moveParticle_ = nullptr;
 	}
 	// 移動パーティクルの再生
-	moveParticle_ = ParticleService::Emit("PlayerWarke", player_->GetTransform().translate);
+	moveParticle_ = Service::Particle::Emit("PlayerWarke", player_->GetTransform().translate);
 	moveParticle_->SetEmitterPosition(player_->GetTransform().translate);
 }
 
@@ -63,7 +63,7 @@ void MoveState::Update(Player * player, GameCamera* camera) {
 
 	/// ===Stateの変更=== ///
 	// 攻撃ボタンが押されたら攻撃状態へ
-	if (InputService::TriggerButton(0, ControllerButtonType::X)) {
+	if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
 		// 攻撃の準備ができていれば
 		if (!player_->GetAttackComponent()->GetState().isActive) {
 			// パーティクルの停止
@@ -72,10 +72,10 @@ void MoveState::Update(Player * player, GameCamera* camera) {
 			player_->ChangState(std::make_unique<AttackState>());
 		}
 	// RBボタンが押されたら進んでいる突進状態へ
-	} else if (InputService::TriggerButton(0, ControllerButtonType::RB)) {
+	} else if (Service::Input::TriggerButton(0, ControllerButtonType::RB)) {
 
 	// Aボタンが押されたら回避状態へ
-	} else if (InputService::TriggerButton(0, ControllerButtonType::A)) {
+	} else if (Service::Input::TriggerButton(0, ControllerButtonType::A)) {
 		// 回避の準備ができていれば
 		if (player_->GetAvoidanceComponent()->GetState().isPreparation) {
 			// パーティクルの停止

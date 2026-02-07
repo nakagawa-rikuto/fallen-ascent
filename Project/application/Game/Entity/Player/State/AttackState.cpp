@@ -1,6 +1,6 @@
 #include "AttackState.h"
 // Service
-#include "Engine/System/Service/InputService.h"
+#include "Service/Input.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
 #include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
@@ -40,7 +40,7 @@ void AttackState::Update(Player* player, GameCamera* camera) {
 	attackComp->Update(player_->GetDeltaTime());
 
 	// 攻撃ボタンが押されたらコンボを試行
-	if (InputService::TriggerButton(0, ControllerButtonType::X)) {
+	if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
 		if (attackComp->CanCombo()) {
 			attackComp->TryCombo(player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand());
 		}

@@ -2,16 +2,17 @@
 // SceneManager
 #include "Engine/System/Managers/SceneManager.h"
 // Service
-#include "Engine/System/Service/CameraService.h"
-#include "Engine/System/Service/ParticleService.h"
-#include "Engine/System/Service/ColliderService.h"
-#include "Engine/System/Service/GraphicsResourceGetter.h"
-#include "Engine/System/Service/AudioService.h"
+#include "Service/Camera.h"
+#include "Service/Particle.h"
+#include "Service/Collision.h"
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/Audio.h"
 // State
 #include "State/GameSceneInitializeState.h"
 // Math
 #include "Math/SMath.h"
 
+using namespace MiiEngine;
 ///-------------------------------------------/// 
 /// コンストラクタ
 ///-------------------------------------------///
@@ -29,7 +30,7 @@ GameScene::~GameScene() {
 	// BGMの停止
 	//AudioService::StopSound("title");
 	// Colliderのリセット
-	ColliderService::Reset();
+	Service::Collision::Reset();
 	// State
 	currentState_.reset();
 	// Camera
@@ -54,8 +55,8 @@ void GameScene::Initialize() {
 	camera_->Init(CameraType::Follow);
 	SetUpCamera();
 	// Managerに追加,アクティブに
-	CameraService::AddCamera("Game", camera_);
-	CameraService::SetActiveCamera("Game");
+	Service::Camera::AddCamera("Game", camera_);
+	Service::Camera::SetActiveCamera("Game");
 
 	/// ===Playerの生成=== ///
 	player_ = std::make_unique<Player>();
@@ -158,7 +159,7 @@ void GameScene::ChangState(std::unique_ptr<GameSceneFadeState> newState) {
 /// 配置関数
 ///-------------------------------------------///
 void GameScene::SpawnEntity(const std::string& json_name) {
-	LevelData* levelData = GraphicsResourceGetter::GetLevelData(json_name);
+	LevelData* levelData = Service::GraphicsResourceGetter::GetLevelData(json_name);
 
 	// オブジェクト分回す
 	for (const auto& obj : levelData->objects) {
@@ -206,13 +207,13 @@ void GameScene::SetUpCamera() {
 /// パーティクルの読み込み
 ///-------------------------------------------///
 void GameScene::LoadParticle() {
-	ParticleService::LoadParticleDefinition("Game.json");
-	ParticleService::LoadParticleDefinition("WeaponAttack.json");
-	ParticleService::LoadParticleDefinition("nakagawa.json");
-	ParticleService::LoadParticleDefinition("PlayerWarke.json");
-	ParticleService::LoadParticleDefinition("EnemyAttack.json");
-	ParticleService::LoadParticleDefinition("EnemyPrePareAttack.json");
-	ParticleService::LoadParticleDefinition("EnemyPrePareAttackCharge.json");
-	ParticleService::LoadParticleDefinition("CloseEnemyAttack.json");
-	ParticleService::LoadParticleDefinition("LongEnemyAttack.json");
+	Service::Particle::LoadParticleDefinition("Game.json");
+	Service::Particle::LoadParticleDefinition("WeaponAttack.json");
+	Service::Particle::LoadParticleDefinition("nakagawa.json");
+	Service::Particle::LoadParticleDefinition("PlayerWarke.json");
+	Service::Particle::LoadParticleDefinition("EnemyAttack.json");
+	Service::Particle::LoadParticleDefinition("EnemyPrePareAttack.json");
+	Service::Particle::LoadParticleDefinition("EnemyPrePareAttackCharge.json");
+	Service::Particle::LoadParticleDefinition("CloseEnemyAttack.json");
+	Service::Particle::LoadParticleDefinition("LongEnemyAttack.json");
 }

@@ -1,125 +1,127 @@
 #include "Framework.h"
 // Service
-#include "Engine/System/Service/ServiceLocator.h"
+#include "Service/Locator.h"
 
-///-------------------------------------------/// 
-/// 初期化
-///-------------------------------------------///
-void Framework::Initialize(const wchar_t* title) {
-	/// ===初期化=== ///
-	// MiiEngine
-	MiiEngine_ = std::make_unique<Mii>();
-	MiiEngine_->Initialize(title, 1920, 1080);
-	// CameraManager
-	cameraManager_ = std::make_unique<CameraManager>();
-	// ParticleManager
-	particleManager_ = std::make_unique<ParticleManager>();
-	// ColliderManager
-	colliderManager_ = std::make_unique<ColliderManager>();
-	colliderManager_->Initialize();
-	// DeltaTime
-	deltaTime_ = std::make_unique<DeltaTime>();
+namespace MiiEngine {
+	///-------------------------------------------/// 
+	/// 初期化
+	///-------------------------------------------///
+	void Framework::Initialize(const wchar_t* title) {
+		/// ===初期化=== ///
+		// MiiEngine
+		Engine_ = std::make_unique<Mii>();
+		Engine_->Initialize(title, 1920, 1080);
+		// CameraManager
+		cameraManager_ = std::make_unique<CameraManager>();
+		// ParticleManager
+		particleManager_ = std::make_unique<ParticleManager>();
+		// ColliderManager
+		colliderManager_ = std::make_unique<ColliderManager>();
+		colliderManager_->Initialize();
+		// DeltaTime
+		gameTime_ = std::make_unique<GameTime>();
 
-	// ServiceLocator
-	ServiceLocator::ProvideAll({
-		MiiEngine_->GetWinApp(),
-		MiiEngine_->GetDXCommon(),
-		MiiEngine_->GetSRVManager(),
-		MiiEngine_->GetRTVManager(),
-		MiiEngine_->GetDSVManager(),
-		MiiEngine_->GetPipelineManager(),
-		MiiEngine_->GetTextureManager(),
-		MiiEngine_->GetModelManager(),
-		MiiEngine_->GetAnimationManager(),
-		MiiEngine_->GetOffScreenRenderer(),
-		MiiEngine_->GetAudioManager(),
-		MiiEngine_->GetCSVManager(),
-		MiiEngine_->GetLevelManager(),
-		MiiEngine_->GetLineObject3D(),
-		MiiEngine_->GetKeyboard(),
-		MiiEngine_->GetMouse(),
-		MiiEngine_->GetController(),
-		cameraManager_.get(),
-		particleManager_.get(),
-		colliderManager_.get(),
-		deltaTime_.get()
-		}
-	);
-}
-
-///-------------------------------------------/// 
-/// 終了
-///-------------------------------------------///
-void Framework::Finalize() {
-	/// ===終了処理=== ///
-	// サービスロケータ
-	ServiceLocator::Finalize();
-	// CameraManager
-	cameraManager_.reset();
-	// ParticleManager
-	particleManager_.reset();
-	// ColliderManager
-	colliderManager_.reset();
-	// MiiEngine
-	MiiEngine_->Finalize();
-	MiiEngine_.reset();
-}
-
-///-------------------------------------------/// 
-/// 更新
-///-------------------------------------------///
-void Framework::Update() {
-	/// ===システムの更新処理=== ///
-	// CameraManager
-	cameraManager_->UpdateAllCameras();
-	// ParticleManager
-	particleManager_->Update();
-	// ColliderManager
-	colliderManager_->CheckAllCollisions();
-}
-
-///-------------------------------------------/// 
-/// 終了チェック
-///-------------------------------------------///
-bool Framework::IsEndRequest() { return endRequest_; }
-
-///-------------------------------------------/// 
-/// 実行
-///-------------------------------------------///
-void Framework::Run(const wchar_t* title) {
-	/// ===ゲームの初期化=== ///
-	Initialize(title);
-	// ウィンドウのxボタンが押されるまでループ
-	while (MiiEngine_->ProcessMessage() == 0) {
-		/// ===毎フレーム更新=== ///
-		// MiiEngineの更新処理
-		MiiEngine_->Update();
-		// フレームごとの更新処理
-		Update();
-		/// ===終了リクエストが来たら抜ける=== ///
-		if (IsEndRequest()) { break; }
-		/// ===描画=== ///
-		Draw();
+		// Locator
+		Service::Register registry = {
+			Engine_->GetWinApp(),
+			Engine_->GetDXCommon(),
+			Engine_->GetSRVManager(),
+			Engine_->GetRTVManager(),
+			Engine_->GetDSVManager(),
+			Engine_->GetPipelineManager(),
+			Engine_->GetTextureManager(),
+			Engine_->GetModelManager(),
+			Engine_->GetAnimationManager(),
+			Engine_->GetOffScreenRenderer(),
+			Engine_->GetAudioManager(),
+			Engine_->GetCSVManager(),
+			Engine_->GetLevelManager(),
+			Engine_->GetLineObject3D(),
+			Engine_->GetKeyboard(),
+			Engine_->GetMouse(),
+			Engine_->GetController(),
+			cameraManager_.get(),
+			particleManager_.get(),
+			colliderManager_.get(),
+			gameTime_.get()
+		};
+		Service::Locator::ProvideAll(registry);
 	}
-	/// ===ゲーム終了=== ///
-	Finalize();
-}
 
-///-------------------------------------------/// 
-/// 描画前処理
-///-------------------------------------------///
-void Framework::PreDraw() {
-	// フレームの開始
-	MiiEngine_->BeginFrame();
-}
+	///-------------------------------------------/// 
+	/// 終了
+	///-------------------------------------------///
+	void Framework::Finalize() {
+		/// ===終了処理=== ///
+		// サービスロケータ
+		Service::Locator::Finalize();
+		// CameraManager
+		cameraManager_.reset();
+		// ParticleManager
+		particleManager_.reset();
+		// ColliderManager
+		colliderManager_.reset();
+		// MiiEngine
+		Engine_->Finalize();
+		Engine_.reset();
+	}
 
-///-------------------------------------------/// 
-/// 描画後処理
-///-------------------------------------------///
-void Framework::PostDraw() {
-	// ParticleManager
-	particleManager_->Draw(BlendMode::kBlendModeAdd);
+	///-------------------------------------------/// 
+	/// 更新
+	///-------------------------------------------///
+	void Framework::Update() {
+		/// ===システムの更新処理=== ///
+		// CameraManager
+		cameraManager_->UpdateAllCameras();
+		// ParticleManager
+		particleManager_->Update();
+		// ColliderManager
+		colliderManager_->CheckAllCollisions();
+	}
 
-	// フレームの終了
-	MiiEngine_->EndFrame();
+	///-------------------------------------------/// 
+	/// 終了チェック
+	///-------------------------------------------///
+	bool Framework::IsEndRequest() { return endRequest_; }
+
+	///-------------------------------------------/// 
+	/// 実行
+	///-------------------------------------------///
+	void Framework::Run(const wchar_t* title) {
+		/// ===ゲームの初期化=== ///
+		Initialize(title);
+		// ウィンドウのxボタンが押されるまでループ
+		while (Engine_->ProcessMessage() == 0) {
+			/// ===毎フレーム更新=== ///
+			// MiiEngineの更新処理
+			Engine_->Update();
+			// フレームごとの更新処理
+			Update();
+			/// ===終了リクエストが来たら抜ける=== ///
+			if (IsEndRequest()) { break; }
+			/// ===描画=== ///
+			Draw();
+		}
+		/// ===ゲーム終了=== ///
+		Finalize();
+	}
+
+	///-------------------------------------------/// 
+	/// 描画前処理
+	///-------------------------------------------///
+	void Framework::PreDraw() {
+		// フレームの開始
+		Engine_->BeginFrame();
+	}
+
+	///-------------------------------------------/// 
+	/// 描画後処理
+	///-------------------------------------------///
+	void Framework::PostDraw() {
+		// ParticleManager
+		particleManager_->Draw(BlendMode::kBlendModeAdd);
+
+		// フレームの終了
+		Engine_->EndFrame();
+	}
 }

@@ -65,7 +65,7 @@ void BossEnemy::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void BossEnemy::Draw(BlendMode mode) {
+void BossEnemy::Draw(MiiEngine::BlendMode mode) {
 	/// ===GameCharacterの描画=== ///
 	GameCharacter::Draw(mode);
 }
@@ -81,7 +81,7 @@ void BossEnemy::Information() {
 ///-------------------------------------------/// 
 /// 衝突処理
 ///-------------------------------------------///
-void BossEnemy::OnCollision(Collider* collider) {
+void BossEnemy::OnCollision(MiiEngine::Collider* collider) {
 	/// ===GameCharacterの衝突=== ///
 	GameCharacter::OnCollision(collider);
 }

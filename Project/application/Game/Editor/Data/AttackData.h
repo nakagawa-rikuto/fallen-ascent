@@ -41,9 +41,9 @@ struct AttackData {
     bool isLeftHandAttack;               // 左手攻撃かどうか
 
     // 軌道
-    std::vector<BezierControlPointData> weaponTrajectoryPoints;    // 武器用軌道の制御点リスト
-	std::vector<BezierControlPointData> rightHandTrajectoryPoints; // 右手用軌道の制御点リスト
-	std::vector<BezierControlPointData> leftHandTrajectoryPoints;  // 左手用軌道の制御点リスト
+    std::vector<MiiEngine::BezierControlPointData> weaponTrajectoryPoints;    // 武器用軌道の制御点リスト
+	std::vector<MiiEngine::BezierControlPointData> rightHandTrajectoryPoints; // 右手用軌道の制御点リスト
+	std::vector<MiiEngine::BezierControlPointData> leftHandTrajectoryPoints;  // 左手用軌道の制御点リスト
 
     int curveSegments;                   // 曲線の分割数
     float weaponLength;                  // 武器の距離

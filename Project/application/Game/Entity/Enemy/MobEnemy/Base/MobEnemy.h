@@ -10,9 +10,6 @@
 // C++
 #include <random>
 
-/// ===前方宣言=== ///
-class ParticleGroup;
-
 ///=====================================================/// 
 /// MobEnemy
 ///=====================================================///
@@ -65,7 +62,7 @@ public:
 	/// 描画を実行します
 	/// </summary>
 	/// <param name="mode">使用するブレンドモード。デフォルトは通常ブレンドモードです。</param>
-	virtual void Draw(BlendMode mode = BlendMode::KBlendModeNormal) override;
+	virtual void Draw(MiiEngine::BlendMode mode = MiiEngine::BlendMode::KBlendModeNormal) override;
 
 	/// <summary>
 	/// ImGui情報を表示
@@ -88,7 +85,7 @@ public: /// ===衝突=== ///
 	/// 衝突が発生したときに呼び出されます。
 	/// </summary>
 	/// <param name="collider">衝突したコライダーへのポインター。</param>
-	virtual void OnCollision(Collider* collider) override;
+	virtual void OnCollision(MiiEngine::Collider* collider) override;
 
 public: /// ===その他関数=== ///
 
@@ -142,8 +139,8 @@ private:
 	std::unique_ptr<EnemyHitReactionComponent> hitReactionComponent_;
 
 	// Particle
-	ParticleGroup* hitParticle_ = nullptr;
-	ParticleGroup* deathParticle_ = nullptr;
+	MiiEngine::ParticleGroup* hitParticle_ = nullptr;
+	MiiEngine::ParticleGroup* deathParticle_ = nullptr;
 
 	// 消えるまでの時間
 	float disappearTimer_ = 2.0f;

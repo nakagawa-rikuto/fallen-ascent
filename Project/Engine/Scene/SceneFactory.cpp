@@ -1,5 +1,4 @@
 #include "SceneFactory.h"
-
 // 各シーン
 #include "application/Scene/Title/TitleScene.h"
 #include "application/Scene/Select/SelectScene.h"
@@ -9,32 +8,34 @@
 #include "Engine/Scene/Debug/ParticleEditorScene.h"
 #include "application/Scene/Debug/AttackEditorScene.h"
 
-///-------------------------------------------/// 
-/// シーン生成
-///-------------------------------------------///
-std::unique_ptr<IScene> SceneFactory::CreateScene(SceneType type) {
-	/// ===シーンの判断=== ///
-	if (type == SceneType::Title) {
-		// タイトルシーン
-		return std::make_unique<TitleScene>();
-	} else if (type == SceneType::Select) {
-		// セレクトシーン
-		return std::make_unique<SelectScene>();
-	} else if (type == SceneType::Game) {
-		//　ゲームシーン
-		return std::make_unique<GameScene>();
-	} else if (type == SceneType::Clear) {
-		//　クリアシーン
-		return std::make_unique<ClearScene>();
-	} else if (type == SceneType::GameOver) {
-		//　ゲームオーバー
-		return std::make_unique<GameOverScene>();
-	} else if (type == SceneType::ParticleEditor) {
-		// 粒子エディターシーン
-		return std::make_unique<ParticleEditorScene>();
-	} else if (type == SceneType::AttackEditor) {
-		// 攻撃エディターシーン
-		return std::make_unique<AttackEditorScene>();
+namespace MiiEngine {
+	///-------------------------------------------/// 
+	/// シーン生成
+	///-------------------------------------------///
+	std::unique_ptr<IScene> SceneFactory::CreateScene(SceneType type) {
+		/// ===シーンの判断=== ///
+		if (type == SceneType::Title) {
+			// タイトルシーン
+			return std::make_unique<TitleScene>();
+		} else if (type == SceneType::Select) {
+			// セレクトシーン
+			return std::make_unique<SelectScene>();
+		} else if (type == SceneType::Game) {
+			//　ゲームシーン
+			return std::make_unique<GameScene>();
+		} else if (type == SceneType::Clear) {
+			//　クリアシーン
+			return std::make_unique<ClearScene>();
+		} else if (type == SceneType::GameOver) {
+			//　ゲームオーバー
+			return std::make_unique<GameOverScene>();
+		} else if (type == SceneType::ParticleEditor) {
+			// 粒子エディターシーン
+			return std::make_unique<ParticleEditorScene>();
+		} else if (type == SceneType::AttackEditor) {
+			// 攻撃エディターシーン
+			return std::make_unique<AttackEditorScene>();
+		}
+		return nullptr;
 	}
-	return nullptr;
 }

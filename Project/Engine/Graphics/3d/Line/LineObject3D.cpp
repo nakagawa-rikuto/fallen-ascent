@@ -1,8 +1,8 @@
 #include "LineObject3D.h"
 // Service
-#include "Engine/System/Service/GraphicsResourceGetter.h"
-#include "Engine/System/Service/Render.h"
-#include "Engine/System/Service/CameraService.h"
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/Render.h"
+#include "Service/Camera.h"
 // Camera
 #include "application/Game/Camera/GameCamera.h"
 // DXCommon
@@ -11,189 +11,191 @@
 #include "Math/sMath.h"
 #include "Math/MatrixMath.h"
 
-///-------------------------------------------/// 
-/// デストラクタ
-///-------------------------------------------///
-LineObject3D::~LineObject3D() {
-	vertex_.reset();
-	wvp_.reset();
-}
-
-///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-const std::vector<Vector3> LineObject3D::GetSphereData() { return spheres_; }
-
-///-------------------------------------------/// 
-/// 初期化
-///-------------------------------------------///
-void LineObject3D::Initialize(ID3D12Device* device) {
-	
-	/// ===生成=== ///
-	vertex_ = std::make_unique<VertexBuffer3D>();
-	wvp_ = std::make_unique<Transform3D>();
-
-	/// ===WorldTransform=== ///
-	worldTransform_ = { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
-	cameraTransform_ = { {1.0f, 1.0f,1.0f}, {0.3f, 0.0f, 0.0f}, {0.0f, 4.0f, -10.0f} };
-
-	/// ===vertex=== ///
-	// Buffer
-	vertex_->Create(device, sizeof(LineVertexData3D) * kLineVertexCount_ * kMaxLineCount_);
-	vertex_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
-	// View
-	vertexBufferView_.BufferLocation = vertex_->GetBuffer()->GetGPUVirtualAddress();
-	vertexBufferView_.StrideInBytes = sizeof(LineVertexData3D);
-	vertexBufferView_.SizeInBytes = sizeof(LineVertexData3D) * kLineVertexCount_ * kMaxLineCount_;
-	// 
-	SphereVertexData();
-
-	/// ===WVP=== ///
-	wvp_->Create(device, sizeof(LineTransformMatrixData3D));
-	wvp_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&wvpData_));
-	wvpData_->WVP = Math::MakeIdentity4x4();
-}
-
-///-------------------------------------------/// 
-/// 更新
-///-------------------------------------------///
-void LineObject3D::Update() {
-	
-	/// ===カメラの設定=== ///
-	camera_ = CameraService::GetActiveCamera().get();
-
-	/// ===Matrixの作成=== ///
-	const Matrix4x4& viewProjectionMatrix = camera_->GetViewProjectionMatrix();
-	Matrix4x4 worldViewProjectionMatrix = viewProjectionMatrix;
-
-	// Dataの代入
-	wvpData_->WVP = worldViewProjectionMatrix;
-}
-
-///-------------------------------------------/// 
-/// 描画
-///-------------------------------------------///
-void LineObject3D::Draw() {
-	/// ===線が描画されてなかったら早期リターン=== ///
-	if (lineIndex_ == 0) {
-		return;
+namespace MiiEngine {
+	///-------------------------------------------/// 
+	/// デストラクタ
+	///-------------------------------------------///
+	LineObject3D::~LineObject3D() {
+		vertex_.reset();
+		wvp_.reset();
 	}
 
-	/// ===コマンドリストのポインタの取得=== ///
-	ID3D12GraphicsCommandList* commandList = GraphicsResourceGetter::GetDXCommandList();
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	const std::vector<Vector3> LineObject3D::GetSphereData() { return spheres_; }
 
-	/// ===コマンドリストに設定=== ///
-	// PSOの設定
-	Render::SetPSO(commandList, PipelineType::Line3D, BlendMode::KBlendModeNormal, D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+	///-------------------------------------------/// 
+	/// 初期化
+	///-------------------------------------------///
+	void LineObject3D::Initialize(ID3D12Device* device) {
 
-	// vertexBufferの設定
-	commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
-	// wvpMatrixBufferの設定
-	commandList->SetGraphicsRootConstantBufferView(0, wvp_->GetBuffer()->GetGPUVirtualAddress());
-	// DrawCall
-	commandList->DrawInstanced(lineIndex_, lineIndex_ / kLineVertexCount_, 0, 0);
+		/// ===生成=== ///
+		vertex_ = std::make_unique<VertexBuffer3D>();
+		wvp_ = std::make_unique<Transform3D>();
 
-	// リセット
-	Reset();
-}
+		/// ===WorldTransform=== ///
+		worldTransform_ = { { 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+		cameraTransform_ = { {1.0f, 1.0f,1.0f}, {0.3f, 0.0f, 0.0f}, {0.0f, 4.0f, -10.0f} };
 
-///-------------------------------------------/// 
-/// リセット
-///-------------------------------------------///
-void LineObject3D::Reset() {
-	lineIndex_ = 0;
-}
+		/// ===vertex=== ///
+		// Buffer
+		vertex_->Create(device, sizeof(LineVertexData3D) * kLineVertexCount_ * kMaxLineCount_);
+		vertex_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
+		// View
+		vertexBufferView_.BufferLocation = vertex_->GetBuffer()->GetGPUVirtualAddress();
+		vertexBufferView_.StrideInBytes = sizeof(LineVertexData3D);
+		vertexBufferView_.SizeInBytes = sizeof(LineVertexData3D) * kLineVertexCount_ * kMaxLineCount_;
+		// 
+		SphereVertexData();
 
-
-///-------------------------------------------/// 
-/// Lineの作成
-///-------------------------------------------///
-void LineObject3D::CreateLine(const Vector3& start, const Vector3& end, const Vector4& color) {
-	
-	vertexData_[lineIndex_].position = start;
-	vertexData_[lineIndex_ + 1].position = end;
-
-	vertexData_[lineIndex_].color = color;
-	vertexData_[lineIndex_ + 1].color = color;
-
-	lineIndex_ += kLineVertexCount_;
-}
-
-
-
-///-------------------------------------------/// 
-/// ベジェ曲線の制御点を可視化
-///-------------------------------------------///
-void LineObject3D::DrawBezierControlPoints(const std::vector<BezierControlPointData>& controlPoints, const Vector4& pointColor, const Vector4& lineColor, float pointSize) {
-	if (controlPoints.empty()) {
-		return;
+		/// ===WVP=== ///
+		wvp_->Create(device, sizeof(LineTransformMatrixData3D));
+		wvp_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&wvpData_));
+		wvpData_->WVP = Math::MakeIdentity4x4();
 	}
 
-	// 制御点同士を線で結ぶ
-	for (size_t i = 0; i < controlPoints.size() - 1; ++i) {
-		CreateLine(controlPoints[i].position, controlPoints[i + 1].position, lineColor);
+	///-------------------------------------------/// 
+	/// 更新
+	///-------------------------------------------///
+	void LineObject3D::Update() {
+
+		/// ===カメラの設定=== ///
+		camera_ = Service::Camera::GetActiveCamera().get();
+
+		/// ===Matrixの作成=== ///
+		const Matrix4x4& viewProjectionMatrix = camera_->GetViewProjectionMatrix();
+		Matrix4x4 worldViewProjectionMatrix = viewProjectionMatrix;
+
+		// Dataの代入
+		wvpData_->WVP = worldViewProjectionMatrix;
 	}
 
-	// 各制御点に小さな十字を描画
-	for (const auto& point : controlPoints) {
-		Vector3 center = point.position;
+	///-------------------------------------------/// 
+	/// 描画
+	///-------------------------------------------///
+	void LineObject3D::Draw() {
+		/// ===線が描画されてなかったら早期リターン=== ///
+		if (lineIndex_ == 0) {
+			return;
+		}
 
-		// X軸方向の線
-		CreateLine(
-			Vector3{ center.x - pointSize, center.y, center.z },
-			Vector3{ center.x + pointSize, center.y, center.z },
-			pointColor
-		);
+		/// ===コマンドリストのポインタの取得=== ///
+		ID3D12GraphicsCommandList* commandList = Service::GraphicsResourceGetter::GetDXCommandList();
 
-		// Y軸方向の線
-		CreateLine(
-			Vector3{ center.x, center.y - pointSize, center.z },
-			Vector3{ center.x, center.y + pointSize, center.z },
-			pointColor
-		);
+		/// ===コマンドリストに設定=== ///
+		// PSOの設定
+		Service::Render::SetPSO(commandList, PipelineType::Line3D, BlendMode::KBlendModeNormal, D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 
-		// Z軸方向の線
-		CreateLine(
-			Vector3{ center.x, center.y, center.z - pointSize },
-			Vector3{ center.x, center.y, center.z + pointSize },
-			pointColor
-		);
+		// vertexBufferの設定
+		commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
+		// wvpMatrixBufferの設定
+		commandList->SetGraphicsRootConstantBufferView(0, wvp_->GetBuffer()->GetGPUVirtualAddress());
+		// DrawCall
+		commandList->DrawInstanced(lineIndex_, lineIndex_ / kLineVertexCount_, 0, 0);
+
+		// リセット
+		Reset();
 	}
-}
 
-///-------------------------------------------/// 
-/// 球の形状を計算
-///-------------------------------------------///
-void LineObject3D::SphereVertexData() {
+	///-------------------------------------------/// 
+	/// リセット
+	///-------------------------------------------///
+	void LineObject3D::Reset() {
+		lineIndex_ = 0;
+	}
 
-	const uint32_t kSubdivision = 8; // 分割数
-	const float kLonEvery = 2.0f * Math::Pi() / float(kSubdivision); // 経度の1分割の角度
-	const float kLatEvery = Math::Pi() / float(kSubdivision); // 緯度の1分割の角度
 
-	// 緯度方向
-	for (uint32_t latIndex = 0; latIndex < kSubdivision; latIndex++) {
-		float lat = -Math::Pi() / 2.0f + kLatEvery * float(latIndex);
-		// 経度方向
-		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; lonIndex++) {
-			float lon = kLonEvery * float(lonIndex);
-			// 球の表面上の点を求める
-			Vector3 a, b, c;
-			a.x = cos(lat) * cos(lon);
-			a.y = sin(lat);
-			a.z = cos(lat) * sin(lon);
+	///-------------------------------------------/// 
+	/// Lineの作成
+	///-------------------------------------------///
+	void LineObject3D::CreateLine(const Vector3& start, const Vector3& end, const Vector4& color) {
 
-			b.x = cos(lat + kLatEvery) * cos(lon);
-			b.y = sin(lat + kLatEvery);
-			b.z = cos(lat + kLatEvery) * sin(lon);
+		vertexData_[lineIndex_].position = start;
+		vertexData_[lineIndex_ + 1].position = end;
 
-			c.x = cos(lat) * cos(lon + kLonEvery);
-			c.y = sin(lat);
-			c.z = cos(lat) * sin(lon + kLonEvery);
+		vertexData_[lineIndex_].color = color;
+		vertexData_[lineIndex_ + 1].color = color;
 
-			// 座標を保存
-			spheres_.push_back(a);
-			spheres_.push_back(b);
-			spheres_.push_back(c);
+		lineIndex_ += kLineVertexCount_;
+	}
+
+
+
+	///-------------------------------------------/// 
+	/// ベジェ曲線の制御点を可視化
+	///-------------------------------------------///
+	void LineObject3D::DrawBezierControlPoints(const std::vector<BezierControlPointData>& controlPoints, const Vector4& pointColor, const Vector4& lineColor, float pointSize) {
+		if (controlPoints.empty()) {
+			return;
+		}
+
+		// 制御点同士を線で結ぶ
+		for (size_t i = 0; i < controlPoints.size() - 1; ++i) {
+			CreateLine(controlPoints[i].position, controlPoints[i + 1].position, lineColor);
+		}
+
+		// 各制御点に小さな十字を描画
+		for (const auto& point : controlPoints) {
+			Vector3 center = point.position;
+
+			// X軸方向の線
+			CreateLine(
+				Vector3{ center.x - pointSize, center.y, center.z },
+				Vector3{ center.x + pointSize, center.y, center.z },
+				pointColor
+			);
+
+			// Y軸方向の線
+			CreateLine(
+				Vector3{ center.x, center.y - pointSize, center.z },
+				Vector3{ center.x, center.y + pointSize, center.z },
+				pointColor
+			);
+
+			// Z軸方向の線
+			CreateLine(
+				Vector3{ center.x, center.y, center.z - pointSize },
+				Vector3{ center.x, center.y, center.z + pointSize },
+				pointColor
+			);
+		}
+	}
+
+	///-------------------------------------------/// 
+	/// 球の形状を計算
+	///-------------------------------------------///
+	void LineObject3D::SphereVertexData() {
+
+		const uint32_t kSubdivision = 8; // 分割数
+		const float kLonEvery = 2.0f * Math::Pi() / float(kSubdivision); // 経度の1分割の角度
+		const float kLatEvery = Math::Pi() / float(kSubdivision); // 緯度の1分割の角度
+
+		// 緯度方向
+		for (uint32_t latIndex = 0; latIndex < kSubdivision; latIndex++) {
+			float lat = -Math::Pi() / 2.0f + kLatEvery * float(latIndex);
+			// 経度方向
+			for (uint32_t lonIndex = 0; lonIndex < kSubdivision; lonIndex++) {
+				float lon = kLonEvery * float(lonIndex);
+				// 球の表面上の点を求める
+				Vector3 a, b, c;
+				a.x = cos(lat) * cos(lon);
+				a.y = sin(lat);
+				a.z = cos(lat) * sin(lon);
+
+				b.x = cos(lat + kLatEvery) * cos(lon);
+				b.y = sin(lat + kLatEvery);
+				b.z = cos(lat + kLatEvery) * sin(lon);
+
+				c.x = cos(lat) * cos(lon + kLonEvery);
+				c.y = sin(lat);
+				c.z = cos(lat) * sin(lon + kLonEvery);
+
+				// 座標を保存
+				spheres_.push_back(a);
+				spheres_.push_back(b);
+				spheres_.push_back(c);
+			}
 		}
 	}
 }

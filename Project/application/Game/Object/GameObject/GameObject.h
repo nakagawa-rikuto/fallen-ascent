@@ -9,7 +9,7 @@
 ///=====================================================/// 
 /// GameObject
 ///=====================================================///
-template<typename TCollider> requires IsCollider<TCollider>
+template<typename TCollider> requires MiiEngine::IsCollider<TCollider>
 class GameObject : public TCollider {
 public:
 
@@ -30,7 +30,7 @@ public:
 	/// 描画処理
 	/// </summary>
 	/// <param name="mode">描画に使用するブレンドモード。</param>
-	virtual void Draw(BlendMode mode) override;
+	virtual void Draw(MiiEngine::BlendMode mode) override;
 
 	/// <summary>
 	/// ImGui情報の表示
@@ -42,6 +42,6 @@ public: /// ===衝突判定=== ///
 	/// 衝突時の処理
 	/// </summary>
 	/// <param name="collider">衝突した相手を表す Collider へのポインター。</param>
-	virtual void OnCollision(Collider* collider) override;
+	virtual void OnCollision(MiiEngine::Collider* collider) override;
 };
 

@@ -2,36 +2,37 @@
 /// ===Include=== ///
 #include "Engine/DataInfo/FunctionData.h"
 
-///=====================================================/// 
-/// Transform3D
-///=====================================================///
-class Transform3D {
-public:
+namespace MiiEngine {
+	///=====================================================/// 
+	/// Transform3D
+	///=====================================================///
+	class Transform3D {
+	public:
 
-	Transform3D() = default;
-	~Transform3D();
+		Transform3D() = default;
+		~Transform3D();
 
-	/// <summary>
-	/// Resourceの生成
-	/// </summary>
-	void Create(ID3D12Device* device, size_t sizeInBytes);
+		/// <summary>
+		/// Resourceの生成
+		/// </summary>
+		void Create(ID3D12Device* device, size_t sizeInBytes);
 
-	/// <summary>
-	/// リソースの取得
-	/// </summary>
-	/// <returns></returns>
-	ID3D12Resource* GetBuffer();
+		/// <summary>
+		/// リソースの取得
+		/// </summary>
+		/// <returns></returns>
+		ID3D12Resource* GetBuffer();
 
-	/// <summary>
-	/// データの取得
-	/// </summary>
-	/// <returns></returns>
-	TransformationMatrix3D* GetData();
-	
-private:
+		/// <summary>
+		/// データの取得
+		/// </summary>
+		/// <returns></returns>
+		TransformationMatrix3D* GetData();
 
-	ComPtr<ID3D12Resource> buffer_;
+	private:
 
-	TransformationMatrix3D* data_;
-};
+		ComPtr<ID3D12Resource> buffer_;
 
+		TransformationMatrix3D* data_;
+	};
+}

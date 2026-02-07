@@ -3,37 +3,39 @@
 // Engine
 #include "Engine/DataInfo/FunctionData.h"
 
-///=====================================================/// 
-/// マテリアル3D
-///=====================================================///
-class Material3D {
-public:
-	
-	Material3D() = default;
-	~Material3D();
+namespace MiiEngine {
+	///=====================================================/// 
+	/// マテリアル3D
+	///=====================================================///
+	class Material3D {
+	public:
 
-	/// <summary>
-	///　リソースの生成
-	/// </summary>
-	void Create(ID3D12Device* device, size_t sizeInBytes);
+		Material3D() = default;
+		~Material3D();
 
-	/// <summary>
-	/// マテリアルデータの書き込み
-	/// </summary>
-	/// <param name="material"></param>
-	void WriteData(MaterialData3D* material);
+		/// <summary>
+		///　リソースの生成
+		/// </summary>
+		void Create(ID3D12Device* device, size_t sizeInBytes);
 
-	/// <summary>
-	/// リソースの取得
-	/// </summary>
-	/// <returns></returns>
-	ID3D12Resource* GetBuffer();
+		/// <summary>
+		/// マテリアルデータの書き込み
+		/// </summary>
+		/// <param name="material"></param>
+		void WriteData(MaterialData3D* material);
 
-private:
-	// リソース
-	ComPtr<ID3D12Resource> buffer_;
+		/// <summary>
+		/// リソースの取得
+		/// </summary>
+		/// <returns></returns>
+		ID3D12Resource* GetBuffer();
 
-	// データ
-	MaterialData3D* data_;
-};
+	private:
+		// リソース
+		ComPtr<ID3D12Resource> buffer_;
+
+		// データ
+		MaterialData3D* data_;
+	};
+}
 

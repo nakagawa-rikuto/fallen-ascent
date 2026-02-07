@@ -5,17 +5,28 @@
 #include "Math/Vector4.h"
 #include "Math/Quaternion.h"
 
-struct LineVertexData3D {
-	Vector3 position;
-	Vector4 color;
-};
+namespace MiiEngine {
+	///-------------------------------------------/// 
+	/// LineVertexData3D 
+	///-------------------------------------------///
+	struct LineVertexData3D {
+		Vector3 position;
+		Vector4 color;
+	};
 
-struct LineTransformMatrixData3D {
-	Matrix4x4 WVP;
-};
+	///-------------------------------------------/// 
+	/// LineTransformMatrixData3D
+	///-------------------------------------------///
+	struct LineTransformMatrixData3D {
+		Matrix4x4 WVP;
+	};
 
-struct BezierControlPointData {
-	Vector3 position;
-	Quaternion rotation;
-	float time;
-};
+	///-------------------------------------------/// 
+	/// BezierControlPointData
+	///-------------------------------------------///
+	struct BezierControlPointData {
+		Vector3 position;
+		Quaternion rotation;
+		float time;
+	};
+}

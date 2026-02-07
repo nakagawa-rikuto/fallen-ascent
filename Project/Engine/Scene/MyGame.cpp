@@ -2,8 +2,8 @@
 // シーンファクトリー
 #include "Engine/Scene/SceneFactory.h"
 // Service
-#include "Engine/System/Service/Loader.h"
-#include "Engine/System/Service/ParticleService.h"
+#include "Service/Loader.h"
+#include "Service/Particle.h"
 // Logger
 #include "Engine/Core/Logger.h"
 // c++
@@ -11,187 +11,190 @@
 #include <thread>
 #include <chrono>
 
-///-------------------------------------------/// 
-/// コンストラクタ、デストラクタ
-///-------------------------------------------///
-MyGame::MyGame() = default;
-MyGame::~MyGame() {
-	sceneFactory_.reset();
-	sceneManager_.reset();
-}
-
-///-------------------------------------------/// 
-/// 初期化
-///-------------------------------------------///
-void MyGame::Initialize(const wchar_t* title) {
-	// 基底クラスの初期化
-	Framework::Initialize(title);
-	
-	/// ===時間計測=== ///
-	auto start = std::chrono::high_resolution_clock::now();
-
-	/// ===読み込み処理=== ///
-	// 各読み込み処理用のスレッドを生成
-	LoadAudio();	// Soundの読み込み
-	std::vector<std::thread> loadingThreads;
-	loadingThreads.emplace_back([this] { LoadJson(); });	  // Jsonデータの読み込み
-	loadingThreads.emplace_back([this] { 
-		LoadTexture();   // Textureの読み込み
-		LoadModel();     // Modelの読み込み
-		LoadAnimation(); // Animationの読み込み
-	});
-	// すべてのスレッドの終了を待機
-	for (auto& thread : loadingThreads) {
-		thread.join();
+using namespace Service;
+namespace MiiEngine {
+	///-------------------------------------------/// 
+	/// コンストラクタ、デストラクタ
+	///-------------------------------------------///
+	MyGame::MyGame() = default;
+	MyGame::~MyGame() {
+		sceneFactory_.reset();
+		sceneManager_.reset();
 	}
 
-	// 処理時間を計測（end）
-	auto end = std::chrono::high_resolution_clock::now();
-	// 経過時間をミリ秒単位で出力
-	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-	Log("time: " + std::to_string(duration.count()) + " ms\n");
+	///-------------------------------------------/// 
+	/// 初期化
+	///-------------------------------------------///
+	void MyGame::Initialize(const wchar_t* title) {
+		// 基底クラスの初期化
+		Framework::Initialize(title);
 
-	/// ===シーンの作成=== ///
-	// シーンファクトリーの生成
-	sceneFactory_ = std::make_unique<SceneFactory>();
-	// シーンマネージャの初期化
-	sceneManager_ = std::make_unique<SceneManager>();
-	sceneManager_->Initialize(sceneFactory_.get());
-	sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
-}
- 
-///-------------------------------------------/// 
-/// 終了処理
-///-------------------------------------------///
-void MyGame::Finalize() {
-	// シーンの解放処理
-	sceneManager_.reset();
-	sceneFactory_.reset();
-	// 基底クラスの終了処理
-	Framework::Finalize();
-}
+		/// ===時間計測=== ///
+		auto start = std::chrono::high_resolution_clock::now();
 
-///-------------------------------------------/// 
-/// 更新
-///-------------------------------------------///
-void MyGame::Update() {
-	// シーンの更新
-	sceneManager_->Update();
+		/// ===読み込み処理=== ///
+		// 各読み込み処理用のスレッドを生成
+		LoadAudio();	// Soundの読み込み
+		std::vector<std::thread> loadingThreads;
+		loadingThreads.emplace_back([this] { LoadJson(); });	  // Jsonデータの読み込み
+		loadingThreads.emplace_back([this] {
+			LoadTexture();   // Textureの読み込み
+			LoadModel();     // Modelの読み込み
+			LoadAnimation(); // Animationの読み込み
+			});
+		// すべてのスレッドの終了を待機
+		for (auto& thread : loadingThreads) {
+			thread.join();
+		}
 
-	// Frameworkの更新
-	Framework::Update();
-}
+		// 処理時間を計測（end）
+		auto end = std::chrono::high_resolution_clock::now();
+		// 経過時間をミリ秒単位で出力
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+		Log("time: " + std::to_string(duration.count()) + " ms\n");
 
-///-------------------------------------------/// 
-/// 描画
-///-------------------------------------------///
-void MyGame::Draw() {
-	// 描画前処理
-	Framework::PreDraw();
-	// シーンの描画
-	sceneManager_->Draw();
-	// 描画後処理
-	Framework::PostDraw();
-}
+		/// ===シーンの作成=== ///
+		// シーンファクトリーの生成
+		sceneFactory_ = std::make_unique<SceneFactory>();
+		// シーンマネージャの初期化
+		sceneManager_ = std::make_unique<SceneManager>();
+		sceneManager_->Initialize(sceneFactory_.get());
+		sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
+	}
+
+	///-------------------------------------------/// 
+	/// 終了処理
+	///-------------------------------------------///
+	void MyGame::Finalize() {
+		// シーンの解放処理
+		sceneManager_.reset();
+		sceneFactory_.reset();
+		// 基底クラスの終了処理
+		Framework::Finalize();
+	}
+
+	///-------------------------------------------/// 
+	/// 更新
+	///-------------------------------------------///
+	void MyGame::Update() {
+		// シーンの更新
+		sceneManager_->Update();
+
+		// Frameworkの更新
+		Framework::Update();
+	}
+
+	///-------------------------------------------/// 
+	/// 描画
+	///-------------------------------------------///
+	void MyGame::Draw() {
+		// 描画前処理
+		Framework::PreDraw();
+		// シーンの描画
+		sceneManager_->Draw();
+		// 描画後処理
+		Framework::PostDraw();
+	}
 
 
-///-------------------------------------------/// 
-/// Soundの読み込み関数
-///-------------------------------------------///
-void MyGame::LoadAudio() {
+	///-------------------------------------------/// 
+	/// Soundの読み込み関数
+	///-------------------------------------------///
+	void MyGame::LoadAudio() {
 #pragma region Wave
-	Loader::LoadWave("title", "title.wav");
+		Loader::LoadWave("title", "title.wav");
 #pragma endregion
 #pragma region MP3
-	Loader::LoadMP3("clear", "clear.mp3");
+		Loader::LoadMP3("clear", "clear.mp3");
 #pragma endregion
-}
+	}
 
-///-------------------------------------------/// 
-///	テクスチャの読み込み処理
-///-------------------------------------------///
-void MyGame::LoadTexture() {
-	/// ===Engine=== ///
-	Loader::LoadTexture("uvChecker", "uvChecker.png");
-	Loader::LoadTexture("monsterBall", "monsterBall.png");
-	Loader::LoadTexture("White", "WhiteTexture.png");
-	// Particle
-	Loader::LoadTexture("circle", "Particle/circle.png");
-	Loader::LoadTexture("circle2", "Particle/circle2.png");
-	Loader::LoadTexture("gradationLine", "Particle/gradationLine.png");
-	Loader::LoadTexture("Spark", "Particle/Spark.png");
-	Loader::LoadTexture("FlameEye", "Particle/FlameEye.png");
-	Loader::LoadTexture("Fire", "Particle/Fire.png");
-	// OffScreen
-	Loader::LoadTexture("noise0", "OffScreen/noise0.png");
-	Loader::LoadTexture("noise1", "OffScreen/noise1.png");
-	// DDS
-	Loader::LoadTexture("skyBox", "DDS/rostock_laage_airport_4k.dds");
+	///-------------------------------------------/// 
+	///	テクスチャの読み込み処理
+	///-------------------------------------------///
+	void MyGame::LoadTexture() {
+		/// ===Engine=== ///
+		Loader::LoadTexture("uvChecker", "uvChecker.png");
+		Loader::LoadTexture("monsterBall", "monsterBall.png");
+		Loader::LoadTexture("White", "WhiteTexture.png");
+		// Particle
+		Loader::LoadTexture("circle", "Particle/circle.png");
+		Loader::LoadTexture("circle2", "Particle/circle2.png");
+		Loader::LoadTexture("gradationLine", "Particle/gradationLine.png");
+		Loader::LoadTexture("Spark", "Particle/Spark.png");
+		Loader::LoadTexture("FlameEye", "Particle/FlameEye.png");
+		Loader::LoadTexture("Fire", "Particle/Fire.png");
+		// OffScreen
+		Loader::LoadTexture("noise0", "OffScreen/noise0.png");
+		Loader::LoadTexture("noise1", "OffScreen/noise1.png");
+		// DDS
+		Loader::LoadTexture("skyBox", "DDS/rostock_laage_airport_4k.dds");
 
-	/// ===Game=== ///
-	// TitleUI
-	Loader::LoadTexture("TitleBG", "TitleUI/SkyBG.png");
-	Loader::LoadTexture("TitleBGKiri", "TitleUI/BGsecond.png");
-	Loader::LoadTexture("Title", "TitleUI/Title.png");
-	Loader::LoadTexture("Start", "TitleUI/Start.png");
-	Loader::LoadTexture("Option", "TitleUI/Option.png");
-	Loader::LoadTexture("Exit", "TitleUI/Exit.png");
-	Loader::LoadTexture("OverLay", "TitleUI/OverLay.png");
-	// GameUI
-	Loader::LoadTexture("MoveUI", "GameUI/MoveUI.png");
-	Loader::LoadTexture("CameraUI", "GameUI/CameraUI.png");
-	Loader::LoadTexture("AttackUI", "GameUI/AttackUI.png");
-	Loader::LoadTexture("AvoidanceUI", "GameUI/AvoidanceUI.png");
-	Loader::LoadTexture("xButton", "GameUI/xbox_button_color_x.png");
-	Loader::LoadTexture("aButton", "GameUI/xbox_button_color_a.png");
-	Loader::LoadTexture("leftStick", "GameUI/xbox_stick_l.png");
-	Loader::LoadTexture("rightStick", "GameUI/xbox_stick_r.png");
-	Loader::LoadTexture("menuButton", "GameUI/xbox_button_menu.png");
-	
-	// OptionUI
-	Loader::LoadTexture("OptionTitle", "OptionUI/OptionTitle.png");
-	Loader::LoadTexture("OptionVolume", "OptionUI/Volume.png");
-	// GameAnimation
-	Loader::LoadTexture("GameOverAnimation", "Animation/GameOverAnimation.png");
-}
+		/// ===Game=== ///
+		// TitleUI
+		Loader::LoadTexture("TitleBG", "TitleUI/SkyBG.png");
+		Loader::LoadTexture("TitleBGKiri", "TitleUI/BGsecond.png");
+		Loader::LoadTexture("Title", "TitleUI/Title.png");
+		Loader::LoadTexture("Start", "TitleUI/Start.png");
+		Loader::LoadTexture("Option", "TitleUI/Option.png");
+		Loader::LoadTexture("Exit", "TitleUI/Exit.png");
+		Loader::LoadTexture("OverLay", "TitleUI/OverLay.png");
+		// GameUI
+		Loader::LoadTexture("MoveUI", "GameUI/MoveUI.png");
+		Loader::LoadTexture("CameraUI", "GameUI/CameraUI.png");
+		Loader::LoadTexture("AttackUI", "GameUI/AttackUI.png");
+		Loader::LoadTexture("AvoidanceUI", "GameUI/AvoidanceUI.png");
+		Loader::LoadTexture("xButton", "GameUI/xbox_button_color_x.png");
+		Loader::LoadTexture("aButton", "GameUI/xbox_button_color_a.png");
+		Loader::LoadTexture("leftStick", "GameUI/xbox_stick_l.png");
+		Loader::LoadTexture("rightStick", "GameUI/xbox_stick_r.png");
+		Loader::LoadTexture("menuButton", "GameUI/xbox_button_menu.png");
 
-///-------------------------------------------/// 
-/// モデルの読み込み処理
-///-------------------------------------------///
-void MyGame::LoadModel() {
-	/// ===Particle=== ///
-	Loader::LoadModel("plane", "Particle/Plane/ParticlePlane.gltf");
-	Loader::LoadModel("sphere", "Particle/Sphere/ParticleSphere.obj");
-	Loader::LoadModel("cube", "Particle/Cube/ParticleCube.obj");
-	Loader::LoadModel("triangle", "Particle/Triangle/ParticleTriangle.obj");
-	
-	/// ===Entity=== ///
-	Loader::LoadModel("Player", "Entity/Player/Player.gltf");							// プレイヤー
-	Loader::LoadModel("PlayerHand", "Entity/Player/PlayerHand/PlayerHand.gltf");		// プレイヤー手
-	Loader::LoadModel("PlayerWeapon", "Entity/Player/PlayerWeapon/PlayerWeapon.gltf");	// プレイヤー武器
-	Loader::LoadModel("LongEnemy", "Entity/Enemy/LongEnemy/LongEnemy.gltf");			// 遠距離敵
-	Loader::LoadModel("CloseEnemy", "Entity/Enemy/CloseEnemy/CloseEnemy.gltf");			// 近距離敵
+		// OptionUI
+		Loader::LoadTexture("OptionTitle", "OptionUI/OptionTitle.png");
+		Loader::LoadTexture("OptionVolume", "OptionUI/Volume.png");
+		// GameAnimation
+		Loader::LoadTexture("GameOverAnimation", "Animation/GameOverAnimation.png");
+	}
 
-	/// ===Object=== ///
-	Loader::LoadModel("Ground", "Object/Ground/Ground.obj");				// 地面
-	Loader::LoadModel("Object1", "Object/Object1/Object1.obj");				// オブジェクト１
-	Loader::LoadModel("Object2", "Object/Object2/Object2.obj");				// オブジェクト２
-}
+	///-------------------------------------------/// 
+	/// モデルの読み込み処理
+	///-------------------------------------------///
+	void MyGame::LoadModel() {
+		/// ===Particle=== ///
+		Loader::LoadModel("plane", "Particle/Plane/ParticlePlane.gltf");
+		Loader::LoadModel("sphere", "Particle/Sphere/ParticleSphere.obj");
+		Loader::LoadModel("cube", "Particle/Cube/ParticleCube.obj");
+		Loader::LoadModel("triangle", "Particle/Triangle/ParticleTriangle.obj");
 
-///-------------------------------------------/// 
-/// アニメーションモデルの読み込み処理
-///-------------------------------------------///
-void MyGame::LoadAnimation() {
-	/// ===Engine=== ///
-	Loader::LoadAnimation("simpleSkin", "simpleSkin/simpleSkin.gltf");
-	Loader::LoadAnimation("human", "human/sneakWalk.gltf");
-}
+		/// ===Entity=== ///
+		Loader::LoadModel("Player", "Entity/Player/Player.gltf");							// プレイヤー
+		Loader::LoadModel("PlayerHand", "Entity/Player/PlayerHand/PlayerHand.gltf");		// プレイヤー手
+		Loader::LoadModel("PlayerWeapon", "Entity/Player/PlayerWeapon/PlayerWeapon.gltf");	// プレイヤー武器
+		Loader::LoadModel("LongEnemy", "Entity/Enemy/LongEnemy/LongEnemy.gltf");			// 遠距離敵
+		Loader::LoadModel("CloseEnemy", "Entity/Enemy/CloseEnemy/CloseEnemy.gltf");			// 近距離敵
 
-///-------------------------------------------/// 
-/// Jsonデータの読み込み処理
-///-------------------------------------------///
-void MyGame::LoadJson() {
-	/// ===Game=== ///
-	Loader::LoadLevelJson("Level/StageData.json");
-	Loader::LoadLevelJson("Level/EntityData.json");
+		/// ===Object=== ///
+		Loader::LoadModel("Ground", "Object/Ground/Ground.obj");				// 地面
+		Loader::LoadModel("Object1", "Object/Object1/Object1.obj");				// オブジェクト１
+		Loader::LoadModel("Object2", "Object/Object2/Object2.obj");				// オブジェクト２
+	}
+
+	///-------------------------------------------/// 
+	/// アニメーションモデルの読み込み処理
+	///-------------------------------------------///
+	void MyGame::LoadAnimation() {
+		/// ===Engine=== ///
+		Loader::LoadAnimation("simpleSkin", "simpleSkin/simpleSkin.gltf");
+		Loader::LoadAnimation("human", "human/sneakWalk.gltf");
+	}
+
+	///-------------------------------------------/// 
+	/// Jsonデータの読み込み処理
+	///-------------------------------------------///
+	void MyGame::LoadJson() {
+		/// ===Game=== ///
+		Loader::LoadLevelJson("Level/StageData.json");
+		Loader::LoadLevelJson("Level/EntityData.json");
+	}
 }

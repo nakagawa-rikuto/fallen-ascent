@@ -2,8 +2,8 @@
 // SpriteBaseScale
 #include "application/Game/UI/SpriteBaseScale.h"
 // Service
-#include "Engine/System/Service/InputService.h"
-#include "Engine/System/Service/AudioService.h"
+#include "Service/Input.h"
+#include "Service/Audio.h"
 #ifdef USE_IMGUI
 // ImGui
 #include <imgui.h>
@@ -29,8 +29,8 @@ void OptionUI::Initialize() {
 
 	/// ===ウィンドウサイズの取得=== ///
 	Vector2 windowSize = {
-		static_cast<float>(GraphicsResourceGetter::GetWindowWidth()),
-		static_cast<float>(GraphicsResourceGetter::GetWindowHeight())
+		static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()),
+		static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight())
 	};
 
 	/// ===基準スケール=== ///
@@ -99,13 +99,13 @@ void OptionUI::TitleUpdate() {
 
 
 	// 音量調整（左右）
-	if (InputService::PushButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
+	if (Service::Input::PushButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
 		volumeBGM_ = (std::min)(volumeBGM_ + 1, 100);
-		AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
+		Service::Audio::AllVolumeSound(volumeBGM_ / 100.0f);
 	}
-	if (InputService::PushButton(stickNo_, ControllerButtonType::DPadLEFT)) {
+	if (Service::Input::PushButton(stickNo_, ControllerButtonType::DPadLEFT)) {
 		volumeBGM_ = (std::max)(volumeBGM_ - 1, 0);
-		AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
+		Service::Audio::AllVolumeSound(volumeBGM_ / 100.0f);
 	}
 
 	// スプライトの更新
@@ -119,8 +119,8 @@ void OptionUI::TitleUpdate() {
 void OptionUI::GameUpdate() {
 
 	// 項目選択（上下）
-	if (InputService::TriggerButton(stickNo_, ControllerButtonType::DPadUP) ||
-		InputService::TriggerButton(stickNo_, ControllerButtonType::DPadDOWN)) {
+	if (Service::Input::TriggerButton(stickNo_, ControllerButtonType::DPadUP) ||
+		Service::Input::TriggerButton(stickNo_, ControllerButtonType::DPadDOWN)) {
 		// Audio <-> Title をトグル
 		if (optionState_ == OptionState::Audio) {
 			optionState_ = OptionState::Title;
@@ -137,13 +137,13 @@ void OptionUI::GameUpdate() {
 
     // 音量調整（左右）
     if (optionState_ == OptionState::Audio) { // BGM
-        if (InputService::PushButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
+        if (Service::Input::PushButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
             volumeBGM_ = (std::min)(volumeBGM_ + 1, 100);
-            AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
+			Service::Audio::AllVolumeSound(volumeBGM_ / 100.0f);
         }
-        if (InputService::PushButton(stickNo_, ControllerButtonType::DPadLEFT)) {
+        if (Service::Input::PushButton(stickNo_, ControllerButtonType::DPadLEFT)) {
             volumeBGM_ = (std::max)(volumeBGM_ - 1, 0);
-            AudioService::AllVolumeSound(volumeBGM_ / 100.0f);
+			Service::Audio::AllVolumeSound(volumeBGM_ / 100.0f);
         }
     }
 
@@ -153,7 +153,7 @@ void OptionUI::GameUpdate() {
 	UpdateAudioSprite();
 
     // タイトルに戻る
-    if (optionState_ == OptionState::Title && InputService::TriggerButton(stickNo_, ControllerButtonType::A)) {
+    if (optionState_ == OptionState::Title && Service::Input::TriggerButton(stickNo_, ControllerButtonType::A)) {
         returnToTitle_ = true;
     }
 }
@@ -162,23 +162,23 @@ void OptionUI::GameUpdate() {
 /// 描画処理
 ///-------------------------------------------///
 void OptionUI::TitleDraw() {
-	dimSprite_->Draw(GroundType::Front, BlendMode::kBlendModeAdd);
-	audioButtonSprite_->Draw(GroundType::Front);
-	audioHandleSprite_->Draw(GroundType::Front);
-	audioTextSprite_->Draw(GroundType::Front);
-	audioSliderSprite_->Draw(GroundType::Front);
+	dimSprite_->Draw(MiiEngine::GroundType::Front, MiiEngine::BlendMode::kBlendModeAdd);
+	audioButtonSprite_->Draw(MiiEngine::GroundType::Front);
+	audioHandleSprite_->Draw(MiiEngine::GroundType::Front);
+	audioTextSprite_->Draw(MiiEngine::GroundType::Front);
+	audioSliderSprite_->Draw(MiiEngine::GroundType::Front);
 }
 
 ///-------------------------------------------/// 
 /// 描画処理 
 ///-------------------------------------------///
 void OptionUI::GameDraw() {
-	dimSprite_->Draw(GroundType::Front, BlendMode::kBlendModeAdd);
-	audioButtonSprite_->Draw(GroundType::Front);
-	audioHandleSprite_->Draw(GroundType::Front);
-	audioTextSprite_->Draw(GroundType::Front);
-	audioSliderSprite_->Draw(GroundType::Front);
-	titleButtonSprite_->Draw(GroundType::Front);
+	dimSprite_->Draw(MiiEngine::GroundType::Front, MiiEngine::BlendMode::kBlendModeAdd);
+	audioButtonSprite_->Draw(MiiEngine::GroundType::Front);
+	audioHandleSprite_->Draw(MiiEngine::GroundType::Front);
+	audioTextSprite_->Draw(MiiEngine::GroundType::Front);
+	audioSliderSprite_->Draw(MiiEngine::GroundType::Front);
+	titleButtonSprite_->Draw(MiiEngine::GroundType::Front);
 }
 
 ///-------------------------------------------/// 

@@ -2,49 +2,51 @@
 /// ===Include=== ///
 #include "Engine/DataInfo/FunctionData.h"
 
-///=====================================================/// 
-/// VertexBuffer2D
-///=====================================================///
-class VertexBuffer2D {
-public:
+namespace MiiEngine {
+	///=====================================================/// 
+	/// VertexBuffer2D
+	///=====================================================///
+	class VertexBuffer2D {
+	public:
 
-	VertexBuffer2D() = default;
-	~VertexBuffer2D();
+		VertexBuffer2D() = default;
+		~VertexBuffer2D();
 
-	/// <summary>
-	/// Resourceの生成
-	/// </summary>
-	/// <param name="device"></param>
-	/// <param name="sizeInBytes"></param>
-	void Create(ID3D12Device* device, size_t sizeInBytes);
+		/// <summary>
+		/// Resourceの生成
+		/// </summary>
+		/// <param name="device"></param>
+		/// <param name="sizeInBytes"></param>
+		void Create(ID3D12Device* device, size_t sizeInBytes);
 
-	/// <summary>
-	/// データの書き込み
-	/// </summary>
-	/// <param name="transform"></param>
-	void WriteData(VertexData2D* data);
+		/// <summary>
+		/// データの書き込み
+		/// </summary>
+		/// <param name="transform"></param>
+		void WriteData(VertexData2D* data);
 
-	/// <summary>
-	/// リソースの取得
-	/// </summary>
-	/// <returns></returns>
-	ID3D12Resource* GetBuffer();
+		/// <summary>
+		/// リソースの取得
+		/// </summary>
+		/// <returns></returns>
+		ID3D12Resource* GetBuffer();
 
-	/// <summary>
-	/// データの取得
-	/// </summary>
-	/// <returns></returns>
-	VertexData2D* GetData();
+		/// <summary>
+		/// データの取得
+		/// </summary>
+		/// <returns></returns>
+		VertexData2D* GetData();
 
-	/// <summary>
-	/// データのセット
-	/// </summary>
-	void SetData(VertexData2D* data);
+		/// <summary>
+		/// データのセット
+		/// </summary>
+		void SetData(VertexData2D* data);
 
-private:
+	private:
 
-	ComPtr<ID3D12Resource> buffer_;
+		ComPtr<ID3D12Resource> buffer_;
 
-	VertexData2D* data_;
-};
+		VertexData2D* data_;
+	};
+}
 

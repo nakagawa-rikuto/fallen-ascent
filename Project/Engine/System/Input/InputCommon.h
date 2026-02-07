@@ -12,30 +12,32 @@
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
 
-/// ===前方宣言=== ///
-class WinApp;
+namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class WinApp;
 
-///=====================================================/// 
-/// 共通入力処理
-///=====================================================///
-class InputCommon {
-public:
+	///=====================================================/// 
+	/// 共通入力処理
+	///=====================================================///
+	class InputCommon {
+	public:
 
-	InputCommon() = default;
-	~InputCommon();
+		InputCommon() = default;
+		~InputCommon();
 
-	/// <summary>
-	/// 初期化処理
-	/// </summary>
-	/// <param name="winApp">Class WinApp</param>
-	void Initialize(WinApp* winApp);
-	
-public: /// ===Getter=== ///
-	// DirectInput
-	ComPtr<IDirectInput8> GetDirectInput();
+		/// <summary>
+		/// 初期化処理
+		/// </summary>
+		/// <param name="winApp">Class WinApp</param>
+		void Initialize(WinApp* winApp);
 
-private:
-	// DirectInputインスタンス
-	ComPtr<IDirectInput8> directInput_; 
-};
+	public: /// ===Getter=== ///
+		// DirectInput
+		ComPtr<IDirectInput8> GetDirectInput();
+
+	private:
+		// DirectInputインスタンス
+		ComPtr<IDirectInput8> directInput_;
+	};
+}
 

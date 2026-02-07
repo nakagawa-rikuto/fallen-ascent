@@ -91,7 +91,7 @@ void EnemyManager::UpdateAnimation() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void EnemyManager::Draw(BlendMode mode) {
+void EnemyManager::Draw(MiiEngine::BlendMode mode) {
 	for (auto& e : enemies_) {
 		if (e) e->Draw(mode);
 	}

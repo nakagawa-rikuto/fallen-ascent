@@ -192,10 +192,10 @@ void GameCamera::Init(CameraType type) {
 	type_ = type;
 
 	if (type_ == CameraType::Normal) {
-		normal_ = std::make_shared<NormalCamera>();
+		normal_ = std::make_shared<MiiEngine::NormalCamera>();
 		normal_->Initialize();
 	} else {
-		follow_ = std::make_shared<FollowCamera>();
+		follow_ = std::make_shared<MiiEngine::FollowCamera>();
 		follow_->Initialize();
 	}
 }

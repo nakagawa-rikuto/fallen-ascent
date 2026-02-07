@@ -3,73 +3,74 @@
 #include "imgui.h"
 #endif // USE_IMGUI
 
+namespace MiiEngine {
+	///-------------------------------------------/// 
+	/// 初期化
+	///-------------------------------------------///
+	void AABBCollider::Initialize() {
+		type_ = ColliderType::AABB;
 
-///-------------------------------------------/// 
-/// 初期化
-///-------------------------------------------///
-void AABBCollider::Initialize() {
-	type_ = ColliderType::AABB;
+		// Colliderの初期化
+		Collider::Initialize();
+	}
 
-	// Colliderの初期化
-	Collider::Initialize();
-}
+	///-------------------------------------------/// 
+	/// 更新
+	///-------------------------------------------///
+	void AABBCollider::Update() {
 
-///-------------------------------------------/// 
-/// 更新
-///-------------------------------------------///
-void AABBCollider::Update() {
+		/// ===Object3Dの更新=== ///
+		object3d_->SetTranslate(transform_.translate);
+		object3d_->SetRotate(transform_.rotate);
+		object3d_->SetScale(transform_.scale);
+		object3d_->SetColor(color_);
 
-	/// ===Object3Dの更新=== ///
-	object3d_->SetTranslate(transform_.translate);
-	object3d_->SetRotate(transform_.rotate);
-	object3d_->SetScale(transform_.scale);
-	object3d_->SetColor(color_);
+		// Colliderの更新処理
+		Collider::Update();
+	}
 
-	// Colliderの更新処理
-	Collider::Update();
-}
+	///-------------------------------------------/// 
+	/// 描画
+	///-------------------------------------------///
+	void AABBCollider::Draw(BlendMode mode) {
 
-///-------------------------------------------/// 
-/// 描画
-///-------------------------------------------///
-void AABBCollider::Draw(BlendMode mode) {
+		// Line
+	#ifdef _DEBUG
+		// デバッグ時のみ描画
+		line_->DrawAABB(aabb_, lineColor_);
 
-	// Line
-#ifdef _DEBUG
-	// デバッグ時のみ描画
-	line_->DrawAABB(aabb_, lineColor_);
+	#endif // DEBUG
 
-#endif // DEBUG
+		// Colliderの描画処理
+		Collider::Draw(mode);
+	}
 
-	// Colliderの描画処理
-	Collider::Draw(mode);
-}
+	///-------------------------------------------/// 
+	/// 情報
+	///-------------------------------------------///
+	void AABBCollider::Information() {
+	#ifdef USE_IMGUI
+		Collider::Information();
+		ImGui::Text("OBBInfo");
+		ImGui::DragFloat3("Min", &aabb_.min.x, 0.1f);
+		ImGui::DragFloat3("Max", &aabb_.max.x, 0.1f);
+	#endif // USE_IMGUI
+	}
 
-///-------------------------------------------/// 
-/// 情報
-///-------------------------------------------///
-void AABBCollider::Information() {
-#ifdef USE_IMGUI
-	Collider::Information();
-	ImGui::Text("OBBInfo");
-	ImGui::DragFloat3("Min", &aabb_.min.x, 0.1f);
-	ImGui::DragFloat3("Max", &aabb_.max.x, 0.1f);
-#endif // USE_IMGUI
-}
+	///-------------------------------------------/// 
+	/// 衝突処理
+	///-------------------------------------------///
+	void AABBCollider::OnCollision(Collider* collider) { collider; }
 
-///-------------------------------------------/// 
-/// 衝突処理
-///-------------------------------------------///
-void AABBCollider::OnCollision(Collider* collider) { collider; }
+	///-------------------------------------------/// 
+	/// Setter
+	///-------------------------------------------///
+	void AABBCollider::SetAABB(const AABB& aabb) { aabb_ = aabb; }
 
-///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-void AABBCollider::SetAABB(const AABB& aabb) { aabb_ = aabb; }
-
-///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-AABB AABBCollider::GetAABB() const {
-	return aabb_;
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	AABB AABBCollider::GetAABB() const {
+		return aabb_;
+	}
 }

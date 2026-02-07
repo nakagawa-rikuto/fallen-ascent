@@ -8,8 +8,8 @@
 #include "GameSceneGameClearState.h"
 #include "GameSceneExitState.h"
 // Service
-#include "Engine/System/Service/InputService.h"
-#include "Engine/System/Service/DeltaTimeSevice.h"
+#include "Service/Input.h"
+#include "Service/DeltaTime.h"
 
 ///-------------------------------------------/// 
 /// 初期化処理
@@ -38,12 +38,12 @@ void GameSceneInGameState::Enter(GameScene* gameScene) {
 void GameSceneInGameState::Update() {
 
 	// オプションアクティブ
-	if (InputService::TriggerButton(0, ControllerButtonType::Start)) {
+	if (Service::Input::TriggerButton(0, ControllerButtonType::Start)) {
 		if (isOptionActive_) {
-			DeltaTimeSevice::SetDeltaTime(1.0f / 60.0f);
+			Service::DeltaTime::SetDeltaTime(1.0f / 60.0f);
 			isOptionActive_ = false;
 		} else {
-			DeltaTimeSevice::SetDeltaTime(0.0f);
+			Service::DeltaTime::SetDeltaTime(0.0f);
 			isOptionActive_ = true;
 		}
 	}
@@ -69,7 +69,7 @@ void GameSceneInGameState::Update() {
 		// ゲームクリアアニメーション状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneGameClearState>());
 	} else if (optionUI_->GetReturnToTitle()) {
-		DeltaTimeSevice::SetDeltaTime(1.0f / 60.0f);
+		Service::DeltaTime::SetDeltaTime(1.0f / 60.0f);
 		// Exit状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneExitState>());
 	}

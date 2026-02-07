@@ -1,7 +1,9 @@
 #pragma once
 /// ===前方宣言=== ///
 class GameScene;
-class SceneManager;
+namespace MiiEngine {
+	class SceneManager;
+}
 
 ///=====================================================/// 
 /// ゲームシーンフェード状態
@@ -33,12 +35,12 @@ public:
 
 public: /// ===Setter=== ///
 	// SceneManagerの設定
-	void SetSceneManager(SceneManager* sceneManager) { sceneManager_ = sceneManager; }
+	void SetSceneManager(MiiEngine::SceneManager* sceneManager) { sceneManager_ = sceneManager; }
 
 protected:
 	// ゲームシーン
 	GameScene* gameScene_ = nullptr; 
 	// SceneManager
-	SceneManager* sceneManager_ = nullptr;
+	MiiEngine::SceneManager* sceneManager_ = nullptr;
 };
 

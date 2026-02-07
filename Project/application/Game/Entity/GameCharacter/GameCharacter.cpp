@@ -1,6 +1,7 @@
 #include "GameCharacter.h"
 // DeltaTime
-#include "Engine/System/Service/DeltaTimeSevice.h"
+#include "Service/DeltaTime.h"
+// Collider
 #include "Engine/Collider/AABBCollider.h"
 // C++
 #include <algorithm>
@@ -8,6 +9,8 @@
 #ifdef USE_IMGUI
 #include "imgui.h"
 #endif // USE_IMGUI
+
+using namespace MiiEngine;
 
 /// ===テンプレート候補=== ///
 template class GameCharacter<OBBCollider>;
@@ -39,7 +42,7 @@ void GameCharacter<TCollider>::Initialize() {
 
 	/// ===BaseInfoの初期化設定=== ///
 	baseInfo_.velocity = { 0.0f, 0.0f, 0.0f };
-	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+	baseInfo_.deltaTime = Service::DeltaTime::GetDeltaTime();
 	baseInfo_.gravity = -9.8f;
 	baseInfo_.isDead = false;
 
@@ -66,7 +69,7 @@ void GameCharacter<TCollider>::PreUpdate() {
 	}
 
 	/// ===デルタタイムの取得=== ///
-	baseInfo_.deltaTime = DeltaTimeSevice::GetDeltaTime();
+	baseInfo_.deltaTime = Service::DeltaTime::GetDeltaTime();
 }
 
 ///-------------------------------------------/// 

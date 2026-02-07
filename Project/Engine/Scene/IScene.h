@@ -3,35 +3,37 @@
 #include "application/Game/Camera/GameCamera.h"
 #include "Engine/DataInfo/LevelData.h"
 #include "Engine/DataInfo/BlendModeData.h"
-
+// C++
 #include <vector>
+#include <memory>
 
-/// ===前方宣言=== ///
-class SceneManager;
-class Model;
+namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class SceneManager;
 
-///=====================================================/// 
-/// シーンの基底クラス
-///=====================================================///
-class IScene {
-public:
+	///=====================================================/// 
+	/// シーンの基底クラス
+	///=====================================================///
+	class IScene {
+	public:
 
-	IScene() = default;
-	virtual ~IScene();
+		IScene() = default;
+		virtual ~IScene();
 
-	virtual void Initialize();
-	virtual void Update();
-	virtual void Draw();
+		virtual void Initialize();
+		virtual void Update();
+		virtual void Draw();
 
-public:/// ===Setter=== ///
-	// SceneManager
-	void SetSceneManager(SceneManager* sceneManager);
+	public:/// ===Setter=== ///
+		// SceneManager
+		void SetSceneManager(SceneManager* sceneManager);
 
-protected:
+	protected:
 
-	// シーンマネージャ
-	SceneManager* sceneManager_ = nullptr;
-	// Camera
-	std::shared_ptr<GameCamera> defaultCamera_;
-};
+		// シーンマネージャ
+		SceneManager* sceneManager_ = nullptr;
+		// Camera
+		std::shared_ptr<GameCamera> defaultCamera_;
+	};
+}
 

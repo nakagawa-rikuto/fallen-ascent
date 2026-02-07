@@ -32,7 +32,7 @@ public:
 	/// 描画処理
 	/// </summary>
 	/// <param name="mode">描画に使用するブレンドモード。省略した場合は BlendMode::KBlendModeNormal が使用されます。</param>
-	void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
+	void Draw(MiiEngine::BlendMode mode = MiiEngine::BlendMode::KBlendModeNormal)override;
 
 	/// <summary>
 	/// ImGui情報の表示
@@ -54,7 +54,7 @@ public: /// ===衝突判定=== ///
 	/// 衝突処理
 	/// </summary>
 	/// <param name="collider">衝突した相手の Collider へのポインター。衝突相手の情報を取得するために使用します。</param>
-	void OnCollision(Collider* collider) override;
+	void OnCollision(MiiEngine::Collider* collider) override;
 
 private: /// ===変数=== ///
 

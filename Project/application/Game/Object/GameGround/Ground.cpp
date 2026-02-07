@@ -1,6 +1,6 @@
 #include "Ground.h"
 // Service
-#include "Engine/System/Service/ColliderService.h"
+#include "Service/Collision.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -19,9 +19,9 @@ void Ground::GameInit(const std::string& modelName) {
 	object3d_->Init(ObjectType::Model, modelName);
 	// 初期化処理
 	GameObject::Initialize();
-	name_ = ColliderName::Ground; // コライダー名を設定
+	name_ = MiiEngine::ColliderName::Ground; // コライダー名を設定
 	// コライダーサービスに登録
-	ColliderService::AddCollider(this);
+	Service::Collision::AddCollider(this);
 }
 
 ///-------------------------------------------/// 
@@ -43,7 +43,7 @@ void Ground::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void Ground::Draw(BlendMode mode) {
+void Ground::Draw(MiiEngine::BlendMode mode) {
 	// GameObjectの描画
 	GameObject::Draw(mode);
 }
@@ -51,6 +51,6 @@ void Ground::Draw(BlendMode mode) {
 ///-------------------------------------------/// 
 /// 衝突判定
 ///-------------------------------------------///
-void Ground::OnCollision(Collider* collider) {
+void Ground::OnCollision(MiiEngine::Collider* collider) {
 	collider;
 }

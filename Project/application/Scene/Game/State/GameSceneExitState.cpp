@@ -25,11 +25,11 @@ void GameSceneExitState::Update() {
 	/// ===シーンの切り替え=== ///
 	if (sceneManager_->GetTransitionFinished()) {
 		// タイトルへ遷移
-		sceneManager_->ChangeScene(SceneType::Title);
+		sceneManager_->ChangeScene(MiiEngine::SceneType::Title);
 	}
 
 	// タイトルへ遷移
-	sceneManager_->ChangeScene(SceneType::Title);
+	sceneManager_->ChangeScene(MiiEngine::SceneType::Title);
 }
 
 ///-------------------------------------------/// 

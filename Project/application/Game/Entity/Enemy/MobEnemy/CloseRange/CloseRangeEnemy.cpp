@@ -2,7 +2,7 @@
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // Service
-#include "Engine/System/Service/ParticleService.h"
+#include "Service/Particle.h"
 // c++
 #include <cstdlib>
 // ImGui
@@ -69,7 +69,7 @@ void CloseRangeEnemy::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void CloseRangeEnemy::Draw(BlendMode mode) {
+void CloseRangeEnemy::Draw(MiiEngine::BlendMode mode) {
 	// MobEnemyの描画
 	MobEnemy::Draw(mode);
 }
@@ -91,7 +91,7 @@ void CloseRangeEnemy::Information() {
 ///-------------------------------------------/// 
 /// 衝突判定
 ///-------------------------------------------///
-void CloseRangeEnemy::OnCollision(Collider* collider) {
+void CloseRangeEnemy::OnCollision(MiiEngine::Collider* collider) {
 	// MobEnemyの当たり判定
 	MobEnemy::OnCollision(collider);
 }
@@ -112,7 +112,7 @@ void CloseRangeEnemy::StartAttack() {
 		attackParticle_ = nullptr;
 	}
 	// パーティクルの再生
-	attackParticle_ = ParticleService::Emit("CloseEnemyAttack", transform_.translate);
+	attackParticle_ = Service::Particle::Emit("CloseEnemyAttack", transform_.translate);
 	attackParticle_->SetEmitterPosition(transform_.translate);
 }
 
