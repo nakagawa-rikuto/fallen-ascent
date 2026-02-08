@@ -1706,14 +1706,14 @@ namespace MiiEngine {
 			}
 		} else {
 			// 異なるタイプ同士の衝突処理
-			ProcessMixdeTypeCollision(colliderA, colliderB, typeA, typeB, pushBackRatio);
+			ProcessMixedTypeCollision(colliderA, colliderB, typeA, typeB, pushBackRatio);
 		}
 	}
 
 	///-------------------------------------------/// 
 	/// 異なるタイプ同士の衝突処理
 	///-------------------------------------------///
-	void ColliderCollision::ProcessMixdeTypeCollision(Collider* colliderA, Collider* colliderB, ColliderType typeA, ColliderType typeB, float pushBackRationA) {
+	void ColliderCollision::ProcessMixedTypeCollision(Collider* colliderA, Collider* colliderB, ColliderType typeA, ColliderType typeB, float pushBackRationA) {
 		/// ===異なるCollider毎の処理=== ///
 		if ((typeA == ColliderType::Sphere && typeB == ColliderType::AABB) || (typeA == ColliderType::AABB && typeB == ColliderType::Sphere)) {
 
@@ -2167,7 +2167,7 @@ namespace MiiEngine {
 		/// <param name="typeA">colliderA のコライダータイプを示す値。衝突応答の判定に使用されます。</param>
 		/// <param name="typeB">colliderB のコライダータイプを示す値。衝突応答の判定に使用されます。</param>
 		/// <param name="pushBackRationA">colliderA に対して適用する押し戻し比率。実装により 0.0〜1.0 の範囲で扱われることが想定され、値が大きいほど colliderA を強く押し戻します（正確な意味は実装依存）。</param>
-		void ProcessMixdeTypeCollision(Collider* colliderA, Collider* colliderB, ColliderType typeA, ColliderType typeB, float pushBackRationA);
+		void ProcessMixedTypeCollision(Collider* colliderA, Collider* colliderB, ColliderType typeA, ColliderType typeB, float pushBackRationA);
 
 		/// <summary>
 		/// 2つの球体コライダー間の衝突判定と衝突解決（位置の押し戻しなど）を行う関数。
@@ -3232,7 +3232,6 @@ namespace MiiEngine {
 	/// ===前方宣言=== ///
 	class WinApp;
 	class RTVManager;
-	class DSVManager;
 
 	///=====================================================/// 
 	/// DirectX汎用
@@ -12378,9 +12377,6 @@ File Path: Project/Engine/Graphics/Particle/ParticleCommon.h
 #include <memory>
 #include <list>
 
-/// ===前方宣言=== ///
-class SRVManager;
-
 namespace MiiEngine {
 	///=====================================================/// 
 	/// ParticleSetUp
@@ -14537,7 +14533,6 @@ File Path: Project/Engine/Graphics/Particle/ParticleSetUp.h
 
 namespace MiiEngine {
 	/// ===前方宣言=== ///
-	class GameCamera;
 	class SRVManager;
 
 	///=====================================================/// 
@@ -16833,11 +16828,11 @@ File Path: Project/Engine/Graphics/Pipeline/PSOBase.h
 #include <dxgi1_6.h>
 #include <dxcapi.h>
 
-/// ===前方宣言=== ///
-class DXCommon;
-class Compiler;
-
 namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class DXCommon;
+	class Compiler;
+
 	///=====================================================/// 
 	/// PipelineStateObjectBase
 	///=====================================================///
@@ -20829,7 +20824,6 @@ namespace MiiEngine {
 	/// ===前方宣言=== ///
 	class WinApp;
 
-
 	///-------------------------------------------///
 	/// キーボード
 	///-------------------------------------------///
@@ -22295,12 +22289,12 @@ File Path: Project/Engine/System/Managers/ColliderManager.h
 // Collider
 #include "Engine/Collider/Base/Collider.h"
 
-/// ===前方宣言=== ///
-class SphereCollider;
-class AABBCollider;
-class OBBCollider;
-
 namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class SphereCollider;
+	class AABBCollider;
+	class OBBCollider;
+
 	///=====================================================/// 
 	/// ColliderManager
 	///=====================================================///
@@ -23879,9 +23873,6 @@ File Path: Project/Engine/System/Managers/ParticleManager.h
 #include <string>
 #include <vector>
 
-/// ===前方宣言=== ///
-class GameCamera;
-
 namespace MiiEngine {
 	///=====================================================/// 
 	/// ParticleManager
@@ -24121,9 +24112,6 @@ File Path: Project/Engine/System/Managers/PiplineManager.h
 #include <utility> // std::pair
 #include <functional> // std::hash
 
-/// ===前方宣言=== ///
-class DXCommon;
-
 ///-------------------------------------------/// 
     /// std::pair 用のハッシュ関数を特殊化
     ///-------------------------------------------///
@@ -24139,6 +24127,9 @@ namespace std {
 }
 
 namespace MiiEngine {
+    /// ===前方宣言=== ///
+    class DXCommon;
+
     ///=====================================================/// 
     /// PipeLineManager
     ///=====================================================///
@@ -31367,8 +31358,10 @@ File Path: Project/Service/Particle.h
 #include "Math/Vector3.h"
 
 /// ===前方宣言=== ///
-struct ParticleDefinition;
-enum class ParticleParameter;
+namespace MiiEngine {
+	struct ParticleDefinition;
+	enum class ParticleParameter;
+}
 
 namespace Service {
 	///=====================================================/// 
@@ -35807,10 +35800,10 @@ File Path: Project/application/Game/Entity/Enemy/Base/BaseEnemy.h
 #include <random>
 
 /// ===前方宣言=== ///
-class Player;
 namespace MiiEngine {
 	class ParticleGroup;
 }
+class Player;
 
 ///=====================================================/// 
 /// Enemy
@@ -36314,9 +36307,6 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/BossEnemy.h
 #include "Component/Attack/BossAttackComponent.h"
 //C++
 #include <random>
-
-/// ===前方宣言=== ///
-class ParticleGroup;
 
 ///=====================================================/// 
 /// BossEnemy
@@ -41852,10 +41842,10 @@ File Path: Project/application/Game/Entity/Player/Weapon/PlayerWeapon.h
 #include "Engine/DataInfo/LineObjectData.h"
 
 /// ===前方宣言=== ///
-class Player;
 namespace MiiEngine {
 	class ParticleGroup;
 }
+class Player;
 
 ///=====================================================/// 
 /// PlayerWeapon
@@ -44421,9 +44411,6 @@ public: /// ===Getter=== ///
 	EnemyManager* GetEnemyManager() const { return enemyManager_.get(); }
 
 private:/// ===メンバ変数=== ///
-	/// <summary>
-	/// シーン用
-	/// </summary>
 
 	/// ===Classの宣言=== /// 
 	// Camera
@@ -44482,10 +44469,10 @@ File Path: Project/application/Scene/Game/State/Base/GameSceneFadeState.h
 ============================================================
 #pragma once
 /// ===前方宣言=== ///
-class GameScene;
 namespace MiiEngine {
 	class SceneManager;
 }
+class GameScene;
 
 ///=====================================================/// 
 /// ゲームシーンフェード状態
