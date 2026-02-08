@@ -9,8 +9,10 @@
 #include "Math/Vector3.h"
 
 /// ===前方宣言=== ///
-struct ParticleDefinition;
-enum class ParticleParameter;
+namespace MiiEngine {
+	struct ParticleDefinition;
+	enum class ParticleParameter;
+}
 
 namespace Service {
 	///=====================================================/// 

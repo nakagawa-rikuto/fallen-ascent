@@ -1,9 +1,9 @@
 #pragma once
 /// ===前方宣言=== ///
-class GameScene;
 namespace MiiEngine {
 	class SceneManager;
 }
+class GameScene;
 
 ///=====================================================/// 
 /// ゲームシーンフェード状態

@@ -49,7 +49,7 @@ namespace MiiEngine {
 		/// <param name="typeA">colliderA のコライダータイプを示す値。衝突応答の判定に使用されます。</param>
 		/// <param name="typeB">colliderB のコライダータイプを示す値。衝突応答の判定に使用されます。</param>
 		/// <param name="pushBackRationA">colliderA に対して適用する押し戻し比率。実装により 0.0〜1.0 の範囲で扱われることが想定され、値が大きいほど colliderA を強く押し戻します（正確な意味は実装依存）。</param>
-		void ProcessMixdeTypeCollision(Collider* colliderA, Collider* colliderB, ColliderType typeA, ColliderType typeB, float pushBackRationA);
+		void ProcessMixedTypeCollision(Collider* colliderA, Collider* colliderB, ColliderType typeA, ColliderType typeB, float pushBackRationA);
 
 		/// <summary>
 		/// 2つの球体コライダー間の衝突判定と衝突解決（位置の押し戻しなど）を行う関数。

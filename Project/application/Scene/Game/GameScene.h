@@ -48,9 +48,6 @@ public: /// ===Getter=== ///
 	EnemyManager* GetEnemyManager() const { return enemyManager_.get(); }
 
 private:/// ===メンバ変数=== ///
-	/// <summary>
-	/// シーン用
-	/// </summary>
 
 	/// ===Classの宣言=== /// 
 	// Camera

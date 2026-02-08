@@ -6,10 +6,10 @@
 #include <random>
 
 /// ===前方宣言=== ///
-class Player;
 namespace MiiEngine {
 	class ParticleGroup;
 }
+class Player;
 
 ///=====================================================/// 
 /// Enemy

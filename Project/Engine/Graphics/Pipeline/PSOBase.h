@@ -12,11 +12,11 @@
 #include <dxgi1_6.h>
 #include <dxcapi.h>
 
-/// ===前方宣言=== ///
-class DXCommon;
-class Compiler;
-
 namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class DXCommon;
+	class Compiler;
+
 	///=====================================================/// 
 	/// PipelineStateObjectBase
 	///=====================================================///

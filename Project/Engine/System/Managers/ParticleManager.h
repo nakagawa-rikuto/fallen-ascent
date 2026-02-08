@@ -10,9 +10,6 @@
 #include <string>
 #include <vector>
 
-/// ===前方宣言=== ///
-class GameCamera;
-
 namespace MiiEngine {
 	///=====================================================/// 
 	/// ParticleManager
