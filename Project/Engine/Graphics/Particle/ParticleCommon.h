@@ -9,9 +9,6 @@
 #include <memory>
 #include <list>
 
-/// ===前方宣言=== ///
-class SRVManager;
-
 namespace MiiEngine {
 	///=====================================================/// 
 	/// ParticleSetUp

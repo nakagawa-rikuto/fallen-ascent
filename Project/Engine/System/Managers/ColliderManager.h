@@ -5,12 +5,12 @@
 // Collider
 #include "Engine/Collider/Base/Collider.h"
 
-/// ===前方宣言=== ///
-class SphereCollider;
-class AABBCollider;
-class OBBCollider;
-
 namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class SphereCollider;
+	class AABBCollider;
+	class OBBCollider;
+
 	///=====================================================/// 
 	/// ColliderManager
 	///=====================================================///

@@ -11,7 +11,6 @@
 
 namespace MiiEngine {
 	/// ===前方宣言=== ///
-	class GameCamera;
 	class SRVManager;
 
 	///=====================================================/// 

@@ -35,14 +35,14 @@ namespace MiiEngine {
 			}
 		} else {
 			// 異なるタイプ同士の衝突処理
-			ProcessMixdeTypeCollision(colliderA, colliderB, typeA, typeB, pushBackRatio);
+			ProcessMixedTypeCollision(colliderA, colliderB, typeA, typeB, pushBackRatio);
 		}
 	}
 
 	///-------------------------------------------/// 
 	/// 異なるタイプ同士の衝突処理
 	///-------------------------------------------///
-	void ColliderCollision::ProcessMixdeTypeCollision(Collider* colliderA, Collider* colliderB, ColliderType typeA, ColliderType typeB, float pushBackRationA) {
+	void ColliderCollision::ProcessMixedTypeCollision(Collider* colliderA, Collider* colliderB, ColliderType typeA, ColliderType typeB, float pushBackRationA) {
 		/// ===異なるCollider毎の処理=== ///
 		if ((typeA == ColliderType::Sphere && typeB == ColliderType::AABB) || (typeA == ColliderType::AABB && typeB == ColliderType::Sphere)) {
 

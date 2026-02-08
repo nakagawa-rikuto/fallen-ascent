@@ -18,7 +18,6 @@ namespace MiiEngine {
 	/// ===前方宣言=== ///
 	class WinApp;
 	class RTVManager;
-	class DSVManager;
 
 	///=====================================================/// 
 	/// DirectX汎用

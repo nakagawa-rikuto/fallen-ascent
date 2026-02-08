@@ -7,10 +7,10 @@
 #include "Engine/DataInfo/LineObjectData.h"
 
 /// ===前方宣言=== ///
-class Player;
 namespace MiiEngine {
 	class ParticleGroup;
 }
+class Player;
 
 ///=====================================================/// 
 /// PlayerWeapon
