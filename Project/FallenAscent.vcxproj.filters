@@ -98,25 +98,22 @@
       <Filter>application\Game\Entity\Enemy\Base</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\CloseRange\CloseRangeEnemy.cpp">
-      <Filter>application\Game\Entity\Enemy\CloseRange</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\CloseRange</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\LongRange\LongRangeEnemyBullet.cpp">
-      <Filter>application\Game\Entity\Enemy\LongRange</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\LongRange</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\LongRange\LongRangeEnemy.cpp">
-      <Filter>application\Game\Entity\Enemy\LongRange</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\Base\EnemyManager.cpp">
-      <Filter>application\Game\Entity\Enemy\Manager</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\LongRange</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\Base\EnemyState.cpp">
-      <Filter>application\Game\Entity\Enemy\State\Base</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\State\Base</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyAttackState.cpp">
-      <Filter>application\Game\Entity\Enemy\State</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\State</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyMoveState.cpp">
-      <Filter>application\Game\Entity\Enemy\State</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\State</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Player\Player.cpp">
       <Filter>application\Game\Entity\Player</Filter>
@@ -323,22 +320,22 @@
       <Filter>Engine\System\Manager</Filter>
     </ClCompile>
     <ClCompile Include="Service\Audio.cpp">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClCompile>
     <ClCompile Include="Service\Camera.cpp">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClCompile>
     <ClCompile Include="Service\Collision.cpp">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClCompile>
     <ClCompile Include="Math\EasingMath.cpp">
       <Filter>Math</Filter>
     </ClCompile>
     <ClCompile Include="Service\GraphicsResourceGetter.cpp">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClCompile>
     <ClCompile Include="Service\Input.cpp">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClCompile>
     <ClCompile Include="Engine\System\Managers\LevelManager.cpp">
       <Filter>Engine\System\Manager</Filter>
@@ -353,16 +350,16 @@
       <Filter>Math</Filter>
     </ClCompile>
     <ClCompile Include="Service\PostEffect.cpp">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClCompile>
     <ClCompile Include="Service\Locator.cpp">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClCompile>
     <ClCompile Include="Service\Particle.cpp">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClCompile>
     <ClCompile Include="Service\Render.cpp">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClCompile>
     <ClCompile Include="Math\Quaternion.cpp">
       <Filter>Math</Filter>
@@ -386,7 +383,7 @@
       <Filter>Math</Filter>
     </ClCompile>
     <ClCompile Include="Service\Loader.cpp">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp">
       <Filter>Engine\Graphics\OffScreen\Effect</Filter>
@@ -422,7 +419,7 @@
       <Filter>Engine\System\DeltaTime</Filter>
     </ClCompile>
     <ClCompile Include="Service\DeltaTime.cpp">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Object\GameGround\Ground.cpp">
       <Filter>application\Game\Object\GameGround</Filter>
@@ -443,16 +440,16 @@
       <Filter>application\Game\Animation</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyHitReactionComponent.cpp">
-      <Filter>application\Game\Entity\Enemy\Component</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\Component</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyMoveComponent.cpp">
-      <Filter>application\Game\Entity\Enemy\Component</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\Component</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyHitReactionState.cpp">
-      <Filter>application\Game\Entity\Enemy\State</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\State</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyPrePareAttackState.cpp">
-      <Filter>application\Game\Entity\Enemy\State</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\State</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.cpp">
       <Filter>application\Game\Entity\GameCharacter</Filter>
@@ -598,12 +595,27 @@
     <ClCompile Include="application\Game\Entity\Player\Hand\PlayerHand.cpp">
       <Filter>application\Game\Entity\Player\Hand</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Base\BossState.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\BossEnemy.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\MoveBossState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\Base\EnemyManager.cpp">
+      <Filter>application\Game\Entity\Enemy\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\BossEnemy.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Base\BossState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\MoveBossState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.cpp">
+      <Filter>application\Game\Entity\Enemy\MobEnemy\Base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -616,25 +628,22 @@
       <Filter>application\Game\Entity\Enemy\Base</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\CloseRange\CloseRangeEnemy.h">
-      <Filter>application\Game\Entity\Enemy\CloseRange</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\CloseRange</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\LongRange\LongRangeEnemyBullet.h">
-      <Filter>application\Game\Entity\Enemy\LongRange</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\LongRange</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\LongRange\LongRangeEnemy.h">
-      <Filter>application\Game\Entity\Enemy\LongRange</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\Base\EnemyManager.h">
-      <Filter>application\Game\Entity\Enemy\Manager</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\LongRange</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\Base\EnemyState.h">
-      <Filter>application\Game\Entity\Enemy\State\Base</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\State\Base</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyMoveState.h">
-      <Filter>application\Game\Entity\Enemy\State</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\State</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyAttackState.h">
-      <Filter>application\Game\Entity\Enemy\State</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\State</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Player\Player.h">
       <Filter>application\Game\Entity\Player</Filter>
@@ -880,22 +889,22 @@
       <Filter>Engine\System\Manager</Filter>
     </ClInclude>
     <ClInclude Include="Service\Audio.h">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClInclude>
     <ClInclude Include="Service\Camera.h">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClInclude>
     <ClInclude Include="Service\Collision.h">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClInclude>
     <ClInclude Include="Math\EasingMath.h">
       <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="Service\GraphicsResourceGetter.h">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClInclude>
     <ClInclude Include="Service\Input.h">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClInclude>
     <ClInclude Include="Engine\System\Managers\LevelManager.h">
       <Filter>Engine\System\Manager</Filter>
@@ -910,16 +919,16 @@
       <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="Service\PostEffect.h">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClInclude>
     <ClInclude Include="Service\Locator.h">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClInclude>
     <ClInclude Include="Service\Particle.h">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClInclude>
     <ClInclude Include="Service\Render.h">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClInclude>
     <ClInclude Include="Math\Quaternion.h">
       <Filter>Math</Filter>
@@ -943,7 +952,7 @@
       <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="Service\Loader.h">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h">
       <Filter>Engine\Graphics\OffScreen\Effect</Filter>
@@ -979,7 +988,7 @@
       <Filter>Engine\System\DeltaTime</Filter>
     </ClInclude>
     <ClInclude Include="Service\DeltaTime.h">
-      <Filter>Engine\System\Service</Filter>
+      <Filter>Service</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Object\GameGround\Ground.h">
       <Filter>application\Game\Object\GameGround</Filter>
@@ -1003,16 +1012,16 @@
       <Filter>application\Game\Animation</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyHitReactionComponent.h">
-      <Filter>application\Game\Entity\Enemy\Component</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\Component</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyMoveComponent.h">
-      <Filter>application\Game\Entity\Enemy\Component</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\Component</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyPrePareAttackState.h">
-      <Filter>application\Game\Entity\Enemy\State</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\State</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyHitReactionState.h">
-      <Filter>application\Game\Entity\Enemy\State</Filter>
+      <Filter>application\Game\Entity\Enemy\MobEnemy\State</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.h">
       <Filter>application\Game\Entity\GameCharacter</Filter>
@@ -1167,12 +1176,27 @@
     <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h">
       <Filter>application\Game\Entity\Player\Hand</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Base\BossState.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\BossEnemy.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\MoveBossState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\Base\EnemyManager.h">
+      <Filter>application\Game\Entity\Enemy\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\BossEnemy.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Base\BossState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\MoveBossState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.h">
+      <Filter>application\Game\Entity\Enemy\MobEnemy\Base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -1255,21 +1279,6 @@
     <Filter Include="application\Game\Entity\Enemy\Base">
       <UniqueIdentifier>{15419c83-d69a-44af-85b5-bd7fdfd5f559}</UniqueIdentifier>
     </Filter>
-    <Filter Include="application\Game\Entity\Enemy\CloseRange">
-      <UniqueIdentifier>{8762c489-74ef-4f11-81b8-7d564aff190c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\LongRange">
-      <UniqueIdentifier>{829a48a3-1384-42a5-b4a5-0db1799284b4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\State">
-      <UniqueIdentifier>{3c568908-0279-4052-95cc-e14938c40a84}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\Manager">
-      <UniqueIdentifier>{98ab8bf7-927a-4ff1-8b7b-8884ede0595b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\State\Base">
-      <UniqueIdentifier>{a96e1b4a-6cf5-477e-ad7a-2d1ec1853299}</UniqueIdentifier>
-    </Filter>
     <Filter Include="application\Game\Entity\Player\State">
       <UniqueIdentifier>{8f50ec41-028d-4999-8cb4-255de96c8ddb}</UniqueIdentifier>
     </Filter>
@@ -1345,9 +1354,6 @@
     <Filter Include="Engine\System\Manager">
       <UniqueIdentifier>{8272557d-6a59-4e0b-802b-4dae3138e967}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\System\Service">
-      <UniqueIdentifier>{482e8d8e-2156-475d-93ae-2d00c96bdd5c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource\Shaders">
       <UniqueIdentifier>{d5376277-5907-465c-b4fc-6f636f9f830c}</UniqueIdentifier>
     </Filter>
@@ -1386,9 +1392,6 @@
     </Filter>
     <Filter Include="Engine\Graphics\3D\Oshan">
       <UniqueIdentifier>{162736ff-601d-43a0-a358-c07c7e42961a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\Component">
-      <UniqueIdentifier>{bfbf771b-4eb8-4f58-9987-8362cb1d9598}</UniqueIdentifier>
     </Filter>
     <Filter Include="application\Game\Entity\Player\Component">
       <UniqueIdentifier>{343c8ccc-cc5a-47b8-a85a-2136b5da5a63}</UniqueIdentifier>
@@ -1458,6 +1461,42 @@
     </Filter>
     <Filter Include="application\Game\Entity\Player\Hand">
       <UniqueIdentifier>{9a77ee97-049d-4e63-a362-2a27182dd571}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\MobEnemy">
+      <UniqueIdentifier>{603e5bb7-c360-4af7-beb3-94c0fef82c3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy">
+      <UniqueIdentifier>{a94a7827-caa4-4b35-b14c-1d27475220f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\MobEnemy\State">
+      <UniqueIdentifier>{3c568908-0279-4052-95cc-e14938c40a84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\MobEnemy\State\Base">
+      <UniqueIdentifier>{a96e1b4a-6cf5-477e-ad7a-2d1ec1853299}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\MobEnemy\LongRange">
+      <UniqueIdentifier>{829a48a3-1384-42a5-b4a5-0db1799284b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\MobEnemy\Component">
+      <UniqueIdentifier>{bfbf771b-4eb8-4f58-9987-8362cb1d9598}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\MobEnemy\CloseRange">
+      <UniqueIdentifier>{8762c489-74ef-4f11-81b8-7d564aff190c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\Component">
+      <UniqueIdentifier>{59640972-08a3-4c19-87c5-e0a423f7abe7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\State">
+      <UniqueIdentifier>{7525d64e-6e40-4727-8f82-60274f48aeb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\State\Base">
+      <UniqueIdentifier>{ebd1b9d0-4f48-4b5d-b16d-c983b193835d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\MobEnemy\Base">
+      <UniqueIdentifier>{cf30d564-3fef-4db6-815b-cbce2445bae2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Service">
+      <UniqueIdentifier>{482e8d8e-2156-475d-93ae-2d00c96bdd5c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
