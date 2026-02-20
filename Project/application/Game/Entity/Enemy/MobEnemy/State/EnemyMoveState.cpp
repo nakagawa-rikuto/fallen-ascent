@@ -30,6 +30,7 @@ void EnemyMoveState::Update() {
     auto result = enemy_->GetMovementComponent().Update(context);
 
     // 結果の適用
+    result.velocity.y = enemy_->GetVelocity().y;
     enemy_->SetVelocity(result.velocity);
 
 	// 回転の更新
