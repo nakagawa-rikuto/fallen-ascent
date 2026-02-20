@@ -279,7 +279,11 @@
 └── └── └── └──     ├── PlayerHand/
 └── └── └── └──     └── PlayerWeapon/
 └── └── └── ├── Object/
+└── └── └── └── ├── Bridge/
 └── └── └── └── ├── Ground/
+└── └── └── └── ├── Object/
+└── └── └── └── └── ├── Stone/
+└── └── └── └── └── └── Wall/
 └── └── └── └── ├── Object1/
 └── └── └── └── └── Object2/
 └── └── └── └── Particle/
@@ -1029,8 +1033,8 @@ namespace MiiEngine {
 	void NormalCamera::ImGuiUpdate() {
 	#ifdef USE_IMGUI
 		ImGui::Begin("カメラ");
-		ImGui::DragFloat3("位置", &transform_.translate.x, 0.01f);
-		ImGui::DragFloat4("回転", &transform_.rotate.x, 0.001f);
+		ImGui::DragFloat3("位置", &transform_.translate.x, 1.0f);
+		ImGui::DragFloat4("回転", &transform_.rotate.x, 0.05f);
 		ImGui::DragFloat("Horizontal View", &horizontalView_, 0.01f);
 		ImGui::DragFloat("Aspect Ratio", &aspect_, 0.01f);
 		ImGui::DragFloat("Near Clip", &nearClip_, 0.01f);
@@ -1049,36 +1053,36 @@ namespace MiiEngine {
 
 		/// ===カメラの移動=== ///
 		if (Service::Input::PushKey(DIK_D)) {
-			transform_.translate.x += 0.01f;
+			transform_.translate.x += 1.0f;
 		} else if (Service::Input::PushKey(DIK_A)) {
-			transform_.translate.x -= 0.01f;
+			transform_.translate.x -= 1.0f;
 		}
 		if (Service::Input::PushKey(DIK_W)) {
-			transform_.translate.z += 0.01f;
+			transform_.translate.z += 1.0f;
 		} else if (Service::Input::PushKey(DIK_S)) {
-			transform_.translate.z -= 0.01f;
+			transform_.translate.z -= 1.0f;
 		}
 		if (Service::Input::PushKey(DIK_SPACE)) {
-			transform_.translate.y += 0.01f;
+			transform_.translate.y += 1.0f;
 		} else if (Service::Input::PushKey(DIK_LSHIFT)) {
-			transform_.translate.y -= 0.01f;
+			transform_.translate.y -= 1.0f;
 		}
 
 		// ピッチ（縦回転）
 		if (Service::Input::PushKey(DIK_UP)) {
-			Quaternion delta = Math::MakeRotateAxisAngle(right, -0.01f);
+			Quaternion delta = Math::MakeRotateAxisAngle(right, -0.1f);
 			transform_.rotate = delta * transform_.rotate;
 		} else if (Service::Input::PushKey(DIK_DOWN)) {
-			Quaternion delta = Math::MakeRotateAxisAngle(right, +0.01f);
+			Quaternion delta = Math::MakeRotateAxisAngle(right, +0.1f);
 			transform_.rotate = delta * transform_.rotate;
 		}
 
 		// ヨー（左右回転）
 		if (Service::Input::PushKey(DIK_LEFT)) {
-			Quaternion delta = Math::RotateY(-0.01f);
+			Quaternion delta = Math::RotateY(-0.1f);
 			transform_.rotate = delta * transform_.rotate;
 		} else if (Service::Input::PushKey(DIK_RIGHT)) {
-			Quaternion delta = Math::RotateY(+0.01f);
+			Quaternion delta = Math::RotateY(+0.1f);
 			transform_.rotate = delta * transform_.rotate;
 		}
 	#endif // _DEBUG
@@ -1357,13 +1361,53 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// Setter
 	///-------------------------------------------///
-	void AABBCollider::SetAABB(const AABB& aabb) { aabb_ = aabb; }
+	void AABBCollider::SetAABB(const AABB& aabb) {
+		// translateとrotateの情報を元にAABBを設定
+		AdjustmentAABB(aabb, transform_.translate, transform_.rotate);
+	}
 
 	///-------------------------------------------/// 
 	/// Getter
 	///-------------------------------------------///
 	AABB AABBCollider::GetAABB() const {
 		return aabb_;
+	}
+
+	///-------------------------------------------/// 
+	/// 現在の位置と回転に合わせてAABBを調整調整する 
+	///-------------------------------------------///
+	void AABBCollider::AdjustmentAABB(const AABB& aabb, const Vector3& translate, const Quaternion& rotate) {
+		// ローカルAABBの8頂点を列挙
+		Vector3 corners[8] = {
+			{ aabb.min.x, aabb.min.y, aabb.min.z },
+			{ aabb.max.x, aabb.min.y, aabb.min.z },
+			{ aabb.min.x, aabb.max.y, aabb.min.z },
+			{ aabb.max.x, aabb.max.y, aabb.min.z },
+			{ aabb.min.x, aabb.min.y, aabb.max.z },
+			{ aabb.max.x, aabb.min.y, aabb.max.z },
+			{ aabb.min.x, aabb.max.y, aabb.max.z },
+			{ aabb.max.x, aabb.max.y, aabb.max.z },
+		};
+
+		// 回転・移動を適用してワールド空間のAABBを再計算
+		Vector3 worldMin = { FLT_MAX,  FLT_MAX,  FLT_MAX };
+		Vector3 worldMax = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+		for (const auto& corner : corners) {
+			// クォータニオンで頂点を回転してtranslateを加算
+			Vector3 worldPos = translate + Math::RotateVector(corner, rotate);
+
+			worldMin.x = (std::min)(worldMin.x, worldPos.x);
+			worldMin.y = (std::min)(worldMin.y, worldPos.y);
+			worldMin.z = (std::min)(worldMin.z, worldPos.z);
+
+			worldMax.x = (std::max)(worldMax.x, worldPos.x);
+			worldMax.y = (std::max)(worldMax.y, worldPos.y);
+			worldMax.z = (std::max)(worldMax.z, worldPos.z);
+		}
+
+		// 調整済みAABBをセット
+		aabb_ = { worldMin, worldMax };
 	}
 }
 
@@ -1422,6 +1466,16 @@ namespace MiiEngine {
 
 	private:
 		AABB aabb_;
+
+	private:
+
+		/// <summary>
+		/// 現在の位置と回転に合わせてAABBを合わせる関数
+		/// </summary>
+		/// <param name="aabb">設定する軸並行境界ボックスへの参照。</param>
+		/// <param name="translate">平行移動ベクトル。</param>
+		/// <param name="rotate">回転を表すクォータニオン。</param>
+		void AdjustmentAABB(const AABB& aabb, const Vector3& translate, const Quaternion& rotate);
 	};
 }
 
@@ -2315,7 +2369,6 @@ namespace MiiEngine {
 		// 回転行列に変換
 		Matrix4x4 rotMatrix = Math::MakeRotateQuaternionMatrix(rotate);
 
-		// ✅ 各軸を行列の「列ベクトル」から取得
 		// X軸 = 第0列
 		obb.axis[0] = Vector3(
 			rotMatrix.m[0][0],  // 1行目の0列目
@@ -4905,48 +4958,10 @@ struct LevelData {
 	/// ===ClassType=== ///
 	enum class ClassTypeLevel {
 		None,
-		Player1,
-		Player2,
-		Enemy1,
-		Enemy2,
-		Enemy3,
-		Enemy4,
-		Enemy5,
-		Enemy6,
-		Enemy7,
-		Enemy8,
-		Enemy9,
-		Enemy10,
-		Object1,
-		Object2,
-		Object3,
-		Object4,
-		Object5,
-		Object6,
-		Object7,
-		Object8,
-		Object9,
-		Object10,
-		Ground1,
-		Ground2,
-		Ground3,
-		Ground4,
-		Ground5,
-		Ground6,
-		Ground7,
-		Ground8,
-		Ground9,
-		Ground10,
-		SkyBox1,
-		SkyBox2,
-		SkyBox3,
-		SkyBox4,
-		SkyBox5,
-		SkyBox6,
-		SkyBox7,
-		SkyBox8,
-		SkyBox9,
-		SkyBox10,
+		Player,
+		Enemy,
+		Object,
+		Ground
 	};
 
 	/// ===ColliderType=== ///
@@ -17699,7 +17714,7 @@ namespace MiiEngine {
 		// シーンマネージャの初期化
 		sceneManager_ = std::make_unique<SceneManager>();
 		sceneManager_->Initialize(sceneFactory_.get());
-		sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
+		sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
 	}
 
 	///-------------------------------------------/// 
@@ -17815,9 +17830,13 @@ namespace MiiEngine {
 		Loader::LoadModel("CloseEnemy", "Entity/Enemy/CloseEnemy/CloseEnemy.gltf");			// 近距離敵
 
 		/// ===Object=== ///
-		Loader::LoadModel("Ground", "Object/Ground/Ground.obj");				// 地面
-		Loader::LoadModel("Object1", "Object/Object1/Object1.obj");				// オブジェクト１
-		Loader::LoadModel("Object2", "Object/Object2/Object2.obj");				// オブジェクト２
+		Loader::LoadModel("Ground", "Object/Ground/Ground.gltf");						// 地面
+		Loader::LoadModel("Ground2", "Object/Ground/Ground2.gltf");						// 地面
+		Loader::LoadModel("Bridge", "Object/Bridge/Bridge.gltf");						// 橋
+		Loader::LoadModel("Bridge2", "Object/Bridge/Bridge2.gltf");						// 橋
+		Loader::LoadModel("Stone", "Object/Object/Stone/Stone.gltf");					// 石
+		Loader::LoadModel("BossStageWall", "Object/Object/Wall/BossStageWall.gltf");	// 壁
+
 	}
 
 	///-------------------------------------------/// 
@@ -17834,8 +17853,8 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void MyGame::LoadJson() {
 		/// ===Game=== ///
-		Loader::LoadLevelJson("Level/StageData.json");
-		Loader::LoadLevelJson("Level/EntityData.json");
+		Loader::LoadLevelJson("Level/StageData2.json");
+		Loader::LoadLevelJson("Level/EntityData2.json");
 	}
 }
 
@@ -22962,13 +22981,12 @@ namespace MiiEngine {
 
         /// ===オブジェクトの走査=== ///
         // レベルデータ格納用インスタンスを生成
-        LevelData* levelData = new LevelData();
+		std::unique_ptr<LevelData> levelData = std::make_unique<LevelData>();
 
         // "objects"の全オブジェクトを走査
         if (deserialized.contains("objects")) {
-            LoadobjectRecursive(deserialized["objects"], levelData);
+            LoadObjectRecursive(deserialized["objects"], levelData.get());
         }
-
 
         // レベルデータをマップに格納 
         m_objectMap[file_path] = std::move(levelData);
@@ -22977,7 +22995,7 @@ namespace MiiEngine {
     ///-------------------------------------------/// 
     /// 走査関数
     ///-------------------------------------------///
-    void LevelManager::LoadobjectRecursive(nlohmann::json& obj, LevelData* levelData) {
+    void LevelManager::LoadObjectRecursive(nlohmann::json& obj, LevelData* levelData) {
 
         for (nlohmann::json& object : obj) {
             assert(object.contains("type"));
@@ -22995,7 +23013,6 @@ namespace MiiEngine {
             // 種別を取得
             std::string type = object["type"].get<std::string>();
 
-            // 種類ごとの処理
             /// ===メッシュの読み込み=== ///
             // MESH
             if (type.compare("MESH") == 0) {
@@ -23067,7 +23084,7 @@ namespace MiiEngine {
 
                 // 再帰処理（子供がいる場合）
                 if (object.contains("children")) {
-                    LoadobjectRecursive(object["children"], levelData);
+                    LoadObjectRecursive(object["children"], levelData);
                 }
             }
         }
@@ -23078,54 +23095,14 @@ namespace MiiEngine {
     ///-------------------------------------------///
     LevelData::ClassTypeLevel LevelManager::StringToClassType(const std::string& str) {
         if (str == "NoClass")   return LevelData::ClassTypeLevel::None;
-
-        if (str == "Player1")   return LevelData::ClassTypeLevel::Player1;
-        if (str == "Player2")   return LevelData::ClassTypeLevel::Player2;
-
-        if (str == "Enemy1")    return LevelData::ClassTypeLevel::Enemy1;
-        if (str == "Enemy2")    return LevelData::ClassTypeLevel::Enemy2;
-        if (str == "Enemy3")    return LevelData::ClassTypeLevel::Enemy3;
-        if (str == "Enemy4")    return LevelData::ClassTypeLevel::Enemy4;
-        if (str == "Enemy5")    return LevelData::ClassTypeLevel::Enemy5;
-        if (str == "Enemy6")    return LevelData::ClassTypeLevel::Enemy6;
-        if (str == "Enemy7")    return LevelData::ClassTypeLevel::Enemy7;
-        if (str == "Enemy8")    return LevelData::ClassTypeLevel::Enemy8;
-        if (str == "Enemy9")    return LevelData::ClassTypeLevel::Enemy9;
-        if (str == "Enemy10")   return LevelData::ClassTypeLevel::Enemy10;
-
-        if (str == "Object1")   return LevelData::ClassTypeLevel::Object1;
-        if (str == "Object2")   return LevelData::ClassTypeLevel::Object2;
-        if (str == "Object3")   return LevelData::ClassTypeLevel::Object3;
-        if (str == "Object4")   return LevelData::ClassTypeLevel::Object4;
-        if (str == "Object5")   return LevelData::ClassTypeLevel::Object5;
-        if (str == "Object6")   return LevelData::ClassTypeLevel::Object6;
-        if (str == "Object7")   return LevelData::ClassTypeLevel::Object7;
-        if (str == "Object8")   return LevelData::ClassTypeLevel::Object8;
-        if (str == "Object9")   return LevelData::ClassTypeLevel::Object9;
-        if (str == "Object10")  return LevelData::ClassTypeLevel::Object10;
-
-        if (str == "Ground1")   return LevelData::ClassTypeLevel::Ground1;
-        if (str == "Ground2")   return LevelData::ClassTypeLevel::Ground2;
-        if (str == "Ground3")   return LevelData::ClassTypeLevel::Ground3;
-        if (str == "Ground4")   return LevelData::ClassTypeLevel::Ground4;
-        if (str == "Ground5")   return LevelData::ClassTypeLevel::Ground5;
-        if (str == "Ground6")   return LevelData::ClassTypeLevel::Ground6;
-        if (str == "Ground7")   return LevelData::ClassTypeLevel::Ground7;
-        if (str == "Ground8")   return LevelData::ClassTypeLevel::Ground8;
-        if (str == "Ground9")   return LevelData::ClassTypeLevel::Ground9;
-        if (str == "Ground10")  return LevelData::ClassTypeLevel::Ground10;
-
-        if (str == "SkyDome1")  return LevelData::ClassTypeLevel::SkyBox1;
-        if (str == "SkyDome2")  return LevelData::ClassTypeLevel::SkyBox2;
-        if (str == "SkyDome3")  return LevelData::ClassTypeLevel::SkyBox3;
-        if (str == "SkyDome4")  return LevelData::ClassTypeLevel::SkyBox4;
-        if (str == "SkyDome5")  return LevelData::ClassTypeLevel::SkyBox5;
-        if (str == "SkyDome6")  return LevelData::ClassTypeLevel::SkyBox6;
-        if (str == "SkyDome7")  return LevelData::ClassTypeLevel::SkyBox7;
-        if (str == "SkyDome8")  return LevelData::ClassTypeLevel::SkyBox8;
-        if (str == "SkyDome9")  return LevelData::ClassTypeLevel::SkyBox9;
-        if (str == "SkyDome10") return LevelData::ClassTypeLevel::SkyBox10;
-
+        // Player
+        if (str == "Player")   return LevelData::ClassTypeLevel::Player;
+        // Enemy
+        if (str == "Enemy")    return LevelData::ClassTypeLevel::Enemy;
+        // Object
+        if (str == "Object")   return LevelData::ClassTypeLevel::Object;
+        // Ground
+        if (str == "Ground")   return LevelData::ClassTypeLevel::Ground;
         // デフォルトは None
         return LevelData::ClassTypeLevel::None;
     }
@@ -23134,10 +23111,12 @@ namespace MiiEngine {
     /// 文字列からColliderTypeに変換
     ///-------------------------------------------///
     LevelData::ColliderTypeLevel LevelManager::StringToColliderType(const std::string& str) {
+        // OBB
         if (str == "OBB")    return LevelData::ColliderTypeLevel::OBB;
+        // AABB
         if (str == "AABB")   return LevelData::ColliderTypeLevel::AABB;
+        // Sphere
         if (str == "SPHERE") return LevelData::ColliderTypeLevel::Sphere;
-
         // デフォルトは None
         return LevelData::ColliderTypeLevel::None;
     }
@@ -23147,7 +23126,7 @@ namespace MiiEngine {
     ///-------------------------------------------///
     LevelData* LevelManager::GetLevelData(const std::string& file_path) {
         assert(m_objectMap.contains(file_path));
-        return m_objectMap.at(file_path);
+        return m_objectMap.at(file_path).get();
     }
 }
 
@@ -23191,7 +23170,7 @@ namespace MiiEngine {
 	private:
 
 		// 格納データ
-		std::map<std::string, LevelData*> m_objectMap;
+		std::map<std::string, std::unique_ptr<LevelData>> m_objectMap;
 
 	private:
 
@@ -23200,7 +23179,7 @@ namespace MiiEngine {
 		/// </summary>
 		/// <param name="object">読み込む JSON データ（nlohmann::json）。関数はこの JSON を再帰的に走査して内容を処理する。</param>
 		/// <param name="levelData">読み込み先の LevelData 構造体へのポインタ。関数はこのポインタが指すデータを更新する。</param>
-		void LoadobjectRecursive(nlohmann::json& obj, LevelData* levelData);
+		void LoadObjectRecursive(nlohmann::json& obj, LevelData* levelData);
 
 		/// <summary>
 		/// 文字列を LevelData::ClassType に変換する静的メンバー関数。
@@ -29496,18 +29475,26 @@ Vector3 Math::QuaternionToEuler(const Quaternion& quaternion) {
 }
 // Vector3からQuaternionに変換する関数
 Quaternion Math::QuaternionFromVector(const Vector3& vector) {
-    float cx = std::cos(vector.x * 0.5f);
-    float sx = std::sin(vector.x * 0.5f);
-    float cy = std::cos(vector.y * 0.5f);
-    float sy = std::sin(vector.y * 0.5f);
-    float cz = std::cos(vector.z * 0.5f);
-    float sz = std::sin(vector.z * 0.5f);
+    // 度数をラジアンに変換する (degree * pi / 180)
+    float radX = vector.x * (Pi() / 180.0f);
+    float radY = vector.y * (Pi() / 180.0f);
+    float radZ = vector.z * (Pi() / 180.0f);
+
+    float cx = std::cos(radX * 0.5f);
+    float sx = std::sin(radX * 0.5f);
+    float cy = std::cos(radY * 0.5f);
+    float sy = std::sin(radY * 0.5f);
+    float cz = std::cos(radZ * 0.5f);
+    float sz = std::sin(radZ * 0.5f);
 
     Quaternion q = {};
+
+    // Q = Qz * Qy * Qx (各軸の回転をこの順で適用する場合)
     q.w = cx * cy * cz + sx * sy * sz;
     q.x = sx * cy * cz - cx * sy * sz;
     q.y = cx * sy * cz + sx * cy * sz;
     q.z = cx * cy * sz - sx * sy * cz;
+
     return q;
 }
 // ある方向（forward）を向くクォータニオン（回転）を作る
@@ -39093,11 +39080,11 @@ void GameCharacter<TCollider>::PreUpdate() {
 template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::Update() {
 
-	/// ===位置の更新=== ///
-	this->transform_.translate += baseInfo_.velocity;
-
 	/// ===地面との衝突処理=== ///
 	GroundCollision();
+
+	/// ===位置の更新=== ///
+	this->transform_.translate += baseInfo_.velocity;
 
 	/// ===TColliderの更新処理=== ///
 	TCollider::Update();
@@ -39168,6 +39155,37 @@ void GameCharacter<TCollider>::OnCollision(Collider* collider) {
 template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::GroundCollision() {
 
+	/// ===地面の範囲を出たかチェック（接地中のみ）=== ///
+	if (groundInfo_.isGrounded) {
+		bool isOutOfRange = false;
+
+		if (groundInfo_.currentGroundType == ColliderType::AABB) {
+			// min～maxの範囲
+			float minX = groundInfo_.currentGroundFirst.x;
+			float maxX = groundInfo_.currentGroundSecond.x;
+			float minZ = groundInfo_.currentGroundFirst.z;
+			float maxZ = groundInfo_.currentGroundSecond.z;
+
+			isOutOfRange = (this->transform_.translate.x > maxX || this->transform_.translate.x < minX ||
+				this->transform_.translate.z > maxZ || this->transform_.translate.z < minZ);
+
+		} else if (groundInfo_.currentGroundType == ColliderType::OBB) {
+			// center +- halfSize
+			float centerX = groundInfo_.currentGroundFirst.x;
+			float halfSizeX = groundInfo_.currentGroundSecond.x;
+			float centerZ = groundInfo_.currentGroundFirst.z;
+			float halfSizeZ = groundInfo_.currentGroundSecond.z;
+
+			isOutOfRange = (this->transform_.translate.x > centerX + halfSizeX || this->transform_.translate.x < centerX - halfSizeX ||
+				this->transform_.translate.z > centerZ + halfSizeZ || this->transform_.translate.z < centerZ - halfSizeZ);
+		}
+
+		// 地面の範囲から出たらフラグをリセット
+		if (isOutOfRange) {
+			groundInfo_.isGrounded = false;
+		}
+	}
+
 	/// ===地面から離れている場合の処理=== ///
 	if (!groundInfo_.isGrounded) {
 		// 重力の適用
@@ -39185,9 +39203,6 @@ void GameCharacter<TCollider>::GroundCollision() {
 	/// ===地面より下に行かないようにする=== ///
 	if (this->transform_.translate.y < groundInfo_.currentGroundYPos) {
 
-		// はみ出し分を計算
-		//float overlap = groundInfo_.currentGroundYPos - this->transform_.translate.y;
-
 		// はみ出し分を押し戻す
 		this->transform_.translate.y = groundInfo_.currentGroundYPos;
 
@@ -39195,35 +39210,6 @@ void GameCharacter<TCollider>::GroundCollision() {
 		if (baseInfo_.velocity.y < 0.0f) {
 			baseInfo_.velocity.y = 0.0f;
 		}
-	}
-
-	/// ===地面の範囲を出たかチェック=== ///
-	bool isOutOfRange = false;
-
-	if (groundInfo_.currentGroundType == ColliderType::AABB) {
-		// min～maxの範囲
-		float minX = groundInfo_.currentGroundFirst.x;
-		float maxX = groundInfo_.currentGroundSecond.x;
-		float minZ = groundInfo_.currentGroundFirst.z;
-		float maxZ = groundInfo_.currentGroundSecond.z;
-
-		isOutOfRange = (this->transform_.translate.x > maxX || this->transform_.translate.x < minX ||
-			this->transform_.translate.z > maxZ || this->transform_.translate.z < minZ);
-
-	} else if (groundInfo_.currentGroundType == ColliderType::OBB) {
-		// center +- halfSize
-		float centerX = groundInfo_.currentGroundFirst.x;
-		float halfSizeX = groundInfo_.currentGroundSecond.x;
-		float centerZ = groundInfo_.currentGroundFirst.z;
-		float halfSizeZ = groundInfo_.currentGroundSecond.z;
-
-		isOutOfRange = (this->transform_.translate.x > centerX + halfSizeX || this->transform_.translate.x < centerX - halfSizeX ||
-			this->transform_.translate.z > centerZ + halfSizeZ || this->transform_.translate.z < centerZ - halfSizeZ);
-	}
-
-	// 地面の範囲から出たらフラグをリセット
-	if (isOutOfRange) {
-		groundInfo_.isGrounded = false;
 	}
 }
 
@@ -41284,6 +41270,7 @@ void MoveState::Update(Player * player, GameCamera* camera) {
 	auto result = player_->GetMoveComponent()->Update(context);
 
 	// 結果を反映
+	result.velocity.y = player_->GetVelocity().y; // 現在のY軸の速度を維持
 	player_->SetVelocity(result.velocity);
 	player_->SetRotate(result.targetRotation);
 
@@ -42035,7 +42022,7 @@ File Path: Project/application/Game/Object/GameGround/Ground.h
 ///=====================================================/// 
 /// Ground
 ///=====================================================///
-class Ground : public GameObject<MiiEngine::AABBCollider> {
+class Ground : public GameObject<MiiEngine::OBBCollider> {
 public:
 	Ground() = default;
 	~Ground();
@@ -42414,70 +42401,47 @@ void GameStage::LoadStageData(const std::string& stageData) {
 
 	// オブジェクト分回す
 	for (const auto& stage : levelData->objects) {
-		if (stage.classType == LevelData::ClassTypeLevel::Ground1) {
+		if (stage.classType == LevelData::ClassTypeLevel::Ground) {
 			// Object3dの生成
 			std::shared_ptr<Ground> ground = std::make_shared<Ground>();
-			// 初期化
-			//ground->Initialize();
-			ground->GameInit(stage.fileName);
-
-			// AABB設定
-			Vector3 min = stage.translation + stage.colliderInfo1;
-			Vector3 max = stage.translation + stage.colliderInfo2;
-			ground->SetAABB({ min, max });
-
+			if (stage.fileName == "Ground") {
+				ground->GameInit(stage.fileName);
+			} else if (stage.fileName == "Ground2"){
+				ground->GameInit(stage.fileName);
+			} else if (stage.fileName == "Bridge") {
+				ground->GameInit(stage.fileName);
+			} else if (stage.fileName == "Bridge2") {
+				ground->GameInit(stage.fileName);
+			}
 			// 座標設定
 			ground->SetTranslate(stage.translation);
 			ground->SetRotate(Math::QuaternionFromVector(stage.rotation));
 			ground->SetScale(stage.scaling);
-
-			// 一回更新を入れる
+			// HalfSizeの設定
+			ground->SetHalfSize(stage.colliderInfo2 * 0.5f);
+			// 一回更新
 			ground->Update();
-
 			// 配列に追加
 			grounds_.emplace_back(ground);
-		} else if (stage.classType == LevelData::ClassTypeLevel::Object1) {
-
-			// Object3dの生成
+			continue;
+		} else if (stage.classType == LevelData::ClassTypeLevel::Object) {
 			std::shared_ptr<StageObject> object = std::make_shared<StageObject>();
-			// 初期化
-			object->GameInit(stage.fileName);
-
-			// AABB設定
-			Vector3 min = stage.translation + stage.colliderInfo1;
-			Vector3 max = stage.translation + stage.colliderInfo2;
-			object->SetAABB({ min, max });
-
-			// 座標設定
+			if (stage.fileName == "Stone") { // 石のオブジェクト
+				object->GameInit("Stone");
+			} else if (stage.fileName == "BossStageWall") {// ボスステージの壁のオブジェクト
+				object->GameInit("BossStageWall");
+			}
+			// Transformを設定
 			object->SetTranslate(stage.translation);
 			object->SetRotate(Math::QuaternionFromVector(stage.rotation));
 			object->SetScale(stage.scaling);
-
-			// 一回更新を入れる
+			// HalfSizeの設定
+			object->SetHalfSize(stage.colliderInfo2 * 0.5f);
+			// 一回更新
 			object->Update();
-
 			// 配列に追加
 			objects_.emplace_back(object);
-		} else if (stage.classType == LevelData::ClassTypeLevel::Object2){
-
-			// Object3dの生成
-			std::shared_ptr<StageObject> object = std::make_shared<StageObject>();
-			// 初期化
-			object->GameInit(stage.fileName);
-			Vector3 min = stage.translation + stage.colliderInfo1;
-			Vector3 max = stage.translation + stage.colliderInfo2;
-			object->SetAABB({ min, max });
-
-			// 座標設定
-			object->SetTranslate(stage.translation);
-			object->SetRotate(Math::QuaternionFromVector(stage.rotation));
-			object->SetScale(stage.scaling);
-
-			// 一回更新を入れる
-			object->Update();
-
-			// 配列に追加
-			objects_.emplace_back(object);
+			continue;
 		} else {
 			// その他のクラスは無視
 			continue;
@@ -42617,7 +42581,7 @@ File Path: Project/application/Game/Object/StageObject/StageObject.h
 ///=====================================================/// 
 /// StageObject
 ///=====================================================///
-class StageObject : public GameObject<MiiEngine::AABBCollider> {
+class StageObject : public GameObject<MiiEngine::OBBCollider> {
 public:
 	StageObject() = default;
 	~StageObject();
@@ -44151,6 +44115,12 @@ File Path: Project/application/Scene/Game/GameScene.cpp
 // Math
 #include "Math/SMath.h"
 
+#ifdef USE_IMGUI
+// Service
+#include "Service/Input.h"
+#endif // USE_IMGUI
+
+
 using namespace MiiEngine;
 ///-------------------------------------------/// 
 /// コンストラクタ
@@ -44204,13 +44174,13 @@ void GameScene::Initialize() {
 	enemyManager_ = std::make_unique<EnemyManager>();
 
 	/// ===SponEntity=== ///
-	SpawnEntity("Level/EntityData.json");
+	SpawnEntity("Level/EntityData2.json");
 	// EnemyにPlayerを設定
 	enemyManager_->SetPlayer(player_.get());
 
 	/// ===GameStage=== ///
 	stage_ = std::make_unique<GameStage>();
-	stage_->Initialize("Level/StageData.json");
+	stage_->Initialize("Level/StageData2.json");
 
 	/// ===State=== ///
 	// 初期状態をInitializeStateに設定
@@ -44230,8 +44200,22 @@ void GameScene::Update() {
 	ImGui::End();
 
 	// Camera
-	camera_->ImGuiUpdate();
-	camera_->DebugUpdate();
+	if (Service::Camera::GetActiveCamera() == camera_) {
+		camera_->ImGuiUpdate();
+		camera_->DebugUpdate();
+	} else {
+		defaultCamera_->ImGuiUpdate();
+		defaultCamera_->DebugUpdate();
+	}
+
+	// デバッグカメラの切り替え
+	if (Service::Input::TriggerKey(DIK_1)) {
+		if (Service::Camera::GetActiveCamera() == camera_) {
+			Service::Camera::SetActiveCamera("Default");
+		} else {
+			Service::Camera::SetActiveCamera("Game");
+		}
+	}
 
 	// Player
 	player_->Information();
@@ -44307,20 +44291,22 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 
 		/// ===クラス名で分岐=== ///
 		switch (obj.classType) {
-		case LevelData::ClassTypeLevel::Player1:
+		case LevelData::ClassTypeLevel::Player:
 			// 初期化と座標設定
 			player_->Initialize();
 			player_->SetTranslate(obj.translation);
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
 			break;
-		case LevelData::ClassTypeLevel::Enemy1:
-			// Enemyの座標設定
-			enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
-			break;
-		case LevelData::ClassTypeLevel::Enemy2:
-			// Enemyの座標設定
-			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
-			break;
+		case LevelData::ClassTypeLevel::Enemy:
+			if (obj.fileName == "Close") {
+				// Enemyの座標設定
+				enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
+				break;
+			} else if (obj.fileName == "Long") {
+				// Enemyの座標設定
+				enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
+				break;
+			}
 		}
 	}
 }
