@@ -46,13 +46,12 @@ namespace MiiEngine {
 
         /// ===オブジェクトの走査=== ///
         // レベルデータ格納用インスタンスを生成
-        LevelData* levelData = new LevelData();
+		std::unique_ptr<LevelData> levelData = std::make_unique<LevelData>();
 
         // "objects"の全オブジェクトを走査
         if (deserialized.contains("objects")) {
-            LoadobjectRecursive(deserialized["objects"], levelData);
+            LoadObjectRecursive(deserialized["objects"], levelData.get());
         }
-
 
         // レベルデータをマップに格納 
         m_objectMap[file_path] = std::move(levelData);
@@ -61,7 +60,7 @@ namespace MiiEngine {
     ///-------------------------------------------/// 
     /// 走査関数
     ///-------------------------------------------///
-    void LevelManager::LoadobjectRecursive(nlohmann::json& obj, LevelData* levelData) {
+    void LevelManager::LoadObjectRecursive(nlohmann::json& obj, LevelData* levelData) {
 
         for (nlohmann::json& object : obj) {
             assert(object.contains("type"));
@@ -79,7 +78,6 @@ namespace MiiEngine {
             // 種別を取得
             std::string type = object["type"].get<std::string>();
 
-            // 種類ごとの処理
             /// ===メッシュの読み込み=== ///
             // MESH
             if (type.compare("MESH") == 0) {
@@ -151,7 +149,7 @@ namespace MiiEngine {
 
                 // 再帰処理（子供がいる場合）
                 if (object.contains("children")) {
-                    LoadobjectRecursive(object["children"], levelData);
+                    LoadObjectRecursive(object["children"], levelData);
                 }
             }
         }
@@ -162,54 +160,14 @@ namespace MiiEngine {
     ///-------------------------------------------///
     LevelData::ClassTypeLevel LevelManager::StringToClassType(const std::string& str) {
         if (str == "NoClass")   return LevelData::ClassTypeLevel::None;
-
-        if (str == "Player1")   return LevelData::ClassTypeLevel::Player1;
-        if (str == "Player2")   return LevelData::ClassTypeLevel::Player2;
-
-        if (str == "Enemy1")    return LevelData::ClassTypeLevel::Enemy1;
-        if (str == "Enemy2")    return LevelData::ClassTypeLevel::Enemy2;
-        if (str == "Enemy3")    return LevelData::ClassTypeLevel::Enemy3;
-        if (str == "Enemy4")    return LevelData::ClassTypeLevel::Enemy4;
-        if (str == "Enemy5")    return LevelData::ClassTypeLevel::Enemy5;
-        if (str == "Enemy6")    return LevelData::ClassTypeLevel::Enemy6;
-        if (str == "Enemy7")    return LevelData::ClassTypeLevel::Enemy7;
-        if (str == "Enemy8")    return LevelData::ClassTypeLevel::Enemy8;
-        if (str == "Enemy9")    return LevelData::ClassTypeLevel::Enemy9;
-        if (str == "Enemy10")   return LevelData::ClassTypeLevel::Enemy10;
-
-        if (str == "Object1")   return LevelData::ClassTypeLevel::Object1;
-        if (str == "Object2")   return LevelData::ClassTypeLevel::Object2;
-        if (str == "Object3")   return LevelData::ClassTypeLevel::Object3;
-        if (str == "Object4")   return LevelData::ClassTypeLevel::Object4;
-        if (str == "Object5")   return LevelData::ClassTypeLevel::Object5;
-        if (str == "Object6")   return LevelData::ClassTypeLevel::Object6;
-        if (str == "Object7")   return LevelData::ClassTypeLevel::Object7;
-        if (str == "Object8")   return LevelData::ClassTypeLevel::Object8;
-        if (str == "Object9")   return LevelData::ClassTypeLevel::Object9;
-        if (str == "Object10")  return LevelData::ClassTypeLevel::Object10;
-
-        if (str == "Ground1")   return LevelData::ClassTypeLevel::Ground1;
-        if (str == "Ground2")   return LevelData::ClassTypeLevel::Ground2;
-        if (str == "Ground3")   return LevelData::ClassTypeLevel::Ground3;
-        if (str == "Ground4")   return LevelData::ClassTypeLevel::Ground4;
-        if (str == "Ground5")   return LevelData::ClassTypeLevel::Ground5;
-        if (str == "Ground6")   return LevelData::ClassTypeLevel::Ground6;
-        if (str == "Ground7")   return LevelData::ClassTypeLevel::Ground7;
-        if (str == "Ground8")   return LevelData::ClassTypeLevel::Ground8;
-        if (str == "Ground9")   return LevelData::ClassTypeLevel::Ground9;
-        if (str == "Ground10")  return LevelData::ClassTypeLevel::Ground10;
-
-        if (str == "SkyDome1")  return LevelData::ClassTypeLevel::SkyBox1;
-        if (str == "SkyDome2")  return LevelData::ClassTypeLevel::SkyBox2;
-        if (str == "SkyDome3")  return LevelData::ClassTypeLevel::SkyBox3;
-        if (str == "SkyDome4")  return LevelData::ClassTypeLevel::SkyBox4;
-        if (str == "SkyDome5")  return LevelData::ClassTypeLevel::SkyBox5;
-        if (str == "SkyDome6")  return LevelData::ClassTypeLevel::SkyBox6;
-        if (str == "SkyDome7")  return LevelData::ClassTypeLevel::SkyBox7;
-        if (str == "SkyDome8")  return LevelData::ClassTypeLevel::SkyBox8;
-        if (str == "SkyDome9")  return LevelData::ClassTypeLevel::SkyBox9;
-        if (str == "SkyDome10") return LevelData::ClassTypeLevel::SkyBox10;
-
+        // Player
+        if (str == "Player")   return LevelData::ClassTypeLevel::Player;
+        // Enemy
+        if (str == "Enemy")    return LevelData::ClassTypeLevel::Enemy;
+        // Object
+        if (str == "Object")   return LevelData::ClassTypeLevel::Object;
+        // Ground
+        if (str == "Ground")   return LevelData::ClassTypeLevel::Ground;
         // デフォルトは None
         return LevelData::ClassTypeLevel::None;
     }
@@ -218,10 +176,12 @@ namespace MiiEngine {
     /// 文字列からColliderTypeに変換
     ///-------------------------------------------///
     LevelData::ColliderTypeLevel LevelManager::StringToColliderType(const std::string& str) {
+        // OBB
         if (str == "OBB")    return LevelData::ColliderTypeLevel::OBB;
+        // AABB
         if (str == "AABB")   return LevelData::ColliderTypeLevel::AABB;
+        // Sphere
         if (str == "SPHERE") return LevelData::ColliderTypeLevel::Sphere;
-
         // デフォルトは None
         return LevelData::ColliderTypeLevel::None;
     }
@@ -231,7 +191,7 @@ namespace MiiEngine {
     ///-------------------------------------------///
     LevelData* LevelManager::GetLevelData(const std::string& file_path) {
         assert(m_objectMap.contains(file_path));
-        return m_objectMap.at(file_path);
+        return m_objectMap.at(file_path).get();
     }
 }
 

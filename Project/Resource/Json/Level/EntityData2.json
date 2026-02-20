@@ -1,0 +1,112 @@
+{
+    "name": "scene",
+    "objects": [
+        {
+            "type": "MESH",
+            "name": "Player",
+            "transform": {
+                "translation": [
+                    0.0,
+                    0.0,
+                    3.5999999046325684
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Player",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    4.0,
+                    4.0,
+                    6.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "CloseEnemy",
+            "transform": {
+                "translation": [
+                    25.884624481201172,
+                    -46.35038375854492,
+                    3.1115622520446777
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Enemy",
+            "file_name": "Close",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    6.0,
+                    6.0,
+                    6.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "LongEnemy",
+            "transform": {
+                "translation": [
+                    -22.89082145690918,
+                    -36.55976104736328,
+                    2.242204189300537
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Enemy",
+            "file_name": "Long",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    3.0,
+                    2.0,
+                    4.0
+                ]
+            }
+        }
+    ]
+}

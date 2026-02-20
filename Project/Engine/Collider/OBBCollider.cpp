@@ -91,7 +91,6 @@ namespace MiiEngine {
 		// 回転行列に変換
 		Matrix4x4 rotMatrix = Math::MakeRotateQuaternionMatrix(rotate);
 
-		// ✅ 各軸を行列の「列ベクトル」から取得
 		// X軸 = 第0列
 		obb.axis[0] = Vector3(
 			rotMatrix.m[0][0],  // 1行目の0列目

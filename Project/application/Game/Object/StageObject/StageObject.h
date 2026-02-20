@@ -8,7 +8,7 @@
 ///=====================================================/// 
 /// StageObject
 ///=====================================================///
-class StageObject : public GameObject<MiiEngine::AABBCollider> {
+class StageObject : public GameObject<MiiEngine::OBBCollider> {
 public:
 	StageObject() = default;
 	~StageObject();
