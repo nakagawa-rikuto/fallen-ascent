@@ -50,6 +50,16 @@ namespace MiiEngine {
 
 	private:
 		AABB aabb_;
+
+	private:
+
+		/// <summary>
+		/// 現在の位置と回転に合わせてAABBを合わせる関数
+		/// </summary>
+		/// <param name="aabb">設定する軸並行境界ボックスへの参照。</param>
+		/// <param name="translate">平行移動ベクトル。</param>
+		/// <param name="rotate">回転を表すクォータニオン。</param>
+		void AdjustmentAABB(const AABB& aabb, const Vector3& translate, const Quaternion& rotate);
 	};
 }
 

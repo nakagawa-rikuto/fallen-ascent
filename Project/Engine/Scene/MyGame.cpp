@@ -59,7 +59,7 @@ namespace MiiEngine {
 		// シーンマネージャの初期化
 		sceneManager_ = std::make_unique<SceneManager>();
 		sceneManager_->Initialize(sceneFactory_.get());
-		sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
+		sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
 	}
 
 	///-------------------------------------------/// 
@@ -175,9 +175,13 @@ namespace MiiEngine {
 		Loader::LoadModel("CloseEnemy", "Entity/Enemy/CloseEnemy/CloseEnemy.gltf");			// 近距離敵
 
 		/// ===Object=== ///
-		Loader::LoadModel("Ground", "Object/Ground/Ground.obj");				// 地面
-		Loader::LoadModel("Object1", "Object/Object1/Object1.obj");				// オブジェクト１
-		Loader::LoadModel("Object2", "Object/Object2/Object2.obj");				// オブジェクト２
+		Loader::LoadModel("Ground", "Object/Ground/Ground.gltf");						// 地面
+		Loader::LoadModel("Ground2", "Object/Ground/Ground2.gltf");						// 地面
+		Loader::LoadModel("Bridge", "Object/Bridge/Bridge.gltf");						// 橋
+		Loader::LoadModel("Bridge2", "Object/Bridge/Bridge2.gltf");						// 橋
+		Loader::LoadModel("Stone", "Object/Object/Stone/Stone.gltf");					// 石
+		Loader::LoadModel("BossStageWall", "Object/Object/Wall/BossStageWall.gltf");	// 壁
+
 	}
 
 	///-------------------------------------------/// 
@@ -194,7 +198,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void MyGame::LoadJson() {
 		/// ===Game=== ///
-		Loader::LoadLevelJson("Level/StageData.json");
-		Loader::LoadLevelJson("Level/EntityData.json");
+		Loader::LoadLevelJson("Level/StageData2.json");
+		Loader::LoadLevelJson("Level/EntityData2.json");
 	}
 }

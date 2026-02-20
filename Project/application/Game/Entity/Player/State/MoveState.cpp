@@ -53,6 +53,7 @@ void MoveState::Update(Player * player, GameCamera* camera) {
 	auto result = player_->GetMoveComponent()->Update(context);
 
 	// 結果を反映
+	result.velocity.y = player_->GetVelocity().y; // 現在のY軸の速度を維持
 	player_->SetVelocity(result.velocity);
 	player_->SetRotate(result.targetRotation);
 

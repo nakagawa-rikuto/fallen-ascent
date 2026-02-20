@@ -12,6 +12,12 @@
 // Math
 #include "Math/SMath.h"
 
+#ifdef USE_IMGUI
+// Service
+#include "Service/Input.h"
+#endif // USE_IMGUI
+
+
 using namespace MiiEngine;
 ///-------------------------------------------/// 
 /// コンストラクタ
@@ -65,13 +71,13 @@ void GameScene::Initialize() {
 	enemyManager_ = std::make_unique<EnemyManager>();
 
 	/// ===SponEntity=== ///
-	SpawnEntity("Level/EntityData.json");
+	SpawnEntity("Level/EntityData2.json");
 	// EnemyにPlayerを設定
 	enemyManager_->SetPlayer(player_.get());
 
 	/// ===GameStage=== ///
 	stage_ = std::make_unique<GameStage>();
-	stage_->Initialize("Level/StageData.json");
+	stage_->Initialize("Level/StageData2.json");
 
 	/// ===State=== ///
 	// 初期状態をInitializeStateに設定
@@ -91,8 +97,22 @@ void GameScene::Update() {
 	ImGui::End();
 
 	// Camera
-	camera_->ImGuiUpdate();
-	camera_->DebugUpdate();
+	if (Service::Camera::GetActiveCamera() == camera_) {
+		camera_->ImGuiUpdate();
+		camera_->DebugUpdate();
+	} else {
+		defaultCamera_->ImGuiUpdate();
+		defaultCamera_->DebugUpdate();
+	}
+
+	// デバッグカメラの切り替え
+	if (Service::Input::TriggerKey(DIK_1)) {
+		if (Service::Camera::GetActiveCamera() == camera_) {
+			Service::Camera::SetActiveCamera("Default");
+		} else {
+			Service::Camera::SetActiveCamera("Game");
+		}
+	}
 
 	// Player
 	player_->Information();
@@ -168,20 +188,22 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 
 		/// ===クラス名で分岐=== ///
 		switch (obj.classType) {
-		case LevelData::ClassTypeLevel::Player1:
+		case LevelData::ClassTypeLevel::Player:
 			// 初期化と座標設定
 			player_->Initialize();
 			player_->SetTranslate(obj.translation);
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
 			break;
-		case LevelData::ClassTypeLevel::Enemy1:
-			// Enemyの座標設定
-			enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
-			break;
-		case LevelData::ClassTypeLevel::Enemy2:
-			// Enemyの座標設定
-			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
-			break;
+		case LevelData::ClassTypeLevel::Enemy:
+			if (obj.fileName == "Close") {
+				// Enemyの座標設定
+				enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
+				break;
+			} else if (obj.fileName == "Long") {
+				// Enemyの座標設定
+				enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
+				break;
+			}
 		}
 	}
 }

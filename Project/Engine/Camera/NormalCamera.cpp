@@ -78,8 +78,8 @@ namespace MiiEngine {
 	void NormalCamera::ImGuiUpdate() {
 	#ifdef USE_IMGUI
 		ImGui::Begin("カメラ");
-		ImGui::DragFloat3("位置", &transform_.translate.x, 0.01f);
-		ImGui::DragFloat4("回転", &transform_.rotate.x, 0.001f);
+		ImGui::DragFloat3("位置", &transform_.translate.x, 1.0f);
+		ImGui::DragFloat4("回転", &transform_.rotate.x, 0.05f);
 		ImGui::DragFloat("Horizontal View", &horizontalView_, 0.01f);
 		ImGui::DragFloat("Aspect Ratio", &aspect_, 0.01f);
 		ImGui::DragFloat("Near Clip", &nearClip_, 0.01f);
@@ -98,36 +98,36 @@ namespace MiiEngine {
 
 		/// ===カメラの移動=== ///
 		if (Service::Input::PushKey(DIK_D)) {
-			transform_.translate.x += 0.01f;
+			transform_.translate.x += 1.0f;
 		} else if (Service::Input::PushKey(DIK_A)) {
-			transform_.translate.x -= 0.01f;
+			transform_.translate.x -= 1.0f;
 		}
 		if (Service::Input::PushKey(DIK_W)) {
-			transform_.translate.z += 0.01f;
+			transform_.translate.z += 1.0f;
 		} else if (Service::Input::PushKey(DIK_S)) {
-			transform_.translate.z -= 0.01f;
+			transform_.translate.z -= 1.0f;
 		}
 		if (Service::Input::PushKey(DIK_SPACE)) {
-			transform_.translate.y += 0.01f;
+			transform_.translate.y += 1.0f;
 		} else if (Service::Input::PushKey(DIK_LSHIFT)) {
-			transform_.translate.y -= 0.01f;
+			transform_.translate.y -= 1.0f;
 		}
 
 		// ピッチ（縦回転）
 		if (Service::Input::PushKey(DIK_UP)) {
-			Quaternion delta = Math::MakeRotateAxisAngle(right, -0.01f);
+			Quaternion delta = Math::MakeRotateAxisAngle(right, -0.1f);
 			transform_.rotate = delta * transform_.rotate;
 		} else if (Service::Input::PushKey(DIK_DOWN)) {
-			Quaternion delta = Math::MakeRotateAxisAngle(right, +0.01f);
+			Quaternion delta = Math::MakeRotateAxisAngle(right, +0.1f);
 			transform_.rotate = delta * transform_.rotate;
 		}
 
 		// ヨー（左右回転）
 		if (Service::Input::PushKey(DIK_LEFT)) {
-			Quaternion delta = Math::RotateY(-0.01f);
+			Quaternion delta = Math::RotateY(-0.1f);
 			transform_.rotate = delta * transform_.rotate;
 		} else if (Service::Input::PushKey(DIK_RIGHT)) {
-			Quaternion delta = Math::RotateY(+0.01f);
+			Quaternion delta = Math::RotateY(+0.1f);
 			transform_.rotate = delta * transform_.rotate;
 		}
 	#endif // _DEBUG

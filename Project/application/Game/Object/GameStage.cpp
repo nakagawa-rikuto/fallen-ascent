@@ -84,70 +84,47 @@ void GameStage::LoadStageData(const std::string& stageData) {
 
 	// オブジェクト分回す
 	for (const auto& stage : levelData->objects) {
-		if (stage.classType == LevelData::ClassTypeLevel::Ground1) {
+		if (stage.classType == LevelData::ClassTypeLevel::Ground) {
 			// Object3dの生成
 			std::shared_ptr<Ground> ground = std::make_shared<Ground>();
-			// 初期化
-			//ground->Initialize();
-			ground->GameInit(stage.fileName);
-
-			// AABB設定
-			Vector3 min = stage.translation + stage.colliderInfo1;
-			Vector3 max = stage.translation + stage.colliderInfo2;
-			ground->SetAABB({ min, max });
-
+			if (stage.fileName == "Ground") {
+				ground->GameInit(stage.fileName);
+			} else if (stage.fileName == "Ground2"){
+				ground->GameInit(stage.fileName);
+			} else if (stage.fileName == "Bridge") {
+				ground->GameInit(stage.fileName);
+			} else if (stage.fileName == "Bridge2") {
+				ground->GameInit(stage.fileName);
+			}
 			// 座標設定
 			ground->SetTranslate(stage.translation);
 			ground->SetRotate(Math::QuaternionFromVector(stage.rotation));
 			ground->SetScale(stage.scaling);
-
-			// 一回更新を入れる
+			// HalfSizeの設定
+			ground->SetHalfSize(stage.colliderInfo2 * 0.5f);
+			// 一回更新
 			ground->Update();
-
 			// 配列に追加
 			grounds_.emplace_back(ground);
-		} else if (stage.classType == LevelData::ClassTypeLevel::Object1) {
-
-			// Object3dの生成
+			continue;
+		} else if (stage.classType == LevelData::ClassTypeLevel::Object) {
 			std::shared_ptr<StageObject> object = std::make_shared<StageObject>();
-			// 初期化
-			object->GameInit(stage.fileName);
-
-			// AABB設定
-			Vector3 min = stage.translation + stage.colliderInfo1;
-			Vector3 max = stage.translation + stage.colliderInfo2;
-			object->SetAABB({ min, max });
-
-			// 座標設定
+			if (stage.fileName == "Stone") { // 石のオブジェクト
+				object->GameInit("Stone");
+			} else if (stage.fileName == "BossStageWall") {// ボスステージの壁のオブジェクト
+				object->GameInit("BossStageWall");
+			}
+			// Transformを設定
 			object->SetTranslate(stage.translation);
 			object->SetRotate(Math::QuaternionFromVector(stage.rotation));
 			object->SetScale(stage.scaling);
-
-			// 一回更新を入れる
+			// HalfSizeの設定
+			object->SetHalfSize(stage.colliderInfo2 * 0.5f);
+			// 一回更新
 			object->Update();
-
 			// 配列に追加
 			objects_.emplace_back(object);
-		} else if (stage.classType == LevelData::ClassTypeLevel::Object2){
-
-			// Object3dの生成
-			std::shared_ptr<StageObject> object = std::make_shared<StageObject>();
-			// 初期化
-			object->GameInit(stage.fileName);
-			Vector3 min = stage.translation + stage.colliderInfo1;
-			Vector3 max = stage.translation + stage.colliderInfo2;
-			object->SetAABB({ min, max });
-
-			// 座標設定
-			object->SetTranslate(stage.translation);
-			object->SetRotate(Math::QuaternionFromVector(stage.rotation));
-			object->SetScale(stage.scaling);
-
-			// 一回更新を入れる
-			object->Update();
-
-			// 配列に追加
-			objects_.emplace_back(object);
+			continue;
 		} else {
 			// その他のクラスは無視
 			continue;

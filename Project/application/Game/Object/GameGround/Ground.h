@@ -6,7 +6,7 @@
 ///=====================================================/// 
 /// Ground
 ///=====================================================///
-class Ground : public GameObject<MiiEngine::AABBCollider> {
+class Ground : public GameObject<MiiEngine::OBBCollider> {
 public:
 	Ground() = default;
 	~Ground();

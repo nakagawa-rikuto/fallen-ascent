@@ -135,18 +135,26 @@ Vector3 Math::QuaternionToEuler(const Quaternion& quaternion) {
 }
 // Vector3からQuaternionに変換する関数
 Quaternion Math::QuaternionFromVector(const Vector3& vector) {
-    float cx = std::cos(vector.x * 0.5f);
-    float sx = std::sin(vector.x * 0.5f);
-    float cy = std::cos(vector.y * 0.5f);
-    float sy = std::sin(vector.y * 0.5f);
-    float cz = std::cos(vector.z * 0.5f);
-    float sz = std::sin(vector.z * 0.5f);
+    // 度数をラジアンに変換する (degree * pi / 180)
+    float radX = vector.x * (Pi() / 180.0f);
+    float radY = vector.y * (Pi() / 180.0f);
+    float radZ = vector.z * (Pi() / 180.0f);
+
+    float cx = std::cos(radX * 0.5f);
+    float sx = std::sin(radX * 0.5f);
+    float cy = std::cos(radY * 0.5f);
+    float sy = std::sin(radY * 0.5f);
+    float cz = std::cos(radZ * 0.5f);
+    float sz = std::sin(radZ * 0.5f);
 
     Quaternion q = {};
+
+    // Q = Qz * Qy * Qx (各軸の回転をこの順で適用する場合)
     q.w = cx * cy * cz + sx * sy * sz;
     q.x = sx * cy * cz - cx * sy * sz;
     q.y = cx * sy * cz + sx * cy * sz;
     q.z = cx * cy * sz - sx * sy * cz;
+
     return q;
 }
 // ある方向（forward）を向くクォータニオン（回転）を作る
