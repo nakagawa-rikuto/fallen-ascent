@@ -27,7 +27,6 @@ namespace MiiEngine {
 		defaultCamera_ = std::make_shared<GameCamera>();
 		defaultCamera_->Init(CameraType::Normal);
 		defaultCamera_->SetTranslate({ 0.0f, 0.0f, -50.0f });
-		defaultCamera_->SetRotate({ 0.0f, 0.0f, 0.0f });
 
 		// デフォルトカメラの設定
 		Service::Camera::AddCamera("Default", defaultCamera_);

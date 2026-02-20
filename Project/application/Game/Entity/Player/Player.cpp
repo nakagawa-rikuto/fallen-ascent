@@ -52,7 +52,7 @@ void Player::Initialize() {
 	// コライダーに追加
 	Service::Collision::AddCollider(this);
 	// OBBの設定
-	SetHalfSize({ 2.0f, 2.0f, 3.0f });
+	SetHalfSize({ 2.0f, 2.0f, 2.5f });
 
 	/// ===Handの初期化=== ///
 	// 右手

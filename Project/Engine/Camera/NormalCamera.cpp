@@ -59,7 +59,7 @@ namespace MiiEngine {
 		horizontalView_ = 0.45f;
 		aspect_ = static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()) / static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight());
 		nearClip_ = 0.1f;
-		farClip_ = 100.0f;
+		farClip_ = 2000.0f;
 
 		UpdateMatrices();
 	}
@@ -78,7 +78,7 @@ namespace MiiEngine {
 	void NormalCamera::ImGuiUpdate() {
 	#ifdef USE_IMGUI
 		ImGui::Begin("カメラ");
-		ImGui::DragFloat3("位置", &transform_.translate.x, 1.0f);
+		ImGui::DragFloat3("位置", &transform_.translate.x, 0.1f);
 		ImGui::DragFloat4("回転", &transform_.rotate.x, 0.05f);
 		ImGui::DragFloat("Horizontal View", &horizontalView_, 0.01f);
 		ImGui::DragFloat("Aspect Ratio", &aspect_, 0.01f);
@@ -115,19 +115,19 @@ namespace MiiEngine {
 
 		// ピッチ（縦回転）
 		if (Service::Input::PushKey(DIK_UP)) {
-			Quaternion delta = Math::MakeRotateAxisAngle(right, -0.1f);
+			Quaternion delta = Math::MakeRotateAxisAngle(right, -0.05f);
 			transform_.rotate = delta * transform_.rotate;
 		} else if (Service::Input::PushKey(DIK_DOWN)) {
-			Quaternion delta = Math::MakeRotateAxisAngle(right, +0.1f);
+			Quaternion delta = Math::MakeRotateAxisAngle(right, +0.05f);
 			transform_.rotate = delta * transform_.rotate;
 		}
 
 		// ヨー（左右回転）
 		if (Service::Input::PushKey(DIK_LEFT)) {
-			Quaternion delta = Math::RotateY(-0.1f);
+			Quaternion delta = Math::RotateY(-0.05f);
 			transform_.rotate = delta * transform_.rotate;
 		} else if (Service::Input::PushKey(DIK_RIGHT)) {
-			Quaternion delta = Math::RotateY(+0.1f);
+			Quaternion delta = Math::RotateY(+0.05f);
 			transform_.rotate = delta * transform_.rotate;
 		}
 	#endif // _DEBUG

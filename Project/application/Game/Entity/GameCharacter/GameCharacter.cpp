@@ -153,37 +153,6 @@ void GameCharacter<TCollider>::OnCollision(Collider* collider) {
 template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::GroundCollision() {
 
-	/// ===地面の範囲を出たかチェック（接地中のみ）=== ///
-	if (groundInfo_.isGrounded) {
-		bool isOutOfRange = false;
-
-		if (groundInfo_.currentGroundType == ColliderType::AABB) {
-			// min～maxの範囲
-			float minX = groundInfo_.currentGroundFirst.x;
-			float maxX = groundInfo_.currentGroundSecond.x;
-			float minZ = groundInfo_.currentGroundFirst.z;
-			float maxZ = groundInfo_.currentGroundSecond.z;
-
-			isOutOfRange = (this->transform_.translate.x > maxX || this->transform_.translate.x < minX ||
-				this->transform_.translate.z > maxZ || this->transform_.translate.z < minZ);
-
-		} else if (groundInfo_.currentGroundType == ColliderType::OBB) {
-			// center +- halfSize
-			float centerX = groundInfo_.currentGroundFirst.x;
-			float halfSizeX = groundInfo_.currentGroundSecond.x;
-			float centerZ = groundInfo_.currentGroundFirst.z;
-			float halfSizeZ = groundInfo_.currentGroundSecond.z;
-
-			isOutOfRange = (this->transform_.translate.x > centerX + halfSizeX || this->transform_.translate.x < centerX - halfSizeX ||
-				this->transform_.translate.z > centerZ + halfSizeZ || this->transform_.translate.z < centerZ - halfSizeZ);
-		}
-
-		// 地面の範囲から出たらフラグをリセット
-		if (isOutOfRange) {
-			groundInfo_.isGrounded = false;
-		}
-	}
-
 	/// ===地面から離れている場合の処理=== ///
 	if (!groundInfo_.isGrounded) {
 		// 重力の適用
@@ -201,6 +170,9 @@ void GameCharacter<TCollider>::GroundCollision() {
 	/// ===地面より下に行かないようにする=== ///
 	if (this->transform_.translate.y < groundInfo_.currentGroundYPos) {
 
+		// はみ出し分を計算
+		//float overlap = groundInfo_.currentGroundYPos - this->transform_.translate.y;
+
 		// はみ出し分を押し戻す
 		this->transform_.translate.y = groundInfo_.currentGroundYPos;
 
@@ -208,6 +180,35 @@ void GameCharacter<TCollider>::GroundCollision() {
 		if (baseInfo_.velocity.y < 0.0f) {
 			baseInfo_.velocity.y = 0.0f;
 		}
+	}
+
+	/// ===地面の範囲を出たかチェック=== ///
+	bool isOutOfRange = false;
+
+	if (groundInfo_.currentGroundType == ColliderType::AABB) {
+		// min～maxの範囲
+		float minX = groundInfo_.currentGroundFirst.x;
+		float maxX = groundInfo_.currentGroundSecond.x;
+		float minZ = groundInfo_.currentGroundFirst.z;
+		float maxZ = groundInfo_.currentGroundSecond.z;
+
+		isOutOfRange = (this->transform_.translate.x > maxX || this->transform_.translate.x < minX ||
+			this->transform_.translate.z > maxZ || this->transform_.translate.z < minZ);
+
+	} else if (groundInfo_.currentGroundType == ColliderType::OBB) {
+		// center +- halfSize
+		float centerX = groundInfo_.currentGroundFirst.x;
+		float halfSizeX = groundInfo_.currentGroundSecond.x;
+		float centerZ = groundInfo_.currentGroundFirst.z;
+		float halfSizeZ = groundInfo_.currentGroundSecond.z;
+
+		isOutOfRange = (this->transform_.translate.x > centerX + halfSizeX || this->transform_.translate.x < centerX - halfSizeX ||
+			this->transform_.translate.z > centerZ + halfSizeZ || this->transform_.translate.z < centerZ - halfSizeZ);
+	}
+
+	// 地面の範囲から出たらフラグをリセット
+	if (isOutOfRange) {
+		groundInfo_.isGrounded = false;
 	}
 }
 

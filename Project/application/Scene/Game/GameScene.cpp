@@ -106,7 +106,7 @@ void GameScene::Update() {
 	}
 
 	// デバッグカメラの切り替え
-	if (Service::Input::TriggerKey(DIK_1)) {
+	if (Service::Input::TriggerKey(DIK_TAB)) {
 		if (Service::Camera::GetActiveCamera() == camera_) {
 			Service::Camera::SetActiveCamera("Default");
 		} else {
