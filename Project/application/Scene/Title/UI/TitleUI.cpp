@@ -3,14 +3,15 @@
 #include "application/Game/UI/SpriteBaseScale.h"
 // Service
 #include "Service/Input.h"
+#include "Service/DeltaTime.h"
+// Math
+#include "Math/EasingMath.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
 TitleUI::~TitleUI() {
 	// スプライトのリセット
-	bgSprite_.reset();
-	bgKiriSprite_.reset();
 	titleSprite_.reset();
 	selectSprite_.start_.reset();
 	selectSprite_.option_.reset();
@@ -31,30 +32,47 @@ void TitleUI::Initialize() {
 	};
 
 	/// ===基準スケール=== ///
-	scale_ = GetBaseScale();
+	Vector2 scale_ = GetBaseScale();
 
 	/// ===基準値の設定=== ///
 	spaceY_ = windowSize.y / 12.0f; // メニュー項目間の垂直スペース
-	startPos_ = { // 開始項目のY位置
+	// 開始項目のY位置
+	startPos_ = {
 		windowSize.x / 2.0f,
 		windowSize.y / 2.0f + windowSize.y / 8.0f
 	};
 
+	/// ===スロットアニメーションの初期位置設定=== ///
+	float slotYOffset[selectionIndex_] = { // 初期座標
+		startPos_.y - spaceY_, // 上
+		startPos_.y,           // 中央
+		startPos_.y + spaceY_  // 下
+	};
+	Vector2 slotScale[selectionIndex_] = { // 初期スケール
+		sideScale_ * scale_,   // 上
+		centerScale_ * scale_, // 中央
+		sideScale_ * scale_    // 下
+	};
+
+	// アニメーション情報の初期化
+	for (int i = 0; i < selectionIndex_; i++) {
+		slotAnimation_.posY.itemCurrentY[i] = slotYOffset[i];
+		slotAnimation_.posY.itemStartY[i] = slotYOffset[i];
+		slotAnimation_.posY.itemTargetY[i] = slotYOffset[i];
+		slotAnimation_.scale.itemCurrentScale[i] = slotScale[i];
+		slotAnimation_.scale.itemStartScale[i] = slotScale[i];
+		slotAnimation_.scale.itemTargetScale[i] = slotScale[i];
+	}
+	slotAnimation_.animationSpeed = 0.3f;
+	slotAnimation_.animationTimer = 0.0f;
+	slotAnimation_.isAnimating = false;
+
+	// 初期のスロットインデックスの設定
+	slotIndex_[0] = 2; // 上 = Exit
+	slotIndex_[1] = 0; // 中央 = Start
+	slotIndex_[2] = 1; // 下 = Option
+
 	/// ===スプライトの初期化=== ///
-	// 背景スプライト
-	bgSprite_ = std::make_unique<Sprite>();
-	bgSprite_->Initialize("TitleBG");
-	bgSprite_->SetPosition({ 0.0f, 0.0f });
-	bgSprite_->SetSize({ windowSize.x, windowSize.y });
-	bgSprite_->Update();
-
-	// 背景(霧)スプライト
-	bgKiriSprite_ = std::make_unique<Sprite>();
-	bgKiriSprite_->Initialize("TitleBGKiri");
-	bgKiriSprite_->SetPosition({ 0.0f, 0.0f });
-	bgKiriSprite_->SetSize({ windowSize.x, windowSize.y });
-	bgKiriSprite_->Update();
-
 	// タイトルスプライト
 	titleSprite_ = std::make_unique<Sprite>();
 	titleSprite_->Initialize("Title");
@@ -112,11 +130,14 @@ void TitleUI::Initialize() {
 /// 更新処理
 ///-------------------------------------------///
 void TitleUI::Update() {
-	// セレクトスプライトの更新
-	selectSprite_.start_->Update();
-	selectSprite_.option_->Update();
-	selectSprite_.exit_->Update();
-	selectSprite_.overlay_->Update();
+	// デルタタイムの取得
+	float deltaTime = Service::DeltaTime::GetDeltaTime();
+
+	// アニメーションの更新
+	UpdateAnimation(deltaTime);
+
+	// スプライトの位置更新
+	UpdateSlotSprites();
 
 	// オプションの更新
 	if (isOptionOpen_) {
@@ -132,8 +153,6 @@ void TitleUI::Update() {
 ///-------------------------------------------///
 void TitleUI::Draw() {
 	// スプライトの描画
-	bgSprite_->Draw(MiiEngine::GroundType::Back);
-	//bgKiriSprite_->Draw(GroundType::Back);
 	titleSprite_->Draw(MiiEngine::GroundType::Front);
 	selectSprite_.start_->Draw(MiiEngine::GroundType::Front);
 	selectSprite_.option_->Draw(MiiEngine::GroundType::Front);
@@ -145,6 +164,63 @@ void TitleUI::Draw() {
 		optionUI_->TitleDraw();
 	}
 }
+
+///-------------------------------------------/// 
+/// アニメーションの更新
+///-------------------------------------------///
+void TitleUI::UpdateAnimation(float deltaTime) {
+	if (!slotAnimation_.isAnimating) return;
+
+	slotAnimation_.animationTimer += deltaTime;
+
+	// tをクランプ
+	float t = slotAnimation_.animationTimer / slotAnimation_.animationSpeed;
+	if (t >= 1.0f) {
+		t = 1.0f;
+		slotAnimation_.isAnimating = false; // アニメーション終了
+	}
+
+	float easedT = Easing::EaseOutCubic(t); // 補間
+	for (int i = 0; i < selectionIndex_; i++) {
+		slotAnimation_.posY.itemCurrentY[i] = slotAnimation_.posY.itemStartY[i] +
+			(slotAnimation_.posY.itemTargetY[i] - slotAnimation_.posY.itemStartY[i]) * easedT;
+
+		slotAnimation_.scale.itemCurrentScale[i] = slotAnimation_.scale.itemStartScale[i] +
+			(slotAnimation_.scale.itemTargetScale[i] - slotAnimation_.scale.itemStartScale[i]) * easedT;
+	}
+}
+
+///-------------------------------------------/// 
+/// スプライトの位置更新
+///-------------------------------------------///
+void TitleUI::UpdateSlotSprites() {
+	// スプライトの配列（
+	Sprite* sprites[selectionIndex_] = {
+		selectSprite_.start_.get(),
+		selectSprite_.option_.get(),
+		selectSprite_.exit_.get()
+	};
+
+	for (int slot = 0; slot < selectionIndex_; slot++) {
+		Sprite* sp = sprites[slotIndex_[slot]];
+
+		sp->SetPosition({ startPos_.x, slotAnimation_.posY.itemCurrentY[slot] });
+		sp->SetSize({
+			200.0f * slotAnimation_.scale.itemCurrentScale[slot].x,
+			 50.0f * slotAnimation_.scale.itemCurrentScale[slot].y
+			});
+
+		if (slot == 1) {
+			sp->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+		} else {
+			sp->SetColor({ 0.6f, 0.6f, 0.6f, 0.6f });
+		}
+
+		sp->Update();
+	}
+}
+
+
 
 ///-------------------------------------------/// 
 /// 選択状態の更新
@@ -169,37 +245,78 @@ void TitleUI::UpdateSelecting() {
 /// メニュー選択の更新
 ///-------------------------------------------///
 void TitleUI::UpdateMenuSelection() {
-	// 十字キー上
-	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadUP) || Service::Input::TriggerKey(DIK_UP)) {
-		switch (currentSelection_) {
-		case MenuSelection::Start:
-			currentSelection_ = MenuSelection::Exit; // 一番上から一番下へ
-			break;
-		case MenuSelection::Option:
-			currentSelection_ = MenuSelection::Start;
-			break;
-		case MenuSelection::Exit:
-			currentSelection_ = MenuSelection::Option;
-			break;
-		}
-		UpdateSelectOverlayPosition();
+
+	// アニメーション中は入力を受け付けない
+	if (slotAnimation_.isAnimating) return;
+
+	bool moved = false;
+	bool isUp = false; // 上キーが押されたかどうかのフラグ
+
+	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadUP) ||
+		Service::Input::TriggerKey(DIK_W)) {
+		// 上入力 → 上のアイテムが中央へ（右ローテーション）
+		int tmp = slotIndex_[2];
+		slotIndex_[2] = slotIndex_[1];
+		slotIndex_[1] = slotIndex_[0];
+		slotIndex_[0] = tmp;
+		moved = true;
+		isUp = true;
 	}
 
-	// 十字キー下
-	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadDOWN) || Service::Input::TriggerKey(DIK_DOWN)) {
-		switch (currentSelection_) {
-		case MenuSelection::Start:
-			currentSelection_ = MenuSelection::Option;
-			break;
-		case MenuSelection::Option:
-			currentSelection_ = MenuSelection::Exit;
-			break;
-		case MenuSelection::Exit:
-			currentSelection_ = MenuSelection::Start; // 一番下から一番上へ
-			break;
-		}
-		UpdateSelectOverlayPosition();
+	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadDOWN) ||
+		Service::Input::TriggerKey(DIK_S)) {
+		// 下入力 → 下のアイテムが中央へ（左ローテーション）
+		int tmp = slotIndex_[0];
+		slotIndex_[0] = slotIndex_[1];
+		slotIndex_[1] = slotIndex_[2];
+		slotIndex_[2] = tmp;
+		moved = true;
+		isUp = false;
 	}
+
+	if (moved) {
+		StartSlotAnimation(isUp);
+
+		// currentSelection_ を中央スロットから同期
+		static const MenuSelection selMap[selectionIndex_] = {
+			MenuSelection::Start, MenuSelection::Option, MenuSelection::Exit
+		};
+		currentSelection_ = selMap[slotIndex_[1]];
+	}
+}
+
+///-------------------------------------------/// 
+/// スロットアニメーションの開始
+///-------------------------------------------///
+void TitleUI::StartSlotAnimation(bool flag) {
+	// 目標Y
+	float targetY[selectionIndex_] = {
+		startPos_.y - spaceY_,
+		startPos_.y,
+		startPos_.y + spaceY_
+	};
+	// 目標スケール
+	Vector2 targetScale[selectionIndex_] = {
+		sideScale_, centerScale_, sideScale_
+	};
+
+	// ★開始Y座標をローテーション方向の逆にずらす★
+   // 上キー(isUp=true)  → アイテムは下から上へ動く → 開始はひとつ下の位置
+   // 下キー(isUp=false) → アイテムは上から下へ動く → 開始はひとつ上の位置
+	float offset = flag ? spaceY_ : -spaceY_;
+
+	for (int i = 0; i < selectionIndex_; i++) {
+		slotAnimation_.posY.itemStartY[i] = targetY[i] + offset; // ずらした位置からスタート
+		slotAnimation_.posY.itemTargetY[i] = targetY[i];
+		slotAnimation_.scale.itemStartScale[i] = sideScale_;          // アニメ前は全部小さく
+		slotAnimation_.scale.itemTargetScale[i] = targetScale[i];
+	}
+
+	// 中央スロットだけ開始スケールを少し大きめにする（見た目が自然になる）
+	slotAnimation_.scale.itemStartScale[1] = sideScale_;
+
+	slotAnimation_.animationTimer = 0.0f;
+	slotAnimation_.isAnimating = true;
 }
 
 ///-------------------------------------------/// 
@@ -219,25 +336,6 @@ void TitleUI::ConfirmSelection() {
 	case MenuSelection::Exit:
 		// ゲーム終了
 		PostQuitMessage(0);
-		break;
-	}
-}
-
-///-------------------------------------------/// 
-/// メニュー項目の色更新
-///-------------------------------------------///
-void TitleUI::UpdateSelectOverlayPosition() {
-
-	// 選択中の項目の位置に応じてオーバーレイを移動
-	switch (currentSelection_) {
-	case MenuSelection::Start:
-		selectSprite_.overlay_->SetPosition({ startPos_.x, startPos_.y });
-		break;
-	case MenuSelection::Option:
-		selectSprite_.overlay_->SetPosition({ startPos_.x, startPos_.y + spaceY_ });
-		break;
-	case MenuSelection::Exit:
-		selectSprite_.overlay_->SetPosition({ startPos_.x, startPos_.y + spaceY_ * 2.0f });
 		break;
 	}
 }

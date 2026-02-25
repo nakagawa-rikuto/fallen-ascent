@@ -262,7 +262,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Player\State\MoveState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\AvoidanceState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Weapon\PlayerWeapon.cpp" />
-    <ClCompile Include="application\Game\UI\Title\TitleUI.cpp" />
+    <ClCompile Include="application\Scene\Title\UI\TitleUI.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp" />
     <ClCompile Include="Engine\Graphics\2d\Base\Object2DCommon.cpp" />
     <ClCompile Include="application\Game\Animation\StartAnimation.cpp" />
@@ -287,6 +287,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Player\Hand\PlayerHand.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\MoveBossState.cpp" />
+    <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\BossEnemy.h" />
@@ -457,7 +458,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Player\State\MoveState.h" />
     <ClInclude Include="application\Game\Entity\Player\State\AvoidanceState.h" />
     <ClInclude Include="application\Game\Entity\Player\Weapon\PlayerWeapon.h" />
-    <ClInclude Include="application\Game\UI\Title\TitleUI.h" />
+    <ClInclude Include="application\Scene\Title\UI\TitleUI.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h" />
     <ClInclude Include="Engine\Graphics\2d\Base\Object2DCommon.h" />
     <ClInclude Include="application\Game\Animation\StartAnimation.h" />
@@ -482,6 +483,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\MoveBossState.h" />
+    <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
