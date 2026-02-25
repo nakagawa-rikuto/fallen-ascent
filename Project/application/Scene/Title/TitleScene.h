@@ -1,12 +1,14 @@
 #pragma once
 /// ===Include=== ///
-// IScene
 #include "Engine/Scene/IScene.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
+// Stage
+#include "application/Game/Object/GameStage.h"
 // UI
-#include "application/Game/UI/Title/TitleUI.h"
-// C++
-#include <memory>
-#include <array>
+#include "UI/TitleUI.h"
+// Animation
+#include "Animation/TitleSceneAnimation.h"
 
 ///=====================================================/// 
 /// タイトルシーン
@@ -33,12 +35,13 @@ public:/// ===メンバ関数=== ///
 	void Draw() override;
 
 private:/// ===メンバ変数=== ///
-	/// <summary>
-	/// シーン用
-	/// </summary>
 	
 	/// ===Class=== ///
-	std::unique_ptr<TitleUI> titleUI_;     // タイトルUI
+	std::shared_ptr<GameCamera> camera_; // カメラ
+	std::unique_ptr<Player> player_;	 // プレイヤー
+	std::unique_ptr<GameStage> stage_;	 // ステージ
+	std::unique_ptr<TitleUI> titleUI_;   // タイトルUI
+	std::unique_ptr<TitleSceneAnimation> animation_; // タイトルシーンアニメーション
 
 	/// ===Fade=== ///
 	enum class FadeState {
@@ -48,6 +51,12 @@ private:/// ===メンバ変数=== ///
 	};
 	FadeState currentFade_ = FadeState::FadeIn;
 
+	/// ===カメラ=== ///
+	Vector3 cameraOrbitingOffset_{ 0.0f, 10.0f, -100.0f }; // カメラOffSet
+	Quaternion cameraRotation_{ 0.158f, 0.0f, 0.0f, 0.987f };   // カメラ位置
+
+	// フェードアウトフラグ
+	bool isStartFadeOut_ = false;
 
 private:/// ===プライベート関数=== ///
 
@@ -61,4 +70,9 @@ private:/// ===プライベート関数=== ///
 	/// </summary>
 	void UpdateFadeOut();
 
+	/// <summary>
+	/// プレイヤーを生成します。
+	/// </summary>
+	/// <param name="json">プレイヤーの設定が記述されたJSON文字列</param>
+	void SpawnPlayer(const std::string& json_name);
 };

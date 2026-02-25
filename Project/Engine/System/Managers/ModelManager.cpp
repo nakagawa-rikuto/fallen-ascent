@@ -87,6 +87,9 @@ namespace MiiEngine {
 		return materialData;
 	}
 
+	///-------------------------------------------/// 
+	/// .objファイルの読み込み
+	///-------------------------------------------///
 	ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std::string& filename) {
 		ModelData modelData; // 構築するModelData
 

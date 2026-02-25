@@ -388,7 +388,7 @@
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp">
       <Filter>Engine\Graphics\OffScreen\Effect</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\UI\Title\TitleUI.cpp">
+    <ClCompile Include="application\Scene\Title\UI\TitleUI.cpp">
       <Filter>application\Game\UI\Title</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\2d\Sprite\SpriteCommon.cpp">
@@ -616,6 +616,7 @@
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.cpp">
       <Filter>application\Game\Entity\Enemy\MobEnemy\Base</Filter>
     </ClCompile>
+    <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -957,7 +958,7 @@
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h">
       <Filter>Engine\Graphics\OffScreen\Effect</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\UI\Title\TitleUI.h">
+    <ClInclude Include="application\Scene\Title\UI\TitleUI.h">
       <Filter>application\Game\UI\Title</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\2d\Sprite\SpriteCommon.h">
@@ -1197,6 +1198,7 @@
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.h">
       <Filter>application\Game\Entity\Enemy\MobEnemy\Base</Filter>
     </ClInclude>
+    <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
