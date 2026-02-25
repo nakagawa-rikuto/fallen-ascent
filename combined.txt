@@ -464,10 +464,7 @@
 └── └── └──     ├── Option/
 └── └── └──     └── ├── OptionUI.cpp
 └── └── └──     └── └── OptionUI.h
-└── └── └──     ├── SpriteBaseScale.h
-└── └── └──     └── Title/
-└── └── └──         ├── TitleUI.cpp
-└── └── └──         └── TitleUI.h
+└── └── └──     └── SpriteBaseScale.h
 └── └── └── Scene/
 └── └──     ├── Clear/
 └── └──     └── ├── ClearScene.cpp
@@ -501,8 +498,14 @@
 └── └──     └── ├── SelectScene.cpp
 └── └──     └── └── SelectScene.h
 └── └──     └── Title/
+└── └──         ├── Animation/
+└── └──         └── ├── TitleSceneAnimation.cpp
+└── └──         └── └── TitleSceneAnimation.h
 └── └──         ├── TitleScene.cpp
-└── └──         └── TitleScene.h
+└── └──         ├── TitleScene.h
+└── └──         └── UI/
+└── └──             ├── TitleUI.cpp
+└── └──             └── TitleUI.h
 └── └── main.cpp
 ================================================================================
 
@@ -17713,7 +17716,7 @@ namespace MiiEngine {
 		// シーンマネージャの初期化
 		sceneManager_ = std::make_unique<SceneManager>();
 		sceneManager_->Initialize(sceneFactory_.get());
-		sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
+		sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
 	}
 
 	///-------------------------------------------/// 
@@ -23290,6 +23293,9 @@ namespace MiiEngine {
 		return materialData;
 	}
 
+	///-------------------------------------------/// 
+	/// .objファイルの読み込み
+	///-------------------------------------------///
 	ModelData ModelManager::LoadObjFile(const std::string& directoryPath, const std::string& filename) {
 		ModelData modelData; // 構築するModelData
 
@@ -25552,7 +25558,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Player\State\MoveState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\AvoidanceState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Weapon\PlayerWeapon.cpp" />
-    <ClCompile Include="application\Game\UI\Title\TitleUI.cpp" />
+    <ClCompile Include="application\Scene\Title\UI\TitleUI.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp" />
     <ClCompile Include="Engine\Graphics\2d\Base\Object2DCommon.cpp" />
     <ClCompile Include="application\Game\Animation\StartAnimation.cpp" />
@@ -25577,6 +25583,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Player\Hand\PlayerHand.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\MoveBossState.cpp" />
+    <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\BossEnemy.h" />
@@ -25747,7 +25754,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Player\State\MoveState.h" />
     <ClInclude Include="application\Game\Entity\Player\State\AvoidanceState.h" />
     <ClInclude Include="application\Game\Entity\Player\Weapon\PlayerWeapon.h" />
-    <ClInclude Include="application\Game\UI\Title\TitleUI.h" />
+    <ClInclude Include="application\Scene\Title\UI\TitleUI.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h" />
     <ClInclude Include="Engine\Graphics\2d\Base\Object2DCommon.h" />
     <ClInclude Include="application\Game\Animation\StartAnimation.h" />
@@ -25772,6 +25779,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\MoveBossState.h" />
+    <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -26378,7 +26386,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp">
       <Filter>Engine\Graphics\OffScreen\Effect</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\UI\Title\TitleUI.cpp">
+    <ClCompile Include="application\Scene\Title\UI\TitleUI.cpp">
       <Filter>application\Game\UI\Title</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\2d\Sprite\SpriteCommon.cpp">
@@ -26606,6 +26614,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.cpp">
       <Filter>application\Game\Entity\Enemy\MobEnemy\Base</Filter>
     </ClCompile>
+    <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -26947,7 +26956,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h">
       <Filter>Engine\Graphics\OffScreen\Effect</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\UI\Title\TitleUI.h">
+    <ClInclude Include="application\Scene\Title\UI\TitleUI.h">
       <Filter>application\Game\UI\Title</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\2d\Sprite\SpriteCommon.h">
@@ -27187,6 +27196,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.h">
       <Filter>application\Game\Entity\Enemy\MobEnemy\Base</Filter>
     </ClInclude>
+    <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -43374,378 +43384,6 @@ inline Vector2 GetBaseScale() {
 
 
 ============================================================
-File Path: Project/application/Game/UI/Title/TitleUI.cpp
-============================================================
-#include "TitleUI.h"
-// SpriteBaseScale
-#include "application/Game/UI/SpriteBaseScale.h"
-// Service
-#include "Service/Input.h"
-
-///-------------------------------------------/// 
-/// デストラクタ
-///-------------------------------------------///
-TitleUI::~TitleUI() {
-	// スプライトのリセット
-	bgSprite_.reset();
-	bgKiriSprite_.reset();
-	titleSprite_.reset();
-	selectSprite_.start_.reset();
-	selectSprite_.option_.reset();
-	selectSprite_.exit_.reset();
-	selectSprite_.overlay_.reset();
-	// OptionUIのリセット
-	optionUI_.reset();
-}
-
-///-------------------------------------------/// 
-/// 初期化処理
-///-------------------------------------------///
-void TitleUI::Initialize() {
-	/// ===ウィンドウサイズの取得=== ///
-	Vector2 windowSize = {
-		static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()),
-		static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight())
-	};
-
-	/// ===基準スケール=== ///
-	scale_ = GetBaseScale();
-
-	/// ===基準値の設定=== ///
-	spaceY_ = windowSize.y / 12.0f; // メニュー項目間の垂直スペース
-	startPos_ = { // 開始項目のY位置
-		windowSize.x / 2.0f,
-		windowSize.y / 2.0f + windowSize.y / 8.0f
-	};
-
-	/// ===スプライトの初期化=== ///
-	// 背景スプライト
-	bgSprite_ = std::make_unique<Sprite>();
-	bgSprite_->Initialize("TitleBG");
-	bgSprite_->SetPosition({ 0.0f, 0.0f });
-	bgSprite_->SetSize({ windowSize.x, windowSize.y });
-	bgSprite_->Update();
-
-	// 背景(霧)スプライト
-	bgKiriSprite_ = std::make_unique<Sprite>();
-	bgKiriSprite_->Initialize("TitleBGKiri");
-	bgKiriSprite_->SetPosition({ 0.0f, 0.0f });
-	bgKiriSprite_->SetSize({ windowSize.x, windowSize.y });
-	bgKiriSprite_->Update();
-
-	// タイトルスプライト
-	titleSprite_ = std::make_unique<Sprite>();
-	titleSprite_->Initialize("Title");
-	titleSprite_->SetPosition({ startPos_.x, windowSize.y / 4.0f });
-	titleSprite_->SetSize({ 1000.0f * scale_.x, 1000.0f * scale_.y });
-	titleSprite_->SetAnchorPoint({ 0.5f, 0.5f });
-	titleSprite_->Update();
-
-	// 開始スプライト
-	selectSprite_.start_ = std::make_unique<Sprite>();
-	selectSprite_.start_->Initialize("Start");
-	selectSprite_.start_->SetPosition({ startPos_.x, startPos_.y });
-	selectSprite_.start_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
-	selectSprite_.start_->SetAnchorPoint({ 0.5f, 0.5f });
-	selectSprite_.start_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 未選択は灰色
-	selectSprite_.start_->Update();
-
-	// オプションスプライト
-	selectSprite_.option_ = std::make_unique<Sprite>();
-	selectSprite_.option_->Initialize("Option");
-	selectSprite_.option_->SetPosition({ startPos_.x, startPos_.y + spaceY_ });
-	selectSprite_.option_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
-	selectSprite_.option_->SetAnchorPoint({ 0.5f, 0.5f });
-	selectSprite_.option_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 未選択は灰色
-	selectSprite_.option_->Update();
-
-	// 終了スプライト
-	selectSprite_.exit_ = std::make_unique<Sprite>();
-	selectSprite_.exit_->Initialize("Exit");
-	selectSprite_.exit_->SetPosition({ startPos_.x, startPos_.y + spaceY_ * 2.0f });
-	selectSprite_.exit_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
-	selectSprite_.exit_->SetAnchorPoint({ 0.5f, 0.5f });
-	selectSprite_.exit_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 未選択は灰色
-	selectSprite_.exit_->Update();
-
-	// 選択オーバーレイスプライト
-	selectSprite_.overlay_ = std::make_unique<Sprite>();
-	selectSprite_.overlay_->Initialize("OverLay"); // テクスチャファイルパスは適宜変更
-	selectSprite_.overlay_->SetPosition({ startPos_.x, startPos_.y }); // 初期位置は開始の位置
-	selectSprite_.overlay_->SetSize({ 400.0f * scale_.x, 80.0f * scale_.y }); // メニュー項目より少し大きめ
-	selectSprite_.overlay_->SetAnchorPoint({ 0.5f, 0.5f });
-	selectSprite_.overlay_->SetColor({ 0.8f, 0.8f, 0.8f, 0.8f }); // 半透明の灰色
-	selectSprite_.overlay_->Update();
-
-	/// ===OptionUIの初期化=== ///
-	optionUI_ = std::make_unique<OptionUI>();
-	optionUI_->Initialize();
-
-	/// ===フラグの初期化=== ///
-	isOptionOpen_ = false;
-	isGameStart_ = false;
-}
-
-///-------------------------------------------/// 
-/// 更新処理
-///-------------------------------------------///
-void TitleUI::Update() {
-	// セレクトスプライトの更新
-	selectSprite_.start_->Update();
-	selectSprite_.option_->Update();
-	selectSprite_.exit_->Update();
-	selectSprite_.overlay_->Update();
-
-	// オプションの更新
-	if (isOptionOpen_) {
-		optionUI_->TitleUpdate();
-	}
-
-	// 選択状態の更新
-	UpdateSelecting();
-}
-
-///-------------------------------------------/// 
-/// 描画処理
-///-------------------------------------------///
-void TitleUI::Draw() {
-	// スプライトの描画
-	bgSprite_->Draw(MiiEngine::GroundType::Back);
-	//bgKiriSprite_->Draw(GroundType::Back);
-	titleSprite_->Draw(MiiEngine::GroundType::Front);
-	selectSprite_.start_->Draw(MiiEngine::GroundType::Front);
-	selectSprite_.option_->Draw(MiiEngine::GroundType::Front);
-	selectSprite_.exit_->Draw(MiiEngine::GroundType::Front);
-	selectSprite_.overlay_->Draw(MiiEngine::GroundType::Front, MiiEngine::BlendMode::kBlendModeAdd);
-
-	// オプションの描画
-	if (isOptionOpen_) {
-		optionUI_->TitleDraw();
-	}
-}
-
-///-------------------------------------------/// 
-/// 選択状態の更新
-///-------------------------------------------///
-void TitleUI::UpdateSelecting() {
-
-	/// ===オプション画面の処理=== ///
-	if (isOptionOpen_) {
-		UpdateOptionMenu();
-	} else {
-		/// ===メニュー選択の更新=== ///
-		UpdateMenuSelection();
-
-		/// ===決定処理=== ///
-		if (Service::Input::TriggerButton(0, ControllerButtonType::A) || Service::Input::TriggerKey(DIK_SPACE)) {
-			ConfirmSelection();
-		}
-	}
-}
-
-///-------------------------------------------/// 
-/// メニュー選択の更新
-///-------------------------------------------///
-void TitleUI::UpdateMenuSelection() {
-	// 十字キー上
-	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadUP) || Service::Input::TriggerKey(DIK_UP)) {
-		switch (currentSelection_) {
-		case MenuSelection::Start:
-			currentSelection_ = MenuSelection::Exit; // 一番上から一番下へ
-			break;
-		case MenuSelection::Option:
-			currentSelection_ = MenuSelection::Start;
-			break;
-		case MenuSelection::Exit:
-			currentSelection_ = MenuSelection::Option;
-			break;
-		}
-		UpdateSelectOverlayPosition();
-	}
-
-	// 十字キー下
-	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadDOWN) || Service::Input::TriggerKey(DIK_DOWN)) {
-		switch (currentSelection_) {
-		case MenuSelection::Start:
-			currentSelection_ = MenuSelection::Option;
-			break;
-		case MenuSelection::Option:
-			currentSelection_ = MenuSelection::Exit;
-			break;
-		case MenuSelection::Exit:
-			currentSelection_ = MenuSelection::Start; // 一番下から一番上へ
-			break;
-		}
-		UpdateSelectOverlayPosition();
-	}
-}
-
-///-------------------------------------------/// 
-/// メニュー決定処理
-///-------------------------------------------///
-void TitleUI::ConfirmSelection() {
-	// Selectionに応じた処理
-	switch (currentSelection_) {
-	case MenuSelection::Start:
-		// ゲーム開始処理へ移行
-		isGameStart_ = true;
-		break;
-	case MenuSelection::Option:
-		// オプション画面を開く
-		isOptionOpen_ = true;
-		break;
-	case MenuSelection::Exit:
-		// ゲーム終了
-		PostQuitMessage(0);
-		break;
-	}
-}
-
-///-------------------------------------------/// 
-/// メニュー項目の色更新
-///-------------------------------------------///
-void TitleUI::UpdateSelectOverlayPosition() {
-
-	// 選択中の項目の位置に応じてオーバーレイを移動
-	switch (currentSelection_) {
-	case MenuSelection::Start:
-		selectSprite_.overlay_->SetPosition({ startPos_.x, startPos_.y });
-		break;
-	case MenuSelection::Option:
-		selectSprite_.overlay_->SetPosition({ startPos_.x, startPos_.y + spaceY_ });
-		break;
-	case MenuSelection::Exit:
-		selectSprite_.overlay_->SetPosition({ startPos_.x, startPos_.y + spaceY_ * 2.0f });
-		break;
-	}
-}
-
-///-------------------------------------------/// 
-/// オプション画面の更新
-///-------------------------------------------///
-void TitleUI::UpdateOptionMenu() {
-	// Bボタンでオプション画面を閉じる
-	if (Service::Input::TriggerButton(0, ControllerButtonType::B) || Service::Input::TriggerKey(DIK_SPACE)) {
-		isOptionOpen_ = false;
-	}
-}
-
-============================================================
-File Path: Project/application/Game/UI/Title/TitleUI.h
-============================================================
-#pragma once
-/// ===Include=== ///
-// Sprite
-#include "application/Drawing/2d/Sprite.h"
-#include "application/Game/UI/Option/OptionUI.h"
-// C++
-#include <memory>
-
-///=====================================================/// 
-/// タイトルシーンのUIクラス
-///=====================================================///
-class TitleUI {
-public:
-	TitleUI() = default;
-	~TitleUI();
-
-	/// <summary>
-	/// 初期化処理
-	/// </summary>
-	void Initialize();
-
-	/// <summary>
-	/// 更新処理
-	/// </summary>
-	void Update();
-
-	/// <summary>
-	/// 描画処理
-	/// </summary>
-	void Draw();
-
-private: /// ===メンバ変数=== ///
-
-	// オプションUI
-	std::unique_ptr<OptionUI> optionUI_;
-
-	/// ===スプライト=== ///
-	std::unique_ptr<Sprite> bgSprite_;         // 背景
-	std::unique_ptr<Sprite> bgKiriSprite_;     // 背景(霧)
-	std::unique_ptr<Sprite> titleSprite_;      // タイトル
-
-	/// ===セレクトスプライト=== ///
-	struct SelectSprite {
-		std::unique_ptr<Sprite> start_;      // 開始
-		std::unique_ptr<Sprite> option_;     // オプション
-		std::unique_ptr<Sprite> exit_;       // 終了
-		std::unique_ptr<Sprite> overlay_;    // 選択中のオーバーレイ
-	};
-	SelectSprite selectSprite_;
-
-	/// ===基準値=== ///
-	Vector2 startPos_{}; // メニュー開始Y座標
-	float spaceY_ = 0.0f; // メニュー項目間のスペース
-
-	/// ===参照スケール倍率=== ///
-	Vector2 scale_ = { 1.0f, 1.0f };
-
-	/// ===メニュー選択=== ///
-	// メニュー項目の列挙型
-	enum class MenuSelection {
-		Start,    // 開始
-		Option,   // オプション
-		Exit      // 終了
-	};
-	MenuSelection currentSelection_ = MenuSelection::Start; // 現在の選択
-
-	/// ===フラグ=== ///
-	bool isOptionOpen_ = false;      // オプション画面が開いているか
-	bool isGameStart_ = false;      // ゲーム開始フラグ
-
-public: /// ===Getter=== ///
-	/// <summary>
-	/// 選択スプライトを取得します。
-	/// </summary>
-	/// <returns>選択スプライトへの参照。</returns>
-	SelectSprite& GetSelectSprite() { return selectSprite_; }
-
-	/// <summary>
-	/// ゲームが開始されているかどうかを取得します。
-	/// </summary>
-	/// <returns>ゲームが開始されている場合は true、それ以外の場合は false。</returns>
-	bool IsGameStart() const { return isGameStart_; }
-
-private:
-	/// <summary>
-	/// 選択状態を更新します。
-	/// </summary>
-	void UpdateSelecting();
-
-	/// <summary>
-	/// メニューの選択状態の更新処理
-	/// </summary>
-	void UpdateMenuSelection();
-
-	/// <summary>
-	/// メニューの選択決定処理
-	/// </summary>
-	void ConfirmSelection();
-
-	/// <summary>
-	/// 選択オーバーレイの位置を更新処理
-	/// </summary>
-	void UpdateSelectOverlayPosition();
-
-	/// <summary>
-	/// オプション画面の更新処理
-	/// </summary>
-	void UpdateOptionMenu();
-};
-
-
-
-============================================================
 File Path: Project/application/Scene/Clear/ClearScene.cpp
 ============================================================
 #include "ClearScene.h"
@@ -45350,11 +44988,149 @@ private:/// ===メンバ変数=== ///
 
 
 ============================================================
+File Path: Project/application/Scene/Title/Animation/TitleSceneAnimation.cpp
+============================================================
+#include "TitleSceneAnimation.h"
+// GameCamera
+#include "application/Game/Camera/GameCamera.h"
+// Service
+#include "Service/DeltaTime.h"
+#include "Service/PostEffect.h"
+// Math
+#include "Math/sMath.h"
+
+///-------------------------------------------/// 
+/// Getter
+///-------------------------------------------///
+bool TitleSceneAnimation::GetStartFadeOut() const {
+	if (radiusBlurData_.numSamples > 25) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+///-------------------------------------------/// 
+/// 初期化
+///-------------------------------------------///
+void TitleSceneAnimation::Initialize(GameCamera* camera) {
+	// カメラの設定
+	camera_ = camera;
+
+	// ラジアスブラーの初期設定
+	radiusBlurData_ = {
+		.center = { 0.5f, 0.7f }, // ブラーの中心を画面中央に設定
+		.numSamples = 0,           // サンプリング数を初期化
+		.blurWidth = 0.005f,       // ブラーの幅を初期化
+	};
+}
+
+///-------------------------------------------/// 
+/// カメラの更新処理
+///-------------------------------------------///
+void TitleSceneAnimation::UpdateCameraAnimation(const Vector3& translate) {
+	// 回転角度の更新
+	float yawAngle = cameraAutoRotateSpeed_ * Service::DeltaTime::GetDeltaTime(); // Y軸回転の角度を計算
+
+	// ターゲット位置からカメラの位置を計算
+	Vector3 toCamera = camera_->GetTranslate() - translate; // ターゲットからカメラへのベクトル
+
+	// Yaw回転（ワールドのY軸周り）
+	Quaternion yawRotation = Math::MakeRotateAxisAngle(Vector3(0, 1, 0), yawAngle);
+
+	// Pitch回転（カメラの右方向軸周り）
+	Vector3 rightAxis = Math::RotateVector(Vector3(1, 0, 0), camera_->GetRotate());
+
+	// 回転を適用
+	Quaternion totalRotation = yawRotation;
+	camera_->SetRotate(Normalize(totalRotation * camera_->GetRotate()));
+
+	// ターゲットを中心にカメラ位置を回転
+	Vector3 newOffset = Math::RotateVector(toCamera, totalRotation);
+	camera_->SetTranslate(translate + newOffset);
+}
+
+///-------------------------------------------/// 
+/// ラジアスブラーの更新処理
+///-------------------------------------------///
+void TitleSceneAnimation::UpdateRadiusBlurAnimation() {
+	// サンプリングを50ぐらいまで増やす
+	if (radiusBlurData_.numSamples < 50) {
+		radiusBlurData_.numSamples += 1; // サンプリング数を増やす
+		Service::PostEffect::SetRadiusBlurData(radiusBlurData_); // データをシェーダーに送る
+	}
+}
+
+
+============================================================
+File Path: Project/application/Scene/Title/Animation/TitleSceneAnimation.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Math/Vector3.h"
+// RadiusBlurEffect
+#include "Engine/Graphics/OffScreen/Effect/RadiusBlurEffect.h"
+
+/// ===前方宣言=== ///
+class GameCamera;
+
+///=====================================================/// 
+/// タイトルシーンのアニメーション管理クラス
+///=====================================================///
+class TitleSceneAnimation {
+public:
+
+	TitleSceneAnimation() = default;
+	~TitleSceneAnimation() = default;
+
+	/// <summary>
+	/// 初期化
+	/// </summary>
+	void Initialize(GameCamera* camera);
+
+	/// <summary>
+	/// カメラの更新処理
+	/// </summary>
+	void UpdateCameraAnimation(const Vector3& translate);
+
+	/// <summary>
+	/// ラジアスブラーの更新処理
+	/// </summary>
+	void UpdateRadiusBlurAnimation();
+
+public: /// ===Getter=== ///
+	/// <summary>
+	/// フェードアウト開始フラグを取得します。
+	/// </summary>
+	/// <returns></returns>
+	bool GetStartFadeOut() const;
+
+private:
+
+	/// ===カメラ=== ///
+	GameCamera* camera_ = nullptr;
+
+	/// ===カメラアニメーション=== ///
+	const float cameraAutoRotateSpeed_ = 0.3f; // カメラの自動回転速度
+	float cameraAutoRotateAngle_ = 0.0f; // カメラの自動回転角度
+
+	/// ===ラジアスブラーのデータ=== ///
+	MiiEngine::RadiusBlurData radiusBlurData_{};
+};
+
+
+
+============================================================
 File Path: Project/application/Scene/Title/TitleScene.cpp
 ============================================================
 #include "TitleScene.h"
 // SceneManager
 #include "Engine/System/Managers/SceneManager.h"
+// Service
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/Camera.h"
+#include "Service/Collision.h"
+#include "Service/PostEffect.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
@@ -45365,8 +45141,12 @@ File Path: Project/application/Scene/Title/TitleScene.cpp
 TitleScene::~TitleScene() {
 	// ISceneのデストラクタ
 	IScene::~IScene();
+	// Colliderのリセット
+	Service::Collision::Reset();
 	// TitleUIのリセット
 	titleUI_.reset();
+	// TitleSceneAnimationのリセット
+	animation_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -45376,11 +45156,35 @@ void TitleScene::Initialize() {
 	// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 	IScene::Initialize();
 
+	/// ===Camera=== ///
+	camera_ = std::make_shared<GameCamera>();
+	camera_->Init(CameraType::Follow);
+	camera_->SetFollowCamera(FollowCameraType::Orbiting);
+	camera_->SetOrbitingOffset(cameraOrbitingOffset_);
+	camera_->SetRotate(cameraRotation_);
+	// カメラの設定
+	Service::Camera::AddCamera("Title", camera_);
+	Service::Camera::SetActiveCamera("Title");
+
+	/// ===Playerの生成=== ///
+	player_ = std::make_unique<Player>();
+	SpawnPlayer("Level/EntityData2.json");
+	player_->SetCameraTargetPlayer();
+
+	/// ===Stage=== ///	
+	stage_ = std::make_unique<GameStage>();
+	stage_->Initialize("Level/StageData2.json");
+
 	/// ===TitleUI=== ///
 	titleUI_ = std::make_unique<TitleUI>();
 	titleUI_->Initialize();
 
+	/// ===TitleSceneAnimation=== ///
+	animation_ = std::make_unique<TitleSceneAnimation>();
+	animation_->Initialize(camera_.get());
+
 	/// ===Fadeの設定=== ///
+	isStartFadeOut_ = false;
 	currentFade_ = FadeState::Selecting; // デバッグ用にフェードインをスキップ
 }
 
@@ -45392,8 +45196,21 @@ void TitleScene::Update() {
 #ifdef USE_IMGUI
 	ImGui::Begin("TitleScene");
 	ImGui::Text("Fade State: %d", static_cast<int>(currentFade_));
+
+	camera_->ImGuiUpdate();
+	//camera_->DebugUpdate();
+
 	ImGui::End();
 #endif // USE_IMGUI
+
+	/// ===Player=== ///
+	player_->UpdateAnimation();
+
+	/// ===Stage=== ///
+	stage_->Update();
+
+	/// ===カメラアニメーション=== ///
+	animation_->UpdateCameraAnimation(player_->GetTransform().translate);
 
 	/// ===フェーズ別更新=== ///
 	switch (currentFade_) {
@@ -45404,7 +45221,7 @@ void TitleScene::Update() {
 		titleUI_->Update();
 		if (titleUI_->IsGameStart()) {
 			currentFade_ = FadeState::FadeOut;
-			sceneManager_->StartFadeOut(TransitionType::ShatterGlass, 1.0f);
+			Service::PostEffect::SetOffScreenType(MiiEngine::OffScreenType::RadiusBlur);
 		}
 		break;
 	case TitleScene::FadeState::FadeOut:
@@ -45420,6 +45237,12 @@ void TitleScene::Update() {
 /// 描画
 ///-------------------------------------------///
 void TitleScene::Draw() {
+	/// ===Player=== ///
+	player_->Draw();
+
+	/// ===stage=== ///
+	stage_->Draw();
+
 	/// ===TitleUIの描画=== ///
 	titleUI_->Draw();
 
@@ -45431,6 +45254,7 @@ void TitleScene::Draw() {
 /// フェードインの更新
 ///-------------------------------------------///
 void TitleScene::UpdateFadeIn() {
+
 	/// ===Fadeの変更=== ///
 	if (sceneManager_->GetTransitionFinished()) {
 		currentFade_ = FadeState::Selecting;
@@ -45441,6 +45265,14 @@ void TitleScene::UpdateFadeIn() {
 /// フェードアウトの更新
 ///-------------------------------------------///
 void TitleScene::UpdateFadeOut() {
+	// ラジアスブラーの更新
+	animation_->UpdateRadiusBlurAnimation();
+
+	// アニメーション終了後にフェードアウトへ移行
+	if (animation_->GetStartFadeOut() && !isStartFadeOut_) {
+		isStartFadeOut_ = true;
+		sceneManager_->StartFadeOut(TransitionType::ShatterGlass, 1.0f);
+	}
 
 	/// ===シーンの切り替え=== ///
 	if (sceneManager_->GetTransitionFinished()) {
@@ -45449,18 +45281,44 @@ void TitleScene::UpdateFadeOut() {
 	}
 }
 
+///-------------------------------------------/// 
+/// プレイヤーの生成
+///-------------------------------------------///
+void TitleScene::SpawnPlayer(const std::string& json_name) {
+	LevelData* levelData = Service::GraphicsResourceGetter::GetLevelData(json_name);
+
+	// オブジェクト分回す
+	for (const auto& obj : levelData->objects) {
+		// OBBの半分の大きさを計算
+		Vector3 obbHalfSize = obj.colliderInfo2 / 2.0f;
+
+		/// ===クラス名で分岐=== ///
+		switch (obj.classType) {
+		case LevelData::ClassTypeLevel::Player:
+			// 初期化と座標設定
+			player_->Initialize();
+			player_->SetTranslate(obj.translation);
+			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
+			break;
+		}
+	}
+}
+
+
 ============================================================
 File Path: Project/application/Scene/Title/TitleScene.h
 ============================================================
 #pragma once
 /// ===Include=== ///
-// IScene
 #include "Engine/Scene/IScene.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
+// Stage
+#include "application/Game/Object/GameStage.h"
 // UI
-#include "application/Game/UI/Title/TitleUI.h"
-// C++
-#include <memory>
-#include <array>
+#include "UI/TitleUI.h"
+// Animation
+#include "Animation/TitleSceneAnimation.h"
 
 ///=====================================================/// 
 /// タイトルシーン
@@ -45487,12 +45345,13 @@ public:/// ===メンバ関数=== ///
 	void Draw() override;
 
 private:/// ===メンバ変数=== ///
-	/// <summary>
-	/// シーン用
-	/// </summary>
 	
 	/// ===Class=== ///
-	std::unique_ptr<TitleUI> titleUI_;     // タイトルUI
+	std::shared_ptr<GameCamera> camera_; // カメラ
+	std::unique_ptr<Player> player_;	 // プレイヤー
+	std::unique_ptr<GameStage> stage_;	 // ステージ
+	std::unique_ptr<TitleUI> titleUI_;   // タイトルUI
+	std::unique_ptr<TitleSceneAnimation> animation_; // タイトルシーンアニメーション
 
 	/// ===Fade=== ///
 	enum class FadeState {
@@ -45502,6 +45361,12 @@ private:/// ===メンバ変数=== ///
 	};
 	FadeState currentFade_ = FadeState::FadeIn;
 
+	/// ===カメラ=== ///
+	Vector3 cameraOrbitingOffset_{ 0.0f, 10.0f, -100.0f }; // カメラOffSet
+	Quaternion cameraRotation_{ 0.158f, 0.0f, 0.0f, 0.987f };   // カメラ位置
+
+	// フェードアウトフラグ
+	bool isStartFadeOut_ = false;
 
 private:/// ===プライベート関数=== ///
 
@@ -45515,7 +45380,519 @@ private:/// ===プライベート関数=== ///
 	/// </summary>
 	void UpdateFadeOut();
 
+	/// <summary>
+	/// プレイヤーを生成します。
+	/// </summary>
+	/// <param name="json">プレイヤーの設定が記述されたJSON文字列</param>
+	void SpawnPlayer(const std::string& json_name);
 };
+
+============================================================
+File Path: Project/application/Scene/Title/UI/TitleUI.cpp
+============================================================
+#include "TitleUI.h"
+// SpriteBaseScale
+#include "application/Game/UI/SpriteBaseScale.h"
+// Service
+#include "Service/Input.h"
+#include "Service/DeltaTime.h"
+// Math
+#include "Math/EasingMath.h"
+
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+TitleUI::~TitleUI() {
+	// スプライトのリセット
+	titleSprite_.reset();
+	selectSprite_.start_.reset();
+	selectSprite_.option_.reset();
+	selectSprite_.exit_.reset();
+	selectSprite_.overlay_.reset();
+	// OptionUIのリセット
+	optionUI_.reset();
+}
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void TitleUI::Initialize() {
+	/// ===ウィンドウサイズの取得=== ///
+	Vector2 windowSize = {
+		static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()),
+		static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight())
+	};
+
+	/// ===基準スケール=== ///
+	Vector2 scale_ = GetBaseScale();
+
+	/// ===基準値の設定=== ///
+	spaceY_ = windowSize.y / 12.0f; // メニュー項目間の垂直スペース
+	// 開始項目のY位置
+	startPos_ = {
+		windowSize.x / 2.0f,
+		windowSize.y / 2.0f + windowSize.y / 8.0f
+	};
+
+	/// ===スロットアニメーションの初期位置設定=== ///
+	float slotYOffset[selectionIndex_] = { // 初期座標
+		startPos_.y - spaceY_, // 上
+		startPos_.y,           // 中央
+		startPos_.y + spaceY_  // 下
+	};
+	Vector2 slotScale[selectionIndex_] = { // 初期スケール
+		sideScale_ * scale_,   // 上
+		centerScale_ * scale_, // 中央
+		sideScale_ * scale_    // 下
+	};
+
+	// アニメーション情報の初期化
+	for (int i = 0; i < selectionIndex_; i++) {
+		slotAnimation_.posY.itemCurrentY[i] = slotYOffset[i];
+		slotAnimation_.posY.itemStartY[i] = slotYOffset[i];
+		slotAnimation_.posY.itemTargetY[i] = slotYOffset[i];
+		slotAnimation_.scale.itemCurrentScale[i] = slotScale[i];
+		slotAnimation_.scale.itemStartScale[i] = slotScale[i];
+		slotAnimation_.scale.itemTargetScale[i] = slotScale[i];
+	}
+	slotAnimation_.animationSpeed = 0.3f;
+	slotAnimation_.animationTimer = 0.0f;
+	slotAnimation_.isAnimating = false;
+
+	// 初期のスロットインデックスの設定
+	slotIndex_[0] = 2; // 上 = Exit
+	slotIndex_[1] = 0; // 中央 = Start
+	slotIndex_[2] = 1; // 下 = Option
+
+	/// ===スプライトの初期化=== ///
+	// タイトルスプライト
+	titleSprite_ = std::make_unique<Sprite>();
+	titleSprite_->Initialize("Title");
+	titleSprite_->SetPosition({ startPos_.x, windowSize.y / 4.0f });
+	titleSprite_->SetSize({ 1000.0f * scale_.x, 1000.0f * scale_.y });
+	titleSprite_->SetAnchorPoint({ 0.5f, 0.5f });
+	titleSprite_->Update();
+
+	// 開始スプライト
+	selectSprite_.start_ = std::make_unique<Sprite>();
+	selectSprite_.start_->Initialize("Start");
+	selectSprite_.start_->SetPosition({ startPos_.x, startPos_.y });
+	selectSprite_.start_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
+	selectSprite_.start_->SetAnchorPoint({ 0.5f, 0.5f });
+	selectSprite_.start_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 未選択は灰色
+	selectSprite_.start_->Update();
+
+	// オプションスプライト
+	selectSprite_.option_ = std::make_unique<Sprite>();
+	selectSprite_.option_->Initialize("Option");
+	selectSprite_.option_->SetPosition({ startPos_.x, startPos_.y + spaceY_ });
+	selectSprite_.option_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
+	selectSprite_.option_->SetAnchorPoint({ 0.5f, 0.5f });
+	selectSprite_.option_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 未選択は灰色
+	selectSprite_.option_->Update();
+
+	// 終了スプライト
+	selectSprite_.exit_ = std::make_unique<Sprite>();
+	selectSprite_.exit_->Initialize("Exit");
+	selectSprite_.exit_->SetPosition({ startPos_.x, startPos_.y + spaceY_ * 2.0f });
+	selectSprite_.exit_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
+	selectSprite_.exit_->SetAnchorPoint({ 0.5f, 0.5f });
+	selectSprite_.exit_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 未選択は灰色
+	selectSprite_.exit_->Update();
+
+	// 選択オーバーレイスプライト
+	selectSprite_.overlay_ = std::make_unique<Sprite>();
+	selectSprite_.overlay_->Initialize("OverLay"); // テクスチャファイルパスは適宜変更
+	selectSprite_.overlay_->SetPosition({ startPos_.x, startPos_.y }); // 初期位置は開始の位置
+	selectSprite_.overlay_->SetSize({ 400.0f * scale_.x, 80.0f * scale_.y }); // メニュー項目より少し大きめ
+	selectSprite_.overlay_->SetAnchorPoint({ 0.5f, 0.5f });
+	selectSprite_.overlay_->SetColor({ 0.8f, 0.8f, 0.8f, 0.8f }); // 半透明の灰色
+	selectSprite_.overlay_->Update();
+
+	/// ===OptionUIの初期化=== ///
+	optionUI_ = std::make_unique<OptionUI>();
+	optionUI_->Initialize();
+
+	/// ===フラグの初期化=== ///
+	isOptionOpen_ = false;
+	isGameStart_ = false;
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void TitleUI::Update() {
+	// デルタタイムの取得
+	float deltaTime = Service::DeltaTime::GetDeltaTime();
+
+	// アニメーションの更新
+	UpdateAnimation(deltaTime);
+
+	// スプライトの位置更新
+	UpdateSlotSprites();
+
+	// オプションの更新
+	if (isOptionOpen_) {
+		optionUI_->TitleUpdate();
+	}
+
+	// 選択状態の更新
+	UpdateSelecting();
+}
+
+///-------------------------------------------/// 
+/// 描画処理
+///-------------------------------------------///
+void TitleUI::Draw() {
+	// スプライトの描画
+	titleSprite_->Draw(MiiEngine::GroundType::Front);
+	selectSprite_.start_->Draw(MiiEngine::GroundType::Front);
+	selectSprite_.option_->Draw(MiiEngine::GroundType::Front);
+	selectSprite_.exit_->Draw(MiiEngine::GroundType::Front);
+	selectSprite_.overlay_->Draw(MiiEngine::GroundType::Front, MiiEngine::BlendMode::kBlendModeAdd);
+
+	// オプションの描画
+	if (isOptionOpen_) {
+		optionUI_->TitleDraw();
+	}
+}
+
+///-------------------------------------------/// 
+/// アニメーションの更新
+///-------------------------------------------///
+void TitleUI::UpdateAnimation(float deltaTime) {
+	if (!slotAnimation_.isAnimating) return;
+
+	slotAnimation_.animationTimer += deltaTime;
+
+	// tをクランプ
+	float t = slotAnimation_.animationTimer / slotAnimation_.animationSpeed;
+	if (t >= 1.0f) {
+		t = 1.0f;
+		slotAnimation_.isAnimating = false; // アニメーション終了
+	}
+
+	float easedT = Easing::EaseOutCubic(t); // 補間
+	for (int i = 0; i < selectionIndex_; i++) {
+		slotAnimation_.posY.itemCurrentY[i] = slotAnimation_.posY.itemStartY[i] +
+			(slotAnimation_.posY.itemTargetY[i] - slotAnimation_.posY.itemStartY[i]) * easedT;
+
+		slotAnimation_.scale.itemCurrentScale[i] = slotAnimation_.scale.itemStartScale[i] +
+			(slotAnimation_.scale.itemTargetScale[i] - slotAnimation_.scale.itemStartScale[i]) * easedT;
+	}
+}
+
+///-------------------------------------------/// 
+/// スプライトの位置更新
+///-------------------------------------------///
+void TitleUI::UpdateSlotSprites() {
+	// スプライトの配列（
+	Sprite* sprites[selectionIndex_] = {
+		selectSprite_.start_.get(),
+		selectSprite_.option_.get(),
+		selectSprite_.exit_.get()
+	};
+
+	for (int slot = 0; slot < selectionIndex_; slot++) {
+		Sprite* sp = sprites[slotIndex_[slot]];
+
+		sp->SetPosition({ startPos_.x, slotAnimation_.posY.itemCurrentY[slot] });
+		sp->SetSize({
+			200.0f * slotAnimation_.scale.itemCurrentScale[slot].x,
+			 50.0f * slotAnimation_.scale.itemCurrentScale[slot].y
+			});
+
+		if (slot == 1) {
+			sp->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+		} else {
+			sp->SetColor({ 0.6f, 0.6f, 0.6f, 0.6f });
+		}
+
+		sp->Update();
+	}
+}
+
+
+
+///-------------------------------------------/// 
+/// 選択状態の更新
+///-------------------------------------------///
+void TitleUI::UpdateSelecting() {
+
+	/// ===オプション画面の処理=== ///
+	if (isOptionOpen_) {
+		UpdateOptionMenu();
+	} else {
+		/// ===メニュー選択の更新=== ///
+		UpdateMenuSelection();
+
+		/// ===決定処理=== ///
+		if (Service::Input::TriggerButton(0, ControllerButtonType::A) || Service::Input::TriggerKey(DIK_SPACE)) {
+			ConfirmSelection();
+		}
+	}
+}
+
+///-------------------------------------------/// 
+/// メニュー選択の更新
+///-------------------------------------------///
+void TitleUI::UpdateMenuSelection() {
+
+	// アニメーション中は入力を受け付けない
+	if (slotAnimation_.isAnimating) return;
+
+	bool moved = false;
+	bool isUp = false; // 上キーが押されたかどうかのフラグ
+
+	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadUP) ||
+		Service::Input::TriggerKey(DIK_W)) {
+		// 上入力 → 上のアイテムが中央へ（右ローテーション）
+		int tmp = slotIndex_[2];
+		slotIndex_[2] = slotIndex_[1];
+		slotIndex_[1] = slotIndex_[0];
+		slotIndex_[0] = tmp;
+		moved = true;
+		isUp = true;
+	}
+
+	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadDOWN) ||
+		Service::Input::TriggerKey(DIK_S)) {
+		// 下入力 → 下のアイテムが中央へ（左ローテーション）
+		int tmp = slotIndex_[0];
+		slotIndex_[0] = slotIndex_[1];
+		slotIndex_[1] = slotIndex_[2];
+		slotIndex_[2] = tmp;
+		moved = true;
+		isUp = false;
+	}
+
+	if (moved) {
+		StartSlotAnimation(isUp);
+
+		// currentSelection_ を中央スロットから同期
+		static const MenuSelection selMap[selectionIndex_] = {
+			MenuSelection::Start, MenuSelection::Option, MenuSelection::Exit
+		};
+		currentSelection_ = selMap[slotIndex_[1]];
+	}
+}
+
+///-------------------------------------------/// 
+/// スロットアニメーションの開始
+///-------------------------------------------///
+void TitleUI::StartSlotAnimation(bool flag) {
+	// 目標Y
+	float targetY[selectionIndex_] = {
+		startPos_.y - spaceY_,
+		startPos_.y,
+		startPos_.y + spaceY_
+	};
+	// 目標スケール
+	Vector2 targetScale[selectionIndex_] = {
+		sideScale_, centerScale_, sideScale_
+	};
+
+	// ★開始Y座標をローテーション方向の逆にずらす★
+   // 上キー(isUp=true)  → アイテムは下から上へ動く → 開始はひとつ下の位置
+   // 下キー(isUp=false) → アイテムは上から下へ動く → 開始はひとつ上の位置
+	float offset = flag ? spaceY_ : -spaceY_;
+
+	for (int i = 0; i < selectionIndex_; i++) {
+		slotAnimation_.posY.itemStartY[i] = targetY[i] + offset; // ずらした位置からスタート
+		slotAnimation_.posY.itemTargetY[i] = targetY[i];
+		slotAnimation_.scale.itemStartScale[i] = sideScale_;          // アニメ前は全部小さく
+		slotAnimation_.scale.itemTargetScale[i] = targetScale[i];
+	}
+
+	// 中央スロットだけ開始スケールを少し大きめにする（見た目が自然になる）
+	slotAnimation_.scale.itemStartScale[1] = sideScale_;
+
+	slotAnimation_.animationTimer = 0.0f;
+	slotAnimation_.isAnimating = true;
+}
+
+///-------------------------------------------/// 
+/// メニュー決定処理
+///-------------------------------------------///
+void TitleUI::ConfirmSelection() {
+	// Selectionに応じた処理
+	switch (currentSelection_) {
+	case MenuSelection::Start:
+		// ゲーム開始処理へ移行
+		isGameStart_ = true;
+		break;
+	case MenuSelection::Option:
+		// オプション画面を開く
+		isOptionOpen_ = true;
+		break;
+	case MenuSelection::Exit:
+		// ゲーム終了
+		PostQuitMessage(0);
+		break;
+	}
+}
+
+///-------------------------------------------/// 
+/// オプション画面の更新
+///-------------------------------------------///
+void TitleUI::UpdateOptionMenu() {
+	// Bボタンでオプション画面を閉じる
+	if (Service::Input::TriggerButton(0, ControllerButtonType::B) || Service::Input::TriggerKey(DIK_SPACE)) {
+		isOptionOpen_ = false;
+	}
+}
+
+============================================================
+File Path: Project/application/Scene/Title/UI/TitleUI.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// Sprite
+#include "application/Drawing/2d/Sprite.h"
+#include "application/Game/UI/Option/OptionUI.h"
+// C++
+#include <memory>
+
+///=====================================================/// 
+/// タイトルシーンのUIクラス
+///=====================================================///
+class TitleUI {
+public:
+	TitleUI() = default;
+	~TitleUI();
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	void Initialize();
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update();
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	void Draw();
+
+private: /// ===メンバ変数=== ///
+
+	// オプションUI
+	std::unique_ptr<OptionUI> optionUI_;
+
+	/// ===スプライト=== ///
+	std::unique_ptr<Sprite> titleSprite_;      // タイトル
+
+	/// ===セレクトスプライト=== ///
+	struct SelectSprite {
+		std::unique_ptr<Sprite> start_;      // 開始
+		std::unique_ptr<Sprite> option_;     // オプション
+		std::unique_ptr<Sprite> exit_;       // 終了
+		std::unique_ptr<Sprite> overlay_;    // 選択中のオーバーレイ
+	};
+	SelectSprite selectSprite_;
+
+	/// ===基準値=== ///
+	Vector2 startPos_{}; // メニュー開始Y座標
+	float spaceY_ = 0.0f; // メニュー項目間のスペース
+	Vector2 centerScale_ = { 1.0f, 1.0f }; // 中央のスケール
+	Vector2 sideScale_ = { 0.6f, 0.6f };   // 側面のスケール
+
+	/// ===メニュー選択=== ///
+	enum class MenuSelection {
+		Start,    // 開始
+		Option,   // オプション
+		Exit,     // 終了
+		Count	  // メニュー項目の数
+	};
+	static constexpr size_t selectionIndex_ = static_cast<size_t>(MenuSelection::Count); // メニュー項目数
+	MenuSelection currentSelection_ = MenuSelection::Start; // 現在の選択
+
+	/// ===フラグ=== ///
+	bool isOptionOpen_ = false;      // オプション画面が開いているか
+	bool isGameStart_ = false;      // ゲーム開始フラグ
+
+	/// ===アニメーションのY座標=== ///
+	struct AnimationPosY {
+		float itemStartY[selectionIndex_] = {};	// メニュー項目の開始Y座標
+		float itemTargetY[selectionIndex_] = {};	// メニュー項目の目標Y座標
+		float itemCurrentY[selectionIndex_] = {};	// メニュー項目の現在Y座標
+	};
+
+	/// ===アニメーションのスケール=== ///
+	struct AnimationScale {
+		Vector2 itemStartScale[selectionIndex_] = {};   // メニュー項目の開始スケール
+		Vector2 itemTargetScale[selectionIndex_] = {};  // メニュー項目の目標スケール
+		Vector2 itemCurrentScale[selectionIndex_] = {}; // メニュー項目の現在スケール
+	};
+
+	/// ===アニメーション用=== ///
+	struct SlotAnimation {
+		float animationTimer = 0.0f;	// アニメーションタイマー
+		float animationSpeed = 0.5f;	// アニメーション速度
+		bool isAnimating = false;		// アニメーション中かどうか
+		AnimationPosY posY;				// Y座標のアニメーションデータ
+		AnimationScale scale;			// スケールのアニメーションデータ
+	};
+	SlotAnimation slotAnimation_;
+
+	// スロットの各スロットが表すメニュー項目のインデックス
+	int slotIndex_[selectionIndex_] = { 2, 0, 1 }; 
+
+public: /// ===Getter=== ///
+	/// <summary>
+	/// 選択スプライトを取得します。
+	/// </summary>
+	/// <returns>選択スプライトへの参照。</returns>
+	SelectSprite& GetSelectSprite() { return selectSprite_; }
+
+	/// <summary>
+	/// ゲームが開始されているかどうかを取得します。
+	/// </summary>
+	/// <returns>ゲームが開始されている場合は true、それ以外の場合は false。</returns>
+	bool IsGameStart() const { return isGameStart_; }
+
+private:
+
+	/// <summary>
+	/// アニーメーションを更新
+	/// </summary>
+	/// <param name="deltaTime">デルタタイム</param>
+	void UpdateAnimation(float deltaTime);
+
+	/// <summary>
+	/// スプライトの位置更新
+	/// </summary>
+	void UpdateSlotSprites();
+
+	/// <summary>
+	/// 選択状態を更新します。
+	/// </summary>
+	void UpdateSelecting();
+
+	/// <summary>
+	/// メニューの選択状態の更新処理
+	/// </summary>
+	void UpdateMenuSelection();
+
+	/// <summary>
+	/// アニメーションの開始
+	/// </summary>
+	void StartSlotAnimation(bool flag);
+
+	/// <summary>
+	/// メニューの選択決定処理
+	/// </summary>
+	void ConfirmSelection();
+
+	/// <summary>
+	/// オプション画面の更新処理
+	/// </summary>
+	void UpdateOptionMenu();
+};
+
+
 
 ============================================================
 File Path: Project/main.cpp
