@@ -63,7 +63,7 @@ namespace MiiEngine {
 			bool isPlaying = false;
 			bool isFinished = false;
 			float currentTime = 0.0f;
-			float duration = 1.2f;  // エフェクトの総時間
+			float duration = 0.8f;  // エフェクトの総時間
 		};
 		TransitionData animation_;
 
