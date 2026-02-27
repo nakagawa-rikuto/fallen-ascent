@@ -63,8 +63,8 @@ void TitleSceneAnimation::UpdateCameraAnimation(const Vector3& translate) {
 ///-------------------------------------------///
 void TitleSceneAnimation::UpdateRadiusBlurAnimation() {
 	// サンプリングを50ぐらいまで増やす
-	if (radiusBlurData_.numSamples < 50) {
-		radiusBlurData_.numSamples += 1; // サンプリング数を増やす
+	if (radiusBlurData_.numSamples < 80) {
+		radiusBlurData_.numSamples += 4; // サンプリング数を増やす
 		Service::PostEffect::SetRadiusBlurData(radiusBlurData_); // データをシェーダーに送る
 	}
 }

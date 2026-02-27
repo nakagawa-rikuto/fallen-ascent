@@ -131,6 +131,8 @@ namespace MiiEngine {
 		Loader::LoadTexture("skyBox", "DDS/rostock_laage_airport_4k.dds");
 
 		/// ===Game=== ///
+		// SceneTransition
+		Loader::LoadTexture("ShatterGlass", "Animation/SceneTransitionSpirte.png");
 		// TitleUI
 		Loader::LoadTexture("TitleBG", "TitleUI/SkyBG.png");
 		Loader::LoadTexture("TitleBGKiri", "TitleUI/BGsecond.png");
