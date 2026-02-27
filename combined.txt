@@ -17788,6 +17788,8 @@ namespace MiiEngine {
 		Loader::LoadTexture("skyBox", "DDS/rostock_laage_airport_4k.dds");
 
 		/// ===Game=== ///
+		// SceneTransition
+		Loader::LoadTexture("ShatterGlass", "Animation/SceneTransitionSpirte.png");
 		// TitleUI
 		Loader::LoadTexture("TitleBG", "TitleUI/SkyBG.png");
 		Loader::LoadTexture("TitleBGKiri", "TitleUI/BGsecond.png");
@@ -18166,7 +18168,7 @@ namespace MiiEngine {
 			bool isPlaying = false;
 			bool isFinished = false;
 			float currentTime = 0.0f;
-			float duration = 1.2f;  // エフェクトの総時間
+			float duration = 0.8f;  // エフェクトの総時間
 		};
 		TransitionData animation_;
 
@@ -18446,9 +18448,11 @@ namespace MiiEngine {
 	void ShatterGlassTransition::StartFadeOut(float duration) {
 		// Sprite
 		sprite_ = std::make_unique<Sprite>();
-		sprite_->Initialize("White");
-		sprite_->SetSize({ static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()), static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight()) });
-		sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 透明で初期化
+		sprite_->Initialize("ShatterGlass");
+		sprite_->SetAnchorPoint({ 0.5f, 0.5f });
+		sprite_->SetPosition({static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()) / 2.0f, static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight()) / 2.0f});
+		sprite_->SetSize({0.0f, 0.0f});
+		sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f }); // 透明で初期化
 		sprite_->Update();
 
 		// フェードイン開始
@@ -18506,18 +18510,28 @@ namespace MiiEngine {
 	/// フェードアウト固有の更新処理
 	///-------------------------------------------///
 	void ShatterGlassTransition::OnFadeOutUpdate() {
-		// スプライトの色（アルファ値のみ更新）
-		Vector4 color = sprite_->GetColor();
-		color.w += 0.01f; // アルファ値を更新
-
-		// 透明度が1.0に到達したら終了
-		if (color.w >= 1.0f) {
+		// 進行度を計算（0.0 ~ 1.0）
+		float normalizedTime = (std::min)(animation_.currentTime / animation_.duration, 1.0f);
+		
+		// イージング適用（最初は速く、後でゆっくり）
+		float easedTime = Easing::EaseOutCirc(normalizedTime);
+		
+		// 目標サイズを計算（画面全体を覆うサイズ）
+		float targetSize = Service::GraphicsResourceGetter::GetWindowWidth() * 1.5f;
+		
+		// イージングを適用したサイズを設定
+		Vector2 spriteSize;
+		spriteSize.x = easedTime * targetSize;
+		spriteSize.y = easedTime * targetSize;
+		
+		sprite_->SetSize(spriteSize);
+		sprite_->Update();
+		
+		// アニメーション終了判定
+		if (normalizedTime >= 1.0f) {
 			animation_.isPlaying = false;
 			animation_.isFinished = true;
 		}
-
-		sprite_->SetColor(color);
-		sprite_->Update();
 	}
 }
 
@@ -45055,8 +45069,8 @@ void TitleSceneAnimation::UpdateCameraAnimation(const Vector3& translate) {
 ///-------------------------------------------///
 void TitleSceneAnimation::UpdateRadiusBlurAnimation() {
 	// サンプリングを50ぐらいまで増やす
-	if (radiusBlurData_.numSamples < 50) {
-		radiusBlurData_.numSamples += 1; // サンプリング数を増やす
+	if (radiusBlurData_.numSamples < 80) {
+		radiusBlurData_.numSamples += 4; // サンプリング数を増やす
 		Service::PostEffect::SetRadiusBlurData(radiusBlurData_); // データをシェーダーに送る
 	}
 }
