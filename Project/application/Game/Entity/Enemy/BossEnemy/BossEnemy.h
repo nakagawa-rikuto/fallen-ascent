@@ -82,6 +82,10 @@ private:
 	std::unique_ptr<BossMoveComponent> moveComponent_;		// 移動コンポーネント
 	std::unique_ptr<BossAttackComponent> attackComponent_;	// 攻撃コンポーネント
 
+	/// ===Particle=== ///
+	MiiEngine::ParticleGroup* hitParticle_ = nullptr;
+	MiiEngine::ParticleGroup* deathParticle_ = nullptr;
+
 private:
 
 	/// <summary>

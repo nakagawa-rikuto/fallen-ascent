@@ -37,9 +37,6 @@ void CloseRangeEnemy::InitGameScene(const Vector3& translate) {
 
 	/// ===ChargeInfo=== ///
 	chargeInfo_.moveSpeed = 0.9f;
-
-	/// ===更新処理を一回だけ=== ///
-	UpdateAnimation();
 }
 
 ///-------------------------------------------/// 

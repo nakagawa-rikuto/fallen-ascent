@@ -230,6 +230,15 @@ namespace MiiEngine {
         commandList->SetGraphicsRootConstantBufferView(4, oceanColorBuffer_->GetBuffer()->GetGPUVirtualAddress());
 
         commandList->DrawIndexedInstanced(indexCount_, 1, 0, 0, 0);
+
+        // 描画後、次のフレームのために VERTEX_AND_CONSTANT_BUFFER -> COMMON へ戻す
+        D3D12_RESOURCE_BARRIER barrierToCommon = {};
+        barrierToCommon.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barrierToCommon.Transition.pResource = vertex_->GetBuffer();
+        barrierToCommon.Transition.StateBefore = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+        barrierToCommon.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
+        barrierToCommon.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        commandList->ResourceBarrier(1, &barrierToCommon);
     }
 
     ///-------------------------------------------/// 

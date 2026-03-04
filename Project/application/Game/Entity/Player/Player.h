@@ -26,6 +26,12 @@ public:
 	~Player();
 
 	/// <summary>
+	/// ゲームの初期化処理
+	/// </summary>
+	/// <param name="translate">初期位置を表すベクトル。</param>
+	void InitGame(const Vector3& translate);
+
+	/// <summary>
 	/// 初期化処理
 	/// </summary>
 	void Initialize()override;
@@ -132,6 +138,11 @@ private: /// ===変数の宣言=== ///
 	ControllerStickState stickState_;
 
 private:
+
+	/// <summary>
+	/// パラメータの設定
+	/// </summary>
+	void SettingParamita();
 
 	/// <summary>
 	/// タイマーを進める関数

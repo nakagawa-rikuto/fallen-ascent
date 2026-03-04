@@ -93,9 +93,6 @@ private: /// ===地面との衝突処理=== ///
     };
 	GroundInfo groundInfo_;
 
-    // キャラクターの半サイズY軸
-    Vector3 characterHalfSize_{};
-
     /// <summary>
     /// 指定した中心位置と半サイズを持つオブジェクトの地面との衝突を検出して処理します。
     /// </summary>

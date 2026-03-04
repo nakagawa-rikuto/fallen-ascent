@@ -29,14 +29,6 @@ MobEnemy::~MobEnemy() {
 }
 
 ///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-void MobEnemy::SetInvincibleTime() {
-	invincibleInfo_.timer = invincibleInfo_.time;
-	invincibleInfo_.isInvincible = true;
-}
-
-///-------------------------------------------/// 
 /// ゲームシーンの初期化
 ///-------------------------------------------///
 void MobEnemy::InitGameScene(const Vector3& translate) {

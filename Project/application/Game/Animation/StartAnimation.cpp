@@ -34,7 +34,7 @@ void StartAnimation::Initialize(Player* player, GameCamera* camera) {
 	kDeltaTime_ = Service::DeltaTime::GetDeltaTime();
 	// 落下アニメーション情報
 	fallInfo_.playerStartPos = { 0.0f, 50.0f, 0.0f };
-	fallInfo_.playerEndPos = { 0.0f, 1.0f, 0.0f };
+	fallInfo_.playerEndPos = {player_->GetTransform().translate};
 	fallInfo_.FallingDuration = 1.5f;
 	// カメラ回転アニメーション情報
 	cameraRotInfo_.cameraStartPos = camera_->GetTranslate();

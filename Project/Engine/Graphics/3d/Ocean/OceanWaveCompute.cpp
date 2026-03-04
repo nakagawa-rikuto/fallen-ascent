@@ -3,6 +3,7 @@
 #include <cassert>
 // Service
 #include "Service/Locator.h"
+#include "Service/Render.h"
 // SRVManager
 #include "Engine/System/Managers/SRVManager.h"
 // Math
@@ -129,13 +130,13 @@ namespace MiiEngine {
         commandList->ResourceBarrier(1, &uavBarrier);
 
         // UNORDERED_ACCESS -> COMMON への遷移バリア（次回の使用のため）
-        D3D12_RESOURCE_BARRIER barrierToCommon = {};
+     /*   D3D12_RESOURCE_BARRIER barrierToCommon = {};
         barrierToCommon.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
         barrierToCommon.Transition.pResource = outputBuffer_.Get();
         barrierToCommon.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
         barrierToCommon.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
         barrierToCommon.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-        commandList->ResourceBarrier(1, &barrierToCommon);
+        commandList->ResourceBarrier(1, &barrierToCommon);*/
     }
 
     ///-------------------------------------------/// 
@@ -161,11 +162,32 @@ namespace MiiEngine {
     /// 計算結果を頂点バッファにコピー
     ///-------------------------------------------///
     void OceanWaveCompute::CopyResultsToVertexBuffer(ID3D12GraphicsCommandList* commandList, ID3D12Resource* vertexBuffer) {
-        // UAVバッファのみ COMMON -> COPY_SOURCE へ遷移
+        //// UAVバッファのみ COMMON -> COPY_SOURCE へ遷移
+        //D3D12_RESOURCE_BARRIER barrierToCopySource = {};
+        //barrierToCopySource.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        //barrierToCopySource.Transition.pResource = outputBuffer_.Get();
+        //barrierToCopySource.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
+        //barrierToCopySource.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+        //barrierToCopySource.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        //commandList->ResourceBarrier(1, &barrierToCopySource);
+
+        //// コピー実行
+        //commandList->CopyResource(vertexBuffer, outputBuffer_.Get());
+
+        //// UAVバッファを COPY_SOURCE -> COMMON へ戻す
+        //D3D12_RESOURCE_BARRIER barrierToCommon = {};
+        //barrierToCommon.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        //barrierToCommon.Transition.pResource = outputBuffer_.Get();
+        //barrierToCommon.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
+        //barrierToCommon.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
+        //barrierToCommon.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        //commandList->ResourceBarrier(1, &barrierToCommon);
+
+        // UNORDERED_ACCESS -> COPY_SOURCE へ遷移
         D3D12_RESOURCE_BARRIER barrierToCopySource = {};
         barrierToCopySource.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
         barrierToCopySource.Transition.pResource = outputBuffer_.Get();
-        barrierToCopySource.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
+        barrierToCopySource.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
         barrierToCopySource.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
         barrierToCopySource.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
         commandList->ResourceBarrier(1, &barrierToCopySource);
@@ -173,7 +195,7 @@ namespace MiiEngine {
         // コピー実行
         commandList->CopyResource(vertexBuffer, outputBuffer_.Get());
 
-        // UAVバッファを COPY_SOURCE -> COMMON へ戻す
+        // COPY_SOURCE -> COMMON へ戻す
         D3D12_RESOURCE_BARRIER barrierToCommon = {};
         barrierToCommon.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
         barrierToCommon.Transition.pResource = outputBuffer_.Get();

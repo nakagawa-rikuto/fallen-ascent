@@ -16,12 +16,25 @@ void GameStage::Initialize(const std::string& levelData) {
 
 	// ステージデータを読み込む
 	LoadStageData(levelData);
+
+	// Oceanの初期化
+	std::shared_ptr<GroundOcean> ocean = std::make_shared<GroundOcean>();
+	ocean->Initialize();
+	ocean->Update();
+	Oceans_.emplace_back(ocean);
 }
 
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
 void GameStage::Update() {
+
+	// GroundOceanの更新
+	for (const auto& ocean : Oceans_) {
+		if (ocean) {
+			ocean->Update();
+		}
+	}
 
 	// Groundの更新
 	for (const auto& ground : grounds_) {
@@ -52,6 +65,13 @@ void GameStage::Update() {
 /// 描画
 ///-------------------------------------------///
 void GameStage::Draw(MiiEngine::BlendMode mode) {
+
+	// GroundOceanの更新
+	for (const auto& ocean : Oceans_) {
+		if (ocean) {
+			ocean->Draw();
+		}
+	}
 
 	// GroundOceanの更新
 	for (const auto& ground : grounds_) {

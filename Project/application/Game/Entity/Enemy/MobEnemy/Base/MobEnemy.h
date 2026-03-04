@@ -30,13 +30,6 @@ private: /// ===型定義=== ///
 		bool isAttack;		// 攻撃フラグ
 	};
 
-	/// ===無敵時間情報=== ///
-	struct InvincibleInfo {
-		float time = 0.5f;			// 無敵時間
-		float timer = 0.0f;			// 無敵タイマー
-		bool isInvincible = false;	// 無敵フラグ
-	};
-
 public:
 
 	MobEnemy() = default;
@@ -116,16 +109,11 @@ public: /// ===Setter=== ///
 	// AttackDirection
 	void SetAttackDirection(const Vector3& dir) { attackInfo_.direction = dir; };
 	void SetTargetPos(const Vector3& pos) { attackInfo_.targetPos = pos; };
-	// 無敵時間の設定
-	void SetInvincibleTime();
 
 protected: /// ===変数の宣言=== ///
 
 	// 攻撃情報
 	AttackInfo attackInfo_;
-
-	// 無敵時間情報
-	InvincibleInfo invincibleInfo_;
 
 	// 衝突フラグ
 	bool isCollision_ = false;
@@ -138,7 +126,7 @@ private:
 	std::unique_ptr<EnemyMoveComponent> moveComponent_;
 	std::unique_ptr<EnemyHitReactionComponent> hitReactionComponent_;
 
-	// Particle
+	/// ===Particle=== ///
 	MiiEngine::ParticleGroup* hitParticle_ = nullptr;
 	MiiEngine::ParticleGroup* deathParticle_ = nullptr;
 
