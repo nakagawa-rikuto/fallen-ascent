@@ -85,6 +85,9 @@
     <FxCompile Include="Resource\Shaders\3D\Ocean.VS.hlsl">
       <Filter>Resource\Shaders\3D</Filter>
     </FxCompile>
+    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.CS.hlsl" />
+    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.VS.hlsl" />
+    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
