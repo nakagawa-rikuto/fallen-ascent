@@ -81,6 +81,8 @@ public: /// ===Setter=== ///
 	void SetIsRotationComplete(bool flag) { isRotationComplete_ = flag; };
 	// isTentativeDeath
 	void SetIsTentativeDeath(bool flag) { isTentativeDeath_ = flag; };
+	// 無敵時間の設定
+	void SetInvincibleTime();
 
 protected: /// ===変数の宣言=== ///
 
@@ -88,6 +90,15 @@ protected: /// ===変数の宣言=== ///
 	Player* player_ = nullptr; // Player
 
 	bool isTentativeDeath_ = false; // 仮死亡フラグ
+
+	/// ===無敵時間情報=== ///
+	struct InvincibleInfo {
+		float time = 0.5f;			// 無敵時間
+		float timer = 0.0f;			// 無敵タイマー
+		bool isInvincible = false;	// 無敵フラグ
+	};
+	InvincibleInfo invincibleInfo_; // 無敵時間情報
+
 private:
 	
 	// 回転完了フラグ

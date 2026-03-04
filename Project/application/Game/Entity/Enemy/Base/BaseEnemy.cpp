@@ -10,13 +10,20 @@
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
 
-
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
 BaseEnemy::~BaseEnemy() {
 	Service::Collision::RemoveCollider(this);
 	object3d_.reset();
+}
+
+///-------------------------------------------/// 
+/// Setter
+///-------------------------------------------///
+void BaseEnemy::SetInvincibleTime() {
+	invincibleInfo_.timer = invincibleInfo_.time;
+	invincibleInfo_.isInvincible = true;
 }
 
 ///-------------------------------------------/// 

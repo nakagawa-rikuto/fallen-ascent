@@ -26,7 +26,6 @@ namespace Service {
 	///-------------------------------------------///
 	// LightTYpe
 	void Collision::SetLight(LightType lightType) { Locator::GetColliderManager()->SetLight(lightType); }
-
 	// LightData
 	void Collision::SetLightData(LightInfo light) { Locator::GetColliderManager()->SetLightData(light); }
 }

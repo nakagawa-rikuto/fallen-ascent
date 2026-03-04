@@ -175,6 +175,7 @@ namespace MiiEngine {
 		Loader::LoadModel("PlayerWeapon", "Entity/Player/PlayerWeapon/PlayerWeapon.gltf");	// プレイヤー武器
 		Loader::LoadModel("LongEnemy", "Entity/Enemy/LongEnemy/LongEnemy.gltf");			// 遠距離敵
 		Loader::LoadModel("CloseEnemy", "Entity/Enemy/CloseEnemy/CloseEnemy.gltf");			// 近距離敵
+		Loader::LoadModel("Boss", "Entity/Enemy/Boss/BossEnemy.gltf");						// ボス
 
 		/// ===Object=== ///
 		Loader::LoadModel("Ground", "Object/Ground/Ground.gltf");						// 地面
@@ -203,4 +204,4 @@ namespace MiiEngine {
 		Loader::LoadLevelJson("Level/StageData2.json");
 		Loader::LoadLevelJson("Level/EntityData2.json");
 	}
-}
+} 

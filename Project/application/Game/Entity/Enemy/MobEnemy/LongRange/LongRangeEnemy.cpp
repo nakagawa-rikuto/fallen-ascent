@@ -33,9 +33,6 @@ void LongRangeEnemy::InitGameScene(const Vector3& translate) {
 	attackInfo_.power = 1;
 	attackInfo_.direction = { 0.0f, 0.0f, 0.0f };
 	attackInfo_.isAttack = false;
-
-	/// ===更新処理を一回だけ=== ///
-	UpdateAnimation();
 }
 
 ///-------------------------------------------/// 

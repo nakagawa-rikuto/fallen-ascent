@@ -1,6 +1,7 @@
 #include "EnemyManager.h"
 #include "application/Game/Entity/Enemy/MobEnemy/CloseRange/CloseRangeEnemy.h"
 #include "application/Game/Entity/Enemy/MobEnemy/LongRange/LongRangeEnemy.h"
+#include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
 // c++
 #include <algorithm> 
 // ImGui
@@ -27,9 +28,6 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 	switch (type) {
 	case EnemyType::CloseRange: {
 		auto e = std::make_unique<CloseRangeEnemy>();
-		if (player_) { // 初フレームから Update が進むようにプレイヤー注入
-			e->SetPlayer(player_);
-		}
 		// 初期化
 		e->InitGameScene(pos);		// 出現位置を渡してゲームシーン用初期化
 		e->SetRotate(rot);			// 回転を設定
@@ -38,9 +36,14 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 	}
 	case EnemyType::LongRange: {
 		auto e = std::make_unique<LongRangeEnemy>();
-		if (player_) {
-			e->SetPlayer(player_);
-		}
+		// 初期化
+		e->InitGameScene(pos);
+		e->SetRotate(rot); 
+		enemy = std::move(e);
+		break;
+	}
+	case EnemyType::Boss: {
+		auto e = std::make_unique<BossEnemy>();
 		// 初期化
 		e->InitGameScene(pos);
 		e->SetRotate(rot); 
@@ -109,11 +112,13 @@ void EnemyManager::UpdateImGui() {
 		// ===== 統計情報 ===== //
 		int closeCount = GetEnemyCount(EnemyType::CloseRange);
 		int longCount = GetEnemyCount(EnemyType::LongRange);
+		int bossCount = GetEnemyCount(EnemyType::Boss);
 		int totalCount = GetTotalEnemyCount();
 
 		ImGui::Text("Enemy Statistics:");
 		ImGui::Text("  CloseRange: %d", closeCount);
 		ImGui::Text("  LongRange : %d", longCount);
+		ImGui::Text("  Boss      : %d", bossCount);
 		ImGui::Text("  Total     : %d", totalCount);
 		ImGui::Separator();
 

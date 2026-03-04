@@ -10,7 +10,8 @@ class Player;
 /// ===enum=== ///
 enum class EnemyType {
     CloseRange,
-    LongRange
+    LongRange,
+    Boss,
 };
 
 ///=====================================================/// 

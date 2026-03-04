@@ -124,15 +124,11 @@ void GameCharacter<TCollider>::OnCollision(Collider* collider) {
 	/// ===Colliderとの衝突処理=== ///
 	if (collider->GetColliderName() == ColliderName::Ground) {
 
-		// isGroundがfalseの場合のみ処理を実行
-		if (!groundInfo_.isGrounded) {
-			
-			// 地面に接地
-			groundInfo_.isGrounded = true;
+		// 地面に接地
+		groundInfo_.isGrounded = true;
 
-			// 地面に衝突した際の処理
-			GroundOnCollision(collider);
-		}
+		// 地面に衝突した際の処理
+		GroundOnCollision(collider);
 
 	} else if (collider->GetColliderName() == ColliderName::Object) {
 		// Objectとの衝突処理
@@ -169,9 +165,6 @@ void GameCharacter<TCollider>::GroundCollision() {
 
 	/// ===地面より下に行かないようにする=== ///
 	if (this->transform_.translate.y < groundInfo_.currentGroundYPos) {
-
-		// はみ出し分を計算
-		//float overlap = groundInfo_.currentGroundYPos - this->transform_.translate.y;
 
 		// はみ出し分を押し戻す
 		this->transform_.translate.y = groundInfo_.currentGroundYPos;
@@ -241,13 +234,14 @@ void GameCharacter<TCollider>::GroundOnCollision(Collider* collider) {
 	}
 
 	/// ===GameCharacterの情報を取得=== ///
+	float characterHalfSizeY = 0.0f;
 	if (this->GetColliderType() == ColliderType::OBB) {
 		OBB obb = dynamic_cast<OBBCollider*>(this)->GetOBB();
-		characterHalfSize_ = obb.halfSize;
+		characterHalfSizeY = obb.halfSize.y;
 		
 	} else if (this->GetColliderType() == ColliderType::Sphere) {
 		Sphere sphere = dynamic_cast<SphereCollider*>(this)->GetSphere();
-		characterHalfSize_ = { sphere.radius, sphere.radius, sphere.radius };
+		characterHalfSizeY = sphere.radius;
 	}
 
 	/// ===地面のY座標を計算（地面タイプに応じて）=== ///
@@ -262,5 +256,5 @@ void GameCharacter<TCollider>::GroundOnCollision(Collider* collider) {
 	}
 
 	/// ===押し戻し後のY座標を計算=== ///
-	groundInfo_.currentGroundYPos = groundTopY + characterHalfSize_.y;
+	groundInfo_.currentGroundYPos = groundTopY + characterHalfSizeY;
 }

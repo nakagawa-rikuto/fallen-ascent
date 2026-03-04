@@ -41,14 +41,14 @@ void TitleScene::Initialize() {
 	Service::Camera::AddCamera("Title", camera_);
 	Service::Camera::SetActiveCamera("Title");
 
+	/// ===Stage=== ///	
+	stage_ = std::make_unique<GameStage>();
+	stage_->Initialize("Level/StageData2.json");
+
 	/// ===Playerの生成=== ///
 	player_ = std::make_unique<Player>();
 	SpawnPlayer("Level/EntityData2.json");
 	player_->SetCameraTargetPlayer();
-
-	/// ===Stage=== ///	
-	stage_ = std::make_unique<GameStage>();
-	stage_->Initialize("Level/StageData2.json");
 
 	/// ===TitleUI=== ///
 	titleUI_ = std::make_unique<TitleUI>();
@@ -71,11 +71,14 @@ void TitleScene::Update() {
 #ifdef USE_IMGUI
 	ImGui::Begin("TitleScene");
 	ImGui::Text("Fade State: %d", static_cast<int>(currentFade_));
-
-	camera_->ImGuiUpdate();
-	//camera_->DebugUpdate();
-
 	ImGui::End();
+
+	// Cameraの情報表示
+	camera_->ImGuiUpdate();
+
+	// Playerの情報表示
+	player_->Information();
+
 #endif // USE_IMGUI
 
 	/// ===Player=== ///
@@ -171,8 +174,7 @@ void TitleScene::SpawnPlayer(const std::string& json_name) {
 		switch (obj.classType) {
 		case LevelData::ClassTypeLevel::Player:
 			// 初期化と座標設定
-			player_->Initialize();
-			player_->SetTranslate(obj.translation);
+			player_->InitGame(obj.translation);
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
 			break;
 		}

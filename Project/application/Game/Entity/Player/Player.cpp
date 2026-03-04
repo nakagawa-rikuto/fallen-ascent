@@ -36,6 +36,23 @@ void Player::SetInvincibleTime(const float& time) {
 }
 
 ///-------------------------------------------/// 
+/// Game開始時の初期化
+///-------------------------------------------///
+void Player::InitGame(const Vector3& translate) {
+	/// ===初期化=== ///
+	Initialize();
+
+	/// ===位置の設定=== ///
+	transform_.translate = translate;
+
+	/// ===パラメータの設定=== ///
+	SettingParamita();
+
+	/// ===初期Stateの設定=== ///
+	ChangState(std::make_unique<RootState>());
+}
+
+///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
 void Player::Initialize() {
@@ -53,60 +70,6 @@ void Player::Initialize() {
 	Service::Collision::AddCollider(this);
 	// OBBの設定
 	SetHalfSize({ 2.0f, 2.0f, 2.5f });
-
-	/// ===Handの初期化=== ///
-	// 右手
-	rightHand_ = std::make_unique<PlayerHand>();
-	rightHand_->Initialize();
-	rightHand_->SetUpParent(this);
-	// 左手
-	leftHand_ = std::make_unique<PlayerHand>();
-	leftHand_->Initialize();
-	leftHand_->SetUpParent(this);
-
-	/// ===Weaponの初期化=== ///
-	weapon_ = std::make_unique<PlayerWeapon>();
-	weapon_->Initialize();
-	weapon_->SetUpParent(this);
-
-	/// ===Component=== ///
-	// Componentの生成
-	moveComponent_ = std::make_unique<PlayerMoveComponent>();
-	avoidanceComponent_ = std::make_unique<PlayerAvoidanceComponent>();
-	attackComponent_ = std::make_unique<PlayerAttackComponent>();
-
-	// MoveComponentの初期化
-	PlayerMoveComponent::MoveConfig moveConfig{
-		.speed = 0.4f,
-		.rotationSpeed = 10.0f,
-		.deceleration = 0.85f
-	};
-	moveComponent_->Initialize(moveConfig);
-
-	// AvoidanceComponentの初期化
-	PlayerAvoidanceComponent::AvoidanceConfig avoidanceConfig{
-		.speed = 15.0f,
-		.activeTime = 0.3f,
-		.coolTime = 1.0f,
-		.invincibleTime = 0.01f
-	};
-	avoidanceComponent_->Initialize(avoidanceConfig);
-
-	// AttackComponentの初期化
-	attackComponent_->Initialize();
-
-	// 無敵情報の設定
-	SetInvincibleTime(1.0f);
-	invincibleInfo_.isFlag = true;
-
-	// HPの設定
-	baseInfo_.HP = 5;
-
-	// 初期設定
-	ChangState(std::make_unique<RootState>());
-
-	// Updateを一回行う
-	UpdateAnimation();
 }
 
 
@@ -240,6 +203,58 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 			SetInvincibleTime(0.5f);
 		}
 	}
+}
+
+///-------------------------------------------/// 
+/// Paramitaの設定
+///-------------------------------------------///
+void Player::SettingParamita() {
+	/// ===Handの初期化=== ///
+	// 右手
+	rightHand_ = std::make_unique<PlayerHand>();
+	rightHand_->Initialize();
+	rightHand_->SetUpParent(this);
+	// 左手
+	leftHand_ = std::make_unique<PlayerHand>();
+	leftHand_->Initialize();
+	leftHand_->SetUpParent(this);
+
+	/// ===Weaponの初期化=== ///
+	weapon_ = std::make_unique<PlayerWeapon>();
+	weapon_->Initialize();
+	weapon_->SetUpParent(this);
+
+	/// ===Component=== ///
+	// Componentの生成
+	moveComponent_ = std::make_unique<PlayerMoveComponent>();
+	avoidanceComponent_ = std::make_unique<PlayerAvoidanceComponent>();
+	attackComponent_ = std::make_unique<PlayerAttackComponent>();
+
+	// MoveComponentの初期化
+	PlayerMoveComponent::MoveConfig moveConfig{
+		.speed = 0.4f,
+		.rotationSpeed = 10.0f,
+		.deceleration = 0.85f
+	};
+	moveComponent_->Initialize(moveConfig);
+
+	// AvoidanceComponentの初期化
+	PlayerAvoidanceComponent::AvoidanceConfig avoidanceConfig{
+		.speed = 15.0f,
+		.activeTime = 0.3f,
+		.coolTime = 1.0f,
+		.invincibleTime = 0.01f
+	};
+	avoidanceComponent_->Initialize(avoidanceConfig);
+
+	// AttackComponentの初期化
+	attackComponent_->Initialize();
+
+	// 無敵情報の設定
+	invincibleInfo_.isFlag = true; // このフラグをtrueにすると落ちない、falseにするとゲーム開始時から落ちる。
+
+	// HPの設定
+	baseInfo_.HP = 5;
 }
 
 ///-------------------------------------------/// 

@@ -64,6 +64,10 @@ void GameScene::Initialize() {
 	Service::Camera::AddCamera("Game", camera_);
 	Service::Camera::SetActiveCamera("Game");
 
+	/// ===GameStage=== ///
+	stage_ = std::make_unique<GameStage>();
+	stage_->Initialize("Level/StageData2.json");
+
 	/// ===Playerの生成=== ///
 	player_ = std::make_unique<Player>();
 
@@ -74,10 +78,6 @@ void GameScene::Initialize() {
 	SpawnEntity("Level/EntityData2.json");
 	// EnemyにPlayerを設定
 	enemyManager_->SetPlayer(player_.get());
-
-	/// ===GameStage=== ///
-	stage_ = std::make_unique<GameStage>();
-	stage_->Initialize("Level/StageData2.json");
 
 	/// ===State=== ///
 	// 初期状態をInitializeStateに設定
@@ -190,9 +190,9 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 		switch (obj.classType) {
 		case LevelData::ClassTypeLevel::Player:
 			// 初期化と座標設定
-			player_->Initialize();
-			player_->SetTranslate(obj.translation);
+			player_->InitGame(obj.translation);
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
+
 			break;
 		case LevelData::ClassTypeLevel::Enemy:
 			if (obj.fileName == "Close") {
@@ -202,6 +202,10 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 			} else if (obj.fileName == "Long") {
 				// Enemyの座標設定
 				enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
+				break;
+			} else if (obj.fileName == "Boss") {
+				// BossEnemyの座標設定
+				enemyManager_->Spawn(EnemyType::Boss, obj.translation, Math::QuaternionFromVector(obj.rotation));
 				break;
 			}
 		}
