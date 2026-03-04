@@ -273,6 +273,7 @@
 └── └── ├── Models/
 └── └── └── ├── Entity/
 └── └── └── └── ├── Enemy/
+└── └── └── └── └── ├── Boss/
 └── └── └── └── └── ├── CloseEnemy/
 └── └── └── └── └── └── LongEnemy/
 └── └── └── └── └── Player/
@@ -8585,6 +8586,15 @@ namespace MiiEngine {
         commandList->SetGraphicsRootConstantBufferView(4, oceanColorBuffer_->GetBuffer()->GetGPUVirtualAddress());
 
         commandList->DrawIndexedInstanced(indexCount_, 1, 0, 0, 0);
+
+        // 描画後、次のフレームのために VERTEX_AND_CONSTANT_BUFFER -> COMMON へ戻す
+        D3D12_RESOURCE_BARRIER barrierToCommon = {};
+        barrierToCommon.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barrierToCommon.Transition.pResource = vertex_->GetBuffer();
+        barrierToCommon.Transition.StateBefore = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+        barrierToCommon.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
+        barrierToCommon.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        commandList->ResourceBarrier(1, &barrierToCommon);
     }
 
     ///-------------------------------------------/// 
@@ -9248,6 +9258,7 @@ File Path: Project/Engine/Graphics/3d/Ocean/OceanWaveCompute.cpp
 #include <cassert>
 // Service
 #include "Service/Locator.h"
+#include "Service/Render.h"
 // SRVManager
 #include "Engine/System/Managers/SRVManager.h"
 // Math
@@ -9374,13 +9385,13 @@ namespace MiiEngine {
         commandList->ResourceBarrier(1, &uavBarrier);
 
         // UNORDERED_ACCESS -> COMMON への遷移バリア（次回の使用のため）
-        D3D12_RESOURCE_BARRIER barrierToCommon = {};
+     /*   D3D12_RESOURCE_BARRIER barrierToCommon = {};
         barrierToCommon.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
         barrierToCommon.Transition.pResource = outputBuffer_.Get();
         barrierToCommon.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
         barrierToCommon.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
         barrierToCommon.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-        commandList->ResourceBarrier(1, &barrierToCommon);
+        commandList->ResourceBarrier(1, &barrierToCommon);*/
     }
 
     ///-------------------------------------------/// 
@@ -9406,11 +9417,32 @@ namespace MiiEngine {
     /// 計算結果を頂点バッファにコピー
     ///-------------------------------------------///
     void OceanWaveCompute::CopyResultsToVertexBuffer(ID3D12GraphicsCommandList* commandList, ID3D12Resource* vertexBuffer) {
-        // UAVバッファのみ COMMON -> COPY_SOURCE へ遷移
+        //// UAVバッファのみ COMMON -> COPY_SOURCE へ遷移
+        //D3D12_RESOURCE_BARRIER barrierToCopySource = {};
+        //barrierToCopySource.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        //barrierToCopySource.Transition.pResource = outputBuffer_.Get();
+        //barrierToCopySource.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
+        //barrierToCopySource.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+        //barrierToCopySource.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        //commandList->ResourceBarrier(1, &barrierToCopySource);
+
+        //// コピー実行
+        //commandList->CopyResource(vertexBuffer, outputBuffer_.Get());
+
+        //// UAVバッファを COPY_SOURCE -> COMMON へ戻す
+        //D3D12_RESOURCE_BARRIER barrierToCommon = {};
+        //barrierToCommon.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        //barrierToCommon.Transition.pResource = outputBuffer_.Get();
+        //barrierToCommon.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
+        //barrierToCommon.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
+        //barrierToCommon.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        //commandList->ResourceBarrier(1, &barrierToCommon);
+
+        // UNORDERED_ACCESS -> COPY_SOURCE へ遷移
         D3D12_RESOURCE_BARRIER barrierToCopySource = {};
         barrierToCopySource.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
         barrierToCopySource.Transition.pResource = outputBuffer_.Get();
-        barrierToCopySource.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
+        barrierToCopySource.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
         barrierToCopySource.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
         barrierToCopySource.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
         commandList->ResourceBarrier(1, &barrierToCopySource);
@@ -9418,7 +9450,7 @@ namespace MiiEngine {
         // コピー実行
         commandList->CopyResource(vertexBuffer, outputBuffer_.Get());
 
-        // UAVバッファを COPY_SOURCE -> COMMON へ戻す
+        // COPY_SOURCE -> COMMON へ戻す
         D3D12_RESOURCE_BARRIER barrierToCommon = {};
         barrierToCommon.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
         barrierToCommon.Transition.pResource = outputBuffer_.Get();
@@ -17832,6 +17864,7 @@ namespace MiiEngine {
 		Loader::LoadModel("PlayerWeapon", "Entity/Player/PlayerWeapon/PlayerWeapon.gltf");	// プレイヤー武器
 		Loader::LoadModel("LongEnemy", "Entity/Enemy/LongEnemy/LongEnemy.gltf");			// 遠距離敵
 		Loader::LoadModel("CloseEnemy", "Entity/Enemy/CloseEnemy/CloseEnemy.gltf");			// 近距離敵
+		Loader::LoadModel("Boss", "Entity/Enemy/Boss/BossEnemy.gltf");						// ボス
 
 		/// ===Object=== ///
 		Loader::LoadModel("Ground", "Object/Ground/Ground.gltf");						// 地面
@@ -17860,7 +17893,7 @@ namespace MiiEngine {
 		Loader::LoadLevelJson("Level/StageData2.json");
 		Loader::LoadLevelJson("Level/EntityData2.json");
 	}
-}
+} 
 
 ============================================================
 File Path: Project/Engine/Scene/MyGame.h
@@ -30105,7 +30138,6 @@ namespace Service {
 	///-------------------------------------------///
 	// LightTYpe
 	void Collision::SetLight(LightType lightType) { Locator::GetColliderManager()->SetLight(lightType); }
-
 	// LightData
 	void Collision::SetLightData(LightInfo light) { Locator::GetColliderManager()->SetLightData(light); }
 }
@@ -33362,7 +33394,7 @@ void StartAnimation::Initialize(Player* player, GameCamera* camera) {
 	kDeltaTime_ = Service::DeltaTime::GetDeltaTime();
 	// 落下アニメーション情報
 	fallInfo_.playerStartPos = { 0.0f, 50.0f, 0.0f };
-	fallInfo_.playerEndPos = { 0.0f, 1.0f, 0.0f };
+	fallInfo_.playerEndPos = {player_->GetTransform().translate};
 	fallInfo_.FallingDuration = 1.5f;
 	// カメラ回転アニメーション情報
 	cameraRotInfo_.cameraStartPos = camera_->GetTranslate();
@@ -35713,13 +35745,20 @@ File Path: Project/application/Game/Entity/Enemy/Base/BaseEnemy.cpp
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
 
-
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
 BaseEnemy::~BaseEnemy() {
 	Service::Collision::RemoveCollider(this);
 	object3d_.reset();
+}
+
+///-------------------------------------------/// 
+/// Setter
+///-------------------------------------------///
+void BaseEnemy::SetInvincibleTime() {
+	invincibleInfo_.timer = invincibleInfo_.time;
+	invincibleInfo_.isInvincible = true;
 }
 
 ///-------------------------------------------/// 
@@ -35885,6 +35924,8 @@ public: /// ===Setter=== ///
 	void SetIsRotationComplete(bool flag) { isRotationComplete_ = flag; };
 	// isTentativeDeath
 	void SetIsTentativeDeath(bool flag) { isTentativeDeath_ = flag; };
+	// 無敵時間の設定
+	void SetInvincibleTime();
 
 protected: /// ===変数の宣言=== ///
 
@@ -35892,6 +35933,15 @@ protected: /// ===変数の宣言=== ///
 	Player* player_ = nullptr; // Player
 
 	bool isTentativeDeath_ = false; // 仮死亡フラグ
+
+	/// ===無敵時間情報=== ///
+	struct InvincibleInfo {
+		float time = 0.5f;			// 無敵時間
+		float timer = 0.0f;			// 無敵タイマー
+		bool isInvincible = false;	// 無敵フラグ
+	};
+	InvincibleInfo invincibleInfo_; // 無敵時間情報
+
 private:
 	
 	// 回転完了フラグ
@@ -35905,6 +35955,7 @@ File Path: Project/application/Game/Entity/Enemy/Base/EnemyManager.cpp
 #include "EnemyManager.h"
 #include "application/Game/Entity/Enemy/MobEnemy/CloseRange/CloseRangeEnemy.h"
 #include "application/Game/Entity/Enemy/MobEnemy/LongRange/LongRangeEnemy.h"
+#include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
 // c++
 #include <algorithm> 
 // ImGui
@@ -35931,9 +35982,6 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 	switch (type) {
 	case EnemyType::CloseRange: {
 		auto e = std::make_unique<CloseRangeEnemy>();
-		if (player_) { // 初フレームから Update が進むようにプレイヤー注入
-			e->SetPlayer(player_);
-		}
 		// 初期化
 		e->InitGameScene(pos);		// 出現位置を渡してゲームシーン用初期化
 		e->SetRotate(rot);			// 回転を設定
@@ -35942,9 +35990,14 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 	}
 	case EnemyType::LongRange: {
 		auto e = std::make_unique<LongRangeEnemy>();
-		if (player_) {
-			e->SetPlayer(player_);
-		}
+		// 初期化
+		e->InitGameScene(pos);
+		e->SetRotate(rot); 
+		enemy = std::move(e);
+		break;
+	}
+	case EnemyType::Boss: {
+		auto e = std::make_unique<BossEnemy>();
 		// 初期化
 		e->InitGameScene(pos);
 		e->SetRotate(rot); 
@@ -36013,11 +36066,13 @@ void EnemyManager::UpdateImGui() {
 		// ===== 統計情報 ===== //
 		int closeCount = GetEnemyCount(EnemyType::CloseRange);
 		int longCount = GetEnemyCount(EnemyType::LongRange);
+		int bossCount = GetEnemyCount(EnemyType::Boss);
 		int totalCount = GetTotalEnemyCount();
 
 		ImGui::Text("Enemy Statistics:");
 		ImGui::Text("  CloseRange: %d", closeCount);
 		ImGui::Text("  LongRange : %d", longCount);
+		ImGui::Text("  Boss      : %d", bossCount);
 		ImGui::Text("  Total     : %d", totalCount);
 		ImGui::Separator();
 
@@ -36132,7 +36187,8 @@ class Player;
 /// ===enum=== ///
 enum class EnemyType {
     CloseRange,
-    LongRange
+    LongRange,
+    Boss,
 };
 
 ///=====================================================/// 
@@ -36216,19 +36272,22 @@ private:
 File Path: Project/application/Game/Entity/Enemy/BossEnemy/BossEnemy.cpp
 ============================================================
 #include "BossEnemy.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
+// Service
+#include "Service/Particle.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
 BossEnemy::~BossEnemy() {
 	// 状態を解放
-	currentState_->Finalize();
-	currentState_.reset();
+	//currentState_->Finalize();
+	//currentState_.reset();
 	// Componentの解放
-	moveComponent_.reset();
-	attackComponent_.reset();
+	//moveComponent_.reset();
+	//attackComponent_.reset();
 	// Object3Dの解放
-	object3d_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -36241,9 +36300,6 @@ void BossEnemy::InitGameScene(const Vector3& translate) {
 
 	/// ===位置の設定=== ///
 	transform_.translate = translate;
-
-	/// ===初回更新=== ///
-	UpdateAnimation();
 }
 
 ///-------------------------------------------/// 
@@ -36253,7 +36309,7 @@ void BossEnemy::Initialize() {
 
 	/// ===Object3Dの初期化=== ///
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::AnimationModel, "Player");
+	object3d_->Init(ObjectType::Model, "Boss");
 
 	/// ===BaseEnemyの初期化=== ///
 	BaseEnemy::Initialize();
@@ -36261,20 +36317,27 @@ void BossEnemy::Initialize() {
 	// Stateの設定
 	//ChangeState(std::make_unique<EnemyMoveState>());
 	
+	// 無敵時間
+	invincibleInfo_.time = 0.5f;
+
 	// HP 
-	baseInfo_.HP = 50;
+	baseInfo_.HP = 3;
 }
 
 ///-------------------------------------------/// 
 /// 更新処理
 ///-------------------------------------------///
 void BossEnemy::Update() {
-	// GameCharacterの更新
-	GameCharacter::Update();
+	// 死亡している場合は更新しない
+	if (isTentativeDeath_) return;
+
+	/// ===Timerの更新=== ///
+	advanceTimer();
+
 	// Stateの更新
-	if (currentState_) {
+	/*if (currentState_) {
 		currentState_->Update();
-	}
+	}*/
 
 	UpdateAnimation();
 }
@@ -36301,6 +36364,48 @@ void BossEnemy::Information() {
 void BossEnemy::OnCollision(MiiEngine::Collider* collider) {
 	/// ===GameCharacterの衝突=== ///
 	GameCharacter::OnCollision(collider);
+
+	/// ===Playerとの衝突=== ///
+	// Weaponとの当たり判定
+	//if (collider->GetColliderName() == MiiEngine::ColliderName::PlayerWeapon) {
+	//	// クールタイム中でなければノックバック処理を実行
+	//	if (!invincibleInfo_.isInvincible) {
+	//		// 通常攻撃の時
+	//		if (player_->GetAttackComponent()->IsAttacking()) {
+
+	//			// HPを減少
+	//			baseInfo_.HP--;
+	//			hitParticle_ = Service::Particle::Emit("Game", transform_.translate);
+
+	//			// 無敵時間のセット
+	//			SetInvincibleTime();
+	//		}
+	//	}
+	//}
+}
+
+///-------------------------------------------/// 
+/// 時間を進める
+///-------------------------------------------///
+void BossEnemy::advanceTimer() {
+	if (baseInfo_.isDead) {
+		// パーティクルの発生
+		deathParticle_ = Service::Particle::Emit("nakagawa", transform_.translate);
+		isTentativeDeath_ = true;
+		if (hitParticle_ != nullptr) {
+			hitParticle_->Stop();
+			hitParticle_ = nullptr;
+		}
+	} else {
+		// 無敵タイマーを進める
+		if (invincibleInfo_.timer > 0.0f) {
+			invincibleInfo_.timer -= baseInfo_.deltaTime;
+			invincibleInfo_.isInvincible = true;
+		} else {
+			invincibleInfo_.isInvincible = false;
+			invincibleInfo_.timer = 0.0f;
+		}
+	}
 }
 
 ============================================================
@@ -36389,6 +36494,10 @@ private:
 	/// ===Component=== ///
 	std::unique_ptr<BossMoveComponent> moveComponent_;		// 移動コンポーネント
 	std::unique_ptr<BossAttackComponent> attackComponent_;	// 攻撃コンポーネント
+
+	/// ===Particle=== ///
+	MiiEngine::ParticleGroup* hitParticle_ = nullptr;
+	MiiEngine::ParticleGroup* deathParticle_ = nullptr;
 
 private:
 
@@ -36525,14 +36634,6 @@ MobEnemy::~MobEnemy() {
 	// Componentの解放
 	moveComponent_.reset();
 	hitReactionComponent_.reset();
-}
-
-///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-void MobEnemy::SetInvincibleTime() {
-	invincibleInfo_.timer = invincibleInfo_.time;
-	invincibleInfo_.isInvincible = true;
 }
 
 ///-------------------------------------------/// 
@@ -36805,13 +36906,6 @@ private: /// ===型定義=== ///
 		bool isAttack;		// 攻撃フラグ
 	};
 
-	/// ===無敵時間情報=== ///
-	struct InvincibleInfo {
-		float time = 0.5f;			// 無敵時間
-		float timer = 0.0f;			// 無敵タイマー
-		bool isInvincible = false;	// 無敵フラグ
-	};
-
 public:
 
 	MobEnemy() = default;
@@ -36891,16 +36985,11 @@ public: /// ===Setter=== ///
 	// AttackDirection
 	void SetAttackDirection(const Vector3& dir) { attackInfo_.direction = dir; };
 	void SetTargetPos(const Vector3& pos) { attackInfo_.targetPos = pos; };
-	// 無敵時間の設定
-	void SetInvincibleTime();
 
 protected: /// ===変数の宣言=== ///
 
 	// 攻撃情報
 	AttackInfo attackInfo_;
-
-	// 無敵時間情報
-	InvincibleInfo invincibleInfo_;
 
 	// 衝突フラグ
 	bool isCollision_ = false;
@@ -36913,7 +37002,7 @@ private:
 	std::unique_ptr<EnemyMoveComponent> moveComponent_;
 	std::unique_ptr<EnemyHitReactionComponent> hitReactionComponent_;
 
-	// Particle
+	/// ===Particle=== ///
 	MiiEngine::ParticleGroup* hitParticle_ = nullptr;
 	MiiEngine::ParticleGroup* deathParticle_ = nullptr;
 
@@ -36975,9 +37064,6 @@ void CloseRangeEnemy::InitGameScene(const Vector3& translate) {
 
 	/// ===ChargeInfo=== ///
 	chargeInfo_.moveSpeed = 0.9f;
-
-	/// ===更新処理を一回だけ=== ///
-	UpdateAnimation();
 }
 
 ///-------------------------------------------/// 
@@ -37792,9 +37878,6 @@ void LongRangeEnemy::InitGameScene(const Vector3& translate) {
 	attackInfo_.power = 1;
 	attackInfo_.direction = { 0.0f, 0.0f, 0.0f };
 	attackInfo_.isAttack = false;
-
-	/// ===更新処理を一回だけ=== ///
-	UpdateAnimation();
 }
 
 ///-------------------------------------------/// 
@@ -39150,15 +39233,11 @@ void GameCharacter<TCollider>::OnCollision(Collider* collider) {
 	/// ===Colliderとの衝突処理=== ///
 	if (collider->GetColliderName() == ColliderName::Ground) {
 
-		// isGroundがfalseの場合のみ処理を実行
-		if (!groundInfo_.isGrounded) {
-			
-			// 地面に接地
-			groundInfo_.isGrounded = true;
+		// 地面に接地
+		groundInfo_.isGrounded = true;
 
-			// 地面に衝突した際の処理
-			GroundOnCollision(collider);
-		}
+		// 地面に衝突した際の処理
+		GroundOnCollision(collider);
 
 	} else if (collider->GetColliderName() == ColliderName::Object) {
 		// Objectとの衝突処理
@@ -39195,9 +39274,6 @@ void GameCharacter<TCollider>::GroundCollision() {
 
 	/// ===地面より下に行かないようにする=== ///
 	if (this->transform_.translate.y < groundInfo_.currentGroundYPos) {
-
-		// はみ出し分を計算
-		//float overlap = groundInfo_.currentGroundYPos - this->transform_.translate.y;
 
 		// はみ出し分を押し戻す
 		this->transform_.translate.y = groundInfo_.currentGroundYPos;
@@ -39267,13 +39343,14 @@ void GameCharacter<TCollider>::GroundOnCollision(Collider* collider) {
 	}
 
 	/// ===GameCharacterの情報を取得=== ///
+	float characterHalfSizeY = 0.0f;
 	if (this->GetColliderType() == ColliderType::OBB) {
 		OBB obb = dynamic_cast<OBBCollider*>(this)->GetOBB();
-		characterHalfSize_ = obb.halfSize;
+		characterHalfSizeY = obb.halfSize.y;
 		
 	} else if (this->GetColliderType() == ColliderType::Sphere) {
 		Sphere sphere = dynamic_cast<SphereCollider*>(this)->GetSphere();
-		characterHalfSize_ = { sphere.radius, sphere.radius, sphere.radius };
+		characterHalfSizeY = sphere.radius;
 	}
 
 	/// ===地面のY座標を計算（地面タイプに応じて）=== ///
@@ -39288,7 +39365,7 @@ void GameCharacter<TCollider>::GroundOnCollision(Collider* collider) {
 	}
 
 	/// ===押し戻し後のY座標を計算=== ///
-	groundInfo_.currentGroundYPos = groundTopY + characterHalfSize_.y;
+	groundInfo_.currentGroundYPos = groundTopY + characterHalfSizeY;
 }
 
 
@@ -39389,9 +39466,6 @@ private: /// ===地面との衝突処理=== ///
         bool isGrounded = false;		   // 地面接地フラグ
     };
 	GroundInfo groundInfo_;
-
-    // キャラクターの半サイズY軸
-    Vector3 characterHalfSize_{};
 
     /// <summary>
     /// 指定した中心位置と半サイズを持つオブジェクトの地面との衝突を検出して処理します。
@@ -40570,6 +40644,23 @@ void Player::SetInvincibleTime(const float& time) {
 }
 
 ///-------------------------------------------/// 
+/// Game開始時の初期化
+///-------------------------------------------///
+void Player::InitGame(const Vector3& translate) {
+	/// ===初期化=== ///
+	Initialize();
+
+	/// ===位置の設定=== ///
+	transform_.translate = translate;
+
+	/// ===パラメータの設定=== ///
+	SettingParamita();
+
+	/// ===初期Stateの設定=== ///
+	ChangState(std::make_unique<RootState>());
+}
+
+///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
 void Player::Initialize() {
@@ -40587,60 +40678,6 @@ void Player::Initialize() {
 	Service::Collision::AddCollider(this);
 	// OBBの設定
 	SetHalfSize({ 2.0f, 2.0f, 2.5f });
-
-	/// ===Handの初期化=== ///
-	// 右手
-	rightHand_ = std::make_unique<PlayerHand>();
-	rightHand_->Initialize();
-	rightHand_->SetUpParent(this);
-	// 左手
-	leftHand_ = std::make_unique<PlayerHand>();
-	leftHand_->Initialize();
-	leftHand_->SetUpParent(this);
-
-	/// ===Weaponの初期化=== ///
-	weapon_ = std::make_unique<PlayerWeapon>();
-	weapon_->Initialize();
-	weapon_->SetUpParent(this);
-
-	/// ===Component=== ///
-	// Componentの生成
-	moveComponent_ = std::make_unique<PlayerMoveComponent>();
-	avoidanceComponent_ = std::make_unique<PlayerAvoidanceComponent>();
-	attackComponent_ = std::make_unique<PlayerAttackComponent>();
-
-	// MoveComponentの初期化
-	PlayerMoveComponent::MoveConfig moveConfig{
-		.speed = 0.4f,
-		.rotationSpeed = 10.0f,
-		.deceleration = 0.85f
-	};
-	moveComponent_->Initialize(moveConfig);
-
-	// AvoidanceComponentの初期化
-	PlayerAvoidanceComponent::AvoidanceConfig avoidanceConfig{
-		.speed = 15.0f,
-		.activeTime = 0.3f,
-		.coolTime = 1.0f,
-		.invincibleTime = 0.01f
-	};
-	avoidanceComponent_->Initialize(avoidanceConfig);
-
-	// AttackComponentの初期化
-	attackComponent_->Initialize();
-
-	// 無敵情報の設定
-	SetInvincibleTime(1.0f);
-	invincibleInfo_.isFlag = true;
-
-	// HPの設定
-	baseInfo_.HP = 5;
-
-	// 初期設定
-	ChangState(std::make_unique<RootState>());
-
-	// Updateを一回行う
-	UpdateAnimation();
 }
 
 
@@ -40777,6 +40814,58 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 }
 
 ///-------------------------------------------/// 
+/// Paramitaの設定
+///-------------------------------------------///
+void Player::SettingParamita() {
+	/// ===Handの初期化=== ///
+	// 右手
+	rightHand_ = std::make_unique<PlayerHand>();
+	rightHand_->Initialize();
+	rightHand_->SetUpParent(this);
+	// 左手
+	leftHand_ = std::make_unique<PlayerHand>();
+	leftHand_->Initialize();
+	leftHand_->SetUpParent(this);
+
+	/// ===Weaponの初期化=== ///
+	weapon_ = std::make_unique<PlayerWeapon>();
+	weapon_->Initialize();
+	weapon_->SetUpParent(this);
+
+	/// ===Component=== ///
+	// Componentの生成
+	moveComponent_ = std::make_unique<PlayerMoveComponent>();
+	avoidanceComponent_ = std::make_unique<PlayerAvoidanceComponent>();
+	attackComponent_ = std::make_unique<PlayerAttackComponent>();
+
+	// MoveComponentの初期化
+	PlayerMoveComponent::MoveConfig moveConfig{
+		.speed = 0.4f,
+		.rotationSpeed = 10.0f,
+		.deceleration = 0.85f
+	};
+	moveComponent_->Initialize(moveConfig);
+
+	// AvoidanceComponentの初期化
+	PlayerAvoidanceComponent::AvoidanceConfig avoidanceConfig{
+		.speed = 15.0f,
+		.activeTime = 0.3f,
+		.coolTime = 1.0f,
+		.invincibleTime = 0.01f
+	};
+	avoidanceComponent_->Initialize(avoidanceConfig);
+
+	// AttackComponentの初期化
+	attackComponent_->Initialize();
+
+	// 無敵情報の設定
+	invincibleInfo_.isFlag = true; // このフラグをtrueにすると落ちない、falseにするとゲーム開始時から落ちる。
+
+	// HPの設定
+	baseInfo_.HP = 5;
+}
+
+///-------------------------------------------/// 
 /// 時間を進める
 ///-------------------------------------------///
 void Player::advanceTimer() {
@@ -40862,6 +40951,12 @@ public:
 
 	Player() = default;
 	~Player();
+
+	/// <summary>
+	/// ゲームの初期化処理
+	/// </summary>
+	/// <param name="translate">初期位置を表すベクトル。</param>
+	void InitGame(const Vector3& translate);
 
 	/// <summary>
 	/// 初期化処理
@@ -40970,6 +41065,11 @@ private: /// ===変数の宣言=== ///
 	ControllerStickState stickState_;
 
 private:
+
+	/// <summary>
+	/// パラメータの設定
+	/// </summary>
+	void SettingParamita();
 
 	/// <summary>
 	/// タイマーを進める関数
@@ -42110,8 +42210,12 @@ void GroundOcean::Initialize() {
 	// オーシャンの初期化
 	ocean_ = std::make_unique<MiiEngine::Ocean>();
 	ocean_->Initialize(500);
-	ocean_->SetTranslate({ 0.0f, -1.0f, 0.0f });
-	ocean_->SetScale({ 0.5f, 0.5f, 0.5f });
+	ocean_->SetTranslate({ 0.0f, -30.0f, 0.0f });
+	ocean_->SetScale({ 300.0f, 1.0f, 300.0f });
+
+	ocean_->SetWaveInfo(0, { 0.7f, 0.4f, 0.2f }, 1.15f, 12.5f, 0.6f);
+	ocean_->SetWaveInfo(1, { 0.25f, 0.55f, 1.0f }, 0.5f, 7.5f, 0.6f);
+	ocean_->SetWaveInfo(2, { 0.6f, 0.2f, 0.46f }, 0.4f, 2.5f, 0.6f);
 
 	// 初回更新
 	ocean_->Update();
@@ -42358,12 +42462,25 @@ void GameStage::Initialize(const std::string& levelData) {
 
 	// ステージデータを読み込む
 	LoadStageData(levelData);
+
+	// Oceanの初期化
+	std::shared_ptr<GroundOcean> ocean = std::make_shared<GroundOcean>();
+	ocean->Initialize();
+	ocean->Update();
+	Oceans_.emplace_back(ocean);
 }
 
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
 void GameStage::Update() {
+
+	// GroundOceanの更新
+	for (const auto& ocean : Oceans_) {
+		if (ocean) {
+			ocean->Update();
+		}
+	}
 
 	// Groundの更新
 	for (const auto& ground : grounds_) {
@@ -42394,6 +42511,13 @@ void GameStage::Update() {
 /// 描画
 ///-------------------------------------------///
 void GameStage::Draw(MiiEngine::BlendMode mode) {
+
+	// GroundOceanの更新
+	for (const auto& ocean : Oceans_) {
+		if (ocean) {
+			ocean->Draw();
+		}
+	}
 
 	// GroundOceanの更新
 	for (const auto& ground : grounds_) {
@@ -43820,6 +43944,10 @@ void GameScene::Initialize() {
 	Service::Camera::AddCamera("Game", camera_);
 	Service::Camera::SetActiveCamera("Game");
 
+	/// ===GameStage=== ///
+	stage_ = std::make_unique<GameStage>();
+	stage_->Initialize("Level/StageData2.json");
+
 	/// ===Playerの生成=== ///
 	player_ = std::make_unique<Player>();
 
@@ -43830,10 +43958,6 @@ void GameScene::Initialize() {
 	SpawnEntity("Level/EntityData2.json");
 	// EnemyにPlayerを設定
 	enemyManager_->SetPlayer(player_.get());
-
-	/// ===GameStage=== ///
-	stage_ = std::make_unique<GameStage>();
-	stage_->Initialize("Level/StageData2.json");
 
 	/// ===State=== ///
 	// 初期状態をInitializeStateに設定
@@ -43946,9 +44070,9 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 		switch (obj.classType) {
 		case LevelData::ClassTypeLevel::Player:
 			// 初期化と座標設定
-			player_->Initialize();
-			player_->SetTranslate(obj.translation);
+			player_->InitGame(obj.translation);
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
+
 			break;
 		case LevelData::ClassTypeLevel::Enemy:
 			if (obj.fileName == "Close") {
@@ -43958,6 +44082,10 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 			} else if (obj.fileName == "Long") {
 				// Enemyの座標設定
 				enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
+				break;
+			} else if (obj.fileName == "Boss") {
+				// BossEnemyの座標設定
+				enemyManager_->Spawn(EnemyType::Boss, obj.translation, Math::QuaternionFromVector(obj.rotation));
 				break;
 			}
 		}
@@ -45180,14 +45308,14 @@ void TitleScene::Initialize() {
 	Service::Camera::AddCamera("Title", camera_);
 	Service::Camera::SetActiveCamera("Title");
 
+	/// ===Stage=== ///	
+	stage_ = std::make_unique<GameStage>();
+	stage_->Initialize("Level/StageData2.json");
+
 	/// ===Playerの生成=== ///
 	player_ = std::make_unique<Player>();
 	SpawnPlayer("Level/EntityData2.json");
 	player_->SetCameraTargetPlayer();
-
-	/// ===Stage=== ///	
-	stage_ = std::make_unique<GameStage>();
-	stage_->Initialize("Level/StageData2.json");
 
 	/// ===TitleUI=== ///
 	titleUI_ = std::make_unique<TitleUI>();
@@ -45210,11 +45338,14 @@ void TitleScene::Update() {
 #ifdef USE_IMGUI
 	ImGui::Begin("TitleScene");
 	ImGui::Text("Fade State: %d", static_cast<int>(currentFade_));
-
-	camera_->ImGuiUpdate();
-	//camera_->DebugUpdate();
-
 	ImGui::End();
+
+	// Cameraの情報表示
+	camera_->ImGuiUpdate();
+
+	// Playerの情報表示
+	player_->Information();
+
 #endif // USE_IMGUI
 
 	/// ===Player=== ///
@@ -45310,8 +45441,7 @@ void TitleScene::SpawnPlayer(const std::string& json_name) {
 		switch (obj.classType) {
 		case LevelData::ClassTypeLevel::Player:
 			// 初期化と座標設定
-			player_->Initialize();
-			player_->SetTranslate(obj.translation);
+			player_->InitGame(obj.translation);
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
 			break;
 		}
