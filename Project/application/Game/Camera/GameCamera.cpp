@@ -5,11 +5,7 @@
 /// デストラクタ
 ///-------------------------------------------///
 GameCamera::~GameCamera() {
-	if (type_ == CameraType::Normal) {
-		normal_.reset();
-	} else {
-		follow_.reset();
-	}
+	camera_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -17,73 +13,39 @@ GameCamera::~GameCamera() {
 ///-------------------------------------------///
 // WorldMatrix
 const Matrix4x4& GameCamera::GetWorldMatrix() const {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		return normal_->GetWorldMatrix();
-	} else {
-		// Followの削除
-		return follow_->GetWorldMatrix();
-	}
+	return camera_->GetWorldMatrix();
 }
 // ViewMatrix
 const Matrix4x4& GameCamera::GetViewMatrix() const {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		return normal_->GetViewMatrix();
-	} else {
-		// Followの削除
-		return follow_->GetViewMatrix();
-	}
+	return camera_->GetViewMatrix();
 }
 // ProjectionMatrix
 const Matrix4x4& GameCamera::GetProjectionMatrix() const {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		return normal_->GetProjectionMatrix();
-	} else {
-		// Followの削除
-		return follow_->GetProjectionMatrix();
-	}
+	return camera_->GetProjectionMatrix();
 }
 // ViewProjectionMatrix
 const Matrix4x4& GameCamera::GetViewProjectionMatrix() const {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		return normal_->GetViewProjectionMatrix();
-	} else {
-		// Followの削除
-		return follow_->GetViewProjectionMatrix();
-	}
+	return camera_->GetViewProjectionMatrix();
 }
 // Translate
 const Vector3& GameCamera::GetTranslate() const {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		return normal_->GetTranslate();
-	} else {
-		// Followの削除
-		return follow_->GetTranslate();
-	}
+	return camera_->GetTranslate();
 }
 // Rotate
 const Quaternion& GameCamera::GetRotate() const {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		return normal_->GetRotate();
-	} else {
-		// Followの削除
-		return follow_->GetRotate();
-	}
+	return camera_->GetRotate();
 }
 // Offset
 const Vector3& GameCamera::GetOffset() const {
-	assert(type_ == CameraType::Follow);
-	return follow_->GetOffset();
+	auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_);
+	assert(!follow);
+	return follow->GetOffset();
 }
 // OrbitingOffset
 const Vector3& GameCamera::GetOrbitingOffset() const {
-	assert(type_ == CameraType::Follow);
-	return follow_->GetOrbitingOffset();
+	auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_);
+	assert(!follow);
+	return follow->GetOrbitingOffset();
 }
 
 
@@ -92,97 +54,75 @@ const Vector3& GameCamera::GetOrbitingOffset() const {
 ///-------------------------------------------///
 // Translate
 void GameCamera::SetTranslate(const Vector3& translate) {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		normal_->SetTranslate(translate);
-	} else {
-		// Followの削除
-		follow_->SetTranslate(translate);
-	}
+	camera_->SetTranslate(translate);
 }
 // Rotate
 void GameCamera::SetRotate(const Quaternion& rotate) {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		normal_->SetRotate(rotate);
-	} else {
-		// Followの削除
-		follow_->SetRotate(rotate);
-	}
+	camera_->SetRotate(rotate);
 }
 // ForY
 void GameCamera::SetForY(const float& forY) {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		normal_->SetForY(forY);
-	} else {
-		// Followの削除
-		follow_->SetForY(forY);
-	}
+	camera_->SetForY(forY);
 }
 // AspectRatio
 void GameCamera::SetAspectRatio(const float& aspect) {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		normal_->SetAspectRatio(aspect);
-	} else {
-		// Followの削除
-		follow_->SetAspectRatio(aspect);
-	}
+	camera_->SetAspectRatio(aspect);
 }
 // NearClip
 void GameCamera::SetNearClip(const float& nearClip) {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		normal_->SetNearClip(nearClip);
-	} else {
-		// Followの削除
-		follow_->SetNearClip(nearClip);
-	}
+	camera_->SetNearClip(nearClip);
 }
 // FarClip
 void GameCamera::SetFarClip(const float& farClip) {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		normal_->SetFarClip(farClip);
-	} else {
-		// Followの削除
-		follow_->SetFarClip(farClip);
-	}
+	camera_->SetFarClip(farClip);
 }
 // FollowCameraの設定
 void GameCamera::SetFollowCamera(FollowCameraType type) {
-	if (type_ == CameraType::Normal) return;
-	follow_->SetFollowCamera(type);
+	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+		follow->SetFollowCamera(type);
+	}
+	return;
 }
 // 追従対象の座標を設定
 void GameCamera::SetTarget(Vector3* position, Quaternion* rotation) {
-	if (type_ == CameraType::Normal) return;
-	follow_->SetTarget(position, rotation);
+	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+		follow->SetTarget(position, rotation);
+	}
+	return;
 }
 // 追従のオフセット
 void GameCamera::SetOffset(const Vector3& offset) {
-	if (type_ == CameraType::Normal) return;
-	follow_->SetOffset(offset);
+	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+		follow->SetOffset(offset);
+	}
+	return;
 }
 void GameCamera::SetOrbitingOffset(const Vector3& offset) {
-	if (type_ == CameraType::Normal) return;
-	follow_->SetOrbitingOffset(offset);
+	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+		follow->SetOrbitingOffset(offset);
+	}
+	return;
 }
 // 追従速度を設定
 void GameCamera::SetFollowSpeed(float speed) {
-	if (type_ == CameraType::Normal) return;
-	follow_->SetFollowSpeed(speed);
+	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+		follow->SetFollowSpeed(speed);
+	}
+	return;
 }
 // 回転補間速度
 void GameCamera::SetLerpSpeed(float speed) {
-	if (type_ == CameraType::Normal) return;
-	follow_->SetLerpSpeed(speed);
+	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+		follow->SetLerpSpeed(speed);
+	}
+	return;
 }
 // 回転の重み
 void GameCamera::SetStick(const Vector2& stickValue) {
-	if (type_ == CameraType::Normal) return;
-	follow_->SetStick(stickValue);
+	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+		follow->SetStick(stickValue);
+	}
+	return;
 }
 
 ///-------------------------------------------/// 
@@ -192,11 +132,11 @@ void GameCamera::Init(CameraType type) {
 	type_ = type;
 
 	if (type_ == CameraType::Normal) {
-		normal_ = std::make_shared<MiiEngine::NormalCamera>();
-		normal_->Initialize();
+		camera_ = std::make_shared<MiiEngine::NormalCamera>();
+		camera_->Initialize();
 	} else {
-		follow_ = std::make_shared<MiiEngine::FollowCamera>();
-		follow_->Initialize();
+		camera_ = std::make_shared<MiiEngine::FollowCamera>();
+		camera_->Initialize();
 	}
 }
 
@@ -204,11 +144,7 @@ void GameCamera::Init(CameraType type) {
 /// 更新
 ///-------------------------------------------///
 void GameCamera::Update() {
-	if (type_ == CameraType::Normal) {
-		normal_->Update();
-	} else {
-		follow_->Update();
-	}
+	camera_->Update();
 }
 
 ///-------------------------------------------/// 
@@ -216,11 +152,7 @@ void GameCamera::Update() {
 ///-------------------------------------------///
 void GameCamera::ImGuiUpdate() {
 #ifdef USE_IMGUI
-	if (type_ == CameraType::Normal) {
-		normal_->ImGuiUpdate();
-	} else {
-		follow_->ImGuiUpdate();
-	}
+	camera_->ImGuiUpdate();
 #endif // USE_IMGUI
 }
 
@@ -229,11 +161,7 @@ void GameCamera::ImGuiUpdate() {
 ///-------------------------------------------///
 void GameCamera::DebugUpdate() {
 #ifdef _DEBUG
-	if (type_ == CameraType::Normal) {
-		normal_->DebugUpdate();
-	} else {
-		follow_->DebugUpdate();
-	}
+	camera_->DebugUpdate();
 #endif // _DEBUG
 }
 
@@ -241,20 +169,12 @@ void GameCamera::DebugUpdate() {
 /// シェイク開始処理
 ///-------------------------------------------///
 void GameCamera::StartShake(float intensity, float duration, float frequency) {
-	if (type_ == CameraType::Normal) {
-		normal_->StartShake(intensity, duration, frequency);
-	} else {
-		follow_->StartShake(intensity, duration, frequency);
-	}
+	camera_->StartShake(intensity, duration, frequency);
 }
 
 ///-------------------------------------------/// 
 /// シェイク処理終了
 ///-------------------------------------------///
 void GameCamera::StopShake() {
-	if (type_ == CameraType::Normal) {
-		normal_->StopShake();
-	} else {
-		follow_->StopShake();
-	}
+	camera_->StopShake();
 }
