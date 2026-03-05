@@ -2,18 +2,11 @@
 /// ===Include=== ///
 // c++
 #include <vector>
+#include <unordered_map>
 // Offscreen
 #include "RenderTexture.h"
-// Effect
-#include "Effect/CopyImageEffect.h"
-#include "Effect/GrayscaleEffect.h"
-#include "Effect/VignetteEffect.h"
-#include "Effect/OutLineEffect.h"
-#include "Effect/BoxFilter3x3Effect.h"
-#include "Effect/BoxFilter5x5Effect.h"
-#include "Effect/RadiusBlurEffect.h"
-#include "Effect/DissolveEffect.h"
-#include "Effect/ShatterGlassEffect.h"
+// RenderPass
+#include "RenderPass.h"
 // Data
 #include "Engine/DataInfo/OffScreenData.h"
 
@@ -81,24 +74,8 @@ namespace MiiEngine {
 		ID3D12Resource* GetEffectBuffer() const;
 
 	public: /// ===Getter=== ///
-		// コピーイメージエフェクトの取得
-		CopyImageEffect* GetCopyImage();
-		// グレースケールエフェクトの取得
-		GrayscaleEffect* GetGrayscale();
-		// ビネットエフェクトの取得
-		VignetteEffect* GetVignette();
-		// アウトラインエフェクトの取得
-		OutLineEffect* GetOutLine();
-		// 3x3ボックスフィルターエフェクトの取得
-		BoxFilter3x3Effect* GetBoxFilter3x3();
-		// 5x5ボックスフィルターエフェクトの取得
-		BoxFilter5x5Effect* GetBoxFilter5x5();
-		// 半径ぼかしエフェクトの取得
-		RadiusBlurEffect* GetRadiusBlur();
-		// ディゾルブエフェクトの取得
-		DissolveEffect* GetDissolve();
-		// 破片ガラスエフェクトの取得
-		ShatterGlassEffect* GetShatterGlass();
+		// 現在のRenderPassの取得
+		RenderPass* GetRenderPass(OffScreenType type) const;
 		// Pipelineのタイプの取得
 		OffScreenType GetType();
 
@@ -107,19 +84,15 @@ namespace MiiEngine {
 		void SetType(OffScreenType type);
 
 	private:
+		// シーン描画用のRenderTexture
 		std::shared_ptr<RenderTexture> sceneTexture_;
+		// エフェクト適用後のRenderTexture
 		std::shared_ptr<RenderTexture> effectTexture_;
 
-		// 各パス（あらかじめ生成済み）
-		std::shared_ptr<CopyImageEffect> copyImage_;
-		std::shared_ptr<GrayscaleEffect> grayscale_;
-		std::shared_ptr<VignetteEffect> vignette_;
-		std::shared_ptr<OutLineEffect> outLine_;
-		std::shared_ptr<BoxFilter3x3Effect> boxFilter3x3_;
-		std::shared_ptr<BoxFilter5x5Effect> boxFilter5x5_;
-		std::shared_ptr<RadiusBlurEffect> radiusBlur_;
-		std::shared_ptr<DissolveEffect> dissolve_;
-		std::shared_ptr<ShatterGlassEffect> shatterGlass_;
+		// RenderPassコンテナ
+		std::unordered_map<OffScreenType, std::unique_ptr<RenderPass>> renderPass_;
+		// 現在のRenderPass
+		RenderPass* activePass_ = nullptr;
 
 		// Pipelineのタイプ
 		OffScreenType type_ = OffScreenType::CopyImage;
