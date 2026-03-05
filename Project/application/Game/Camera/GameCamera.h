@@ -1,6 +1,5 @@
 #pragma once
 /// ===Include=== ///
-#include "Engine/Camera/NormalCamera.h"
 #include "Engine/Camera/FollowCamera.h"
 
 /// ===CameraType=== ///
@@ -102,8 +101,7 @@ public: /// ===Setter=== ///
 private:
 
 	/// ===クラス=== ///
-	std::shared_ptr<MiiEngine::NormalCamera> normal_; // 通常カメラ
-	std::shared_ptr<MiiEngine::FollowCamera> follow_; // 追従カメラ
+	std::shared_ptr<MiiEngine::NormalCamera> camera_; // 通常カメラ
 
 	/// ===カメラタイプ=== ///
 	CameraType type_ = CameraType::Normal;

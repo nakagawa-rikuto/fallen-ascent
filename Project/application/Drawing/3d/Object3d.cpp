@@ -1,4 +1,6 @@
 #include "Object3d.h"
+#include "Engine/Graphics/3d/Model/Model.h"
+#include "Engine/Graphics/3d/Model/AnimationModel.h"
 // C++
 #include <cassert>
 
@@ -7,11 +9,7 @@ using namespace MiiEngine;
 /// デストラクタ
 ///-------------------------------------------///
 Object3d::~Object3d() {
-	if (type_ == ObjectType::Model) {
-		model_.reset();
-	} else {
-		animationModel_.reset();
-	}
+	model_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -20,13 +18,14 @@ Object3d::~Object3d() {
 void Object3d::Init(ObjectType type, const std::string& modelName, MiiEngine::LightType light) {
 	// タイプの確認
 	type_ = type;
+
 	// それぞれ対応した方を生成
 	if (type_ == ObjectType::Model) {
 		model_ = std::make_unique<Model>();
 		model_->Initialize(modelName, light);
 	} else {
-		animationModel_ = std::make_unique<AnimationModel>();
-		animationModel_->Initialize(modelName, light);
+		model_ = std::make_unique<AnimationModel>();
+		model_->Initialize(modelName, light);
 	}
 }
 
@@ -34,24 +33,14 @@ void Object3d::Init(ObjectType type, const std::string& modelName, MiiEngine::Li
 /// 更新
 ///-------------------------------------------///
 void Object3d::Update() {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->Update();
-	} else {
-		animationModel_->Update();
-	}
+	model_->Update();
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
 void Object3d::Draw(MiiEngine::BlendMode mode) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->Draw(mode);
-	} else {
-		animationModel_->Draw(mode);
-	}
+	model_->Draw(mode);
 }
 
 ///-------------------------------------------/// 
@@ -59,38 +48,18 @@ void Object3d::Draw(MiiEngine::BlendMode mode) {
 ///-------------------------------------------///
 // SetParent
 void Object3d::SetParent(MiiEngine::ModelCommon* parent) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetParent(parent);
-	} else {
-		animationModel_->SetParent(parent);
-	}
+	model_->SetParent(parent);
 }
 // ClearParent
 void Object3d::ClearParent() {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->ClearParent();
-	} else {
-		animationModel_->ClearParent();
-	}
+	model_->ClearParent();
 }
 // Offset
 void Object3d::SetParentOffset(const Vector3& offset) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetParentOffset(offset);
-	} else {
-		animationModel_->SetParentOffset(offset);
-	}
+	model_->SetParentOffset(offset);
 } 
 const Vector3& Object3d::GetParentOffset() const {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		return model_->GetParentOffset();
-	} else {
-		return animationModel_->GetParentOffset();
-	}
+	return model_->GetParentOffset();
 }
 
 
@@ -99,57 +68,27 @@ const Vector3& Object3d::GetParentOffset() const {
 ///-------------------------------------------///
 // Translate
 const Vector3& Object3d::GetWorldTranslate() const {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		return model_->GetWorldTranslate();
-	} else {
-		return animationModel_->GetWorldTranslate();
-	}
+	return model_->GetWorldTranslate();
 }
 // Rotate
 const Quaternion& Object3d::GetWorldRotate() const {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		return model_->GetWorldRotate();
-	} else {
-		return animationModel_->GetWorldRotate();
-	}
+	return model_->GetWorldRotate();
 }
 // Scale
 const Vector3& Object3d::GetWorldScale() const {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		return model_->GetWorldScale();
-	} else {
-		return animationModel_->GetWorldScale();
-	}
+	return model_->GetWorldScale();
 }
 // Transform
 const MiiEngine::QuaternionTransform& Object3d::GetWorldTransform() const {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		return model_->GetWorldTransform();
-	} else {
-		return animationModel_->GetWorldTransform();
-	}
+	return model_->GetWorldTransform();
 }
 // Color
 const Vector4& Object3d::GetColor() const {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		return model_->GetColor();
-	} else {
-		return animationModel_->GetColor();
-	}
+	return model_->GetColor();
 }
 // ModelCommon
 MiiEngine::ModelCommon* Object3d::GetModelCommon() {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		return model_.get();
-	} else {
-		return animationModel_.get();
-	}
+	return model_.get();
 }
 
 
@@ -158,74 +97,35 @@ MiiEngine::ModelCommon* Object3d::GetModelCommon() {
 ///-------------------------------------------///
 // Translate
 void Object3d::SetTranslate(const Vector3& translate) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetTranslate(translate);
-	} else {
-		animationModel_->SetTranslate(translate);
-	}
+	model_->SetTranslate(translate);
 }
 // Rotate
 void Object3d::SetRotate(const Quaternion& rotate) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetRotate(rotate);
-	} else {
-		animationModel_->SetRotate(rotate);
-	}
+	model_->SetRotate(rotate);
 }
 // Scale
 void Object3d::SetScale(const Vector3& scale) {
-	//	タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetScale(scale);
-	} else {
-		animationModel_->SetScale(scale);
-	}
+	model_->SetScale(scale);
 }
 // Color
 void Object3d::SetColor(const Vector4& color) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetColor(color);
-	} else {
-		animationModel_->SetColor(color);
-	}
+	model_->SetColor(color);
 }
 // LightInfo
 void Object3d::SetLightData(MiiEngine::LightInfo light) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetLightData(light);
-	} else {
-		animationModel_->SetLightData(light);
-	}
+	model_->SetLightData(light);
 }
 // Light
 void Object3d::SetLight(MiiEngine::LightType type) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetLightType(type);
-	} else {
-		animationModel_->SetLightType(type);
-	}
+	model_->SetLightType(type);
 }
 // 環境マップ
 void Object3d::SetEnvironmentMapData(bool flag, float string) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetEnvironmentMapData(flag, string);
-	} else {
-		animationModel_->SetEnvironmentMapData(flag, string);
-	}
+	model_->SetEnvironmentMapData(flag, string);
 }
 // Animation
 void Object3d::SetAnimation(const std::string& animationName, bool isLoop) {
-	// タイプで分岐
-	if (type_ == ObjectType::AnimationModel) {
-		animationModel_->SetAnimation(animationName, isLoop);
-	} else {
-		// タイプがアニメーションモデル出なければ強制的に止める
-		assert(0);
-	}
+	auto animationModel = dynamic_cast<AnimationModel*>(model_.get());
+	assert(!animationModel);
+	animationModel->SetAnimation(animationName, isLoop);
 }
