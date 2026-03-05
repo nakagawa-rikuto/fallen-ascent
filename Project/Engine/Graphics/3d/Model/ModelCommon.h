@@ -27,7 +27,7 @@ namespace MiiEngine {
 		/// </summary>
 		/// <param name="modelName">初期化に使用するモデル名。</param>
 		/// <param name="type">ライトの種類を表す値（LightType）。</param>
-		virtual void Initialize(const std::string& modelName, LightType type) = 0;
+		virtual void Initialize(const std::string& modelName, LightType type);
 
 		/// <summary>
 		/// 更新処理
@@ -38,7 +38,7 @@ namespace MiiEngine {
 		/// 描画処理、純粋仮想関数
 		/// </summary>
 		/// <param name="mode">描画に使用するブレンドモード。BlendMode 列挙型で合成方法を指定します。</param>
-		virtual void Draw(BlendMode mode) = 0;
+		virtual void Draw(BlendMode mode);
 
 		/// <summary>
 		/// 生成処理

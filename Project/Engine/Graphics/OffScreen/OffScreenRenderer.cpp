@@ -1,4 +1,14 @@
 #include "OffScreenRenderer.h"
+// Effect
+#include "Effect/CopyImageEffect.h"
+#include "Effect/GrayscaleEffect.h"
+#include "Effect/VignetteEffect.h"
+#include "Effect/OutLineEffect.h"
+#include "Effect/BoxFilter3x3Effect.h"
+#include "Effect/BoxFilter5x5Effect.h"
+#include "Effect/RadiusBlurEffect.h"
+#include "Effect/DissolveEffect.h"
+#include "Effect/ShatterGlassEffect.h"
 // Service
 #include "Service/Render.h"
 // ImGui
@@ -11,15 +21,8 @@ namespace MiiEngine {
 	/// デストラクタ
 	///-------------------------------------------///
 	OffScreenRenderer::~OffScreenRenderer() {
-		copyImage_.reset();
-		grayscale_.reset();
-		vignette_.reset();
-		boxFilter3x3_.reset();
-		boxFilter5x5_.reset();
-		radiusBlur_.reset();
-		outLine_.reset();
-		dissolve_.reset();
-		shatterGlass_.reset();
+		activePass_ = nullptr;
+		renderPass_.clear();
 		sceneTexture_.reset();
 		effectTexture_.reset();
 	}
@@ -43,50 +46,25 @@ namespace MiiEngine {
 		effectTexture_->CreateRenderTexture(device);
 
 		/// ===RenderPassの登録=== ///
-		// SceneRenderPass
-		copyImage_ = std::make_shared<CopyImageEffect>();
-		copyImage_->Initialize(device, effectTexture_);
-		copyImage_->SetInputTexture(sceneTexture_);
+		// OffScreenTypeに対応するRenderPassを作成して登録
+		renderPass_[OffScreenType::CopyImage] = std::make_unique<CopyImageEffect>();
+		renderPass_[OffScreenType::Grayscale] = std::make_unique<GrayscaleEffect>();
+		renderPass_[OffScreenType::Vignette] = std::make_unique<VignetteEffect>();
+		renderPass_[OffScreenType::BoxFilter3x3] = std::make_unique<BoxFilter3x3Effect>();
+		renderPass_[OffScreenType::BoxFilter5x5] = std::make_unique<BoxFilter5x5Effect>();
+		renderPass_[OffScreenType::RadiusBlur] = std::make_unique<RadiusBlurEffect>();
+		renderPass_[OffScreenType::OutLine] = std::make_unique<OutLineEffect>();
+		renderPass_[OffScreenType::Dissolve] = std::make_unique<DissolveEffect>();
+		renderPass_[OffScreenType::ShatterGlass] = std::make_unique<ShatterGlassEffect>();
 
-		// グレースケールレンダーパス
-		grayscale_ = std::make_shared<GrayscaleEffect>();
-		grayscale_->Initialize(device, effectTexture_);
-		grayscale_->SetInputTexture(sceneTexture_);
+		// 各RenderPassの初期化と入力テクスチャの設定
+		for (auto& [type, pass] : renderPass_) {
+			pass->Initialize(device, effectTexture_);
+			pass->SetInputTexture(sceneTexture_);
+		}
 
-		// ビネットレンダーパス
-		vignette_ = std::make_shared<VignetteEffect>();
-		vignette_->Initialize(device, effectTexture_);
-		vignette_->SetInputTexture(sceneTexture_);
-
-		// Dissolveエフェクト
-		dissolve_ = std::make_shared<DissolveEffect>();
-		dissolve_->Initialize(device, effectTexture_);
-		dissolve_->SetInputTexture(sceneTexture_);
-
-		// 3x3ボックスフィルタレンダーパス
-		boxFilter3x3_ = std::make_shared<BoxFilter3x3Effect>();
-		boxFilter3x3_->Initialize(device, effectTexture_);
-		boxFilter3x3_->SetInputTexture(sceneTexture_);
-
-		// 5x5ボックスフィルタレンダーパス
-		boxFilter5x5_ = std::make_shared<BoxFilter5x5Effect>();
-		boxFilter5x5_->Initialize(device, effectTexture_);
-		boxFilter5x5_->SetInputTexture(sceneTexture_);
-
-		// 半径ブラーエフェクト
-		radiusBlur_ = std::make_shared<RadiusBlurEffect>();
-		radiusBlur_->Initialize(device, effectTexture_);
-		radiusBlur_->SetInputTexture(sceneTexture_);
-
-		// OutLineエフェクト
-		outLine_ = std::make_shared<OutLineEffect>();
-		outLine_->Initialize(device, effectTexture_);
-		outLine_->SetInputTexture(sceneTexture_);
-
-		// ShatterGlassエフェクト
-		shatterGlass_ = std::make_shared<ShatterGlassEffect>();
-		shatterGlass_->Initialize(device, effectTexture_);
-		shatterGlass_->SetInputTexture(sceneTexture_);
+		// デフォルトのエフェクトはコピーイメージ	
+		activePass_ = renderPass_[type_].get();
 	}
 
 	///-------------------------------------------/// 
@@ -99,36 +77,6 @@ namespace MiiEngine {
 		commandList->OMSetRenderTargets(1, &rtvHandel, false, &dsvHandle);
 		// RenderTextureのクリア
 		sceneTexture_->Clear(commandList);
-
-		/*switch (type_) {
-		case OffScreenType::CopyImage:
-			copyImage_->PreDraw(commandList, dsvHandle);
-			break;
-		case OffScreenType::Grayscale:
-			grayscale_->PreDraw(commandList, dsvHandle);
-			break;
-		case OffScreenType::Vignette:
-			vignette_->PreDraw(commandList, dsvHandle);
-			break;
-		case OffScreenType::BoxFilter3x3:
-			boxFilter3x3_->PreDraw(commandList, dsvHandle);
-			break;
-		case OffScreenType::BoxFilter5x5:
-			boxFilter5x5_->PreDraw(commandList, dsvHandle);
-			break;
-		case OffScreenType::RadiusBlur:
-			radiusBlur_->PreDraw(commandList, dsvHandle);
-			break;
-		case OffScreenType::OutLine:
-			outLine_->PreDraw(commandList, dsvHandle);
-			break;
-		case OffScreenType::Dissolve:
-			dissolve_->PreDraw(commandList, dsvHandle);
-			break;
-		case OffScreenType::ShatterGlass:
-			shatterGlass_->PreDraw(commandList, dsvHandle);
-			break;
-		}*/
 	}
 
 	///-------------------------------------------/// 
@@ -142,34 +90,9 @@ namespace MiiEngine {
 		// effectTexture_ をクリア
 		effectTexture_->Clear(commandList);
 
-		switch (type_) {
-		case OffScreenType::CopyImage:
-			copyImage_->Draw(commandList);
-			break;
-		case OffScreenType::Grayscale:
-			grayscale_->Draw(commandList);
-			break;
-		case OffScreenType::Vignette:
-			vignette_->Draw(commandList);
-			break;
-		case OffScreenType::BoxFilter3x3:
-			boxFilter3x3_->Draw(commandList);
-			break;
-		case OffScreenType::BoxFilter5x5:
-			boxFilter5x5_->Draw(commandList);
-			break;
-		case OffScreenType::RadiusBlur:
-			radiusBlur_->Draw(commandList);
-			break;
-		case OffScreenType::OutLine:
-			outLine_->Draw(commandList);
-			break;
-		case OffScreenType::Dissolve:
-			dissolve_->Draw(commandList);
-			break;
-		case OffScreenType::ShatterGlass:
-			shatterGlass_->Draw(commandList);
-			break;
+		// エフェクトの描画
+		if (activePass_) {
+			activePass_->Draw(commandList);
 		}
 	}
 
@@ -198,6 +121,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 #ifdef USE_IMGUI
 	void OffScreenRenderer::DrawImGui() {
+		// OffScreenTypeの名前配列
 		const char* typeNames[] = {
 			"CopyImage",
 			"Grayscale",
@@ -210,43 +134,20 @@ namespace MiiEngine {
 			"ShatterGlass",
 		};
 
+		// 現在のエフェクトタイプを整数に変換して表示
 		int current = static_cast<int>(type_);
 		if (ImGui::Begin("OffScreen Effect")) {
-			ImGui::Text("Current Effect: %s", typeNames[current]);  // ← ★ ここで名前表示
+			ImGui::Text("Current Effect: %s", typeNames[current]);  // ここで名前表示
 
 			if (ImGui::Combo("Effect Type", &current, typeNames, IM_ARRAYSIZE(typeNames))) {
 				type_ = static_cast<OffScreenType>(current);
+				SetType(type_);
 			}
 		}
 
-		switch (type_) {
-		case OffScreenType::CopyImage:
-			copyImage_->ImGuiInfo();
-			break;
-		case OffScreenType::Grayscale:
-			grayscale_->ImGuiInfo();
-			break;
-		case OffScreenType::Vignette:
-			vignette_->ImGuiInfo();
-			break;
-		case OffScreenType::BoxFilter3x3:
-			boxFilter3x3_->ImGuiInfo();
-			break;
-		case OffScreenType::BoxFilter5x5:
-			boxFilter5x5_->ImGuiInfo();
-			break;
-		case OffScreenType::RadiusBlur:
-			radiusBlur_->ImGuiInfo();
-			break;
-		case OffScreenType::OutLine:
-			outLine_->ImGuiInfo();
-			break;
-		case OffScreenType::Dissolve:
-			dissolve_->ImGuiInfo();
-			break;
-		case OffScreenType::ShatterGlass:
-			shatterGlass_->ImGuiInfo();
-			break;
+		// エフェクトの詳細設定を表示
+		if (activePass_) {
+			activePass_->ImGuiInfo();
 		}
 
 		ImGui::End();
@@ -269,15 +170,7 @@ namespace MiiEngine {
 	ID3D12Resource* OffScreenRenderer::GetEffectBuffer() const { return effectTexture_->GetBuffer(); }
 
 	/// ===Effect=== ///
-	CopyImageEffect* OffScreenRenderer::GetCopyImage() { return copyImage_.get(); }
-	GrayscaleEffect* OffScreenRenderer::GetGrayscale() { return grayscale_.get(); }
-	VignetteEffect* OffScreenRenderer::GetVignette() { return vignette_.get(); }
-	OutLineEffect* OffScreenRenderer::GetOutLine() { return outLine_.get(); }
-	BoxFilter3x3Effect* OffScreenRenderer::GetBoxFilter3x3() { return boxFilter3x3_.get(); }
-	BoxFilter5x5Effect* OffScreenRenderer::GetBoxFilter5x5() { return boxFilter5x5_.get(); }
-	RadiusBlurEffect* OffScreenRenderer::GetRadiusBlur() { return radiusBlur_.get(); }
-	DissolveEffect* OffScreenRenderer::GetDissolve() { return dissolve_.get(); }
-	ShatterGlassEffect* OffScreenRenderer::GetShatterGlass() { return shatterGlass_.get(); }
+	RenderPass* OffScreenRenderer::GetRenderPass(OffScreenType type) const { return renderPass_.at(type).get();}
 
 	/// ===Type=== ///
 	OffScreenType OffScreenRenderer::GetType() { return type_; }
@@ -286,5 +179,11 @@ namespace MiiEngine {
 	/// Setter
 	///-------------------------------------------///
 	// Typeの設定
-	void OffScreenRenderer::SetType(OffScreenType type) { type_ = type; }
+	void OffScreenRenderer::SetType(OffScreenType type) {
+		// タイプを更新
+		type_ = type;
+
+		// タイプに対応するRenderPassをactivePass_に設定
+		activePass_ = renderPass_[type].get();
+	}
 }

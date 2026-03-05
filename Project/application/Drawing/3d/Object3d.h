@@ -1,7 +1,6 @@
 #pragma once
 /// ===Include=== ///
-#include "Engine/Graphics/3d/Model/Model.h"
-#include "Engine/Graphics/3d/Model/AnimationModel.h"
+#include "Engine/Graphics/3d/Model/ModelCommon.h"
 
 /// ===オブジェクトのタイプ=== ///
 enum class ObjectType {
@@ -83,8 +82,7 @@ public: /// ===Setter=== ///
 private: /// ===Variables(変数)=== ///
 
 	/// ===クラス=== ///
-	std::unique_ptr<MiiEngine::Model> model_;
-	std::unique_ptr<MiiEngine::AnimationModel> animationModel_;
+	std::unique_ptr<MiiEngine::ModelCommon> model_;
 
 	/// ===モデルかアニメーションモデルかを判断するフラグ=== ///
 	ObjectType type_ = ObjectType::Model;

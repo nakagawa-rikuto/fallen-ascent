@@ -164,9 +164,42 @@ namespace MiiEngine {
 	// Color
 	const Vector4& ModelCommon::GetColor() const { return color_; }
 
+	///-------------------------------------------/// 
+	/// 初期化 
+	///-------------------------------------------///
+	void ModelCommon::Initialize(const std::string& modelName, LightType type) {
+		modelName;
+		type;
+	}
 
 	///-------------------------------------------/// 
-	/// 初期化
+	/// 更新
+	///-------------------------------------------///
+	void ModelCommon::Update() {
+		/// ===カメラの設定=== ///
+		camera_ = Service::Camera::GetActiveCamera().get();
+
+		// MaterialDataの書き込み
+		MaterialDataWrite();
+		// Transform情報の書き込み
+		TransformDataWrite();
+		// Lightの書き込み
+		LightDataWrite();
+		// Cameraの書き込み
+		CameraDataWrite();
+		// 環境マップの書き込み
+		EnvironmentMapDataWrite();
+	}
+
+	///-------------------------------------------/// 
+	/// 描画 
+	///-------------------------------------------///
+	void ModelCommon::Draw(BlendMode mode) {
+		mode;
+	}
+
+	///-------------------------------------------/// 
+	/// 作成
 	///-------------------------------------------///
 	void ModelCommon::Create(ID3D12Device* device, LightType type) {
 		/// ===初期化時の設定=== ///
@@ -213,25 +246,6 @@ namespace MiiEngine {
 
 		/// ===Common=== ///
 		common_->Initialize(device, type);
-	}
-
-	///-------------------------------------------/// 
-	/// 更新
-	///-------------------------------------------///
-	void ModelCommon::Update() {
-		/// ===カメラの設定=== ///
-		camera_ = Service::Camera::GetActiveCamera().get();
-
-		// MaterialDataの書き込み
-		MaterialDataWrite();
-		// Transform情報の書き込み
-		TransformDataWrite();
-		// Lightの書き込み
-		LightDataWrite();
-		// Cameraの書き込み
-		CameraDataWrite();
-		// 環境マップの書き込み
-		EnvironmentMapDataWrite();
 	}
 
 	///-------------------------------------------/// 
