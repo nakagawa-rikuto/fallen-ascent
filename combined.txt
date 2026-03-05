@@ -7989,9 +7989,42 @@ namespace MiiEngine {
 	// Color
 	const Vector4& ModelCommon::GetColor() const { return color_; }
 
+	///-------------------------------------------/// 
+	/// 初期化 
+	///-------------------------------------------///
+	void ModelCommon::Initialize(const std::string& modelName, LightType type) {
+		modelName;
+		type;
+	}
 
 	///-------------------------------------------/// 
-	/// 初期化
+	/// 更新
+	///-------------------------------------------///
+	void ModelCommon::Update() {
+		/// ===カメラの設定=== ///
+		camera_ = Service::Camera::GetActiveCamera().get();
+
+		// MaterialDataの書き込み
+		MaterialDataWrite();
+		// Transform情報の書き込み
+		TransformDataWrite();
+		// Lightの書き込み
+		LightDataWrite();
+		// Cameraの書き込み
+		CameraDataWrite();
+		// 環境マップの書き込み
+		EnvironmentMapDataWrite();
+	}
+
+	///-------------------------------------------/// 
+	/// 描画 
+	///-------------------------------------------///
+	void ModelCommon::Draw(BlendMode mode) {
+		mode;
+	}
+
+	///-------------------------------------------/// 
+	/// 作成
 	///-------------------------------------------///
 	void ModelCommon::Create(ID3D12Device* device, LightType type) {
 		/// ===初期化時の設定=== ///
@@ -8038,25 +8071,6 @@ namespace MiiEngine {
 
 		/// ===Common=== ///
 		common_->Initialize(device, type);
-	}
-
-	///-------------------------------------------/// 
-	/// 更新
-	///-------------------------------------------///
-	void ModelCommon::Update() {
-		/// ===カメラの設定=== ///
-		camera_ = Service::Camera::GetActiveCamera().get();
-
-		// MaterialDataの書き込み
-		MaterialDataWrite();
-		// Transform情報の書き込み
-		TransformDataWrite();
-		// Lightの書き込み
-		LightDataWrite();
-		// Cameraの書き込み
-		CameraDataWrite();
-		// 環境マップの書き込み
-		EnvironmentMapDataWrite();
 	}
 
 	///-------------------------------------------/// 
@@ -8208,7 +8222,7 @@ namespace MiiEngine {
 		/// </summary>
 		/// <param name="modelName">初期化に使用するモデル名。</param>
 		/// <param name="type">ライトの種類を表す値（LightType）。</param>
-		virtual void Initialize(const std::string& modelName, LightType type) = 0;
+		virtual void Initialize(const std::string& modelName, LightType type);
 
 		/// <summary>
 		/// 更新処理
@@ -8219,7 +8233,7 @@ namespace MiiEngine {
 		/// 描画処理、純粋仮想関数
 		/// </summary>
 		/// <param name="mode">描画に使用するブレンドモード。BlendMode 列挙型で合成方法を指定します。</param>
-		virtual void Draw(BlendMode mode) = 0;
+		virtual void Draw(BlendMode mode);
 
 		/// <summary>
 		/// 生成処理
@@ -11599,6 +11613,16 @@ namespace MiiEngine {
 File Path: Project/Engine/Graphics/OffScreen/OffScreenRenderer.cpp
 ============================================================
 #include "OffScreenRenderer.h"
+// Effect
+#include "Effect/CopyImageEffect.h"
+#include "Effect/GrayscaleEffect.h"
+#include "Effect/VignetteEffect.h"
+#include "Effect/OutLineEffect.h"
+#include "Effect/BoxFilter3x3Effect.h"
+#include "Effect/BoxFilter5x5Effect.h"
+#include "Effect/RadiusBlurEffect.h"
+#include "Effect/DissolveEffect.h"
+#include "Effect/ShatterGlassEffect.h"
 // Service
 #include "Service/Render.h"
 // ImGui
@@ -11611,15 +11635,8 @@ namespace MiiEngine {
 	/// デストラクタ
 	///-------------------------------------------///
 	OffScreenRenderer::~OffScreenRenderer() {
-		copyImage_.reset();
-		grayscale_.reset();
-		vignette_.reset();
-		boxFilter3x3_.reset();
-		boxFilter5x5_.reset();
-		radiusBlur_.reset();
-		outLine_.reset();
-		dissolve_.reset();
-		shatterGlass_.reset();
+		activePass_ = nullptr;
+		renderPass_.clear();
 		sceneTexture_.reset();
 		effectTexture_.reset();
 	}
@@ -11643,50 +11660,25 @@ namespace MiiEngine {
 		effectTexture_->CreateRenderTexture(device);
 
 		/// ===RenderPassの登録=== ///
-		// SceneRenderPass
-		copyImage_ = std::make_shared<CopyImageEffect>();
-		copyImage_->Initialize(device, effectTexture_);
-		copyImage_->SetInputTexture(sceneTexture_);
+		// OffScreenTypeに対応するRenderPassを作成して登録
+		renderPass_[OffScreenType::CopyImage] = std::make_unique<CopyImageEffect>();
+		renderPass_[OffScreenType::Grayscale] = std::make_unique<GrayscaleEffect>();
+		renderPass_[OffScreenType::Vignette] = std::make_unique<VignetteEffect>();
+		renderPass_[OffScreenType::BoxFilter3x3] = std::make_unique<BoxFilter3x3Effect>();
+		renderPass_[OffScreenType::BoxFilter5x5] = std::make_unique<BoxFilter5x5Effect>();
+		renderPass_[OffScreenType::RadiusBlur] = std::make_unique<RadiusBlurEffect>();
+		renderPass_[OffScreenType::OutLine] = std::make_unique<OutLineEffect>();
+		renderPass_[OffScreenType::Dissolve] = std::make_unique<DissolveEffect>();
+		renderPass_[OffScreenType::ShatterGlass] = std::make_unique<ShatterGlassEffect>();
 
-		// グレースケールレンダーパス
-		grayscale_ = std::make_shared<GrayscaleEffect>();
-		grayscale_->Initialize(device, effectTexture_);
-		grayscale_->SetInputTexture(sceneTexture_);
+		// 各RenderPassの初期化と入力テクスチャの設定
+		for (auto& [type, pass] : renderPass_) {
+			pass->Initialize(device, effectTexture_);
+			pass->SetInputTexture(sceneTexture_);
+		}
 
-		// ビネットレンダーパス
-		vignette_ = std::make_shared<VignetteEffect>();
-		vignette_->Initialize(device, effectTexture_);
-		vignette_->SetInputTexture(sceneTexture_);
-
-		// Dissolveエフェクト
-		dissolve_ = std::make_shared<DissolveEffect>();
-		dissolve_->Initialize(device, effectTexture_);
-		dissolve_->SetInputTexture(sceneTexture_);
-
-		// 3x3ボックスフィルタレンダーパス
-		boxFilter3x3_ = std::make_shared<BoxFilter3x3Effect>();
-		boxFilter3x3_->Initialize(device, effectTexture_);
-		boxFilter3x3_->SetInputTexture(sceneTexture_);
-
-		// 5x5ボックスフィルタレンダーパス
-		boxFilter5x5_ = std::make_shared<BoxFilter5x5Effect>();
-		boxFilter5x5_->Initialize(device, effectTexture_);
-		boxFilter5x5_->SetInputTexture(sceneTexture_);
-
-		// 半径ブラーエフェクト
-		radiusBlur_ = std::make_shared<RadiusBlurEffect>();
-		radiusBlur_->Initialize(device, effectTexture_);
-		radiusBlur_->SetInputTexture(sceneTexture_);
-
-		// OutLineエフェクト
-		outLine_ = std::make_shared<OutLineEffect>();
-		outLine_->Initialize(device, effectTexture_);
-		outLine_->SetInputTexture(sceneTexture_);
-
-		// ShatterGlassエフェクト
-		shatterGlass_ = std::make_shared<ShatterGlassEffect>();
-		shatterGlass_->Initialize(device, effectTexture_);
-		shatterGlass_->SetInputTexture(sceneTexture_);
+		// デフォルトのエフェクトはコピーイメージ	
+		activePass_ = renderPass_[type_].get();
 	}
 
 	///-------------------------------------------/// 
@@ -11699,36 +11691,6 @@ namespace MiiEngine {
 		commandList->OMSetRenderTargets(1, &rtvHandel, false, &dsvHandle);
 		// RenderTextureのクリア
 		sceneTexture_->Clear(commandList);
-
-		/*switch (type_) {
-		case OffScreenType::CopyImage:
-			copyImage_->PreDraw(commandList, dsvHandle);
-			break;
-		case OffScreenType::Grayscale:
-			grayscale_->PreDraw(commandList, dsvHandle);
-			break;
-		case OffScreenType::Vignette:
-			vignette_->PreDraw(commandList, dsvHandle);
-			break;
-		case OffScreenType::BoxFilter3x3:
-			boxFilter3x3_->PreDraw(commandList, dsvHandle);
-			break;
-		case OffScreenType::BoxFilter5x5:
-			boxFilter5x5_->PreDraw(commandList, dsvHandle);
-			break;
-		case OffScreenType::RadiusBlur:
-			radiusBlur_->PreDraw(commandList, dsvHandle);
-			break;
-		case OffScreenType::OutLine:
-			outLine_->PreDraw(commandList, dsvHandle);
-			break;
-		case OffScreenType::Dissolve:
-			dissolve_->PreDraw(commandList, dsvHandle);
-			break;
-		case OffScreenType::ShatterGlass:
-			shatterGlass_->PreDraw(commandList, dsvHandle);
-			break;
-		}*/
 	}
 
 	///-------------------------------------------/// 
@@ -11742,34 +11704,9 @@ namespace MiiEngine {
 		// effectTexture_ をクリア
 		effectTexture_->Clear(commandList);
 
-		switch (type_) {
-		case OffScreenType::CopyImage:
-			copyImage_->Draw(commandList);
-			break;
-		case OffScreenType::Grayscale:
-			grayscale_->Draw(commandList);
-			break;
-		case OffScreenType::Vignette:
-			vignette_->Draw(commandList);
-			break;
-		case OffScreenType::BoxFilter3x3:
-			boxFilter3x3_->Draw(commandList);
-			break;
-		case OffScreenType::BoxFilter5x5:
-			boxFilter5x5_->Draw(commandList);
-			break;
-		case OffScreenType::RadiusBlur:
-			radiusBlur_->Draw(commandList);
-			break;
-		case OffScreenType::OutLine:
-			outLine_->Draw(commandList);
-			break;
-		case OffScreenType::Dissolve:
-			dissolve_->Draw(commandList);
-			break;
-		case OffScreenType::ShatterGlass:
-			shatterGlass_->Draw(commandList);
-			break;
+		// エフェクトの描画
+		if (activePass_) {
+			activePass_->Draw(commandList);
 		}
 	}
 
@@ -11798,6 +11735,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 #ifdef USE_IMGUI
 	void OffScreenRenderer::DrawImGui() {
+		// OffScreenTypeの名前配列
 		const char* typeNames[] = {
 			"CopyImage",
 			"Grayscale",
@@ -11810,43 +11748,20 @@ namespace MiiEngine {
 			"ShatterGlass",
 		};
 
+		// 現在のエフェクトタイプを整数に変換して表示
 		int current = static_cast<int>(type_);
 		if (ImGui::Begin("OffScreen Effect")) {
-			ImGui::Text("Current Effect: %s", typeNames[current]);  // ← ★ ここで名前表示
+			ImGui::Text("Current Effect: %s", typeNames[current]);  // ここで名前表示
 
 			if (ImGui::Combo("Effect Type", &current, typeNames, IM_ARRAYSIZE(typeNames))) {
 				type_ = static_cast<OffScreenType>(current);
+				SetType(type_);
 			}
 		}
 
-		switch (type_) {
-		case OffScreenType::CopyImage:
-			copyImage_->ImGuiInfo();
-			break;
-		case OffScreenType::Grayscale:
-			grayscale_->ImGuiInfo();
-			break;
-		case OffScreenType::Vignette:
-			vignette_->ImGuiInfo();
-			break;
-		case OffScreenType::BoxFilter3x3:
-			boxFilter3x3_->ImGuiInfo();
-			break;
-		case OffScreenType::BoxFilter5x5:
-			boxFilter5x5_->ImGuiInfo();
-			break;
-		case OffScreenType::RadiusBlur:
-			radiusBlur_->ImGuiInfo();
-			break;
-		case OffScreenType::OutLine:
-			outLine_->ImGuiInfo();
-			break;
-		case OffScreenType::Dissolve:
-			dissolve_->ImGuiInfo();
-			break;
-		case OffScreenType::ShatterGlass:
-			shatterGlass_->ImGuiInfo();
-			break;
+		// エフェクトの詳細設定を表示
+		if (activePass_) {
+			activePass_->ImGuiInfo();
 		}
 
 		ImGui::End();
@@ -11869,15 +11784,7 @@ namespace MiiEngine {
 	ID3D12Resource* OffScreenRenderer::GetEffectBuffer() const { return effectTexture_->GetBuffer(); }
 
 	/// ===Effect=== ///
-	CopyImageEffect* OffScreenRenderer::GetCopyImage() { return copyImage_.get(); }
-	GrayscaleEffect* OffScreenRenderer::GetGrayscale() { return grayscale_.get(); }
-	VignetteEffect* OffScreenRenderer::GetVignette() { return vignette_.get(); }
-	OutLineEffect* OffScreenRenderer::GetOutLine() { return outLine_.get(); }
-	BoxFilter3x3Effect* OffScreenRenderer::GetBoxFilter3x3() { return boxFilter3x3_.get(); }
-	BoxFilter5x5Effect* OffScreenRenderer::GetBoxFilter5x5() { return boxFilter5x5_.get(); }
-	RadiusBlurEffect* OffScreenRenderer::GetRadiusBlur() { return radiusBlur_.get(); }
-	DissolveEffect* OffScreenRenderer::GetDissolve() { return dissolve_.get(); }
-	ShatterGlassEffect* OffScreenRenderer::GetShatterGlass() { return shatterGlass_.get(); }
+	RenderPass* OffScreenRenderer::GetRenderPass(OffScreenType type) const { return renderPass_.at(type).get();}
 
 	/// ===Type=== ///
 	OffScreenType OffScreenRenderer::GetType() { return type_; }
@@ -11886,7 +11793,13 @@ namespace MiiEngine {
 	/// Setter
 	///-------------------------------------------///
 	// Typeの設定
-	void OffScreenRenderer::SetType(OffScreenType type) { type_ = type; }
+	void OffScreenRenderer::SetType(OffScreenType type) {
+		// タイプを更新
+		type_ = type;
+
+		// タイプに対応するRenderPassをactivePass_に設定
+		activePass_ = renderPass_[type].get();
+	}
 }
 
 ============================================================
@@ -11896,18 +11809,11 @@ File Path: Project/Engine/Graphics/OffScreen/OffScreenRenderer.h
 /// ===Include=== ///
 // c++
 #include <vector>
+#include <unordered_map>
 // Offscreen
 #include "RenderTexture.h"
-// Effect
-#include "Effect/CopyImageEffect.h"
-#include "Effect/GrayscaleEffect.h"
-#include "Effect/VignetteEffect.h"
-#include "Effect/OutLineEffect.h"
-#include "Effect/BoxFilter3x3Effect.h"
-#include "Effect/BoxFilter5x5Effect.h"
-#include "Effect/RadiusBlurEffect.h"
-#include "Effect/DissolveEffect.h"
-#include "Effect/ShatterGlassEffect.h"
+// RenderPass
+#include "RenderPass.h"
 // Data
 #include "Engine/DataInfo/OffScreenData.h"
 
@@ -11975,24 +11881,8 @@ namespace MiiEngine {
 		ID3D12Resource* GetEffectBuffer() const;
 
 	public: /// ===Getter=== ///
-		// コピーイメージエフェクトの取得
-		CopyImageEffect* GetCopyImage();
-		// グレースケールエフェクトの取得
-		GrayscaleEffect* GetGrayscale();
-		// ビネットエフェクトの取得
-		VignetteEffect* GetVignette();
-		// アウトラインエフェクトの取得
-		OutLineEffect* GetOutLine();
-		// 3x3ボックスフィルターエフェクトの取得
-		BoxFilter3x3Effect* GetBoxFilter3x3();
-		// 5x5ボックスフィルターエフェクトの取得
-		BoxFilter5x5Effect* GetBoxFilter5x5();
-		// 半径ぼかしエフェクトの取得
-		RadiusBlurEffect* GetRadiusBlur();
-		// ディゾルブエフェクトの取得
-		DissolveEffect* GetDissolve();
-		// 破片ガラスエフェクトの取得
-		ShatterGlassEffect* GetShatterGlass();
+		// 現在のRenderPassの取得
+		RenderPass* GetRenderPass(OffScreenType type) const;
 		// Pipelineのタイプの取得
 		OffScreenType GetType();
 
@@ -12001,19 +11891,15 @@ namespace MiiEngine {
 		void SetType(OffScreenType type);
 
 	private:
+		// シーン描画用のRenderTexture
 		std::shared_ptr<RenderTexture> sceneTexture_;
+		// エフェクト適用後のRenderTexture
 		std::shared_ptr<RenderTexture> effectTexture_;
 
-		// 各パス（あらかじめ生成済み）
-		std::shared_ptr<CopyImageEffect> copyImage_;
-		std::shared_ptr<GrayscaleEffect> grayscale_;
-		std::shared_ptr<VignetteEffect> vignette_;
-		std::shared_ptr<OutLineEffect> outLine_;
-		std::shared_ptr<BoxFilter3x3Effect> boxFilter3x3_;
-		std::shared_ptr<BoxFilter5x5Effect> boxFilter5x5_;
-		std::shared_ptr<RadiusBlurEffect> radiusBlur_;
-		std::shared_ptr<DissolveEffect> dissolve_;
-		std::shared_ptr<ShatterGlassEffect> shatterGlass_;
+		// RenderPassコンテナ
+		std::unordered_map<OffScreenType, std::unique_ptr<RenderPass>> renderPass_;
+		// 現在のRenderPass
+		RenderPass* activePass_ = nullptr;
 
 		// Pipelineのタイプ
 		OffScreenType type_ = OffScreenType::CopyImage;
@@ -31514,6 +31400,16 @@ File Path: Project/Service/PostEffect.cpp
 #include <cassert>
 // Engine
 #include "Engine/Graphics/OffScreen/OffScreenRenderer.h"
+// Effect
+#include "Engine/Graphics/OffScreen/Effect/CopyImageEffect.h"
+#include "Engine/Graphics/OffScreen/Effect/GrayscaleEffect.h"
+#include "Engine/Graphics/OffScreen/Effect/VignetteEffect.h"
+#include "Engine/Graphics/OffScreen/Effect/OutLineEffect.h"
+#include "Engine/Graphics/OffScreen/Effect/BoxFilter3x3Effect.h"
+#include "Engine/Graphics/OffScreen/Effect/BoxFilter5x5Effect.h"
+#include "Engine/Graphics/OffScreen/Effect/RadiusBlurEffect.h"
+#include "Engine/Graphics/OffScreen/Effect/DissolveEffect.h"
+#include "Engine/Graphics/OffScreen/Effect/ShatterGlassEffect.h"
 // Locator
 #include "Locator.h"
 
@@ -31528,23 +31424,35 @@ namespace Service {
 	}
 	// Dissolve
 	void PostEffect::SetDissolveData(MiiEngine::DissolveData data) {
-		if (Locator::GetOffScreenRenderer()->GetType() != OffScreenType::Dissolve) return;
-		return Locator::GetOffScreenRenderer()->GetDissolve()->SetData(data);
+		if (auto dissolve = dynamic_cast<DissolveEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(OffScreenType::Dissolve))) {
+			dissolve->SetData(data);
+		} else {
+			assert(false && "DissolveEffectが見つかりませんでした。");
+		}
 	}
 	// RadiusBlur
 	void PostEffect::SetRadiusBlurData(MiiEngine::RadiusBlurData data) {
-		if (Locator::GetOffScreenRenderer()->GetType() != OffScreenType::RadiusBlur) return;
-		return Locator::GetOffScreenRenderer()->GetRadiusBlur()->SetData(data);
+		if (auto radiusBlur = dynamic_cast<RadiusBlurEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(OffScreenType::RadiusBlur))) {
+			radiusBlur->SetData(data);
+		} else {
+			assert(false && "RadiusBlurEffectが見つかりませんでした。");
+		}
 	}
 	// Vignette
 	void PostEffect::SetVignetteData(MiiEngine::VignetteData data) {
-		if (Locator::GetOffScreenRenderer()->GetType() != OffScreenType::Vignette) return;
-		return Locator::GetOffScreenRenderer()->GetVignette()->SetData(data);
+		if (auto vignette = dynamic_cast<VignetteEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(OffScreenType::Vignette))) {
+			vignette->SetData(data);
+		} else {
+			assert(false && "VignetteEffectが見つかりませんでした。");
+		}
 	}
 	// ShatterGlass
 	void PostEffect::SetShatterGlassData(MiiEngine::ShatterGlassData data) {
-		if (Locator::GetOffScreenRenderer()->GetType() != OffScreenType::ShatterGlass) return;
-		return Locator::GetOffScreenRenderer()->GetShatterGlass()->SetData(data);
+		if (auto shatterGlass = dynamic_cast<ShatterGlassEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(OffScreenType::ShatterGlass))) {
+			shatterGlass->SetData(data);
+		} else {
+			assert(false && "ShatterGlassEffectが見つかりませんでした。");
+		}
 	}
 }
 
@@ -32389,6 +32297,8 @@ private:
 File Path: Project/application/Drawing/3d/Object3d.cpp
 ============================================================
 #include "Object3d.h"
+#include "Engine/Graphics/3d/Model/Model.h"
+#include "Engine/Graphics/3d/Model/AnimationModel.h"
 // C++
 #include <cassert>
 
@@ -32397,11 +32307,7 @@ using namespace MiiEngine;
 /// デストラクタ
 ///-------------------------------------------///
 Object3d::~Object3d() {
-	if (type_ == ObjectType::Model) {
-		model_.reset();
-	} else {
-		animationModel_.reset();
-	}
+	model_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -32410,13 +32316,14 @@ Object3d::~Object3d() {
 void Object3d::Init(ObjectType type, const std::string& modelName, MiiEngine::LightType light) {
 	// タイプの確認
 	type_ = type;
+
 	// それぞれ対応した方を生成
 	if (type_ == ObjectType::Model) {
 		model_ = std::make_unique<Model>();
 		model_->Initialize(modelName, light);
 	} else {
-		animationModel_ = std::make_unique<AnimationModel>();
-		animationModel_->Initialize(modelName, light);
+		model_ = std::make_unique<AnimationModel>();
+		model_->Initialize(modelName, light);
 	}
 }
 
@@ -32424,24 +32331,14 @@ void Object3d::Init(ObjectType type, const std::string& modelName, MiiEngine::Li
 /// 更新
 ///-------------------------------------------///
 void Object3d::Update() {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->Update();
-	} else {
-		animationModel_->Update();
-	}
+	model_->Update();
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
 void Object3d::Draw(MiiEngine::BlendMode mode) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->Draw(mode);
-	} else {
-		animationModel_->Draw(mode);
-	}
+	model_->Draw(mode);
 }
 
 ///-------------------------------------------/// 
@@ -32449,38 +32346,18 @@ void Object3d::Draw(MiiEngine::BlendMode mode) {
 ///-------------------------------------------///
 // SetParent
 void Object3d::SetParent(MiiEngine::ModelCommon* parent) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetParent(parent);
-	} else {
-		animationModel_->SetParent(parent);
-	}
+	model_->SetParent(parent);
 }
 // ClearParent
 void Object3d::ClearParent() {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->ClearParent();
-	} else {
-		animationModel_->ClearParent();
-	}
+	model_->ClearParent();
 }
 // Offset
 void Object3d::SetParentOffset(const Vector3& offset) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetParentOffset(offset);
-	} else {
-		animationModel_->SetParentOffset(offset);
-	}
+	model_->SetParentOffset(offset);
 } 
 const Vector3& Object3d::GetParentOffset() const {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		return model_->GetParentOffset();
-	} else {
-		return animationModel_->GetParentOffset();
-	}
+	return model_->GetParentOffset();
 }
 
 
@@ -32489,57 +32366,27 @@ const Vector3& Object3d::GetParentOffset() const {
 ///-------------------------------------------///
 // Translate
 const Vector3& Object3d::GetWorldTranslate() const {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		return model_->GetWorldTranslate();
-	} else {
-		return animationModel_->GetWorldTranslate();
-	}
+	return model_->GetWorldTranslate();
 }
 // Rotate
 const Quaternion& Object3d::GetWorldRotate() const {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		return model_->GetWorldRotate();
-	} else {
-		return animationModel_->GetWorldRotate();
-	}
+	return model_->GetWorldRotate();
 }
 // Scale
 const Vector3& Object3d::GetWorldScale() const {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		return model_->GetWorldScale();
-	} else {
-		return animationModel_->GetWorldScale();
-	}
+	return model_->GetWorldScale();
 }
 // Transform
 const MiiEngine::QuaternionTransform& Object3d::GetWorldTransform() const {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		return model_->GetWorldTransform();
-	} else {
-		return animationModel_->GetWorldTransform();
-	}
+	return model_->GetWorldTransform();
 }
 // Color
 const Vector4& Object3d::GetColor() const {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		return model_->GetColor();
-	} else {
-		return animationModel_->GetColor();
-	}
+	return model_->GetColor();
 }
 // ModelCommon
 MiiEngine::ModelCommon* Object3d::GetModelCommon() {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		return model_.get();
-	} else {
-		return animationModel_.get();
-	}
+	return model_.get();
 }
 
 
@@ -32548,76 +32395,37 @@ MiiEngine::ModelCommon* Object3d::GetModelCommon() {
 ///-------------------------------------------///
 // Translate
 void Object3d::SetTranslate(const Vector3& translate) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetTranslate(translate);
-	} else {
-		animationModel_->SetTranslate(translate);
-	}
+	model_->SetTranslate(translate);
 }
 // Rotate
 void Object3d::SetRotate(const Quaternion& rotate) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetRotate(rotate);
-	} else {
-		animationModel_->SetRotate(rotate);
-	}
+	model_->SetRotate(rotate);
 }
 // Scale
 void Object3d::SetScale(const Vector3& scale) {
-	//	タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetScale(scale);
-	} else {
-		animationModel_->SetScale(scale);
-	}
+	model_->SetScale(scale);
 }
 // Color
 void Object3d::SetColor(const Vector4& color) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetColor(color);
-	} else {
-		animationModel_->SetColor(color);
-	}
+	model_->SetColor(color);
 }
 // LightInfo
 void Object3d::SetLightData(MiiEngine::LightInfo light) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetLightData(light);
-	} else {
-		animationModel_->SetLightData(light);
-	}
+	model_->SetLightData(light);
 }
 // Light
 void Object3d::SetLight(MiiEngine::LightType type) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetLightType(type);
-	} else {
-		animationModel_->SetLightType(type);
-	}
+	model_->SetLightType(type);
 }
 // 環境マップ
 void Object3d::SetEnvironmentMapData(bool flag, float string) {
-	// タイプで分岐
-	if (type_ == ObjectType::Model) {
-		model_->SetEnvironmentMapData(flag, string);
-	} else {
-		animationModel_->SetEnvironmentMapData(flag, string);
-	}
+	model_->SetEnvironmentMapData(flag, string);
 }
 // Animation
 void Object3d::SetAnimation(const std::string& animationName, bool isLoop) {
-	// タイプで分岐
-	if (type_ == ObjectType::AnimationModel) {
-		animationModel_->SetAnimation(animationName, isLoop);
-	} else {
-		// タイプがアニメーションモデル出なければ強制的に止める
-		assert(0);
-	}
+	auto animationModel = dynamic_cast<AnimationModel*>(model_.get());
+	assert(!animationModel);
+	animationModel->SetAnimation(animationName, isLoop);
 }
 
 
@@ -32626,8 +32434,7 @@ File Path: Project/application/Drawing/3d/Object3d.h
 ============================================================
 #pragma once
 /// ===Include=== ///
-#include "Engine/Graphics/3d/Model/Model.h"
-#include "Engine/Graphics/3d/Model/AnimationModel.h"
+#include "Engine/Graphics/3d/Model/ModelCommon.h"
 
 /// ===オブジェクトのタイプ=== ///
 enum class ObjectType {
@@ -32709,8 +32516,7 @@ public: /// ===Setter=== ///
 private: /// ===Variables(変数)=== ///
 
 	/// ===クラス=== ///
-	std::unique_ptr<MiiEngine::Model> model_;
-	std::unique_ptr<MiiEngine::AnimationModel> animationModel_;
+	std::unique_ptr<MiiEngine::ModelCommon> model_;
 
 	/// ===モデルかアニメーションモデルかを判断するフラグ=== ///
 	ObjectType type_ = ObjectType::Model;
@@ -33599,11 +33405,7 @@ File Path: Project/application/Game/Camera/GameCamera.cpp
 /// デストラクタ
 ///-------------------------------------------///
 GameCamera::~GameCamera() {
-	if (type_ == CameraType::Normal) {
-		normal_.reset();
-	} else {
-		follow_.reset();
-	}
+	camera_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -33611,73 +33413,39 @@ GameCamera::~GameCamera() {
 ///-------------------------------------------///
 // WorldMatrix
 const Matrix4x4& GameCamera::GetWorldMatrix() const {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		return normal_->GetWorldMatrix();
-	} else {
-		// Followの削除
-		return follow_->GetWorldMatrix();
-	}
+	return camera_->GetWorldMatrix();
 }
 // ViewMatrix
 const Matrix4x4& GameCamera::GetViewMatrix() const {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		return normal_->GetViewMatrix();
-	} else {
-		// Followの削除
-		return follow_->GetViewMatrix();
-	}
+	return camera_->GetViewMatrix();
 }
 // ProjectionMatrix
 const Matrix4x4& GameCamera::GetProjectionMatrix() const {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		return normal_->GetProjectionMatrix();
-	} else {
-		// Followの削除
-		return follow_->GetProjectionMatrix();
-	}
+	return camera_->GetProjectionMatrix();
 }
 // ViewProjectionMatrix
 const Matrix4x4& GameCamera::GetViewProjectionMatrix() const {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		return normal_->GetViewProjectionMatrix();
-	} else {
-		// Followの削除
-		return follow_->GetViewProjectionMatrix();
-	}
+	return camera_->GetViewProjectionMatrix();
 }
 // Translate
 const Vector3& GameCamera::GetTranslate() const {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		return normal_->GetTranslate();
-	} else {
-		// Followの削除
-		return follow_->GetTranslate();
-	}
+	return camera_->GetTranslate();
 }
 // Rotate
 const Quaternion& GameCamera::GetRotate() const {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		return normal_->GetRotate();
-	} else {
-		// Followの削除
-		return follow_->GetRotate();
-	}
+	return camera_->GetRotate();
 }
 // Offset
 const Vector3& GameCamera::GetOffset() const {
-	assert(type_ == CameraType::Follow);
-	return follow_->GetOffset();
+	auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_);
+	assert(!follow);
+	return follow->GetOffset();
 }
 // OrbitingOffset
 const Vector3& GameCamera::GetOrbitingOffset() const {
-	assert(type_ == CameraType::Follow);
-	return follow_->GetOrbitingOffset();
+	auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_);
+	assert(!follow);
+	return follow->GetOrbitingOffset();
 }
 
 
@@ -33686,97 +33454,75 @@ const Vector3& GameCamera::GetOrbitingOffset() const {
 ///-------------------------------------------///
 // Translate
 void GameCamera::SetTranslate(const Vector3& translate) {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		normal_->SetTranslate(translate);
-	} else {
-		// Followの削除
-		follow_->SetTranslate(translate);
-	}
+	camera_->SetTranslate(translate);
 }
 // Rotate
 void GameCamera::SetRotate(const Quaternion& rotate) {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		normal_->SetRotate(rotate);
-	} else {
-		// Followの削除
-		follow_->SetRotate(rotate);
-	}
+	camera_->SetRotate(rotate);
 }
 // ForY
 void GameCamera::SetForY(const float& forY) {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		normal_->SetForY(forY);
-	} else {
-		// Followの削除
-		follow_->SetForY(forY);
-	}
+	camera_->SetForY(forY);
 }
 // AspectRatio
 void GameCamera::SetAspectRatio(const float& aspect) {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		normal_->SetAspectRatio(aspect);
-	} else {
-		// Followの削除
-		follow_->SetAspectRatio(aspect);
-	}
+	camera_->SetAspectRatio(aspect);
 }
 // NearClip
 void GameCamera::SetNearClip(const float& nearClip) {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		normal_->SetNearClip(nearClip);
-	} else {
-		// Followの削除
-		follow_->SetNearClip(nearClip);
-	}
+	camera_->SetNearClip(nearClip);
 }
 // FarClip
 void GameCamera::SetFarClip(const float& farClip) {
-	if (type_ == CameraType::Normal) {
-		// Normalの削除
-		normal_->SetFarClip(farClip);
-	} else {
-		// Followの削除
-		follow_->SetFarClip(farClip);
-	}
+	camera_->SetFarClip(farClip);
 }
 // FollowCameraの設定
 void GameCamera::SetFollowCamera(FollowCameraType type) {
-	if (type_ == CameraType::Normal) return;
-	follow_->SetFollowCamera(type);
+	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+		follow->SetFollowCamera(type);
+	}
+	return;
 }
 // 追従対象の座標を設定
 void GameCamera::SetTarget(Vector3* position, Quaternion* rotation) {
-	if (type_ == CameraType::Normal) return;
-	follow_->SetTarget(position, rotation);
+	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+		follow->SetTarget(position, rotation);
+	}
+	return;
 }
 // 追従のオフセット
 void GameCamera::SetOffset(const Vector3& offset) {
-	if (type_ == CameraType::Normal) return;
-	follow_->SetOffset(offset);
+	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+		follow->SetOffset(offset);
+	}
+	return;
 }
 void GameCamera::SetOrbitingOffset(const Vector3& offset) {
-	if (type_ == CameraType::Normal) return;
-	follow_->SetOrbitingOffset(offset);
+	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+		follow->SetOrbitingOffset(offset);
+	}
+	return;
 }
 // 追従速度を設定
 void GameCamera::SetFollowSpeed(float speed) {
-	if (type_ == CameraType::Normal) return;
-	follow_->SetFollowSpeed(speed);
+	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+		follow->SetFollowSpeed(speed);
+	}
+	return;
 }
 // 回転補間速度
 void GameCamera::SetLerpSpeed(float speed) {
-	if (type_ == CameraType::Normal) return;
-	follow_->SetLerpSpeed(speed);
+	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+		follow->SetLerpSpeed(speed);
+	}
+	return;
 }
 // 回転の重み
 void GameCamera::SetStick(const Vector2& stickValue) {
-	if (type_ == CameraType::Normal) return;
-	follow_->SetStick(stickValue);
+	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+		follow->SetStick(stickValue);
+	}
+	return;
 }
 
 ///-------------------------------------------/// 
@@ -33786,11 +33532,11 @@ void GameCamera::Init(CameraType type) {
 	type_ = type;
 
 	if (type_ == CameraType::Normal) {
-		normal_ = std::make_shared<MiiEngine::NormalCamera>();
-		normal_->Initialize();
+		camera_ = std::make_shared<MiiEngine::NormalCamera>();
+		camera_->Initialize();
 	} else {
-		follow_ = std::make_shared<MiiEngine::FollowCamera>();
-		follow_->Initialize();
+		camera_ = std::make_shared<MiiEngine::FollowCamera>();
+		camera_->Initialize();
 	}
 }
 
@@ -33798,11 +33544,7 @@ void GameCamera::Init(CameraType type) {
 /// 更新
 ///-------------------------------------------///
 void GameCamera::Update() {
-	if (type_ == CameraType::Normal) {
-		normal_->Update();
-	} else {
-		follow_->Update();
-	}
+	camera_->Update();
 }
 
 ///-------------------------------------------/// 
@@ -33810,11 +33552,7 @@ void GameCamera::Update() {
 ///-------------------------------------------///
 void GameCamera::ImGuiUpdate() {
 #ifdef USE_IMGUI
-	if (type_ == CameraType::Normal) {
-		normal_->ImGuiUpdate();
-	} else {
-		follow_->ImGuiUpdate();
-	}
+	camera_->ImGuiUpdate();
 #endif // USE_IMGUI
 }
 
@@ -33823,11 +33561,7 @@ void GameCamera::ImGuiUpdate() {
 ///-------------------------------------------///
 void GameCamera::DebugUpdate() {
 #ifdef _DEBUG
-	if (type_ == CameraType::Normal) {
-		normal_->DebugUpdate();
-	} else {
-		follow_->DebugUpdate();
-	}
+	camera_->DebugUpdate();
 #endif // _DEBUG
 }
 
@@ -33835,22 +33569,14 @@ void GameCamera::DebugUpdate() {
 /// シェイク開始処理
 ///-------------------------------------------///
 void GameCamera::StartShake(float intensity, float duration, float frequency) {
-	if (type_ == CameraType::Normal) {
-		normal_->StartShake(intensity, duration, frequency);
-	} else {
-		follow_->StartShake(intensity, duration, frequency);
-	}
+	camera_->StartShake(intensity, duration, frequency);
 }
 
 ///-------------------------------------------/// 
 /// シェイク処理終了
 ///-------------------------------------------///
 void GameCamera::StopShake() {
-	if (type_ == CameraType::Normal) {
-		normal_->StopShake();
-	} else {
-		follow_->StopShake();
-	}
+	camera_->StopShake();
 }
 
 ============================================================
@@ -33858,7 +33584,6 @@ File Path: Project/application/Game/Camera/GameCamera.h
 ============================================================
 #pragma once
 /// ===Include=== ///
-#include "Engine/Camera/NormalCamera.h"
 #include "Engine/Camera/FollowCamera.h"
 
 /// ===CameraType=== ///
@@ -33960,8 +33685,7 @@ public: /// ===Setter=== ///
 private:
 
 	/// ===クラス=== ///
-	std::shared_ptr<MiiEngine::NormalCamera> normal_; // 通常カメラ
-	std::shared_ptr<MiiEngine::FollowCamera> follow_; // 追従カメラ
+	std::shared_ptr<MiiEngine::NormalCamera> camera_; // 通常カメラ
 
 	/// ===カメラタイプ=== ///
 	CameraType type_ = CameraType::Normal;
