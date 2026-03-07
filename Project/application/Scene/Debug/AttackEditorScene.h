@@ -36,7 +36,7 @@ public:
 
 private:
     /// ===Camera=== ///
-    std::shared_ptr<GameCamera> camera_;
+    std::unique_ptr<GameCamera> camera_;
     /// ===Line=== ///
     std::unique_ptr<Line> line_;
     /// ===エディター=== ///

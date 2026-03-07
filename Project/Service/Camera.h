@@ -18,8 +18,8 @@ namespace Service {
 		/// 指定した名前でカメラを登録する静的関数。カメラ管理システムに新しいカメラを追加します。
 		/// </summary>
 		/// <param name="name">登録するカメラの識別名を示す文字列。</param>
-		/// <param name="camera">追加する GameCamera オブジェクトへの std::shared_ptr。管理対象のカメラを指すスマートポインタを渡します。</param>
-		static void AddCamera(const std::string& name, std::shared_ptr<GameCamera> camera);
+		/// <param name="camera">追加する GameCamera オブジェクトへの std::unique_ptr。管理対象のカメラを指すスマートポインタを渡します。</param>
+		static void AddCamera(const std::string& name, GameCamera* camera);
 
 		/// <summary>
 		/// 指定された名前の項目を削除する静的メソッドです。
@@ -36,8 +36,8 @@ namespace Service {
 		/// <summary>
 		/// 現在アクティブなカメラへの共有ポインタを取得します（静的メンバ関数）。
 		/// </summary>
-		/// <returns>アクティブな GameCamera を指す std::shared_ptr<GameCamera>。アクティブなカメラが存在しない場合は nullptr を返します。</returns>
-		static std::shared_ptr<GameCamera> GetActiveCamera();
+		/// <returns>アクティブな GameCamera を指すポインタ。アクティブなカメラが存在しない場合は nullptr を返します。</returns>
+		static GameCamera* GetActiveCamera();
 
 		/// <summary>
 		/// 指定した名前のカメラをアクティブに設定します。

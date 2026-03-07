@@ -54,7 +54,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void Primitive3DCommon::Update() {
 		/// ===カメラの設定=== ///
-		camera_ = Service::Camera::GetActiveCamera().get();
+		camera_ = Service::Camera::GetActiveCamera();
 
 		// MaterialDataの書き込み
 		MaterialDataWrite();

@@ -15,7 +15,7 @@ void GameSceneStartAnimationState::Enter(GameScene* gameScene) {
 
 	/// ===StartAnimationの初期化=== ///
 	startAnimation_ = std::make_unique<StartAnimation>();
-	startAnimation_->Initialize(gameScene_->GetPlayer(), Service::Camera::GetActiveCamera().get());
+	startAnimation_->Initialize(gameScene_->GetPlayer(), Service::Camera::GetActiveCamera());
 }
 
 ///-------------------------------------------/// 

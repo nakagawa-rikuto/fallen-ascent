@@ -10,6 +10,7 @@ namespace MiiEngine {
 	/// デストラクタ
 	///-------------------------------------------///
 	IScene::~IScene() {
+		Service::Camera::Remove("Default");
 		defaultCamera_.reset();
 	}
 
@@ -24,12 +25,12 @@ namespace MiiEngine {
 	void IScene::Initialize() {
 
 		/// ===デフォルトカメラの生成=== ///
-		defaultCamera_ = std::make_shared<GameCamera>();
-		defaultCamera_->Init(CameraType::Normal);
+		defaultCamera_ = std::make_unique<GameCamera>();
+		defaultCamera_->Init(std::make_unique<NormalCamera>());
 		defaultCamera_->SetTranslate({ 0.0f, 0.0f, -50.0f });
 
 		// デフォルトカメラの設定
-		Service::Camera::AddCamera("Default", defaultCamera_);
+		Service::Camera::AddCamera("Default", defaultCamera_.get());
 		Service::Camera::SetActiveCamera("Default");
 	}
 

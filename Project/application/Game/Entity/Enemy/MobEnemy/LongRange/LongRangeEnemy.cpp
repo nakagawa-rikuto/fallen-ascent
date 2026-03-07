@@ -42,7 +42,7 @@ void LongRangeEnemy::Initialize() {
 
 	/// ===Object3d=== ///
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "LongEnemy");
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "LongEnemy");
 
 	/// ===MobEnemyの初期化=== ///
 	MobEnemy::Initialize();

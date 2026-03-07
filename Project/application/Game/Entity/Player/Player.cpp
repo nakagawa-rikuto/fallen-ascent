@@ -57,11 +57,11 @@ void Player::InitGame(const Vector3& translate) {
 ///-------------------------------------------///
 void Player::Initialize() {
 	// Cameraの設定
-	camera_ = Service::Camera::GetActiveCamera().get();
+	camera_ = Service::Camera::GetActiveCamera();
 
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "Player");
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "Player");
 
 	// GameCharacterの設定
 	GameCharacter::Initialize();

@@ -31,7 +31,7 @@ void BaseEnemy::SetInvincibleTime() {
 ///-------------------------------------------///
 void BaseEnemy::Initialize() {
 	// カメラの取得
-	camera_ = Service::Camera::GetActiveCamera().get();
+	camera_ = Service::Camera::GetActiveCamera();
 
 	/// ===GameCharacter=== ///
 	GameCharacter::Initialize();

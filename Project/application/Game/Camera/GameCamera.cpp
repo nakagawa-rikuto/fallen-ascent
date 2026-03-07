@@ -37,14 +37,14 @@ const Quaternion& GameCamera::GetRotate() const {
 }
 // Offset
 const Vector3& GameCamera::GetOffset() const {
-	auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_);
-	assert(!follow);
+	auto follow = dynamic_cast<MiiEngine::FollowCamera*>(camera_.get());
+	assert(follow);
 	return follow->GetOffset();
 }
 // OrbitingOffset
 const Vector3& GameCamera::GetOrbitingOffset() const {
-	auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_);
-	assert(!follow);
+	auto follow = dynamic_cast<MiiEngine::FollowCamera*>(camera_.get());
+	assert(follow);
 	return follow->GetOrbitingOffset();
 }
 
@@ -78,48 +78,48 @@ void GameCamera::SetFarClip(const float& farClip) {
 }
 // FollowCameraの設定
 void GameCamera::SetFollowCamera(FollowCameraType type) {
-	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+	if (auto follow = dynamic_cast<MiiEngine::FollowCamera*>(camera_.get())) {
 		follow->SetFollowCamera(type);
 	}
 	return;
 }
 // 追従対象の座標を設定
 void GameCamera::SetTarget(Vector3* position, Quaternion* rotation) {
-	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+	if (auto follow = dynamic_cast<MiiEngine::FollowCamera*>(camera_.get())) {
 		follow->SetTarget(position, rotation);
 	}
 	return;
 }
 // 追従のオフセット
 void GameCamera::SetOffset(const Vector3& offset) {
-	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+	if (auto follow = dynamic_cast<MiiEngine::FollowCamera*>(camera_.get())) {
 		follow->SetOffset(offset);
 	}
 	return;
 }
 void GameCamera::SetOrbitingOffset(const Vector3& offset) {
-	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+	if (auto follow = dynamic_cast<MiiEngine::FollowCamera*>(camera_.get())) {
 		follow->SetOrbitingOffset(offset);
 	}
 	return;
 }
 // 追従速度を設定
 void GameCamera::SetFollowSpeed(float speed) {
-	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+	if (auto follow = dynamic_cast<MiiEngine::FollowCamera*>(camera_.get())) {
 		follow->SetFollowSpeed(speed);
 	}
 	return;
 }
 // 回転補間速度
 void GameCamera::SetLerpSpeed(float speed) {
-	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+	if (auto follow = dynamic_cast<MiiEngine::FollowCamera*>(camera_.get())) {
 		follow->SetLerpSpeed(speed);
 	}
 	return;
 }
 // 回転の重み
 void GameCamera::SetStick(const Vector2& stickValue) {
-	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
+	if (auto follow = dynamic_cast<MiiEngine::FollowCamera*>(camera_.get())) {
 		follow->SetStick(stickValue);
 	}
 	return;
@@ -128,16 +128,11 @@ void GameCamera::SetStick(const Vector2& stickValue) {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void GameCamera::Init(CameraType type) {
-	type_ = type;
-
-	if (type_ == CameraType::Normal) {
-		camera_ = std::make_shared<MiiEngine::NormalCamera>();
-		camera_->Initialize();
-	} else {
-		camera_ = std::make_shared<MiiEngine::FollowCamera>();
-		camera_->Initialize();
-	}
+void GameCamera::Init(std::unique_ptr<MiiEngine::NormalCamera> camera) {
+	// 生成
+	camera_ = std::move(camera);
+	// 初期化
+	camera_->Initialize();
 }
 
 ///-------------------------------------------/// 

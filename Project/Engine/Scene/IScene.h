@@ -33,7 +33,7 @@ namespace MiiEngine {
 		// シーンマネージャ
 		SceneManager* sceneManager_ = nullptr;
 		// Camera
-		std::shared_ptr<GameCamera> defaultCamera_;
+		std::unique_ptr<GameCamera> defaultCamera_;
 	};
 }
 

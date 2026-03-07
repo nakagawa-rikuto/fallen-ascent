@@ -2,12 +2,6 @@
 /// ===Include=== ///
 #include "Engine/Camera/FollowCamera.h"
 
-/// ===CameraType=== ///
-enum class CameraType {
-	Normal,   // 通常カメラ
-	Follow,   // 追従カメラ
-};
-
 ///-------------------------------------------/// 
 /// Gameで使用するカメラ
 ///-------------------------------------------///
@@ -21,7 +15,7 @@ public:
 	/// 初期化処理
 	/// </summary>
 	/// <param name="type">初期化に使用するカメラの種類を指定します。</param>
-	void Init(CameraType type);
+	void Init(std::unique_ptr<MiiEngine::NormalCamera> camera);
 
 	/// <summary>
 	/// 更新処理
@@ -101,9 +95,6 @@ public: /// ===Setter=== ///
 private:
 
 	/// ===クラス=== ///
-	std::shared_ptr<MiiEngine::NormalCamera> camera_; // 通常カメラ
-
-	/// ===カメラタイプ=== ///
-	CameraType type_ = CameraType::Normal;
+	std::unique_ptr<MiiEngine::NormalCamera> camera_; // 通常カメラ
 };
 

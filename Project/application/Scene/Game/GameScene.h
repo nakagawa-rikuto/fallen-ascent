@@ -51,7 +51,7 @@ private:/// ===メンバ変数=== ///
 
 	/// ===Classの宣言=== /// 
 	// Camera
-	std::shared_ptr<GameCamera> camera_;
+	std::unique_ptr<GameCamera> camera_;
 	// Player
 	std::unique_ptr<Player> player_;
 	// Enemy

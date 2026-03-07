@@ -86,7 +86,7 @@ namespace MiiEngine {
 	/// 更新
 	///-------------------------------------------///
 	void OceanCommon::Update() {
-		camera_ = Service::Camera::GetActiveCamera().get();
+		camera_ = Service::Camera::GetActiveCamera();
 
 		MaterialDataWrite();
 		TransformDataWrite();

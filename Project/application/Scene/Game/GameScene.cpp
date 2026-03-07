@@ -37,6 +37,9 @@ GameScene::~GameScene() {
 	//AudioService::StopSound("title");
 	// Colliderのリセット
 	Service::Collision::Reset();
+	// Camera
+	Service::Camera::Remove("Game");
+	camera_.reset();
 	// State
 	currentState_.reset();
 	// Camera
@@ -57,11 +60,11 @@ void GameScene::Initialize() {
 	IScene::Initialize();
 
 	/// ===Camera=== ///
-	camera_ = std::make_shared<GameCamera>();
-	camera_->Init(CameraType::Follow);
+	camera_ = std::make_unique<GameCamera>();
+	camera_->Init(std::make_unique<MiiEngine::FollowCamera>());
 	SetUpCamera();
 	// Managerに追加,アクティブに
-	Service::Camera::AddCamera("Game", camera_);
+	Service::Camera::AddCamera("Game", camera_.get());
 	Service::Camera::SetActiveCamera("Game");
 
 	/// ===GameStage=== ///
@@ -97,7 +100,7 @@ void GameScene::Update() {
 	ImGui::End();
 
 	// Camera
-	if (Service::Camera::GetActiveCamera() == camera_) {
+	if (Service::Camera::GetActiveCamera() == camera_.get()) {
 		camera_->ImGuiUpdate();
 		camera_->DebugUpdate();
 	} else {
@@ -107,7 +110,7 @@ void GameScene::Update() {
 
 	// デバッグカメラの切り替え
 	if (Service::Input::TriggerKey(DIK_TAB)) {
-		if (Service::Camera::GetActiveCamera() == camera_) {
+		if (Service::Camera::GetActiveCamera() == camera_.get()) {
 			Service::Camera::SetActiveCamera("Default");
 		} else {
 			Service::Camera::SetActiveCamera("Game");

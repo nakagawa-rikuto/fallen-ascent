@@ -8,7 +8,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	CameraManager::CameraManager() = default;
 	CameraManager::~CameraManager() {
-		activeCamera_.reset();
+		activeCamera_ = nullptr;
 		cameras_.clear();
 	}
 
@@ -25,11 +25,11 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// カメラを追加
 	///-------------------------------------------///
-	void CameraManager::AddCamera(const std::string& name, std::shared_ptr<GameCamera> camera) {
+	void CameraManager::AddCamera(const std::string& name, GameCamera* camera) {
 		cameras_[name] = camera;
 
 		if (!activeCamera_) {
-			activeCamera_ = camera; // 最初に追加されたカメラをデフォルトでアクティブにする
+			activeCamera_ = cameras_[name]; // 最初に追加されたカメラをデフォルトでアクティブにする
 		}
 	}
 
@@ -58,7 +58,7 @@ namespace MiiEngine {
 	/// Getter
 	///-------------------------------------------///
 	// 指定されたカメラのGetter
-	std::shared_ptr<GameCamera> CameraManager::GetCamera(const std::string& name) const {
+	GameCamera* CameraManager::GetCamera(const std::string& name) const {
 		auto it = cameras_.find(name);
 		if (it != cameras_.end()) {
 			return it->second;
@@ -66,7 +66,7 @@ namespace MiiEngine {
 		return nullptr;
 	}
 	// アクティブカメラのGetter
-	std::shared_ptr<GameCamera> CameraManager::GetActiveCamera() const {
+	GameCamera* CameraManager::GetActiveCamera() const {
 		return activeCamera_;
 	}
 
@@ -77,9 +77,8 @@ namespace MiiEngine {
 	void CameraManager::SetActiveCamera(const std::string& name) {
 		auto it = cameras_.find(name);
 		if (it != cameras_.end()) {
-			activeCamera_ = it->second;
+			 activeCamera_ = it->second;
 		} else {
-			// カメラが存在しない場合の警告
 			assert(false && "指定されたカメラが存在しません");
 		}
 	}

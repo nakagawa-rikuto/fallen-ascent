@@ -103,7 +103,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void SkyBox::Update() {
 		/// ===カメラの設定=== ///
-		camera_ = Service::Camera::GetActiveCamera().get();
+		camera_ = Service::Camera::GetActiveCamera();
 
 		/// ===データの書き込み=== ///
 		VertexDataWrite();
