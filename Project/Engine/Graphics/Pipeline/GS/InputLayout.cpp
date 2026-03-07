@@ -20,8 +20,6 @@ namespace MiiEngine {
 			inputElementDescs2[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 		}
 
-		/// ====== ///
-
 		/// ===Line3D用=== ///
 		static D3D12_INPUT_ELEMENT_DESC inputElementDescsLine[2] = {};
 		// デスクに対応した設定
