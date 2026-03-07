@@ -15,7 +15,7 @@ void GameSceneGameOverAnimationState::Enter(GameScene* gameScene) {
 
 	/// ===GameOverAnimation=== ///
 	gameOverAnimation_ = std::make_unique<GameOverAnimation>();
-	gameOverAnimation_->Initialize(Service::Camera::GetActiveCamera().get());
+	gameOverAnimation_->Initialize(gameScene_->GetCamera());
 }
 
 ///-------------------------------------------/// 

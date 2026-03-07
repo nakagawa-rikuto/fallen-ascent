@@ -20,7 +20,7 @@ PlayerHand::~PlayerHand() {
 void PlayerHand::Initialize() {
 	// モデルの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "PlayerHand");
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "PlayerHand");
 
 	/// ===OBBCollider=== ///
 	OBBCollider::Initialize();

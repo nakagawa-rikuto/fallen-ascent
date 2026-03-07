@@ -10,10 +10,10 @@
 #include <memory>
 #include <string>
 
-/// ===前方宣言=== ///
-class GameCamera;
-
 namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class CameraCommon;
+
 	///=====================================================/// 
 	/// プリミティブコモン
 	///=====================================================///
@@ -83,7 +83,7 @@ namespace MiiEngine {
 		LightInfo light_;
 
 		/// ===Camera=== ///
-		GameCamera* camera_ = nullptr;
+		MiiEngine::CameraCommon* camera_ = nullptr;
 
 		/// ===環境マップ=== ///
 		EnvironmentMapInfo environmentMapInfo_;

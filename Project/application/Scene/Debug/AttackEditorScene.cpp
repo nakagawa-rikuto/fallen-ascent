@@ -15,13 +15,16 @@
 /// デストラクタ
 ///-------------------------------------------///
 AttackEditorScene::~AttackEditorScene() {
+    // ISceneのデストラクタ
+    IScene::~IScene();
     attackEditor_.reset();
 	previewPlayer_.reset();
     line_.reset();
     // Colliderのリセット
     Service::Collision::Reset();
-    // ISceneのデストラクタ
-    IScene::~IScene();
+    // Camera
+    Service::Camera::Remove("Editor");
+    camera_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -35,13 +38,13 @@ void AttackEditorScene::Initialize() {
     Service::Particle::LoadParticleDefinition("WeaponAttack.json");
 
     /// ===カメラ=== ///
-    camera_ = std::make_shared<GameCamera>();
-    camera_->Init(CameraType::Follow);
+    camera_ = std::make_unique<MiiEngine::FollowCamera>();
+    camera_->Initialize();
     camera_->SetTranslate(cameraPosition_);
     camera_->SetRotate(cameraRotation_);
-    camera_->SetFollowCamera(FollowCameraType::Orbiting);
+    camera_->SetFollowCamera(MiiEngine::FollowCameraType::Orbiting);
     // カメラの設定
-    Service::Camera::AddCamera("Editor", camera_);
+    Service::Camera::AddCamera("Editor", camera_.get());
     Service::Camera::SetActiveCamera("Editor");
 
     /// ===エディターの初期化=== ///

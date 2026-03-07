@@ -86,7 +86,7 @@ public: /// ===Setter=== ///
 
 protected: /// ===変数の宣言=== ///
 
-	GameCamera* camera_ = nullptr; // カメラ
+	MiiEngine::CameraCommon* camera_ = nullptr; // カメラ
 	Player* player_ = nullptr; // Player
 
 	bool isTentativeDeath_ = false; // 仮死亡フラグ

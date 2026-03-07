@@ -1,6 +1,4 @@
 #include "Object3d.h"
-#include "Engine/Graphics/3d/Model/Model.h"
-#include "Engine/Graphics/3d/Model/AnimationModel.h"
 // C++
 #include <cassert>
 
@@ -15,18 +13,11 @@ Object3d::~Object3d() {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void Object3d::Init(ObjectType type, const std::string& modelName, MiiEngine::LightType light) {
-	// タイプの確認
-	type_ = type;
-
-	// それぞれ対応した方を生成
-	if (type_ == ObjectType::Model) {
-		model_ = std::make_unique<Model>();
-		model_->Initialize(modelName, light);
-	} else {
-		model_ = std::make_unique<AnimationModel>();
-		model_->Initialize(modelName, light);
-	}
+void Object3d::Init(std::unique_ptr<ModelCommon> model, const std::string& modelName, MiiEngine::LightType light) {
+	// 生成。
+	model_ = std::move(model);
+	// 初期化
+	model_->Initialize(modelName, light);
 }
 
 ///-------------------------------------------/// 
@@ -122,10 +113,4 @@ void Object3d::SetLight(MiiEngine::LightType type) {
 // 環境マップ
 void Object3d::SetEnvironmentMapData(bool flag, float string) {
 	model_->SetEnvironmentMapData(flag, string);
-}
-// Animation
-void Object3d::SetAnimation(const std::string& animationName, bool isLoop) {
-	auto animationModel = dynamic_cast<AnimationModel*>(model_.get());
-	assert(!animationModel);
-	animationModel->SetAnimation(animationName, isLoop);
 }

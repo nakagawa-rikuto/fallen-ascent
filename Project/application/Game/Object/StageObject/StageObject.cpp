@@ -16,7 +16,7 @@ void StageObject::GameInit(const std::string& modelName) {
 	// Object3dの生成
 	object3d_ = std::make_unique<Object3d>();
 	// 初期化
-	object3d_->Init(ObjectType::Model, modelName);
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), modelName);
 	// 初期化処理
 	GameObject::Initialize();
 	name_ = MiiEngine::ColliderName::Object; // コライダー名を設定

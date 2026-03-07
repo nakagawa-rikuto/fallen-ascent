@@ -1,7 +1,7 @@
 #include "ParticleGroup.h"
 #include "ParticleFactory.h"
 // Camera
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/Base/CameraCommon.h"
 // Service
 #include "Service/GraphicsResourceGetter.h"
 #include "Service/Camera.h"
@@ -53,7 +53,7 @@ namespace MiiEngine {
         InstancingInit(definition_.modelName, translate, group_.maxInstance, definition_.shape);
 
         /// ===Cameraの設定=== ///
-        group_.camera = Service::Camera::GetActiveCamera().get();
+        group_.camera = Service::Camera::GetActiveCamera();
 
         /// ===発生タイマーの初期化=== ///
         group_.frequencyTimer = 0.0f;

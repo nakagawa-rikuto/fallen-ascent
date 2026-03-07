@@ -36,7 +36,7 @@ void BossEnemy::Initialize() {
 
 	/// ===Object3Dの初期化=== ///
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "Boss");
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "Boss");
 
 	/// ===BaseEnemyの初期化=== ///
 	BaseEnemy::Initialize();

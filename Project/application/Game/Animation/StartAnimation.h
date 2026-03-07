@@ -4,7 +4,9 @@
 
 /// ===前方宣言=== ///
 class Player;
-class GameCamera;
+namespace MiiEngine {
+	class FollowCamera;
+}
 
 ///=====================================================/// 
 /// StartAnimation
@@ -19,7 +21,7 @@ public:
 	/// </summary>
 	/// <param name="player">プレイヤーのポインタ</param>
 	/// <param name="camera">カメラのポインタ</param>
-	void Initialize(Player* player, GameCamera* camera);
+	void Initialize(Player* player, MiiEngine::FollowCamera* camera);
 
 	/// <summary>
 	/// 更新処理
@@ -40,7 +42,7 @@ public: /// ===Getter=== ///
 private:
 	/// ===ポインタ=== ///
 	Player* player_ = nullptr;
-	GameCamera* camera_ = nullptr;
+	MiiEngine::FollowCamera* camera_ = nullptr;
 
 	/// ===アニメーション制御=== ///
 	float timer_ = 0.0f;              // アニメーション用タイマー

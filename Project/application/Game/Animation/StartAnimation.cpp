@@ -1,7 +1,8 @@
 #include "StartAnimation.h"
-// Player & Camera
+// Player
 #include "application/Game/Entity/Player/Player.h"
-#include "application/Game/Camera/GameCamera.h"
+// Camera
+#include "Engine/Camera/FollowCamera.h"
 // Service
 #include "Service/DeltaTime.h"
 // Math
@@ -22,7 +23,7 @@ StartAnimation::~StartAnimation() {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void StartAnimation::Initialize(Player* player, GameCamera* camera) {
+void StartAnimation::Initialize(Player* player, MiiEngine::FollowCamera* camera) {
 	player_ = player;
 	camera_ = camera;
 

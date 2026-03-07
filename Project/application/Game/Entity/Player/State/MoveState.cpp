@@ -2,9 +2,10 @@
 // Service
 #include "Service/Input.h"
 #include "Service/Particle.h"
-// Player, Camera
+// Player
 #include "application/Game/Entity/Player/Player.h"
-#include "application/Game/Camera/GameCamera.h"
+// Camera
+#include "Engine/Camera/Base/CameraCommon.h"
 // State
 #include "RootState.h"
 #include "AvoidanceState.h"
@@ -16,7 +17,7 @@
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
 ///-------------------------------------------///
-void MoveState::Enter(Player* player, GameCamera* camera) {
+void MoveState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
@@ -34,7 +35,7 @@ void MoveState::Enter(Player* player, GameCamera* camera) {
 ///-------------------------------------------/// 
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void MoveState::Update(Player * player, GameCamera* camera) {
+void MoveState::Update(Player * player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;

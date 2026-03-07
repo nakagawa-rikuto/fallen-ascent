@@ -9,10 +9,10 @@
 // c++
 #include <memory>
 
-/// ===前方宣言=== ///
-class GameCamera;
-
 namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class CameraCommon;
+
 	///=====================================================/// 
 	/// SkyBox
 	///=====================================================///
@@ -86,7 +86,7 @@ namespace MiiEngine {
 		EulerTransform uvTransform_;
 
 		/// ===カメラ=== ///
-		GameCamera* camera_ = nullptr;
+		MiiEngine::CameraCommon* camera_ = nullptr;
 
 		/// ===プリミティブ情報=== ///
 		QuaternionTransform worldTransform_;

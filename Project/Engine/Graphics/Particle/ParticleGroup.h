@@ -9,10 +9,10 @@
 #include <random>
 #include <memory>
 
-/// ===前方宣言=== ///
-class GameCamera;
-
 namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class CameraCommon;
+
 	///=====================================================/// 
 	/// パーティクルのグループ
 	///=====================================================///
@@ -122,7 +122,7 @@ namespace MiiEngine {
 			uint32_t maxInstance;                        // パーティクルの最大数
 			uint32_t numInstance;                        // 現在のインスタンス数
 			float frequencyTimer;                        // 発生頻度タイマー
-			::GameCamera* camera = nullptr;
+			CameraCommon* camera = nullptr;
 			bool hasEmitted;                             // 初回発生済みフラグ（バースト用）
 
 			// 軌跡パーティクル用

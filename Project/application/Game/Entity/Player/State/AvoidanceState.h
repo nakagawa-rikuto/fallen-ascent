@@ -17,14 +17,14 @@ public:
 	/// </summary>
 	/// <param name="player">処理対象のプレイヤーを指すポインタ。</param>
 	/// <param name="camera">現在のゲームカメラを指すポインタ。エントリ処理でカメラの状態や視点を使用する可能性がある。</param>
-	void Enter(Player* player, GameCamera* camera) override;
+	void Enter(Player* player, MiiEngine::CameraCommon* camera) override;
 
 	/// <summary>
 	/// ステート時の更新処理
 	/// </summary>
 	/// <param name="player">更新対象のプレイヤーを指すポインタ。</param>
 	/// <param name="camera">更新処理に使用するゲームカメラを指すポインタ。</param>
-	void Update(Player* player, GameCamera* camera) override;
+	void Update(Player* player, MiiEngine::CameraCommon* camera) override;
 
 	/// <summary>
 	/// ステートの終了処理

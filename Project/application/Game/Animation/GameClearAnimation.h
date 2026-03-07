@@ -4,7 +4,9 @@
 
 /// ===前方宣言=== ///
 class Player;
-class GameCamera;
+namespace MiiEngine {
+	class FollowCamera;
+}
 
 /// ===アニメーションフェーズ=== ///
 enum class ClearAnimationPhase {
@@ -26,7 +28,7 @@ public:
 	/// </summary>
 	/// <param name="player">プレイヤーのポインタ</param>
 	/// <param name="camera">カメラのポインタ</param>
-	void Initialize(Player* player, GameCamera* camera);
+	void Initialize(Player* player, MiiEngine::FollowCamera* camera);
 
 	/// <summary>
 	/// 更新処理
@@ -47,7 +49,7 @@ public:
 private:
 	/// ===メンバ変数=== ///
 	Player* player_ = nullptr;      // プレイヤーへの参照
-	GameCamera* camera_ = nullptr;  // カメラへの参照
+	MiiEngine::FollowCamera* camera_ = nullptr;  // カメラへの参照
 
 	// 現在のフェーズ
 	ClearAnimationPhase currentPhase_ = ClearAnimationPhase::CameraRotation;

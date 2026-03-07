@@ -27,7 +27,7 @@ void PlayerWeapon::Initialize() {
 
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "PlayerWeapon");
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "PlayerWeapon");
 	object3d_->SetRotate({ 0.0f, 40.0f, 0.0f, 1.0f });
 
 	/// ===OBBCollider=== ///

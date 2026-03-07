@@ -12,7 +12,7 @@
 ///-------------------------------------------/// 
 /// 状態に入ったときに呼ばれる
 ///-------------------------------------------///
-void AttackState::Enter(Player* player, GameCamera* camera) {
+void AttackState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
@@ -24,7 +24,7 @@ void AttackState::Enter(Player* player, GameCamera* camera) {
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
-void AttackState::Update(Player* player, GameCamera* camera) {
+void AttackState::Update(Player* player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;

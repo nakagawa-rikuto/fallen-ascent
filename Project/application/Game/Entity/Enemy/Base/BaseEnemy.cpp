@@ -1,6 +1,4 @@
 #include "BaseEnemy.h"
-// Camera
-#include "application/Game/Camera/GameCamera.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // Service
@@ -31,7 +29,7 @@ void BaseEnemy::SetInvincibleTime() {
 ///-------------------------------------------///
 void BaseEnemy::Initialize() {
 	// カメラの取得
-	camera_ = Service::Camera::GetActiveCamera().get();
+	camera_ = Service::Camera::GetActiveCamera();
 
 	/// ===GameCharacter=== ///
 	GameCharacter::Initialize();

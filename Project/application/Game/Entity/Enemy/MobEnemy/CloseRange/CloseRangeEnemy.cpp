@@ -46,7 +46,7 @@ void CloseRangeEnemy::Initialize() {
 
 	/// ===Object=== ///
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "CloseEnemy");
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "CloseEnemy");
 
 	/// ===MobEnemyの初期化=== ///
 	MobEnemy::Initialize();

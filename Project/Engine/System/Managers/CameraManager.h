@@ -1,7 +1,7 @@
 #pragma once
 /// ===Include=== ///
-// GameCamera
-#include "application/Game/Camera/GameCamera.h"
+// CameraCommon
+#include "Engine/Camera/Base/CameraCommon.h"
 // C++
 #include <unordered_map>
 #include <string>
@@ -28,8 +28,8 @@ namespace MiiEngine {
 		/// カメラの追加処理
 		/// </summary>
 		/// <param name="name">追加するカメラの識別名（const std::string&）。</param>
-		/// <param name="camera">追加する GameCamera オブジェクトへの std::shared_ptr。</param>
-		void AddCamera(const std::string& name, std::shared_ptr<GameCamera> camera);
+		/// <param name="camera">追加する CameraCommon オブジェクトへのポインタ。</param>
+		void AddCamera(const std::string& name, CameraCommon* camera);
 
 		/// <summary>
 		/// カメラの削除処理
@@ -46,18 +46,18 @@ namespace MiiEngine {
 
 	public:/// ===Setter・Getter=== ///
 
-		// 指定されたカメラのGetter
-		std::shared_ptr<GameCamera> GetCamera(const std::string& name) const;
+		// 指定された名前のカメラのGetter
+		CameraCommon* GetCamera(const std::string& name) const;
 		// アクティブカメラのGetter
-		std::shared_ptr<GameCamera> GetActiveCamera() const;
+		CameraCommon* GetActiveCamera() const;
 		// アクティブカメラのSetter
 		void SetActiveCamera(const std::string& name);
 
 	private:
 		// カメラを管理するマップ
-		std::unordered_map<std::string, std::shared_ptr<GameCamera>> cameras_;
+		std::unordered_map<std::string, CameraCommon*> cameras_;
 
 		// 現在アクティブなカメラ
-		std::shared_ptr<GameCamera> activeCamera_;
+		CameraCommon* activeCamera_ = nullptr;
 	};
 }

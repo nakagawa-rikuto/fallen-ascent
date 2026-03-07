@@ -12,7 +12,7 @@ AvoidanceState::AvoidanceState(const Vector3& direction) { direction_ = directio
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
 ///-------------------------------------------///
-void AvoidanceState::Enter(Player * player, GameCamera* camera) {
+void AvoidanceState::Enter(Player * player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
@@ -24,7 +24,7 @@ void AvoidanceState::Enter(Player * player, GameCamera* camera) {
 ///-------------------------------------------/// 
 /// 更新処理
 ///-------------------------------------------///
-void AvoidanceState::Update(Player * player, GameCamera* camera) {
+void AvoidanceState::Update(Player * player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;

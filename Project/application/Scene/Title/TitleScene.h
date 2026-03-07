@@ -37,7 +37,7 @@ public:/// ===メンバ関数=== ///
 private:/// ===メンバ変数=== ///
 	
 	/// ===Class=== ///
-	std::shared_ptr<GameCamera> camera_; // カメラ
+	std::unique_ptr<MiiEngine::FollowCamera> camera_; // カメラ
 	std::unique_ptr<Player> player_;	 // プレイヤー
 	std::unique_ptr<GameStage> stage_;	 // ステージ
 	std::unique_ptr<TitleUI> titleUI_;   // タイトルUI
