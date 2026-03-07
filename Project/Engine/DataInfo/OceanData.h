@@ -86,3 +86,65 @@ namespace MiiEngine {
         float padding;      // アライメント用
     };
 }
+
+
+namespace MiiEngine {
+    ///=====================================================/// 
+	/// CS用の定数バッファ構造体
+    ///=====================================================///
+    
+    ///-------------------------------------------/// 
+    /// OceanParams
+    ///-------------------------------------------///
+    struct OceanParams {
+		uint32_t gridSize;       // グリッドのサイズ
+		float gridWidth;         // グリッドの幅
+		float time;              // 経過時間
+		float windowSpeed;       // ウィンドウの速度
+		Vector2 windDirection;   // 風の方向
+		float amplitude;         // 波の振幅
+		float lambda;            // 波長
+		float foamThreshold;     // 泡の閾値
+    };
+
+    ///-------------------------------------------/// 
+    /// ButterflyParams
+    ///-------------------------------------------///
+    struct ButterflyParams {
+		uint32_t stages;         // バタフライアルゴリズムのステージ数
+		uint32_t pingPong;       // ピンポンバッファの切り替えフラグ
+		uint32_t direction;      // バタフライアルゴリズムの方向（0: 水平, 1: 垂直）
+    };
+
+    ///=====================================================/// 
+    /// PS用定数バッファ構造体
+    ///=====================================================///
+    
+    struct OceanRenderCB {
+        Vector3 sunDirection; // 太陽の方向
+        float sunPower; // 太陽の強度
+        Vector3 sunColor; // 太陽の色
+        float fresnelBias; // Fresnelの最小反射率
+        Vector3 deepColor; // 深海の色
+        float roughness; // 海面の粗さ
+        Vector3 shallowColor; // 浅瀬・波頂点の色
+        float sssStrength; // SSS強度
+        Vector3 foamColor; // 泡の色
+        float foamSoftness; // 泡のエッジの柔らかさ
+        Vector3 skyColorHorizon; // 地平線の空の色
+        Vector3 skyColorZenith; // 天頂の空の色
+    };
+
+    ///=====================================================/// 
+    /// VS用定数バッファ構造体
+    ///=====================================================///
+    
+    struct TransformCB {
+        Matrix4x4 world;
+        Matrix4x4 view;
+        Matrix4x4 projection;
+        Vector3 cameraPos;
+        float size;
+        float tileScale;
+    };
+}

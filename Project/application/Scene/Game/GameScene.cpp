@@ -11,14 +11,11 @@
 #include "State/GameSceneInitializeState.h"
 // Math
 #include "Math/SMath.h"
-
 #ifdef USE_IMGUI
 // Service
 #include "Service/Input.h"
 #endif // USE_IMGUI
 
-
-using namespace MiiEngine;
 ///-------------------------------------------/// 
 /// コンストラクタ
 ///-------------------------------------------///
@@ -225,7 +222,7 @@ void GameScene::SetUpCamera() {
 	// カメラの回転設定
 	camera_->SetRotate({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// カメラの追従設定
-	camera_->SetFollowCamera(FollowCameraType::TopDown);
+	camera_->SetFollowCamera(MiiEngine::FollowCameraType::TopDown);
 	// 追従オフセット設定
 	camera_->SetOffset({ 0.0f, 70.0f, -60.0f });
 	// 追従速度設定
