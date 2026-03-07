@@ -23,7 +23,7 @@ namespace MiiEngine {
 	/// FollowCameraの設定
 	///-------------------------------------------///
 	void FollowCamera::SetFollowCamera(FollowCameraType type) {
-		cameraType_ = type;
+		followType_ = type;
 	}
 
 	///-------------------------------------------/// 
@@ -57,7 +57,9 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void FollowCamera::Initialize() {
 		// 基底クラスの初期化を呼ぶ
-		NormalCamera::Initialize();
+		CameraCommon::Initialize();
+		// タイプ設定
+		cameraType_ = CameraType::Follow;
 	}
 
 	///-------------------------------------------/// 
@@ -70,7 +72,7 @@ namespace MiiEngine {
 		}
 
 		// 基底クラスの更新を呼ぶ（行列計算）
-		NormalCamera::Update();
+		CameraCommon::Update();
 	}
 
 	///-------------------------------------------/// 
@@ -84,7 +86,7 @@ namespace MiiEngine {
 		ImGui::DragFloat("followSpeed_", &followSpeed_, 0.01f);
 		ImGui::DragFloat("rotationLerpSpeed_", &rotationLerpSpeed_, 0.01f);
 		ImGui::End();
-		NormalCamera::ImGuiUpdate();
+		CameraCommon::ImGuiUpdate();
 #endif // USE_IMGUI
 	}
 
@@ -95,7 +97,7 @@ namespace MiiEngine {
 #ifdef USE_IMGUI
 
 		// 回転可能型カメラのデバッグ操作
-		if (cameraType_ == FollowCameraType::Orbiting) {
+		if (followType_ == FollowCameraType::Orbiting) {
 
 			// マウスの移動量を取得
 			Vector2 mouseDelta = {
@@ -170,7 +172,7 @@ namespace MiiEngine {
 	/// 追従処理
 	///-------------------------------------------///
 	void FollowCamera::UpdateFollowCamera() {
-		switch (cameraType_) {
+		switch (followType_) {
 		case FollowCameraType::FixedOffset:
 			FollowFixedOffset();
 			break;

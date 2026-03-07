@@ -38,12 +38,11 @@ void AttackEditorScene::Initialize() {
     Service::Particle::LoadParticleDefinition("WeaponAttack.json");
 
     /// ===カメラ=== ///
-    camera_ = std::make_unique<GameCamera>();
-    auto followCamera = std::make_unique<MiiEngine::FollowCamera>();
-    camera_->Init(std::move(followCamera));
+    camera_ = std::make_unique<MiiEngine::FollowCamera>();
+    camera_->Initialize();
     camera_->SetTranslate(cameraPosition_);
     camera_->SetRotate(cameraRotation_);
-    followCamera->SetFollowCamera(FollowCameraType::Orbiting);
+    camera_->SetFollowCamera(MiiEngine::FollowCameraType::Orbiting);
     // カメラの設定
     Service::Camera::AddCamera("Editor", camera_.get());
     Service::Camera::SetActiveCamera("Editor");

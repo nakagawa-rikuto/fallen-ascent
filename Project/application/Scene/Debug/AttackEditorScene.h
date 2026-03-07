@@ -36,7 +36,7 @@ public:
 
 private:
     /// ===Camera=== ///
-    std::unique_ptr<GameCamera> camera_;
+    std::unique_ptr<MiiEngine::FollowCamera> camera_;
     /// ===Line=== ///
     std::unique_ptr<Line> line_;
     /// ===エディター=== ///

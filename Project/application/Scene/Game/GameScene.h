@@ -1,8 +1,6 @@
 #pragma once
 /// ===Include=== ///
 #include "Engine/Scene/IScene.h"
-// Camera
-#include "application/Game/Camera/GameCamera.h"
 // Entity
 #include "application/Game/Entity/Player/Player.h"
 #include "application/Game/Entity/Enemy/Base/EnemyManager.h"
@@ -46,12 +44,14 @@ public: /// ===Getter=== ///
 	Player* GetPlayer() const { return player_.get(); }
 	// EnemyManagerの取得
 	EnemyManager* GetEnemyManager() const { return enemyManager_.get(); }
+	// Camera 取得
+	MiiEngine::FollowCamera* GetCamera() const { return camera_.get(); }
 
 private:/// ===メンバ変数=== ///
 
 	/// ===Classの宣言=== /// 
 	// Camera
-	std::unique_ptr<GameCamera> camera_;
+	std::unique_ptr<MiiEngine::FollowCamera> camera_;
 	// Player
 	std::unique_ptr<Player> player_;
 	// Enemy

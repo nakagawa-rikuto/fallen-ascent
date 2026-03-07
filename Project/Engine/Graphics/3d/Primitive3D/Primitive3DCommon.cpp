@@ -5,7 +5,7 @@
 #include "Service/Render.h"
 #include "Service/Camera.h"
 // camera
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/Base/CameraCommon.h"
 
 namespace MiiEngine {
 	///-------------------------------------------/// 

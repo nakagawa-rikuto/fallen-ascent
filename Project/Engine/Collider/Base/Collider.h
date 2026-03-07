@@ -12,10 +12,11 @@
 // Line
 #include "application/Drawing/3d/Line.h"
 
-/// ===前方宣言=== ///
-class GameCamera;
 
 namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class CameraCommon;
+
 	///=====================================================/// 
 	/// コライダー
 	///=====================================================///

@@ -11,7 +11,7 @@
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
 ///-------------------------------------------///
-void RootState::Enter(Player* player, GameCamera* camera) {
+void RootState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
@@ -20,7 +20,7 @@ void RootState::Enter(Player* player, GameCamera* camera) {
 ///-------------------------------------------/// 
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void RootState::Update(Player * player, GameCamera* camera) {
+void RootState::Update(Player * player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;

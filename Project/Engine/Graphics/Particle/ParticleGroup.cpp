@@ -1,7 +1,7 @@
 #include "ParticleGroup.h"
 #include "ParticleFactory.h"
 // Camera
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/Base/CameraCommon.h"
 // Service
 #include "Service/GraphicsResourceGetter.h"
 #include "Service/Camera.h"

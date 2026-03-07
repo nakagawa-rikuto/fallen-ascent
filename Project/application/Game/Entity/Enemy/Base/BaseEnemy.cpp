@@ -1,6 +1,4 @@
 #include "BaseEnemy.h"
-// Camera
-#include "application/Game/Camera/GameCamera.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // Service

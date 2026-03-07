@@ -11,7 +11,9 @@
 #include <vector>
 
 /// ===前方宣言=== ///
-class GameCamera;
+namespace MiiEngine {
+	class CameraCommon;
+}
 
 namespace MiiEngine {
 	///=====================================================/// 
@@ -82,7 +84,7 @@ namespace MiiEngine {
 		EulerTransform cameraTransform_;
 
 		/// ===Camera=== ///
-		GameCamera* camera_ = nullptr;
+		MiiEngine::CameraCommon* camera_ = nullptr;
 
 		/// ===LineInfo=== ///
 		uint32_t lineIndex_ = 0;

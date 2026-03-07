@@ -1,4 +1,7 @@
 #include "CameraManager.h"
+// Camera
+#include "Engine/Camera/NormalCamera.h"
+#include "Engine/Camera/FollowCamera.h"
 // C++
 #include <cassert>
 
@@ -25,7 +28,7 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// カメラを追加
 	///-------------------------------------------///
-	void CameraManager::AddCamera(const std::string& name, GameCamera* camera) {
+	void CameraManager::AddCamera(const std::string& name, CameraCommon* camera) {
 		cameras_[name] = camera;
 
 		if (!activeCamera_) {
@@ -55,31 +58,32 @@ namespace MiiEngine {
 	}
 
 	///-------------------------------------------/// 
-	/// Getter
-	///-------------------------------------------///
-	// 指定されたカメラのGetter
-	GameCamera* CameraManager::GetCamera(const std::string& name) const {
-		auto it = cameras_.find(name);
-		if (it != cameras_.end()) {
-			return it->second;
-		}
-		return nullptr;
-	}
-	// アクティブカメラのGetter
-	GameCamera* CameraManager::GetActiveCamera() const {
-		return activeCamera_;
-	}
-
-	///-------------------------------------------/// 
 	/// Setter
 	///-------------------------------------------///
 	// アクティブカメラのSetter
 	void CameraManager::SetActiveCamera(const std::string& name) {
 		auto it = cameras_.find(name);
 		if (it != cameras_.end()) {
-			 activeCamera_ = it->second;
+			activeCamera_ = it->second;
 		} else {
 			assert(false && "指定されたカメラが存在しません");
 		}
+	}
+
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	// 指定されたカメラのGetter
+	CameraCommon* CameraManager::GetCamera(const std::string& name) const {
+		auto it = cameras_.find(name);
+		if (it != cameras_.end()) {
+			return it->second;
+		}
+		return nullptr;
+	}
+	
+	// アクティブカメラのGetter
+	CameraCommon* CameraManager::GetActiveCamera() const {
+		return activeCamera_;
 	}
 }

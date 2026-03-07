@@ -8,10 +8,10 @@
 // c++
 #include <memory>
 
-/// ===前方宣言=== ///
-class GameCamera;
-
 namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class CameraCommon;
+
 	///-------------------------------------------/// 
 	/// OceanCommon
 	///-------------------------------------------///
@@ -73,7 +73,7 @@ namespace MiiEngine {
 		EulerTransform uvTransform_;
 
 		/// ===カメラ=== ///
-		GameCamera* camera_ = nullptr;
+		MiiEngine::CameraCommon* camera_ = nullptr;
 
 		/// ===Transform情報=== ///
 		QuaternionTransform worldTransform_;

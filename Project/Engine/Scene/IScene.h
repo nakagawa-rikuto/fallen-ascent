@@ -1,6 +1,7 @@
 #pragma once
 /// ===Include=== ///
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/NormalCamera.h"
+#include "Engine/Camera/FollowCamera.h"
 #include "Engine/DataInfo/LevelData.h"
 #include "Engine/DataInfo/BlendModeData.h"
 // C++
@@ -33,7 +34,7 @@ namespace MiiEngine {
 		// シーンマネージャ
 		SceneManager* sceneManager_ = nullptr;
 		// Camera
-		std::unique_ptr<GameCamera> defaultCamera_;
+		std::unique_ptr<NormalCamera> defaultCamera_;
 	};
 }
 

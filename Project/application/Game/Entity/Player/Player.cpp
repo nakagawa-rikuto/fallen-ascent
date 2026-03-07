@@ -1,6 +1,6 @@
 #include "Player.h"
 // Camera
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/FollowCamera.h"
 // State
 #include "State/RootState.h"
 // Service
@@ -38,9 +38,12 @@ void Player::SetInvincibleTime(const float& time) {
 ///-------------------------------------------/// 
 /// Game開始時の初期化
 ///-------------------------------------------///
-void Player::InitGame(const Vector3& translate) {
+void Player::InitGame(const Vector3& translate, MiiEngine::FollowCamera* camera) {
 	/// ===初期化=== ///
 	Initialize();
+
+	// Cameraの設定
+	camera_ = camera;
 
 	/// ===位置の設定=== ///
 	transform_.translate = translate;
@@ -56,9 +59,6 @@ void Player::InitGame(const Vector3& translate) {
 /// 初期化
 ///-------------------------------------------///
 void Player::Initialize() {
-	// Cameraの設定
-	camera_ = Service::Camera::GetActiveCamera();
-
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
 	object3d_->Init(std::make_unique<MiiEngine::Model>(), "Player");

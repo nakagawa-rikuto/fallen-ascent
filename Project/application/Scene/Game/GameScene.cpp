@@ -60,8 +60,8 @@ void GameScene::Initialize() {
 	IScene::Initialize();
 
 	/// ===Camera=== ///
-	camera_ = std::make_unique<GameCamera>();
-	camera_->Init(std::make_unique<MiiEngine::FollowCamera>());
+	camera_ = std::make_unique<MiiEngine::FollowCamera>();
+	camera_->Initialize();
 	SetUpCamera();
 	// Managerに追加,アクティブに
 	Service::Camera::AddCamera("Game", camera_.get());
@@ -193,7 +193,7 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 		switch (obj.classType) {
 		case LevelData::ClassTypeLevel::Player:
 			// 初期化と座標設定
-			player_->InitGame(obj.translation);
+			player_->InitGame(obj.translation, camera_.get());
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
 
 			break;

@@ -1,21 +1,22 @@
 #pragma once
 /// ===Include=== ///
-#include "NormalCamera.h"
-
-/// === カメラの種類を表す列挙型 === ///
-enum class FollowCameraType {
-	FixedOffset,        // 固定オフセット型（一定のオフセット距離で追従）
-	Interpolated,       // スムージング追従型（補間で滑らかに追従）
-	Orbiting,           // 回転可能型（対象の周りを回るカメラ）
-	CollisionAvoidance, // 衝突回避型（障害物を避ける）
-	TopDown,           // 上からの視点
-};
+#include "Base/CameraCommon.h"
 
 namespace MiiEngine {
+
+	/// === カメラの種類を表す列挙型 === ///
+	enum class FollowCameraType {
+		FixedOffset,        // 固定オフセット型（一定のオフセット距離で追従）
+		Interpolated,       // スムージング追従型（補間で滑らかに追従）
+		Orbiting,           // 回転可能型（対象の周りを回るカメラ）
+		CollisionAvoidance, // 衝突回避型（障害物を避ける）
+		TopDown,           // 上からの視点
+	};
+
 	///=====================================================/// 
 	/// 追従カメラクラス
 	///=====================================================///
-	class FollowCamera : public NormalCamera {
+	class FollowCamera : public CameraCommon {
 	public:
 		FollowCamera() = default;
 		~FollowCamera() override;
@@ -33,12 +34,12 @@ namespace MiiEngine {
 		/// <summary>
 		/// ImGui情報の更新
 		/// </summary>
-		virtual void ImGuiUpdate() override;
+		void ImGuiUpdate() override;
 
 		/// <summary>
 		/// デバッグ用の更新処理を実行します。
 		/// </summary>
-		virtual void DebugUpdate() override;
+		void DebugUpdate() override;
 
 		/// <summary>
 		/// 追従カメラの種類を設定
@@ -76,7 +77,7 @@ namespace MiiEngine {
 
 		Vector2 stickValue_ = { 0.0f, 0.0f }; // スティック入力値
 
-		FollowCameraType cameraType_ = FollowCameraType::FixedOffset; // デフォルトカメラタイプ
+		FollowCameraType followType_ = FollowCameraType::FixedOffset; // デフォルトカメラタイプ
 
 	private:
 		/// <summary>
