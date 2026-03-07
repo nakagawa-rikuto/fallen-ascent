@@ -299,6 +299,7 @@
 └── └── ├── Shaders/
 └── └── └── ├── 2D/
 └── └── └── ├── 3D/
+└── └── └── ├── Ocean/
 └── └── └── ├── OffScreen/
 └── └── └── └── Particle/
 └── └── └── Textures/
@@ -5287,6 +5288,68 @@ namespace MiiEngine {
     };
 }
 
+
+namespace MiiEngine {
+    ///=====================================================/// 
+	/// CS用の定数バッファ構造体
+    ///=====================================================///
+    
+    ///-------------------------------------------/// 
+    /// OceanParams
+    ///-------------------------------------------///
+    struct OceanParams {
+		uint32_t gridSize;       // グリッドのサイズ
+		float gridWidth;         // グリッドの幅
+		float time;              // 経過時間
+		float windowSpeed;       // ウィンドウの速度
+		Vector2 windDirection;   // 風の方向
+		float amplitude;         // 波の振幅
+		float lambda;            // 波長
+		float foamThreshold;     // 泡の閾値
+    };
+
+    ///-------------------------------------------/// 
+    /// ButterflyParams
+    ///-------------------------------------------///
+    struct ButterflyParams {
+		uint32_t stages;         // バタフライアルゴリズムのステージ数
+		uint32_t pingPong;       // ピンポンバッファの切り替えフラグ
+		uint32_t direction;      // バタフライアルゴリズムの方向（0: 水平, 1: 垂直）
+    };
+
+    ///=====================================================/// 
+    /// PS用定数バッファ構造体
+    ///=====================================================///
+    
+    struct OceanRenderCB {
+        Vector3 sunDirection; // 太陽の方向
+        float sunPower; // 太陽の強度
+        Vector3 sunColor; // 太陽の色
+        float fresnelBias; // Fresnelの最小反射率
+        Vector3 deepColor; // 深海の色
+        float roughness; // 海面の粗さ
+        Vector3 shallowColor; // 浅瀬・波頂点の色
+        float sssStrength; // SSS強度
+        Vector3 foamColor; // 泡の色
+        float foamSoftness; // 泡のエッジの柔らかさ
+        Vector3 skyColorHorizon; // 地平線の空の色
+        Vector3 skyColorZenith; // 天頂の空の色
+    };
+
+    ///=====================================================/// 
+    /// VS用定数バッファ構造体
+    ///=====================================================///
+    
+    struct TransformCB {
+        Matrix4x4 world;
+        Matrix4x4 view;
+        Matrix4x4 projection;
+        Vector3 cameraPos;
+        float size;
+        float tileScale;
+    };
+}
+
 ============================================================
 File Path: Project/Engine/DataInfo/OffScreenData.h
 ============================================================
@@ -8641,11 +8704,6 @@ namespace MiiEngine {
     ///-------------------------------------------///
     void Ocean::InitializeWaveInfos() {
 
-        //// 最初の3つは従来の波
-        /*waveInfos_[0] = { { 0.53f, 0.0f, 0.77f }, 1.308f, 10.033f, 2.187f, 0.0f, 0.0f };
-        waveInfos_[1] = { { 0.0f, 0.2f, 0.6f }, 0.056f, 7.369f, 2.320f, 0.0f, 0.0f };
-        waveInfos_[2] = { { 0.28f, 0.03f, 0.0f }, 0.879f, 4.355f, 2.098f, 0.0f, 0.0f };*/
-
         // 最初の3つは従来の波
         waveInfos_[0] = { { 0.0f, 0.0f, 0.0f }, 1.308f, 10.033f, 2.187f, 0.0f, 0.0f };
         waveInfos_[1] = { { 0.0f, 0.0f, 0.0f }, 0.056f, 7.369f, 2.320f, 0.0f, 0.0f };
@@ -9508,15 +9566,6 @@ namespace MiiEngine {
         uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
         uavBarrier.UAV.pResource = outputBuffer_.Get();
         commandList->ResourceBarrier(1, &uavBarrier);
-
-        // UNORDERED_ACCESS -> COMMON への遷移バリア（次回の使用のため）
-     /*   D3D12_RESOURCE_BARRIER barrierToCommon = {};
-        barrierToCommon.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrierToCommon.Transition.pResource = outputBuffer_.Get();
-        barrierToCommon.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-        barrierToCommon.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
-        barrierToCommon.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-        commandList->ResourceBarrier(1, &barrierToCommon);*/
     }
 
     ///-------------------------------------------/// 
@@ -9542,26 +9591,6 @@ namespace MiiEngine {
     /// 計算結果を頂点バッファにコピー
     ///-------------------------------------------///
     void OceanWaveCompute::CopyResultsToVertexBuffer(ID3D12GraphicsCommandList* commandList, ID3D12Resource* vertexBuffer) {
-        //// UAVバッファのみ COMMON -> COPY_SOURCE へ遷移
-        //D3D12_RESOURCE_BARRIER barrierToCopySource = {};
-        //barrierToCopySource.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        //barrierToCopySource.Transition.pResource = outputBuffer_.Get();
-        //barrierToCopySource.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
-        //barrierToCopySource.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
-        //barrierToCopySource.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-        //commandList->ResourceBarrier(1, &barrierToCopySource);
-
-        //// コピー実行
-        //commandList->CopyResource(vertexBuffer, outputBuffer_.Get());
-
-        //// UAVバッファを COPY_SOURCE -> COMMON へ戻す
-        //D3D12_RESOURCE_BARRIER barrierToCommon = {};
-        //barrierToCommon.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        //barrierToCommon.Transition.pResource = outputBuffer_.Get();
-        //barrierToCommon.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
-        //barrierToCommon.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
-        //barrierToCommon.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-        //commandList->ResourceBarrier(1, &barrierToCommon);
 
         // UNORDERED_ACCESS -> COPY_SOURCE へ遷移
         D3D12_RESOURCE_BARRIER barrierToCopySource = {};
@@ -25872,6 +25901,26 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.CS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.VS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Resource\Shaders\OffScreen\BoxFilter3x3.PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
@@ -26130,6 +26179,9 @@ File Path: Project/FallenAscent.vcxproj.filters
     <FxCompile Include="Resource\Shaders\3D\Ocean.VS.hlsl">
       <Filter>Resource\Shaders\3D</Filter>
     </FxCompile>
+    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.CS.hlsl" />
+    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.VS.hlsl" />
+    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -43417,14 +43469,11 @@ File Path: Project/application/Scene/Game/GameScene.cpp
 #include "State/GameSceneInitializeState.h"
 // Math
 #include "Math/SMath.h"
-
 #ifdef USE_IMGUI
 // Service
 #include "Service/Input.h"
 #endif // USE_IMGUI
 
-
-using namespace MiiEngine;
 ///-------------------------------------------/// 
 /// コンストラクタ
 ///-------------------------------------------///
@@ -43631,7 +43680,7 @@ void GameScene::SetUpCamera() {
 	// カメラの回転設定
 	camera_->SetRotate({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// カメラの追従設定
-	camera_->SetFollowCamera(FollowCameraType::TopDown);
+	camera_->SetFollowCamera(MiiEngine::FollowCameraType::TopDown);
 	// 追従オフセット設定
 	camera_->SetOffset({ 0.0f, 70.0f, -60.0f });
 	// 追従速度設定
