@@ -20,6 +20,8 @@ namespace MiiEngine {
 		PrimitiveSkyBox,
 		// Ocean
 		PrimitiveOcean,
+		// FFTOcean
+		PrimitiveFFTOcean,
 		// Particle
 		Particle,
 		// Skinning3D
@@ -47,6 +49,7 @@ namespace MiiEngine {
 
 		// === ComputePipelines === //
 		CSOcean,
+		CSFFTOcean,
 
 		// 総数(これは最後にしなければいけない)
 		CountOfPipelineType,
@@ -64,6 +67,7 @@ namespace MiiEngine {
 			PipelineType::Particle ,
 			PipelineType::Skinning3D,
 			PipelineType::PrimitiveOcean,
+			PipelineType::PrimitiveFFTOcean,
 			PipelineType::Line3D,
 			PipelineType::OffScreen,
 			PipelineType::Grayscale,
@@ -75,7 +79,8 @@ namespace MiiEngine {
 			PipelineType::OutLine,
 			PipelineType::ShatterGlass,
 			// Compute Pipelines
-			PipelineType::CSOcean
+			PipelineType::CSOcean,
+			PipelineType::CSFFTOcean
 		};
 	}
 
@@ -84,6 +89,7 @@ namespace MiiEngine {
 		switch (type) {
 			/// ===Compute Pipelines=== ///
 		case PipelineType::CSOcean:
+		case PipelineType::CSFFTOcean:
 			return true;
 			/// ===Graphics Pipelines=== ///
 		case PipelineType::ForGround2D:
@@ -94,6 +100,7 @@ namespace MiiEngine {
 		case PipelineType::PrimitiveSkyBox:
 		case PipelineType::Particle:
 		case PipelineType::PrimitiveOcean:
+		case PipelineType::PrimitiveFFTOcean:
 		case PipelineType::Line3D:
 		case PipelineType::OffScreen:
 		case PipelineType::Grayscale:
