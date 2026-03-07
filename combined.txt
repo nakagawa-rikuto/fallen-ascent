@@ -3,6 +3,9 @@
 ├── Project/
 └── ├── Engine/
 └── └── ├── Camera/
+└── └── └── ├── Base/
+└── └── └── └── ├── CameraCommon.cpp
+└── └── └── └── └── CameraCommon.h
 └── └── └── ├── FollowCamera.cpp
 └── └── └── ├── FollowCamera.h
 └── └── └── ├── NormalCamera.cpp
@@ -37,6 +40,7 @@
 └── └── └── ├── AnimationData.h
 └── └── └── ├── BlendModeData.h
 └── └── └── ├── CData.h
+└── └── └── ├── CameraData.h
 └── └── └── ├── ColliderData.h
 └── └── └── ├── FunctionData.cpp
 └── └── └── ├── FunctionData.h
@@ -346,9 +350,6 @@
 └── └── └── └── ├── GameOverAnimation.h
 └── └── └── └── ├── StartAnimation.cpp
 └── └── └── └── └── StartAnimation.h
-└── └── └── ├── Camera/
-└── └── └── └── ├── GameCamera.cpp
-└── └── └── └── └── GameCamera.h
 └── └── └── ├── Editor/
 └── └── └── └── ├── AttackDataSerializer.cpp
 └── └── └── └── ├── AttackDataSerializer.h
@@ -512,6 +513,356 @@
 
 
 ============================================================
+File Path: Project/Engine/Camera/Base/CameraCommon.cpp
+============================================================
+#include "CameraCommon.h"
+// Math
+#include "Math/sMath.h"
+#include "Math/EasingMath.h"
+#include "Math/MatrixMath.h"
+// Service
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/DeltaTime.h"
+// C++
+#include <random>
+#include <ctime>
+// ImGui
+#ifdef USE_IMGUI
+#include "imgui.h"
+#endif // USE_IMGUI
+// Debug
+#ifdef _DEBUG
+#include "Service/Input.h"
+#endif // _DEBUG
+
+namespace MiiEngine {
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	// WorldMatrix
+	const Matrix4x4& CameraCommon::GetWorldMatrix() const { return worldMatrix_; }
+	// ViewMatrix
+	const Matrix4x4& CameraCommon::GetViewMatrix() const { return viewMatrix_; }
+	// ProjectionMatrix
+	const Matrix4x4& CameraCommon::GetProjectionMatrix() const { return projectionMatrix_; }
+	// ViewProjectionMatrix
+	const Matrix4x4& CameraCommon::GetViewProjectionMatrix() const { return viewProjectionMatrix_; }
+	// Translate
+	const Vector3& CameraCommon::GetTranslate() const { return transform_.translate; }
+	// Rotate
+	const Quaternion& CameraCommon::GetRotate() const { return transform_.rotate; }
+
+	///-------------------------------------------/// 
+	/// Setter
+	///-------------------------------------------///
+	// Translate
+	void CameraCommon::SetTranslate(const Vector3& translate) { transform_.translate = translate; }
+	// Rotate
+	void CameraCommon::SetRotate(const Quaternion& rotate) { transform_.rotate = rotate; }
+	// ForY
+	void CameraCommon::SetForY(const float& forY) { horizontalView_ = forY; }
+	// AspectRatio
+	void CameraCommon::SetAspectRatio(const float& aspect) { aspect_ = aspect; }
+	// NearClip
+	void CameraCommon::SetNearClip(const float& nearClip) { nearClip_ = nearClip; }
+	// FarClip
+	void CameraCommon::SetFarClip(const float& farClip) { farClip_ = farClip; }
+
+	///-------------------------------------------/// 
+	/// 初期化
+	///-------------------------------------------///
+	void CameraCommon::Initialize() {
+		transform_ = { {1.0f, 1.0f, 1.0f},{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f} };
+		horizontalView_ = 0.45f;
+		aspect_ = static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()) / static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight());
+		nearClip_ = 0.1f;
+		farClip_ = 2000.0f;
+
+		UpdateMatrices();
+	}
+
+	///-------------------------------------------/// 
+	/// 更新
+	///-------------------------------------------///
+	void CameraCommon::Update() {
+		UpdateMatrices();
+	}
+
+
+	///-------------------------------------------/// 
+	/// 情報
+	///-------------------------------------------///
+	void CameraCommon::ImGuiUpdate() {
+#ifdef USE_IMGUI
+		ImGui::Begin("カメラ");
+		ImGui::DragFloat3("位置", &transform_.translate.x, 0.1f);
+		ImGui::DragFloat4("回転", &transform_.rotate.x, 0.05f);
+		ImGui::DragFloat("Horizontal View", &horizontalView_, 0.01f);
+		ImGui::DragFloat("Aspect Ratio", &aspect_, 0.01f);
+		ImGui::DragFloat("Near Clip", &nearClip_, 0.01f);
+		ImGui::DragFloat("Far Clip", &farClip_, 0.01f);
+		ImGui::End();
+#endif // USE_IMGUI
+	}
+
+	///-------------------------------------------/// 
+	/// デバッグ用の更新
+	///-------------------------------------------///
+	void CameraCommon::DebugUpdate() {
+#ifdef _DEBUG
+		// カメラのローカルX軸（右方向ベクトル）を取得
+		Vector3 right = Math::RotateVector({ 1.0f, 0.0f, 0.0f }, transform_.rotate);
+
+		/// ===カメラの移動=== ///
+		if (Service::Input::PushKey(DIK_D)) {
+			transform_.translate.x += 1.0f;
+		} else if (Service::Input::PushKey(DIK_A)) {
+			transform_.translate.x -= 1.0f;
+		}
+		if (Service::Input::PushKey(DIK_W)) {
+			transform_.translate.z += 1.0f;
+		} else if (Service::Input::PushKey(DIK_S)) {
+			transform_.translate.z -= 1.0f;
+		}
+		if (Service::Input::PushKey(DIK_SPACE)) {
+			transform_.translate.y += 1.0f;
+		} else if (Service::Input::PushKey(DIK_LSHIFT)) {
+			transform_.translate.y -= 1.0f;
+		}
+
+		// ピッチ（縦回転）
+		if (Service::Input::PushKey(DIK_UP)) {
+			Quaternion delta = Math::MakeRotateAxisAngle(right, -0.05f);
+			transform_.rotate = delta * transform_.rotate;
+		} else if (Service::Input::PushKey(DIK_DOWN)) {
+			Quaternion delta = Math::MakeRotateAxisAngle(right, +0.05f);
+			transform_.rotate = delta * transform_.rotate;
+		}
+
+		// ヨー（左右回転）
+		if (Service::Input::PushKey(DIK_LEFT)) {
+			Quaternion delta = Math::RotateY(-0.05f);
+			transform_.rotate = delta * transform_.rotate;
+		} else if (Service::Input::PushKey(DIK_RIGHT)) {
+			Quaternion delta = Math::RotateY(+0.05f);
+			transform_.rotate = delta * transform_.rotate;
+		}
+#endif // _DEBUG
+	}
+
+	///-------------------------------------------/// 
+	/// シェイク開始処理
+	///-------------------------------------------///
+	void CameraCommon::StartShake(float intensity, float duration, float frequency) {
+		isShaking_ = true;
+		shakeIntensity_ = intensity;
+		shakeDuration_ = duration;
+		shakeTimer_ = 0.0f;
+		shakeFrequency_ = frequency;
+
+		// ランダムな時間オフセットを生成（各軸で異なる波形にするため）
+		static std::random_device rd;
+		static std::mt19937 gen(rd());
+		std::uniform_real_distribution<float> dist(0.0f, 2.0f * 3.14159f);
+		shakeTimeOffset_ = dist(gen);
+	}
+
+	///-------------------------------------------/// 
+	/// シェイク処理終了
+	///-------------------------------------------///
+	void CameraCommon::StopShake() {
+		isShaking_ = false;
+		shakeTimer_ = 0.0f;
+		shakeOffset_ = { 0.0f, 0.0f, 0.0f };
+	}
+
+	///-------------------------------------------/// 
+	/// 行列の更新処理
+	///-------------------------------------------///
+	void CameraCommon::UpdateMatrices() {
+		/// ===シェイク=== ///
+		// シェイクの更新
+		UpdateShake();
+		// シェイクオフセット
+		Vector3 finalPosition = transform_.translate + shakeOffset_;
+
+		// 行列の計算
+		worldMatrix_ = Math::MakeAffineQuaternionMatrix(transform_.scale, transform_.rotate, finalPosition);
+		viewMatrix_ = Math::Inverse4x4(worldMatrix_);
+
+		// プロジェクション行列の更新
+		projectionMatrix_ = Math::MakePerspectiveFovMatrix(horizontalView_, aspect_, nearClip_, farClip_);
+
+		// 合成行列
+		viewProjectionMatrix_ = Multiply(viewMatrix_, projectionMatrix_);
+	}
+
+	///-------------------------------------------/// 
+	/// シェイク処理
+	///-------------------------------------------///
+	void CameraCommon::UpdateShake() {
+		if (!isShaking_) {
+			shakeOffset_ = { 0.0f, 0.0f, 0.0f };
+			return;
+		}
+
+		shakeTimer_ += Service::DeltaTime::GetDeltaTime();
+
+		// シェイク終了判定
+		if (shakeTimer_ >= shakeDuration_) {
+			StopShake();
+			return;
+		}
+
+		// 減衰カーブ（時間経過とともに弱くなる）
+		float decayFactor = 1.0f - (shakeTimer_ / shakeDuration_);
+		decayFactor = decayFactor * decayFactor; // 二乗で急激な減衰
+
+		// Sin波を使ったシェイク計算（各軸で異なる位相）
+		float time = shakeTimer_ * shakeFrequency_;
+
+		shakeOffset_.x = sin(time + shakeTimeOffset_) * shakeIntensity_ * decayFactor;
+		shakeOffset_.y = sin(time + shakeTimeOffset_ + 1.57f) * shakeIntensity_ * decayFactor * 0.7f; // Y軸は少し弱く
+		shakeOffset_.z = sin(time + shakeTimeOffset_ + 3.14f) * shakeIntensity_ * decayFactor * 0.5f; // Z軸はさらに弱く
+
+		// ランダム要素を追加してより自然に
+		static std::random_device rd;
+		static std::mt19937 gen(rd());
+		std::uniform_real_distribution<float> randomDist(-0.3f, 0.3f);
+
+		shakeOffset_.x += randomDist(gen) * shakeIntensity_ * decayFactor;
+		shakeOffset_.y += randomDist(gen) * shakeIntensity_ * decayFactor * 0.7f;
+		shakeOffset_.z += randomDist(gen) * shakeIntensity_ * decayFactor * 0.5f;
+	}
+}
+
+
+============================================================
+File Path: Project/Engine/Camera/Base/CameraCommon.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// CData
+#include "Engine/DataInfo/CData.h"
+// CameraData
+#include "Engine/DataInfo/CameraData.h"
+
+namespace MiiEngine {
+	///=====================================================/// 
+	/// カメラ基底クラス
+	///=====================================================///
+	class CameraCommon {
+	public:
+		CameraCommon() = default;
+		virtual ~CameraCommon() = default;
+
+		/// <summary>
+		/// 初期化処理
+		/// </summary>
+		virtual void Initialize();
+
+		/// <summary>
+		/// 更新処理
+		/// </summary>
+		virtual void Update();
+
+		/// <summary>
+		/// ImGui情報の更新
+		/// </summary>
+		virtual void ImGuiUpdate();
+
+		/// <summary>
+		/// デバッグ用の更新
+		/// </summary>
+		virtual void DebugUpdate();
+
+		/// <summary>
+		/// シェイク（振動）効果を開始する処理
+		/// </summary>
+		/// <param name="intensity">シェイクの強さ。値が大きいほど振動が大きくなる。</param>
+		/// <param name="duration">シェイクの継続時間（秒）。</param>
+		/// <param name="frequency">シェイクの周波数（1秒あたりの振動回数）。省略時の既定値は 10.0f。</param>
+		void StartShake(float intensity, float duration, float frequency = 10.0f);
+
+		/// <summary>
+		/// カメラシェイク処理を停止
+		/// </summary>
+		void StopShake();
+
+
+	public:/// ===Getter=== ///
+		// WorldMatrix
+		const Matrix4x4& GetWorldMatrix()const;
+		// ViewMatrix
+		const Matrix4x4& GetViewMatrix()const;
+		// ProjectionMatrix
+		const Matrix4x4& GetProjectionMatrix()const;
+		// ViewProjectionMatrix
+		const Matrix4x4& GetViewProjectionMatrix()const;
+		// Translate
+		const Vector3& GetTranslate()const;
+		// Rotate
+		const Quaternion& GetRotate()const;
+
+	public:/// ===Setter=== ///
+		// Translate
+		void SetTranslate(const Vector3& translate);
+		// Rotate
+		void SetRotate(const Quaternion& rotate);
+		// ForY
+		void SetForY(const float& forY);
+		// Aspect
+		void SetAspectRatio(const float& aspect);
+		// NearClip
+		void SetNearClip(const float& nearClip);
+		// FarClip
+		void SetFarClip(const float& farClip);
+
+	protected:/// ===変数=== ///
+		// Transform
+		QuaternionTransform transform_;
+
+		// Type
+		CameraType cameraType_ = CameraType::Normal;
+
+	private: /// ===メンバ変数=== ///
+		/// ===ビュー行列データ=== ///
+		Matrix4x4 worldMatrix_;
+		Matrix4x4 viewMatrix_;
+
+		/// ===プロジェクション行列データ=== ///
+		Matrix4x4 projectionMatrix_;
+		float horizontalView_; // 水平方向視野角
+		float aspect_;         // アスペクト比
+		float nearClip_;       // ニアクリップ距離
+		float farClip_;        // ファークリップ距離
+
+		/// ===合成行列=== ///
+		Matrix4x4 viewProjectionMatrix_;
+
+		/// ===シェイク=== ///
+		bool isShaking_ = false;        // シェイク中フラグ
+		float shakeIntensity_ = 0.0f;   // シェイクの強度
+		float shakeDuration_ = 0.0f;    // シェイクの継続時間
+		float shakeTimer_ = 0.0f;       // シェイクのタイマー
+		float shakeFrequency_ = 10.0f;  // シェイクの周波数
+		Vector3 shakeOffset_;           // シェイクによるオフセット
+		float shakeTimeOffset_;         // ランダムな時間オフセット
+
+	private:
+		/// <summary>
+		/// 行列の更新処理
+		/// </summary>
+		void UpdateMatrices();
+
+		/// <summary>
+		/// シェイクの更新処理
+		/// </summary>
+		void UpdateShake();
+	};
+}
+
+============================================================
 File Path: Project/Engine/Camera/FollowCamera.cpp
 ============================================================
 #include "FollowCamera.h"
@@ -539,7 +890,7 @@ namespace MiiEngine {
 	/// FollowCameraの設定
 	///-------------------------------------------///
 	void FollowCamera::SetFollowCamera(FollowCameraType type) {
-		cameraType_ = type;
+		followType_ = type;
 	}
 
 	///-------------------------------------------/// 
@@ -573,7 +924,9 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void FollowCamera::Initialize() {
 		// 基底クラスの初期化を呼ぶ
-		NormalCamera::Initialize();
+		CameraCommon::Initialize();
+		// タイプ設定
+		cameraType_ = CameraType::Follow;
 	}
 
 	///-------------------------------------------/// 
@@ -586,7 +939,7 @@ namespace MiiEngine {
 		}
 
 		// 基底クラスの更新を呼ぶ（行列計算）
-		NormalCamera::Update();
+		CameraCommon::Update();
 	}
 
 	///-------------------------------------------/// 
@@ -600,7 +953,7 @@ namespace MiiEngine {
 		ImGui::DragFloat("followSpeed_", &followSpeed_, 0.01f);
 		ImGui::DragFloat("rotationLerpSpeed_", &rotationLerpSpeed_, 0.01f);
 		ImGui::End();
-		NormalCamera::ImGuiUpdate();
+		CameraCommon::ImGuiUpdate();
 #endif // USE_IMGUI
 	}
 
@@ -611,7 +964,7 @@ namespace MiiEngine {
 #ifdef USE_IMGUI
 
 		// 回転可能型カメラのデバッグ操作
-		if (cameraType_ == FollowCameraType::Orbiting) {
+		if (followType_ == FollowCameraType::Orbiting) {
 
 			// マウスの移動量を取得
 			Vector2 mouseDelta = {
@@ -686,7 +1039,7 @@ namespace MiiEngine {
 	/// 追従処理
 	///-------------------------------------------///
 	void FollowCamera::UpdateFollowCamera() {
-		switch (cameraType_) {
+		switch (followType_) {
 		case FollowCameraType::FixedOffset:
 			FollowFixedOffset();
 			break;
@@ -843,22 +1196,23 @@ File Path: Project/Engine/Camera/FollowCamera.h
 ============================================================
 #pragma once
 /// ===Include=== ///
-#include "NormalCamera.h"
-
-/// === カメラの種類を表す列挙型 === ///
-enum class FollowCameraType {
-	FixedOffset,        // 固定オフセット型（一定のオフセット距離で追従）
-	Interpolated,       // スムージング追従型（補間で滑らかに追従）
-	Orbiting,           // 回転可能型（対象の周りを回るカメラ）
-	CollisionAvoidance, // 衝突回避型（障害物を避ける）
-	TopDown,           // 上からの視点
-};
+#include "Base/CameraCommon.h"
 
 namespace MiiEngine {
+
+	/// === カメラの種類を表す列挙型 === ///
+	enum class FollowCameraType {
+		FixedOffset,        // 固定オフセット型（一定のオフセット距離で追従）
+		Interpolated,       // スムージング追従型（補間で滑らかに追従）
+		Orbiting,           // 回転可能型（対象の周りを回るカメラ）
+		CollisionAvoidance, // 衝突回避型（障害物を避ける）
+		TopDown,           // 上からの視点
+	};
+
 	///=====================================================/// 
 	/// 追従カメラクラス
 	///=====================================================///
-	class FollowCamera : public NormalCamera {
+	class FollowCamera : public CameraCommon {
 	public:
 		FollowCamera() = default;
 		~FollowCamera() override;
@@ -876,12 +1230,12 @@ namespace MiiEngine {
 		/// <summary>
 		/// ImGui情報の更新
 		/// </summary>
-		virtual void ImGuiUpdate() override;
+		void ImGuiUpdate() override;
 
 		/// <summary>
 		/// デバッグ用の更新処理を実行します。
 		/// </summary>
-		virtual void DebugUpdate() override;
+		void DebugUpdate() override;
 
 		/// <summary>
 		/// 追従カメラの種類を設定
@@ -919,7 +1273,7 @@ namespace MiiEngine {
 
 		Vector2 stickValue_ = { 0.0f, 0.0f }; // スティック入力値
 
-		FollowCameraType cameraType_ = FollowCameraType::FixedOffset; // デフォルトカメラタイプ
+		FollowCameraType followType_ = FollowCameraType::FixedOffset; // デフォルトカメラタイプ
 
 	private:
 		/// <summary>
@@ -958,223 +1312,40 @@ namespace MiiEngine {
 File Path: Project/Engine/Camera/NormalCamera.cpp
 ============================================================
 #include "NormalCamera.h"
-// Math
-#include "Math/sMath.h"
-#include "Math/EasingMath.h"
-#include "Math/MatrixMath.h"
-// Service
-#include "Service/GraphicsResourceGetter.h"
-#include "Service/DeltaTime.h"
-// C++
-#include <random>
-#include <ctime>
-// ImGui
-#ifdef USE_IMGUI
-#include "imgui.h"
-#endif // USE_IMGUI
-// Debug
-#ifdef _DEBUG
-#include "Service/Input.h"
-#endif // _DEBUG
 
 namespace MiiEngine {
-	///-------------------------------------------/// 
-	/// Getter
-	///-------------------------------------------///
-	// WorldMatrix
-	const Matrix4x4& NormalCamera::GetWorldMatrix() const { return worldMatrix_; }
-	// ViewMatrix
-	const Matrix4x4& NormalCamera::GetViewMatrix() const { return viewMatrix_; }
-	// ProjectionMatrix
-	const Matrix4x4& NormalCamera::GetProjectionMatrix() const { return projectionMatrix_; }
-	// ViewProjectionMatrix
-	const Matrix4x4& NormalCamera::GetViewProjectionMatrix() const { return viewProjectionMatrix_; }
-	// Translate
-	const Vector3& NormalCamera::GetTranslate() const { return transform_.translate; }
-	// Rotate
-	const Quaternion& NormalCamera::GetRotate() const { return transform_.rotate; }
-
-	///-------------------------------------------/// 
-	/// Setter
-	///-------------------------------------------///
-	// Translate
-	void NormalCamera::SetTranslate(const Vector3& translate) { transform_.translate = translate; }
-	// Rotate
-	void NormalCamera::SetRotate(const Quaternion& rotate) { transform_.rotate = rotate; }
-	// ForY
-	void NormalCamera::SetForY(const float& forY) { horizontalView_ = forY; }
-	// AspectRatio
-	void NormalCamera::SetAspectRatio(const float& aspect) { aspect_ = aspect; }
-	// NearClip
-	void NormalCamera::SetNearClip(const float& nearClip) { nearClip_ = nearClip; }
-	// FarClip
-	void NormalCamera::SetFarClip(const float& farClip) { farClip_ = farClip; }
-
 	///-------------------------------------------/// 
 	/// 初期化
 	///-------------------------------------------///
 	void NormalCamera::Initialize() {
-		transform_ = { {1.0f, 1.0f, 1.0f},{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f} };
-		horizontalView_ = 0.45f;
-		aspect_ = static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()) / static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight());
-		nearClip_ = 0.1f;
-		farClip_ = 2000.0f;
-
-		UpdateMatrices();
+		// 基底クラスの初期化を呼ぶ
+		CameraCommon::Initialize();
+		// CameraType
+		cameraType_ = CameraType::Normal;
 	}
 
 	///-------------------------------------------/// 
 	/// 更新
 	///-------------------------------------------///
 	void NormalCamera::Update() {
-		UpdateMatrices();
+		// 基底クラスの更新を呼ぶ
+		CameraCommon::Update();
 	}
-
 
 	///-------------------------------------------/// 
 	/// 情報
 	///-------------------------------------------///
 	void NormalCamera::ImGuiUpdate() {
-	#ifdef USE_IMGUI
-		ImGui::Begin("カメラ");
-		ImGui::DragFloat3("位置", &transform_.translate.x, 0.1f);
-		ImGui::DragFloat4("回転", &transform_.rotate.x, 0.05f);
-		ImGui::DragFloat("Horizontal View", &horizontalView_, 0.01f);
-		ImGui::DragFloat("Aspect Ratio", &aspect_, 0.01f);
-		ImGui::DragFloat("Near Clip", &nearClip_, 0.01f);
-		ImGui::DragFloat("Far Clip", &farClip_, 0.01f);
-		ImGui::End();
-	#endif // USE_IMGUI
+		// 基底クラスのImGui更新を呼ぶ
+		CameraCommon::ImGuiUpdate();
 	}
 
 	///-------------------------------------------/// 
 	/// デバッグ用の更新
 	///-------------------------------------------///
 	void NormalCamera::DebugUpdate() {
-	#ifdef _DEBUG
-		// カメラのローカルX軸（右方向ベクトル）を取得
-		Vector3 right = Math::RotateVector({ 1.0f, 0.0f, 0.0f }, transform_.rotate);
-
-		/// ===カメラの移動=== ///
-		if (Service::Input::PushKey(DIK_D)) {
-			transform_.translate.x += 1.0f;
-		} else if (Service::Input::PushKey(DIK_A)) {
-			transform_.translate.x -= 1.0f;
-		}
-		if (Service::Input::PushKey(DIK_W)) {
-			transform_.translate.z += 1.0f;
-		} else if (Service::Input::PushKey(DIK_S)) {
-			transform_.translate.z -= 1.0f;
-		}
-		if (Service::Input::PushKey(DIK_SPACE)) {
-			transform_.translate.y += 1.0f;
-		} else if (Service::Input::PushKey(DIK_LSHIFT)) {
-			transform_.translate.y -= 1.0f;
-		}
-
-		// ピッチ（縦回転）
-		if (Service::Input::PushKey(DIK_UP)) {
-			Quaternion delta = Math::MakeRotateAxisAngle(right, -0.05f);
-			transform_.rotate = delta * transform_.rotate;
-		} else if (Service::Input::PushKey(DIK_DOWN)) {
-			Quaternion delta = Math::MakeRotateAxisAngle(right, +0.05f);
-			transform_.rotate = delta * transform_.rotate;
-		}
-
-		// ヨー（左右回転）
-		if (Service::Input::PushKey(DIK_LEFT)) {
-			Quaternion delta = Math::RotateY(-0.05f);
-			transform_.rotate = delta * transform_.rotate;
-		} else if (Service::Input::PushKey(DIK_RIGHT)) {
-			Quaternion delta = Math::RotateY(+0.05f);
-			transform_.rotate = delta * transform_.rotate;
-		}
-	#endif // _DEBUG
-	}
-
-	///-------------------------------------------/// 
-	/// シェイク開始処理
-	///-------------------------------------------///
-	void NormalCamera::StartShake(float intensity, float duration, float frequency) {
-		isShaking_ = true;
-		shakeIntensity_ = intensity;
-		shakeDuration_ = duration;
-		shakeTimer_ = 0.0f;
-		shakeFrequency_ = frequency;
-
-		// ランダムな時間オフセットを生成（各軸で異なる波形にするため）
-		static std::random_device rd;
-		static std::mt19937 gen(rd());
-		std::uniform_real_distribution<float> dist(0.0f, 2.0f * 3.14159f);
-		shakeTimeOffset_ = dist(gen);
-	}
-
-	///-------------------------------------------/// 
-	/// シェイク処理終了
-	///-------------------------------------------///
-	void NormalCamera::StopShake() {
-		isShaking_ = false;
-		shakeTimer_ = 0.0f;
-		shakeOffset_ = { 0.0f, 0.0f, 0.0f };
-	}
-
-	///-------------------------------------------/// 
-	/// 行列の更新処理
-	///-------------------------------------------///
-	void NormalCamera::UpdateMatrices() {
-		/// ===シェイク=== ///
-		// シェイクの更新
-		UpdateShake();
-		// シェイクオフセット
-		Vector3 finalPosition = transform_.translate + shakeOffset_;
-
-		// 行列の計算
-		worldMatrix_ = Math::MakeAffineQuaternionMatrix(transform_.scale, transform_.rotate, finalPosition);
-		viewMatrix_ = Math::Inverse4x4(worldMatrix_);
-
-		// プロジェクション行列の更新
-		projectionMatrix_ = Math::MakePerspectiveFovMatrix(horizontalView_, aspect_, nearClip_, farClip_);
-
-		// 合成行列
-		viewProjectionMatrix_ = Multiply(viewMatrix_, projectionMatrix_);
-	}
-
-	///-------------------------------------------/// 
-	/// シェイク処理
-	///-------------------------------------------///
-	void NormalCamera::UpdateShake() {
-		if (!isShaking_) {
-			shakeOffset_ = { 0.0f, 0.0f, 0.0f };
-			return;
-		}
-
-		shakeTimer_ += Service::DeltaTime::GetDeltaTime();
-
-		// シェイク終了判定
-		if (shakeTimer_ >= shakeDuration_) {
-			StopShake();
-			return;
-		}
-
-		// 減衰カーブ（時間経過とともに弱くなる）
-		float decayFactor = 1.0f - (shakeTimer_ / shakeDuration_);
-		decayFactor = decayFactor * decayFactor; // 二乗で急激な減衰
-
-		// Sin波を使ったシェイク計算（各軸で異なる位相）
-		float time = shakeTimer_ * shakeFrequency_;
-
-		shakeOffset_.x = sin(time + shakeTimeOffset_) * shakeIntensity_ * decayFactor;
-		shakeOffset_.y = sin(time + shakeTimeOffset_ + 1.57f) * shakeIntensity_ * decayFactor * 0.7f; // Y軸は少し弱く
-		shakeOffset_.z = sin(time + shakeTimeOffset_ + 3.14f) * shakeIntensity_ * decayFactor * 0.5f; // Z軸はさらに弱く
-
-		// ランダム要素を追加してより自然に
-		static std::random_device rd;
-		static std::mt19937 gen(rd());
-		std::uniform_real_distribution<float> randomDist(-0.3f, 0.3f);
-
-		shakeOffset_.x += randomDist(gen) * shakeIntensity_ * decayFactor;
-		shakeOffset_.y += randomDist(gen) * shakeIntensity_ * decayFactor * 0.7f;
-		shakeOffset_.z += randomDist(gen) * shakeIntensity_ * decayFactor * 0.5f;
+		// 基底クラスのデバッグ更新を呼ぶ
+		CameraCommon::DebugUpdate();
 	}
 }
 
@@ -1184,114 +1355,36 @@ File Path: Project/Engine/Camera/NormalCamera.h
 ============================================================
 #pragma once
 /// ===Include=== ///
-#include "Engine/DataInfo/CData.h"
+#include "Base/CameraCommon.h"
 
 namespace MiiEngine {
 	///=====================================================/// 
 	/// カメラ基底クラス
 	///=====================================================///
-	class NormalCamera {
+	class NormalCamera : public CameraCommon {
 	public:
 		NormalCamera() = default;
-		virtual ~NormalCamera() = default;
+		~NormalCamera() = default;
 
 		/// <summary>
 		/// 初期化処理
 		/// </summary>
-		virtual void Initialize();
+		void Initialize() override;
 
 		/// <summary>
 		/// 更新処理
 		/// </summary>
-		virtual void Update();
+		void Update() override;
 
 		/// <summary>
 		/// ImGui情報の更新
 		/// </summary>
-		virtual void ImGuiUpdate();
+		void ImGuiUpdate() override;
 
 		/// <summary>
 		/// デバッグ用の更新
 		/// </summary>
-		virtual void DebugUpdate();
-
-		/// <summary>
-		/// シェイク（振動）効果を開始する処理
-		/// </summary>
-		/// <param name="intensity">シェイクの強さ。値が大きいほど振動が大きくなる。</param>
-		/// <param name="duration">シェイクの継続時間（秒）。</param>
-		/// <param name="frequency">シェイクの周波数（1秒あたりの振動回数）。省略時の既定値は 10.0f。</param>
-		void StartShake(float intensity, float duration, float frequency = 10.0f);
-
-		/// <summary>
-		/// カメラシェイク処理を停止
-		/// </summary>
-		void StopShake();
-
-
-	public:/// ===Getter=== ///
-		// WorldMatrix
-		const Matrix4x4& GetWorldMatrix()const;
-		// ViewMatrix
-		const Matrix4x4& GetViewMatrix()const;
-		// ProjectionMatrix
-		const Matrix4x4& GetProjectionMatrix()const;
-		// ViewProjectionMatrix
-		const Matrix4x4& GetViewProjectionMatrix()const;
-		// Translate
-		const Vector3& GetTranslate()const;
-		// Rotate
-		const Quaternion& GetRotate()const;
-
-	public:/// ===Setter=== ///
-		// Translate
-		void SetTranslate(const Vector3& translate);
-		// Rotate
-		void SetRotate(const Quaternion& rotate);
-		// ForY
-		void SetForY(const float& forY);
-		// Aspect
-		void SetAspectRatio(const float& aspect);
-		// NearClip
-		void SetNearClip(const float& nearClip);
-		// FarClip
-		void SetFarClip(const float& farClip);
-
-	protected:/// ===変数=== ///
-		/// ===ビュー行列データ=== ///
-		QuaternionTransform transform_;
-		Matrix4x4 worldMatrix_;
-		Matrix4x4 viewMatrix_;
-
-		/// ===プロジェクション行列データ=== ///
-		Matrix4x4 projectionMatrix_;
-		float horizontalView_; // 水平方向視野角
-		float aspect_;         // アスペクト比
-		float nearClip_;       // ニアクリップ距離
-		float farClip_;        // ファークリップ距離
-
-		/// ===合成行列=== ///
-		Matrix4x4 viewProjectionMatrix_;
-
-		/// ===シェイク=== ///
-		bool isShaking_ = false;        // シェイク中フラグ
-		float shakeIntensity_ = 0.0f;   // シェイクの強度
-		float shakeDuration_ = 0.0f;    // シェイクの継続時間
-		float shakeTimer_ = 0.0f;       // シェイクのタイマー
-		float shakeFrequency_ = 10.0f;  // シェイクの周波数
-		Vector3 shakeOffset_;           // シェイクによるオフセット
-		float shakeTimeOffset_;         // ランダムな時間オフセット
-
-	private:
-		/// <summary>
-		/// 行列の更新処理
-		/// </summary>
-		void UpdateMatrices();
-
-		/// <summary>
-		/// シェイクの更新処理
-		/// </summary>
-		void UpdateShake();
+		void DebugUpdate() override;
 	};
 }
 
@@ -1605,10 +1698,11 @@ File Path: Project/Engine/Collider/Base/Collider.h
 // Line
 #include "application/Drawing/3d/Line.h"
 
-/// ===前方宣言=== ///
-class GameCamera;
 
 namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class CameraCommon;
+
 	///=====================================================/// 
 	/// コライダー
 	///=====================================================///
@@ -4683,6 +4777,21 @@ namespace MiiEngine {
 }
 
 ============================================================
+File Path: Project/Engine/DataInfo/CameraData.h
+============================================================
+#pragma once
+
+namespace MiiEngine {
+	/// ===Cameraタイプ=== ///
+	enum class CameraType {
+		Normal,     // 通常のカメラ
+		Follow,     // 追従カメラ
+		Count       // 配列サイズ用
+	};
+}
+
+
+============================================================
 File Path: Project/Engine/DataInfo/ColliderData.h
 ============================================================
 #pragma once
@@ -6955,7 +7064,7 @@ File Path: Project/Engine/Graphics/3d/Line/LineObject3D.cpp
 #include "Service/Render.h"
 #include "Service/Camera.h"
 // Camera
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/Base/CameraCommon.h"
 // DXCommon
 #include "Engine/Core/DXCommon.h"
 // Math
@@ -7012,7 +7121,7 @@ namespace MiiEngine {
 	void LineObject3D::Update() {
 
 		/// ===カメラの設定=== ///
-		camera_ = Service::Camera::GetActiveCamera().get();
+		camera_ = Service::Camera::GetActiveCamera();
 
 		/// ===Matrixの作成=== ///
 		const Matrix4x4& viewProjectionMatrix = camera_->GetViewProjectionMatrix();
@@ -7167,7 +7276,9 @@ File Path: Project/Engine/Graphics/3d/Line/LineObject3D.h
 #include <vector>
 
 /// ===前方宣言=== ///
-class GameCamera;
+namespace MiiEngine {
+	class CameraCommon;
+}
 
 namespace MiiEngine {
 	///=====================================================/// 
@@ -7238,7 +7349,7 @@ namespace MiiEngine {
 		EulerTransform cameraTransform_;
 
 		/// ===Camera=== ///
-		GameCamera* camera_ = nullptr;
+		MiiEngine::CameraCommon* camera_ = nullptr;
 
 		/// ===LineInfo=== ///
 		uint32_t lineIndex_ = 0;
@@ -7831,7 +7942,7 @@ File Path: Project/Engine/Graphics/3d/Model/ModelCommon.cpp
 #include "Service/Render.h"
 #include "Service/Camera.h"
 // Camera
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/Base/CameraCommon.h"
 
 namespace MiiEngine {
 	///-------------------------------------------/// 
@@ -8002,7 +8113,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void ModelCommon::Update() {
 		/// ===カメラの設定=== ///
-		camera_ = Service::Camera::GetActiveCamera().get();
+		camera_ = Service::Camera::GetActiveCamera();
 
 		// MaterialDataの書き込み
 		MaterialDataWrite();
@@ -8205,10 +8316,10 @@ File Path: Project/Engine/Graphics/3d/Model/ModelCommon.h
 #include <memory>
 #include <string>
 
-/// ===前方宣言=== ///
-class GameCamera;
-
 namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class CameraCommon;
+
 	///=====================================================/// 
 	/// モデル共通部
 	///=====================================================///
@@ -8311,7 +8422,7 @@ namespace MiiEngine {
 		LightInfo light_;
 
 		/// ===Camera=== ///
-		GameCamera* camera_ = nullptr;
+		MiiEngine::CameraCommon* camera_ = nullptr;
 
 		/// ===環境マップ=== ///
 		EnvironmentMapInfo environmentMapInfo_;
@@ -8988,7 +9099,7 @@ File Path: Project/Engine/Graphics/3d/Ocean/OceanCommon.cpp
 #include "Service/Render.h"
 #include "Service/Camera.h"
 // camera
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/Base/CameraCommon.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/MatrixMath.h"
@@ -9071,7 +9182,7 @@ namespace MiiEngine {
 	/// 更新
 	///-------------------------------------------///
 	void OceanCommon::Update() {
-		camera_ = Service::Camera::GetActiveCamera().get();
+		camera_ = Service::Camera::GetActiveCamera();
 
 		MaterialDataWrite();
 		TransformDataWrite();
@@ -9159,10 +9270,10 @@ File Path: Project/Engine/Graphics/3d/Ocean/OceanCommon.h
 // c++
 #include <memory>
 
-/// ===前方宣言=== ///
-class GameCamera;
-
 namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class CameraCommon;
+
 	///-------------------------------------------/// 
 	/// OceanCommon
 	///-------------------------------------------///
@@ -9224,7 +9335,7 @@ namespace MiiEngine {
 		EulerTransform uvTransform_;
 
 		/// ===カメラ=== ///
-		GameCamera* camera_ = nullptr;
+		MiiEngine::CameraCommon* camera_ = nullptr;
 
 		/// ===Transform情報=== ///
 		QuaternionTransform worldTransform_;
@@ -9665,7 +9776,7 @@ File Path: Project/Engine/Graphics/3d/Primitive3D/Primitive3DCommon.cpp
 #include "Service/Render.h"
 #include "Service/Camera.h"
 // camera
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/Base/CameraCommon.h"
 
 namespace MiiEngine {
 	///-------------------------------------------/// 
@@ -9714,7 +9825,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void Primitive3DCommon::Update() {
 		/// ===カメラの設定=== ///
-		camera_ = Service::Camera::GetActiveCamera().get();
+		camera_ = Service::Camera::GetActiveCamera();
 
 		// MaterialDataの書き込み
 		MaterialDataWrite();
@@ -9839,10 +9950,10 @@ File Path: Project/Engine/Graphics/3d/Primitive3D/Primitive3DCommon.h
 #include <memory>
 #include <string>
 
-/// ===前方宣言=== ///
-class GameCamera;
-
 namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class CameraCommon;
+
 	///=====================================================/// 
 	/// プリミティブコモン
 	///=====================================================///
@@ -9912,7 +10023,7 @@ namespace MiiEngine {
 		LightInfo light_;
 
 		/// ===Camera=== ///
-		GameCamera* camera_ = nullptr;
+		MiiEngine::CameraCommon* camera_ = nullptr;
 
 		/// ===環境マップ=== ///
 		EnvironmentMapInfo environmentMapInfo_;
@@ -9964,7 +10075,7 @@ File Path: Project/Engine/Graphics/3d/SkyBox/SkyBox.cpp
 #include "Service/Render.h"
 #include "Service/Camera.h"
 // camera
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/Base/CameraCommon.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/MatrixMath.h"
@@ -10060,7 +10171,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void SkyBox::Update() {
 		/// ===カメラの設定=== ///
-		camera_ = Service::Camera::GetActiveCamera().get();
+		camera_ = Service::Camera::GetActiveCamera();
 
 		/// ===データの書き込み=== ///
 		VertexDataWrite();
@@ -10219,10 +10330,10 @@ File Path: Project/Engine/Graphics/3d/SkyBox/SkyBox.h
 // c++
 #include <memory>
 
-/// ===前方宣言=== ///
-class GameCamera;
-
 namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class CameraCommon;
+
 	///=====================================================/// 
 	/// SkyBox
 	///=====================================================///
@@ -10296,7 +10407,7 @@ namespace MiiEngine {
 		EulerTransform uvTransform_;
 
 		/// ===カメラ=== ///
-		GameCamera* camera_ = nullptr;
+		MiiEngine::CameraCommon* camera_ = nullptr;
 
 		/// ===プリミティブ情報=== ///
 		QuaternionTransform worldTransform_;
@@ -13219,7 +13330,7 @@ File Path: Project/Engine/Graphics/Particle/ParticleGroup.cpp
 #include "ParticleGroup.h"
 #include "ParticleFactory.h"
 // Camera
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/Base/CameraCommon.h"
 // Service
 #include "Service/GraphicsResourceGetter.h"
 #include "Service/Camera.h"
@@ -13271,7 +13382,7 @@ namespace MiiEngine {
         InstancingInit(definition_.modelName, translate, group_.maxInstance, definition_.shape);
 
         /// ===Cameraの設定=== ///
-        group_.camera = Service::Camera::GetActiveCamera().get();
+        group_.camera = Service::Camera::GetActiveCamera();
 
         /// ===発生タイマーの初期化=== ///
         group_.frequencyTimer = 0.0f;
@@ -13750,10 +13861,10 @@ File Path: Project/Engine/Graphics/Particle/ParticleGroup.h
 #include <random>
 #include <memory>
 
-/// ===前方宣言=== ///
-class GameCamera;
-
 namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class CameraCommon;
+
 	///=====================================================/// 
 	/// パーティクルのグループ
 	///=====================================================///
@@ -13863,7 +13974,7 @@ namespace MiiEngine {
 			uint32_t maxInstance;                        // パーティクルの最大数
 			uint32_t numInstance;                        // 現在のインスタンス数
 			float frequencyTimer;                        // 発生頻度タイマー
-			::GameCamera* camera = nullptr;
+			CameraCommon* camera = nullptr;
 			bool hasEmitted;                             // 初回発生済みフラグ（バースト用）
 
 			// 軌跡パーティクル用
@@ -14175,8 +14286,6 @@ File Path: Project/Engine/Graphics/Particle/ParticleSetUp.cpp
 #include "Service/Render.h"
 // Managers
 #include "Engine/System/Managers/SRVManager.h"
-// camera
-#include "application/Game/Camera/GameCamera.h"
 // Math
 #include "Math/sMath.h"
 
@@ -17481,6 +17590,7 @@ namespace MiiEngine {
 	/// デストラクタ
 	///-------------------------------------------///
 	IScene::~IScene() {
+		Service::Camera::Remove("Default");
 		defaultCamera_.reset();
 	}
 
@@ -17495,12 +17605,11 @@ namespace MiiEngine {
 	void IScene::Initialize() {
 
 		/// ===デフォルトカメラの生成=== ///
-		defaultCamera_ = std::make_shared<GameCamera>();
-		defaultCamera_->Init(CameraType::Normal);
+		defaultCamera_ = std::make_unique<NormalCamera>();
+		defaultCamera_->Initialize();
 		defaultCamera_->SetTranslate({ 0.0f, 0.0f, -50.0f });
-
 		// デフォルトカメラの設定
-		Service::Camera::AddCamera("Default", defaultCamera_);
+		Service::Camera::AddCamera("Default", defaultCamera_.get());
 		Service::Camera::SetActiveCamera("Default");
 	}
 
@@ -17531,7 +17640,8 @@ File Path: Project/Engine/Scene/IScene.h
 ============================================================
 #pragma once
 /// ===Include=== ///
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/NormalCamera.h"
+#include "Engine/Camera/FollowCamera.h"
 #include "Engine/DataInfo/LevelData.h"
 #include "Engine/DataInfo/BlendModeData.h"
 // C++
@@ -17564,7 +17674,7 @@ namespace MiiEngine {
 		// シーンマネージャ
 		SceneManager* sceneManager_ = nullptr;
 		// Camera
-		std::shared_ptr<GameCamera> defaultCamera_;
+		std::unique_ptr<NormalCamera> defaultCamera_;
 	};
 }
 
@@ -21789,6 +21899,9 @@ namespace MiiEngine {
 File Path: Project/Engine/System/Managers/CameraManager.cpp
 ============================================================
 #include "CameraManager.h"
+// Camera
+#include "Engine/Camera/NormalCamera.h"
+#include "Engine/Camera/FollowCamera.h"
 // C++
 #include <cassert>
 
@@ -21798,7 +21911,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	CameraManager::CameraManager() = default;
 	CameraManager::~CameraManager() {
-		activeCamera_.reset();
+		activeCamera_ = nullptr;
 		cameras_.clear();
 	}
 
@@ -21815,11 +21928,11 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// カメラを追加
 	///-------------------------------------------///
-	void CameraManager::AddCamera(const std::string& name, std::shared_ptr<GameCamera> camera) {
+	void CameraManager::AddCamera(const std::string& name, CameraCommon* camera) {
 		cameras_[name] = camera;
 
 		if (!activeCamera_) {
-			activeCamera_ = camera; // 最初に追加されたカメラをデフォルトでアクティブにする
+			activeCamera_ = cameras_[name]; // 最初に追加されたカメラをデフォルトでアクティブにする
 		}
 	}
 
@@ -21845,22 +21958,6 @@ namespace MiiEngine {
 	}
 
 	///-------------------------------------------/// 
-	/// Getter
-	///-------------------------------------------///
-	// 指定されたカメラのGetter
-	std::shared_ptr<GameCamera> CameraManager::GetCamera(const std::string& name) const {
-		auto it = cameras_.find(name);
-		if (it != cameras_.end()) {
-			return it->second;
-		}
-		return nullptr;
-	}
-	// アクティブカメラのGetter
-	std::shared_ptr<GameCamera> CameraManager::GetActiveCamera() const {
-		return activeCamera_;
-	}
-
-	///-------------------------------------------/// 
 	/// Setter
 	///-------------------------------------------///
 	// アクティブカメラのSetter
@@ -21869,9 +21966,25 @@ namespace MiiEngine {
 		if (it != cameras_.end()) {
 			activeCamera_ = it->second;
 		} else {
-			// カメラが存在しない場合の警告
 			assert(false && "指定されたカメラが存在しません");
 		}
+	}
+
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	// 指定されたカメラのGetter
+	CameraCommon* CameraManager::GetCamera(const std::string& name) const {
+		auto it = cameras_.find(name);
+		if (it != cameras_.end()) {
+			return it->second;
+		}
+		return nullptr;
+	}
+	
+	// アクティブカメラのGetter
+	CameraCommon* CameraManager::GetActiveCamera() const {
+		return activeCamera_;
 	}
 }
 
@@ -21880,8 +21993,8 @@ File Path: Project/Engine/System/Managers/CameraManager.h
 ============================================================
 #pragma once
 /// ===Include=== ///
-// GameCamera
-#include "application/Game/Camera/GameCamera.h"
+// CameraCommon
+#include "Engine/Camera/Base/CameraCommon.h"
 // C++
 #include <unordered_map>
 #include <string>
@@ -21908,8 +22021,8 @@ namespace MiiEngine {
 		/// カメラの追加処理
 		/// </summary>
 		/// <param name="name">追加するカメラの識別名（const std::string&）。</param>
-		/// <param name="camera">追加する GameCamera オブジェクトへの std::shared_ptr。</param>
-		void AddCamera(const std::string& name, std::shared_ptr<GameCamera> camera);
+		/// <param name="camera">追加する CameraCommon オブジェクトへのポインタ。</param>
+		void AddCamera(const std::string& name, CameraCommon* camera);
 
 		/// <summary>
 		/// カメラの削除処理
@@ -21926,19 +22039,19 @@ namespace MiiEngine {
 
 	public:/// ===Setter・Getter=== ///
 
-		// 指定されたカメラのGetter
-		std::shared_ptr<GameCamera> GetCamera(const std::string& name) const;
+		// 指定された名前のカメラのGetter
+		CameraCommon* GetCamera(const std::string& name) const;
 		// アクティブカメラのGetter
-		std::shared_ptr<GameCamera> GetActiveCamera() const;
+		CameraCommon* GetActiveCamera() const;
 		// アクティブカメラのSetter
 		void SetActiveCamera(const std::string& name);
 
 	private:
 		// カメラを管理するマップ
-		std::unordered_map<std::string, std::shared_ptr<GameCamera>> cameras_;
+		std::unordered_map<std::string, CameraCommon*> cameras_;
 
 		// 現在アクティブなカメラ
-		std::shared_ptr<GameCamera> activeCamera_;
+		CameraCommon* activeCamera_ = nullptr;
 	};
 }
 
@@ -25356,6 +25469,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyHitReactionState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.cpp" />
+    <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSRootSignature.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.cpp" />
     <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp" />
@@ -25385,7 +25499,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\LongRange\LongRangeEnemyBullet.cpp" />
     <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacter.cpp" />
     <ClCompile Include="Engine\Camera\FollowCamera.cpp" />
-    <ClCompile Include="application\Game\Camera\GameCamera.cpp" />
     <ClCompile Include="application\Game\Object\GameGround\GroundOcean.cpp" />
     <ClCompile Include="application\Game\Animation\GameOverAnimation.cpp" />
     <ClCompile Include="application\Game\Object\GameStage.cpp" />
@@ -25524,6 +25637,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\UI\SpriteBaseScale.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.h" />
+    <ClInclude Include="Engine\Camera\Base\CameraCommon.h" />
     <ClInclude Include="Engine\Collider\ColliderConcept.h" />
     <ClInclude Include="application\Game\Editor\Data\AttackData.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\Base\EnemyState.h" />
@@ -25538,6 +25652,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Editor\AttackEditor.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyHitReactionComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyHitReactionState.h" />
+    <ClInclude Include="Engine\DataInfo\CameraData.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.h" />
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
@@ -25573,7 +25688,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\LongRange\LongRangeEnemyBullet.h" />
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h" />
     <ClInclude Include="Engine\Camera\FollowCamera.h" />
-    <ClInclude Include="application\Game\Camera\GameCamera.h" />
     <ClInclude Include="application\Game\Object\GameGround\GroundOcean.h" />
     <ClInclude Include="application\Game\Animation\GameOverAnimation.h" />
     <ClInclude Include="application\Game\Object\GameStage.h" />
@@ -26019,9 +26133,6 @@ File Path: Project/FallenAscent.vcxproj.filters
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="application\Game\Camera\GameCamera.cpp">
-      <Filter>application\Game\Camera</Filter>
-    </ClCompile>
     <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacter.cpp">
       <Filter>application\Game\Entity\GameCharacter</Filter>
     </ClCompile>
@@ -26548,11 +26659,9 @@ File Path: Project/FallenAscent.vcxproj.filters
       <Filter>application\Game\Entity\Enemy\MobEnemy\Base</Filter>
     </ClCompile>
     <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp" />
+    <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\Game\Camera\GameCamera.h">
-      <Filter>application\Game\Camera</Filter>
-    </ClInclude>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
       <Filter>application\Game\Entity\GameCharacter</Filter>
     </ClInclude>
@@ -27130,6 +27239,8 @@ File Path: Project/FallenAscent.vcxproj.filters
       <Filter>application\Game\Entity\Enemy\MobEnemy\Base</Filter>
     </ClInclude>
     <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h" />
+    <ClInclude Include="Engine\Camera\Base\CameraCommon.h" />
+    <ClInclude Include="Engine\DataInfo\CameraData.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -29904,7 +30015,7 @@ namespace Service {
 	///-------------------------------------------/// 
 	/// 追加
 	///-------------------------------------------///
-	void Camera::AddCamera(const std::string& name, std::shared_ptr<GameCamera> camera) {
+	void Camera::AddCamera(const std::string& name, MiiEngine::CameraCommon* camera) {
 		Locator::GetCameraManager()->AddCamera(name, camera);
 	}
 
@@ -29925,7 +30036,7 @@ namespace Service {
 	///-------------------------------------------/// 
 	/// アクティブカメラのGetter
 	///-------------------------------------------///
-	std::shared_ptr<GameCamera> Camera::GetActiveCamera() {
+	MiiEngine::CameraCommon* Camera::GetActiveCamera() {
 		return Locator::GetCameraManager()->GetActiveCamera();
 	}
 
@@ -29949,7 +30060,9 @@ File Path: Project/Service/Camera.h
 #include <memory>
 
 /// ===前方宣言=== ///
-class GameCamera;
+namespace MiiEngine {
+	class CameraCommon;
+}
 
 namespace Service {
 	///=====================================================/// 
@@ -29962,8 +30075,8 @@ namespace Service {
 		/// 指定した名前でカメラを登録する静的関数。カメラ管理システムに新しいカメラを追加します。
 		/// </summary>
 		/// <param name="name">登録するカメラの識別名を示す文字列。</param>
-		/// <param name="camera">追加する GameCamera オブジェクトへの std::shared_ptr。管理対象のカメラを指すスマートポインタを渡します。</param>
-		static void AddCamera(const std::string& name, std::shared_ptr<GameCamera> camera);
+		/// <param name="camera">追加する GameCamera オブジェクトへの std::unique_ptr。管理対象のカメラを指すスマートポインタを渡します。</param>
+		static void AddCamera(const std::string& name, MiiEngine::CameraCommon* camera);
 
 		/// <summary>
 		/// 指定された名前の項目を削除する静的メソッドです。
@@ -29980,8 +30093,8 @@ namespace Service {
 		/// <summary>
 		/// 現在アクティブなカメラへの共有ポインタを取得します（静的メンバ関数）。
 		/// </summary>
-		/// <returns>アクティブな GameCamera を指す std::shared_ptr<GameCamera>。アクティブなカメラが存在しない場合は nullptr を返します。</returns>
-		static std::shared_ptr<GameCamera> GetActiveCamera();
+		/// <returns>アクティブな CameraCommon を指すポインタ。アクティブなカメラが存在しない場合は nullptr を返します。</returns>
+		static MiiEngine::CameraCommon* GetActiveCamera();
 
 		/// <summary>
 		/// 指定した名前のカメラをアクティブに設定します。
@@ -32297,8 +32410,6 @@ private:
 File Path: Project/application/Drawing/3d/Object3d.cpp
 ============================================================
 #include "Object3d.h"
-#include "Engine/Graphics/3d/Model/Model.h"
-#include "Engine/Graphics/3d/Model/AnimationModel.h"
 // C++
 #include <cassert>
 
@@ -32313,18 +32424,11 @@ Object3d::~Object3d() {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void Object3d::Init(ObjectType type, const std::string& modelName, MiiEngine::LightType light) {
-	// タイプの確認
-	type_ = type;
-
-	// それぞれ対応した方を生成
-	if (type_ == ObjectType::Model) {
-		model_ = std::make_unique<Model>();
-		model_->Initialize(modelName, light);
-	} else {
-		model_ = std::make_unique<AnimationModel>();
-		model_->Initialize(modelName, light);
-	}
+void Object3d::Init(std::unique_ptr<ModelCommon> model, const std::string& modelName, MiiEngine::LightType light) {
+	// 生成。
+	model_ = std::move(model);
+	// 初期化
+	model_->Initialize(modelName, light);
 }
 
 ///-------------------------------------------/// 
@@ -32421,26 +32525,14 @@ void Object3d::SetLight(MiiEngine::LightType type) {
 void Object3d::SetEnvironmentMapData(bool flag, float string) {
 	model_->SetEnvironmentMapData(flag, string);
 }
-// Animation
-void Object3d::SetAnimation(const std::string& animationName, bool isLoop) {
-	auto animationModel = dynamic_cast<AnimationModel*>(model_.get());
-	assert(!animationModel);
-	animationModel->SetAnimation(animationName, isLoop);
-}
-
 
 ============================================================
 File Path: Project/application/Drawing/3d/Object3d.h
 ============================================================
 #pragma once
 /// ===Include=== ///
-#include "Engine/Graphics/3d/Model/ModelCommon.h"
-
-/// ===オブジェクトのタイプ=== ///
-enum class ObjectType {
-	Model,
-	AnimationModel
-};
+#include "Engine/Graphics/3d/Model/Model.h"
+#include "Engine/Graphics/3d/Model/AnimationModel.h"
 
 ///=====================================================/// 
 /// Object3D
@@ -32456,7 +32548,7 @@ public:
 	/// <param name="type">初期化するオブジェクトの種類を指定します。</param>
 	/// <param name="modelName">使用するモデルの名前（識別またはロードに使われる文字列）。</param>
 	/// <param name="light">照明の種類を指定します。省略時は LightType::None（照明なし）が使用されます。</param>
-	void Init(ObjectType type, const std::string& modelName, MiiEngine::LightType light = MiiEngine::LightType::None);
+	void Init(std::unique_ptr<MiiEngine::ModelCommon> model, const std::string& modelName, MiiEngine::LightType light = MiiEngine::LightType::None);
 
 	/// <summary>
 	/// 更新処理
@@ -32510,16 +32602,11 @@ public: /// ===Setter=== ///
 	void SetLightData(MiiEngine::LightInfo light);
 	// 環境マップ
 	void SetEnvironmentMapData(bool flag, float string);
-	// Animation
-	void SetAnimation(const std::string& animationName, bool isLoop = true);
 
 private: /// ===Variables(変数)=== ///
 
 	/// ===クラス=== ///
 	std::unique_ptr<MiiEngine::ModelCommon> model_;
-
-	/// ===モデルかアニメーションモデルかを判断するフラグ=== ///
-	ObjectType type_ = ObjectType::Model;
 };
 
 
@@ -32531,7 +32618,7 @@ File Path: Project/application/Game/Animation/GameClearAnimation.cpp
 // Entity
 #include "application/Game/Entity/Player/Player.h"
 // Camera
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/FollowCamera.h"
 // Service
 #include "Service/DeltaTime.h"
 // Math
@@ -32543,7 +32630,7 @@ File Path: Project/application/Game/Animation/GameClearAnimation.cpp
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void GameClearAnimation::Initialize(Player* player, GameCamera* camera) {
+void GameClearAnimation::Initialize(Player* player, MiiEngine::FollowCamera* camera) {
 	player_ = player;
 	camera_ = camera;
 
@@ -32580,12 +32667,14 @@ void GameClearAnimation::Initialize(Player* player, GameCamera* camera) {
 	finalJumpInfo_.timer = 0.0f;
 
 	/// ===カメラの設定=== ///
+	// カメラ
+	auto followCamera = dynamic_cast<MiiEngine::FollowCamera*>(camera_);
 	// 回転可能型に設定
-	camera_->SetFollowCamera(FollowCameraType::Orbiting); 
+	followCamera->SetFollowCamera(MiiEngine::FollowCameraType::Orbiting);
 	// カメラのターゲットを設定
-	camera_->SetTarget(&smallJumpInfo_.basePlayerPosition, &playerRotation); 
+	followCamera->SetTarget(&smallJumpInfo_.basePlayerPosition, &playerRotation);
 	// 初期オフセットを設定
-	camera_->SetOrbitingOffset(startOffset); 
+	followCamera->SetOrbitingOffset(startOffset);
 
 	/// ===Playerの設定=== ///
 	player_->SetGravity(-9.8f); 
@@ -32732,7 +32821,9 @@ File Path: Project/application/Game/Animation/GameClearAnimation.h
 
 /// ===前方宣言=== ///
 class Player;
-class GameCamera;
+namespace MiiEngine {
+	class FollowCamera;
+}
 
 /// ===アニメーションフェーズ=== ///
 enum class ClearAnimationPhase {
@@ -32754,7 +32845,7 @@ public:
 	/// </summary>
 	/// <param name="player">プレイヤーのポインタ</param>
 	/// <param name="camera">カメラのポインタ</param>
-	void Initialize(Player* player, GameCamera* camera);
+	void Initialize(Player* player, MiiEngine::FollowCamera* camera);
 
 	/// <summary>
 	/// 更新処理
@@ -32775,7 +32866,7 @@ public:
 private:
 	/// ===メンバ変数=== ///
 	Player* player_ = nullptr;      // プレイヤーへの参照
-	GameCamera* camera_ = nullptr;  // カメラへの参照
+	MiiEngine::FollowCamera* camera_ = nullptr;  // カメラへの参照
 
 	// 現在のフェーズ
 	ClearAnimationPhase currentPhase_ = ClearAnimationPhase::CameraRotation;
@@ -32836,7 +32927,7 @@ File Path: Project/application/Game/Animation/GameOverAnimation.cpp
 ============================================================
 #include "GameOverAnimation.h"
 // Camera
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/FollowCamera.h"
 // Service
 #include "Service/GraphicsResourceGetter.h"
 // C++
@@ -32863,7 +32954,7 @@ namespace {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void GameOverAnimation::Initialize(GameCamera* camera) {
+void GameOverAnimation::Initialize(MiiEngine::FollowCamera* camera) {
     camera_ = camera;
 
     // スプライトの初期化
@@ -33079,7 +33170,9 @@ File Path: Project/application/Game/Animation/GameOverAnimation.h
 #include <memory>
 
 /// ===前方宣言=== ///
-class GameCamera;
+namespace MiiEngine{
+	class FollowCamera;
+}
 
 ///-------------------------------------------/// 
 /// GameOverAnimation 
@@ -33093,7 +33186,7 @@ public:
 	/// 初期化処理
 	/// </summary>
 	/// <param name="camera">初期化する GameCamera オブジェクトへのポインタ。</param>
-	void Initialize(GameCamera* camera);
+	void Initialize(MiiEngine::FollowCamera* camera);
 
 	/// <summary>
 	/// 更新処理
@@ -33116,7 +33209,7 @@ public: /// ===Getter=== ///
 
 private:
 	/// ===ポインタ=== ///
-	GameCamera* camera_ = nullptr;  // カメラ
+	MiiEngine::FollowCamera* camera_ = nullptr;  // カメラ
 
 	/// ===Sprite=== ///
 	std::unique_ptr<Sprite> gameOverSprite_;  // ゲームオーバースプライト
@@ -33165,9 +33258,10 @@ private:
 File Path: Project/application/Game/Animation/StartAnimation.cpp
 ============================================================
 #include "StartAnimation.h"
-// Player & Camera
+// Player
 #include "application/Game/Entity/Player/Player.h"
-#include "application/Game/Camera/GameCamera.h"
+// Camera
+#include "Engine/Camera/FollowCamera.h"
 // Service
 #include "Service/DeltaTime.h"
 // Math
@@ -33188,7 +33282,7 @@ StartAnimation::~StartAnimation() {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void StartAnimation::Initialize(Player* player, GameCamera* camera) {
+void StartAnimation::Initialize(Player* player, MiiEngine::FollowCamera* camera) {
 	player_ = player;
 	camera_ = camera;
 
@@ -33309,7 +33403,9 @@ File Path: Project/application/Game/Animation/StartAnimation.h
 
 /// ===前方宣言=== ///
 class Player;
-class GameCamera;
+namespace MiiEngine {
+	class FollowCamera;
+}
 
 ///=====================================================/// 
 /// StartAnimation
@@ -33324,7 +33420,7 @@ public:
 	/// </summary>
 	/// <param name="player">プレイヤーのポインタ</param>
 	/// <param name="camera">カメラのポインタ</param>
-	void Initialize(Player* player, GameCamera* camera);
+	void Initialize(Player* player, MiiEngine::FollowCamera* camera);
 
 	/// <summary>
 	/// 更新処理
@@ -33345,7 +33441,7 @@ public: /// ===Getter=== ///
 private:
 	/// ===ポインタ=== ///
 	Player* player_ = nullptr;
-	GameCamera* camera_ = nullptr;
+	MiiEngine::FollowCamera* camera_ = nullptr;
 
 	/// ===アニメーション制御=== ///
 	float timer_ = 0.0f;              // アニメーション用タイマー
@@ -33394,304 +33490,6 @@ private:
 	/// </summary>
 	void UpdateCameraRotation();
 };
-
-============================================================
-File Path: Project/application/Game/Camera/GameCamera.cpp
-============================================================
-#include "GameCamera.h"
-#include <cassert>
-
-///-------------------------------------------/// 
-/// デストラクタ
-///-------------------------------------------///
-GameCamera::~GameCamera() {
-	camera_.reset();
-}
-
-///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-// WorldMatrix
-const Matrix4x4& GameCamera::GetWorldMatrix() const {
-	return camera_->GetWorldMatrix();
-}
-// ViewMatrix
-const Matrix4x4& GameCamera::GetViewMatrix() const {
-	return camera_->GetViewMatrix();
-}
-// ProjectionMatrix
-const Matrix4x4& GameCamera::GetProjectionMatrix() const {
-	return camera_->GetProjectionMatrix();
-}
-// ViewProjectionMatrix
-const Matrix4x4& GameCamera::GetViewProjectionMatrix() const {
-	return camera_->GetViewProjectionMatrix();
-}
-// Translate
-const Vector3& GameCamera::GetTranslate() const {
-	return camera_->GetTranslate();
-}
-// Rotate
-const Quaternion& GameCamera::GetRotate() const {
-	return camera_->GetRotate();
-}
-// Offset
-const Vector3& GameCamera::GetOffset() const {
-	auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_);
-	assert(!follow);
-	return follow->GetOffset();
-}
-// OrbitingOffset
-const Vector3& GameCamera::GetOrbitingOffset() const {
-	auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_);
-	assert(!follow);
-	return follow->GetOrbitingOffset();
-}
-
-
-///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-// Translate
-void GameCamera::SetTranslate(const Vector3& translate) {
-	camera_->SetTranslate(translate);
-}
-// Rotate
-void GameCamera::SetRotate(const Quaternion& rotate) {
-	camera_->SetRotate(rotate);
-}
-// ForY
-void GameCamera::SetForY(const float& forY) {
-	camera_->SetForY(forY);
-}
-// AspectRatio
-void GameCamera::SetAspectRatio(const float& aspect) {
-	camera_->SetAspectRatio(aspect);
-}
-// NearClip
-void GameCamera::SetNearClip(const float& nearClip) {
-	camera_->SetNearClip(nearClip);
-}
-// FarClip
-void GameCamera::SetFarClip(const float& farClip) {
-	camera_->SetFarClip(farClip);
-}
-// FollowCameraの設定
-void GameCamera::SetFollowCamera(FollowCameraType type) {
-	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
-		follow->SetFollowCamera(type);
-	}
-	return;
-}
-// 追従対象の座標を設定
-void GameCamera::SetTarget(Vector3* position, Quaternion* rotation) {
-	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
-		follow->SetTarget(position, rotation);
-	}
-	return;
-}
-// 追従のオフセット
-void GameCamera::SetOffset(const Vector3& offset) {
-	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
-		follow->SetOffset(offset);
-	}
-	return;
-}
-void GameCamera::SetOrbitingOffset(const Vector3& offset) {
-	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
-		follow->SetOrbitingOffset(offset);
-	}
-	return;
-}
-// 追従速度を設定
-void GameCamera::SetFollowSpeed(float speed) {
-	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
-		follow->SetFollowSpeed(speed);
-	}
-	return;
-}
-// 回転補間速度
-void GameCamera::SetLerpSpeed(float speed) {
-	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
-		follow->SetLerpSpeed(speed);
-	}
-	return;
-}
-// 回転の重み
-void GameCamera::SetStick(const Vector2& stickValue) {
-	if (auto follow = std::dynamic_pointer_cast<MiiEngine::FollowCamera>(camera_)) {
-		follow->SetStick(stickValue);
-	}
-	return;
-}
-
-///-------------------------------------------/// 
-/// 初期化
-///-------------------------------------------///
-void GameCamera::Init(CameraType type) {
-	type_ = type;
-
-	if (type_ == CameraType::Normal) {
-		camera_ = std::make_shared<MiiEngine::NormalCamera>();
-		camera_->Initialize();
-	} else {
-		camera_ = std::make_shared<MiiEngine::FollowCamera>();
-		camera_->Initialize();
-	}
-}
-
-///-------------------------------------------/// 
-/// 更新
-///-------------------------------------------///
-void GameCamera::Update() {
-	camera_->Update();
-}
-
-///-------------------------------------------/// 
-/// 情報
-///-------------------------------------------///
-void GameCamera::ImGuiUpdate() {
-#ifdef USE_IMGUI
-	camera_->ImGuiUpdate();
-#endif // USE_IMGUI
-}
-
-///-------------------------------------------/// 
-/// デバッグ用の更新
-///-------------------------------------------///
-void GameCamera::DebugUpdate() {
-#ifdef _DEBUG
-	camera_->DebugUpdate();
-#endif // _DEBUG
-}
-
-///-------------------------------------------/// 
-/// シェイク開始処理
-///-------------------------------------------///
-void GameCamera::StartShake(float intensity, float duration, float frequency) {
-	camera_->StartShake(intensity, duration, frequency);
-}
-
-///-------------------------------------------/// 
-/// シェイク処理終了
-///-------------------------------------------///
-void GameCamera::StopShake() {
-	camera_->StopShake();
-}
-
-============================================================
-File Path: Project/application/Game/Camera/GameCamera.h
-============================================================
-#pragma once
-/// ===Include=== ///
-#include "Engine/Camera/FollowCamera.h"
-
-/// ===CameraType=== ///
-enum class CameraType {
-	Normal,   // 通常カメラ
-	Follow,   // 追従カメラ
-};
-
-///-------------------------------------------/// 
-/// Gameで使用するカメラ
-///-------------------------------------------///
-class GameCamera {
-public:
-
-	GameCamera() = default;
-	~GameCamera();
-
-	/// <summary>
-	/// 初期化処理
-	/// </summary>
-	/// <param name="type">初期化に使用するカメラの種類を指定します。</param>
-	void Init(CameraType type);
-
-	/// <summary>
-	/// 更新処理
-	/// </summary>
-	void Update();
-
-	/// <summary>
-	/// ImGui
-	/// </summary>
-	virtual void ImGuiUpdate();
-
-	/// <summary>
-	/// デバッグ用の更新処理
-	/// </summary>
-	void DebugUpdate();
-
-	/// <summary>
-	/// シェイク処理
-	/// </summary>
-	/// <param name="intensity">シェイクの強度を指定します。</param>
-	/// <param name="duration">シェイク効果の持続時間（秒）を指定します。</param>
-	/// <param name="frequency">シェイクの周波数（Hz）を指定します。省略時は 10.0f です。</param>
-	void StartShake(float intensity, float duration, float frequency = 10.0f);
-	
-	/// <summary>
-	/// シェイク動作を停止
-	/// </summary>
-	void StopShake();
-
-public: /// ===Getter=== ///
-	// WorldMatrix
-	const Matrix4x4& GetWorldMatrix()const;
-	// ViewMatrix
-	const Matrix4x4& GetViewMatrix()const;
-	// ProjectionMatrix
-	const Matrix4x4& GetProjectionMatrix()const;
-	// ViewProjectionMatrix
-	const Matrix4x4& GetViewProjectionMatrix()const;
-	// Translate
-	const Vector3& GetTranslate()const;
-	// Rotate
-	const Quaternion& GetRotate()const;
-	// Offset
-	const Vector3& GetOffset() const;
-	// OrbitingOffset
-	const Vector3& GetOrbitingOffset() const;
-
-
-public: /// ===Setter=== ///
-	// Translate
-	void SetTranslate(const Vector3& translate);
-	// Rotate
-	void SetRotate(const Quaternion& rotate);
-	// ForY
-	void SetForY(const float& forY);
-	// Aspect
-	void SetAspectRatio(const float& aspect);
-	// NearClip
-	void SetNearClip(const float& nearClip);
-	// FarClip
-	void SetFarClip(const float& farClip);
-	// FollowTypeの設定
-	void SetFollowCamera(FollowCameraType type);
-	// 追従対象の座標を設定
-	void SetTarget(Vector3* position, Quaternion* rotation);
-	// 追従オフセット
-	void SetOffset(const Vector3& offset);
-	// 回転型追従カメラのオフセット
-	void SetOrbitingOffset(const Vector3& offset);
-	// 追従速度を設定
-	void SetFollowSpeed(float speed);
-	// 回転補間速度を設定
-	void SetLerpSpeed(float speed);
-	// スティック入力
-	void SetStick(const Vector2& stickValue);
-
-private:
-
-	/// ===クラス=== ///
-	std::shared_ptr<MiiEngine::NormalCamera> camera_; // 通常カメラ
-
-	/// ===カメラタイプ=== ///
-	CameraType type_ = CameraType::Normal;
-};
-
-
 
 ============================================================
 File Path: Project/application/Game/Editor/AttackDataSerializer.cpp
@@ -35458,8 +35256,6 @@ struct AttackData {
 File Path: Project/application/Game/Entity/Enemy/Base/BaseEnemy.cpp
 ============================================================
 #include "BaseEnemy.h"
-// Camera
-#include "application/Game/Camera/GameCamera.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // Service
@@ -35490,7 +35286,7 @@ void BaseEnemy::SetInvincibleTime() {
 ///-------------------------------------------///
 void BaseEnemy::Initialize() {
 	// カメラの取得
-	camera_ = Service::Camera::GetActiveCamera().get();
+	camera_ = Service::Camera::GetActiveCamera();
 
 	/// ===GameCharacter=== ///
 	GameCharacter::Initialize();
@@ -35653,7 +35449,7 @@ public: /// ===Setter=== ///
 
 protected: /// ===変数の宣言=== ///
 
-	GameCamera* camera_ = nullptr; // カメラ
+	MiiEngine::CameraCommon* camera_ = nullptr; // カメラ
 	Player* player_ = nullptr; // Player
 
 	bool isTentativeDeath_ = false; // 仮死亡フラグ
@@ -36033,7 +35829,7 @@ void BossEnemy::Initialize() {
 
 	/// ===Object3Dの初期化=== ///
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "Boss");
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "Boss");
 
 	/// ===BaseEnemyの初期化=== ///
 	BaseEnemy::Initialize();
@@ -36209,7 +36005,7 @@ public: /// ===Setter=== ///
 
 private:
 	/// ===ポインタ=== ///
-	GameCamera* camera_ = nullptr; // カメラ
+	MiiEngine::CameraCommon* camera_ = nullptr; // カメラ
 	Player* player_ = nullptr;	   // プレイヤー
 
 	/// ===State=== ///
@@ -36331,8 +36127,6 @@ class MoveBossState {};
 File Path: Project/application/Game/Entity/Enemy/MobEnemy/Base/MobEnemy.cpp
 ============================================================
 #include "MobEnemy.h"
-// Camera
-#include "application/Game/Camera/GameCamera.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // State
@@ -36797,7 +36591,7 @@ void CloseRangeEnemy::Initialize() {
 
 	/// ===Object=== ///
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "CloseEnemy");
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "CloseEnemy");
 
 	/// ===MobEnemyの初期化=== ///
 	MobEnemy::Initialize();
@@ -37611,7 +37405,7 @@ void LongRangeEnemy::Initialize() {
 
 	/// ===Object3d=== ///
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "LongEnemy");
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "LongEnemy");
 
 	/// ===MobEnemyの初期化=== ///
 	MobEnemy::Initialize();
@@ -37795,7 +37589,7 @@ LongRangeEnemyBullet::~LongRangeEnemyBullet() {
 void LongRangeEnemyBullet::Initialize() {
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "Player");
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "Player");
 	// Object3dの初期設定
 	object3d_->SetTranslate(transform_.translate);
 
@@ -39982,7 +39776,7 @@ PlayerHand::~PlayerHand() {
 void PlayerHand::Initialize() {
 	// モデルの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "PlayerHand");
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "PlayerHand");
 
 	/// ===OBBCollider=== ///
 	OBBCollider::Initialize();
@@ -40332,7 +40126,7 @@ File Path: Project/application/Game/Entity/Player/Player.cpp
 ============================================================
 #include "Player.h"
 // Camera
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/FollowCamera.h"
 // State
 #include "State/RootState.h"
 // Service
@@ -40370,9 +40164,12 @@ void Player::SetInvincibleTime(const float& time) {
 ///-------------------------------------------/// 
 /// Game開始時の初期化
 ///-------------------------------------------///
-void Player::InitGame(const Vector3& translate) {
+void Player::InitGame(const Vector3& translate, MiiEngine::FollowCamera* camera) {
 	/// ===初期化=== ///
 	Initialize();
+
+	// Cameraの設定
+	camera_ = camera;
 
 	/// ===位置の設定=== ///
 	transform_.translate = translate;
@@ -40388,12 +40185,9 @@ void Player::InitGame(const Vector3& translate) {
 /// 初期化
 ///-------------------------------------------///
 void Player::Initialize() {
-	// Cameraの設定
-	camera_ = Service::Camera::GetActiveCamera().get();
-
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "Player");
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "Player");
 
 	// GameCharacterの設定
 	GameCharacter::Initialize();
@@ -40666,6 +40460,9 @@ File Path: Project/application/Game/Entity/Player/Player.h
 
 /// ===前方宣言=== ///
 class Enemy;
+namespace MiiEngine {
+	class FollowCamera;
+}
 
 ///=====================================================/// 
 /// Player
@@ -40680,7 +40477,7 @@ public:
 	/// ゲームの初期化処理
 	/// </summary>
 	/// <param name="translate">初期位置を表すベクトル。</param>
-	void InitGame(const Vector3& translate);
+	void InitGame(const Vector3& translate, MiiEngine::FollowCamera* camera);
 
 	/// <summary>
 	/// 初期化処理
@@ -40732,7 +40529,6 @@ public: /// ===Getter=== ///
 	Vector2 GetRightStickState() const { return stickState_.rightStick; };
 
 public: /// ===Setter=== ///
-
 	// Camera
 	void SetCameraTargetPlayer();
 	// 無敵時間の設定
@@ -40756,7 +40552,7 @@ public: /// ===State用関数=== ///
 
 private: /// ===変数の宣言=== ///
 	// カメラ
-	GameCamera* camera_ = nullptr; 
+	MiiEngine::FollowCamera* camera_ = nullptr;
 
 	/// ===Hand=== ///
 	std::unique_ptr<PlayerHand> rightHand_;
@@ -40818,7 +40614,7 @@ File Path: Project/application/Game/Entity/Player/State/AttackState.cpp
 ///-------------------------------------------/// 
 /// 状態に入ったときに呼ばれる
 ///-------------------------------------------///
-void AttackState::Enter(Player* player, GameCamera* camera) {
+void AttackState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
@@ -40830,7 +40626,7 @@ void AttackState::Enter(Player* player, GameCamera* camera) {
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
-void AttackState::Update(Player* player, GameCamera* camera) {
+void AttackState::Update(Player* player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
@@ -40886,14 +40682,14 @@ public:
 	/// </summary>
 	/// <param name="player">状態に入る対象のプレイヤーを指すポインタ。</param>
 	/// <param name="camera">状態で使用するゲームカメラを指すポインタ。</param>
-	void Enter(Player* player, GameCamera* camera) override;
+	void Enter(Player* player, MiiEngine::CameraCommon* camera) override;
 
 	/// <summary>
 	/// ステート時の更新処理
 	/// </summary>
 	/// <param name="player">更新対象の Player オブジェクトへのポインタ。nullptr の扱いは実装に依存する。</param>
-	/// <param name="camera">更新処理で参照する GameCamera オブジェクトへのポインタ。</param>
-	void Update(Player* player, GameCamera* camera) override;
+	/// <param name="camera">更新処理で参照する CameraCommon オブジェクトへのポインタ。</param>
+	void Update(Player* player, MiiEngine::CameraCommon* camera) override;
 
 	/// <summary>
 	/// ステートの終了処理
@@ -40918,7 +40714,7 @@ AvoidanceState::AvoidanceState(const Vector3& direction) { direction_ = directio
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
 ///-------------------------------------------///
-void AvoidanceState::Enter(Player * player, GameCamera* camera) {
+void AvoidanceState::Enter(Player * player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
@@ -40930,7 +40726,7 @@ void AvoidanceState::Enter(Player * player, GameCamera* camera) {
 ///-------------------------------------------/// 
 /// 更新処理
 ///-------------------------------------------///
-void AvoidanceState::Update(Player * player, GameCamera* camera) {
+void AvoidanceState::Update(Player * player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
@@ -40985,14 +40781,14 @@ public:
 	/// </summary>
 	/// <param name="player">処理対象のプレイヤーを指すポインタ。</param>
 	/// <param name="camera">現在のゲームカメラを指すポインタ。エントリ処理でカメラの状態や視点を使用する可能性がある。</param>
-	void Enter(Player* player, GameCamera* camera) override;
+	void Enter(Player* player, MiiEngine::CameraCommon* camera) override;
 
 	/// <summary>
 	/// ステート時の更新処理
 	/// </summary>
 	/// <param name="player">更新対象のプレイヤーを指すポインタ。</param>
 	/// <param name="camera">更新処理に使用するゲームカメラを指すポインタ。</param>
-	void Update(Player* player, GameCamera* camera) override;
+	void Update(Player* player, MiiEngine::CameraCommon* camera) override;
 
 	/// <summary>
 	/// ステートの終了処理
@@ -41026,7 +40822,9 @@ File Path: Project/application/Game/Entity/Player/State/Base/PlayerState.h
 #pragma once
 /// ===前方宣言=== ///
 class Player;
-class GameCamera;
+namespace MiiEngine {
+	class CameraCommon;
+}
 
 ///=====================================================/// 
 /// プレイヤーのベースステート
@@ -41039,15 +40837,15 @@ public:
 	/// ステートに入った時に呼ばれる処理、純粋仮想関数
 	/// </summary>
 	/// <param name="player">Enter 処理の対象となる Player オブジェクトへのポインタ。</param>
-	/// <param name="camera">処理時に参照または操作する GameCamera オブジェクトへのポインタ。</param>
-	virtual void Enter(Player* player, GameCamera* camera) = 0;
+	/// <param name="camera">処理時に参照または操作する CameraCommon オブジェクトへのポインタ。</param>
+	virtual void Enter(Player* player, MiiEngine::CameraCommon* camera) = 0;
 
 	/// <summary>
 	/// ステート時の更新処理、純粋仮想関数
 	/// </summary>
 	/// <param name="player">更新対象のプレイヤーを指すポインタ。</param>
 	/// <param name="camera">現在のゲームカメラを指すポインタ。</param>
-	virtual void Update(Player* player, GameCamera* camera) = 0;
+	virtual void Update(Player* player, MiiEngine::CameraCommon* camera) = 0;
 
 	/// <summary>
 	/// ステートの終了処理
@@ -41057,7 +40855,7 @@ public:
 protected:
 
 	Player* player_ = nullptr; // Player
-	GameCamera* camera_ = nullptr; // Camera
+	MiiEngine::CameraCommon* camera_ = nullptr; // Camera
 };
 
 
@@ -41068,9 +40866,10 @@ File Path: Project/application/Game/Entity/Player/State/MoveState.cpp
 // Service
 #include "Service/Input.h"
 #include "Service/Particle.h"
-// Player, Camera
+// Player
 #include "application/Game/Entity/Player/Player.h"
-#include "application/Game/Camera/GameCamera.h"
+// Camera
+#include "Engine/Camera/Base/CameraCommon.h"
 // State
 #include "RootState.h"
 #include "AvoidanceState.h"
@@ -41082,7 +40881,7 @@ File Path: Project/application/Game/Entity/Player/State/MoveState.cpp
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
 ///-------------------------------------------///
-void MoveState::Enter(Player* player, GameCamera* camera) {
+void MoveState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
@@ -41100,7 +40899,7 @@ void MoveState::Enter(Player* player, GameCamera* camera) {
 ///-------------------------------------------/// 
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void MoveState::Update(Player * player, GameCamera* camera) {
+void MoveState::Update(Player * player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
@@ -41204,14 +41003,14 @@ public:
 	/// </summary>
 	/// <param name="player">処理対象のプレイヤーを指すポインタ。状態遷移時にプレイヤーに対する初期化や設定を行うために使用される。</param>
 	/// <param name="camera">状態で使用するゲームカメラを指すポインタ。表示や視点の初期設定に使用される。</param>
-	void Enter(Player* player, GameCamera* camera) override;
+	void Enter(Player* player, MiiEngine::CameraCommon* camera) override;
 
 	/// <summary>
 	/// ステート時の更新処理
 	/// </summary>
 	/// <param name="player">更新対象の Player インスタンスへのポインタ。</param>
-	/// <param name="camera">更新処理に使用する GameCamera インスタンスへのポインタ。</param>
-	void Update(Player* player, GameCamera* camera) override;
+	/// <param name="camera">更新処理に使用する MiiEngine::CameraCommon インスタンスへのポインタ。</param>
+	void Update(Player* player, MiiEngine::CameraCommon* camera) override;
 
 	/// <summary>
 	/// ステートの終了処理
@@ -41247,7 +41046,7 @@ File Path: Project/application/Game/Entity/Player/State/RootState.cpp
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
 ///-------------------------------------------///
-void RootState::Enter(Player* player, GameCamera* camera) {
+void RootState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
@@ -41256,7 +41055,7 @@ void RootState::Enter(Player* player, GameCamera* camera) {
 ///-------------------------------------------/// 
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void RootState::Update(Player * player, GameCamera* camera) {
+void RootState::Update(Player * player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
@@ -41321,15 +41120,15 @@ public:
 	/// ステートに入った時に呼ばれる処理
 	/// </summary>
 	/// <param name="player">処理対象の Player オブジェクトへのポインタ。</param>
-	/// <param name="camera">使用する GameCamera オブジェクトへのポインタ。</param>
-	void Enter(Player* player, GameCamera* camera) override;
+	/// <param name="camera">使用する MiiEngine::CameraCommon オブジェクトへのポインタ。</param>
+	void Enter(Player* player, MiiEngine::CameraCommon* camera) override;
 
 	/// <summary>
 	/// ステート時の更新処理
 	/// </summary>
 	/// <param name="player">更新対象の Player オブジェクトを指すポインタ。</param>
-	/// <param name="camera">更新対象の GameCamera オブジェクトを指すポインタ。</param>
-	void Update(Player* player, GameCamera* camera) override;
+	/// <param name="camera">更新対象の MiiEngine::CameraCommon オブジェクトを指すポインタ。</param>
+	void Update(Player* player, MiiEngine::CameraCommon* camera) override;
 
 	/// <summary>
 	/// ステートの終了処理
@@ -41371,7 +41170,7 @@ void PlayerWeapon::Initialize() {
 
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(ObjectType::Model, "PlayerWeapon");
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "PlayerWeapon");
 	object3d_->SetRotate({ 0.0f, 40.0f, 0.0f, 1.0f });
 
 	/// ===OBBCollider=== ///
@@ -41821,7 +41620,7 @@ void Ground::GameInit(const std::string& modelName) {
 	// Object3dの生成
 	object3d_ = std::make_unique<Object3d>();
 	// 初期化
-	object3d_->Init(ObjectType::Model, modelName);
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), modelName);
 	// 初期化処理
 	GameObject::Initialize();
 	name_ = MiiEngine::ColliderName::Ground; // コライダー名を設定
@@ -42400,7 +42199,7 @@ void StageObject::GameInit(const std::string& modelName) {
 	// Object3dの生成
 	object3d_ = std::make_unique<Object3d>();
 	// 初期化
-	object3d_->Init(ObjectType::Model, modelName);
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), modelName);
 	// 初期化処理
 	GameObject::Initialize();
 	name_ = MiiEngine::ColliderName::Object; // コライダー名を設定
@@ -43359,13 +43158,16 @@ File Path: Project/application/Scene/Debug/AttackEditorScene.cpp
 /// デストラクタ
 ///-------------------------------------------///
 AttackEditorScene::~AttackEditorScene() {
+    // ISceneのデストラクタ
+    IScene::~IScene();
     attackEditor_.reset();
 	previewPlayer_.reset();
     line_.reset();
     // Colliderのリセット
     Service::Collision::Reset();
-    // ISceneのデストラクタ
-    IScene::~IScene();
+    // Camera
+    Service::Camera::Remove("Editor");
+    camera_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -43379,13 +43181,13 @@ void AttackEditorScene::Initialize() {
     Service::Particle::LoadParticleDefinition("WeaponAttack.json");
 
     /// ===カメラ=== ///
-    camera_ = std::make_shared<GameCamera>();
-    camera_->Init(CameraType::Follow);
+    camera_ = std::make_unique<MiiEngine::FollowCamera>();
+    camera_->Initialize();
     camera_->SetTranslate(cameraPosition_);
     camera_->SetRotate(cameraRotation_);
-    camera_->SetFollowCamera(FollowCameraType::Orbiting);
+    camera_->SetFollowCamera(MiiEngine::FollowCameraType::Orbiting);
     // カメラの設定
-    Service::Camera::AddCamera("Editor", camera_);
+    Service::Camera::AddCamera("Editor", camera_.get());
     Service::Camera::SetActiveCamera("Editor");
 
     /// ===エディターの初期化=== ///
@@ -43564,7 +43366,7 @@ public:
 
 private:
     /// ===Camera=== ///
-    std::shared_ptr<GameCamera> camera_;
+    std::unique_ptr<MiiEngine::FollowCamera> camera_;
     /// ===Line=== ///
     std::unique_ptr<Line> line_;
     /// ===エディター=== ///
@@ -43641,6 +43443,9 @@ GameScene::~GameScene() {
 	//AudioService::StopSound("title");
 	// Colliderのリセット
 	Service::Collision::Reset();
+	// Camera
+	Service::Camera::Remove("Game");
+	camera_.reset();
 	// State
 	currentState_.reset();
 	// Camera
@@ -43661,11 +43466,11 @@ void GameScene::Initialize() {
 	IScene::Initialize();
 
 	/// ===Camera=== ///
-	camera_ = std::make_shared<GameCamera>();
-	camera_->Init(CameraType::Follow);
+	camera_ = std::make_unique<MiiEngine::FollowCamera>();
+	camera_->Initialize();
 	SetUpCamera();
 	// Managerに追加,アクティブに
-	Service::Camera::AddCamera("Game", camera_);
+	Service::Camera::AddCamera("Game", camera_.get());
 	Service::Camera::SetActiveCamera("Game");
 
 	/// ===GameStage=== ///
@@ -43701,7 +43506,7 @@ void GameScene::Update() {
 	ImGui::End();
 
 	// Camera
-	if (Service::Camera::GetActiveCamera() == camera_) {
+	if (Service::Camera::GetActiveCamera() == camera_.get()) {
 		camera_->ImGuiUpdate();
 		camera_->DebugUpdate();
 	} else {
@@ -43711,7 +43516,7 @@ void GameScene::Update() {
 
 	// デバッグカメラの切り替え
 	if (Service::Input::TriggerKey(DIK_TAB)) {
-		if (Service::Camera::GetActiveCamera() == camera_) {
+		if (Service::Camera::GetActiveCamera() == camera_.get()) {
 			Service::Camera::SetActiveCamera("Default");
 		} else {
 			Service::Camera::SetActiveCamera("Game");
@@ -43794,7 +43599,7 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 		switch (obj.classType) {
 		case LevelData::ClassTypeLevel::Player:
 			// 初期化と座標設定
-			player_->InitGame(obj.translation);
+			player_->InitGame(obj.translation, camera_.get());
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
 
 			break;
@@ -43855,8 +43660,6 @@ File Path: Project/application/Scene/Game/GameScene.h
 #pragma once
 /// ===Include=== ///
 #include "Engine/Scene/IScene.h"
-// Camera
-#include "application/Game/Camera/GameCamera.h"
 // Entity
 #include "application/Game/Entity/Player/Player.h"
 #include "application/Game/Entity/Enemy/Base/EnemyManager.h"
@@ -43900,12 +43703,14 @@ public: /// ===Getter=== ///
 	Player* GetPlayer() const { return player_.get(); }
 	// EnemyManagerの取得
 	EnemyManager* GetEnemyManager() const { return enemyManager_.get(); }
+	// Camera 取得
+	MiiEngine::FollowCamera* GetCamera() const { return camera_.get(); }
 
 private:/// ===メンバ変数=== ///
 
 	/// ===Classの宣言=== /// 
 	// Camera
-	std::shared_ptr<GameCamera> camera_;
+	std::unique_ptr<MiiEngine::FollowCamera> camera_;
 	// Player
 	std::unique_ptr<Player> player_;
 	// Enemy
@@ -44118,7 +43923,7 @@ void GameSceneGameClearState::Enter(GameScene* gameScene) {
 
 	/// ===GameClearAnimation=== ///
 	gameClearAnimation_ = std::make_unique<GameClearAnimation>();
-	gameClearAnimation_->Initialize(gameScene_->GetPlayer(), Service::Camera::GetActiveCamera().get());
+	gameClearAnimation_->Initialize(gameScene_->GetPlayer(), gameScene_->GetCamera());
 }
 
 ///-------------------------------------------/// 
@@ -44224,7 +44029,7 @@ void GameSceneGameOverAnimationState::Enter(GameScene* gameScene) {
 
 	/// ===GameOverAnimation=== ///
 	gameOverAnimation_ = std::make_unique<GameOverAnimation>();
-	gameOverAnimation_->Initialize(Service::Camera::GetActiveCamera().get());
+	gameOverAnimation_->Initialize(gameScene_->GetCamera());
 }
 
 ///-------------------------------------------/// 
@@ -44578,7 +44383,7 @@ void GameSceneStartAnimationState::Enter(GameScene* gameScene) {
 
 	/// ===StartAnimationの初期化=== ///
 	startAnimation_ = std::make_unique<StartAnimation>();
-	startAnimation_->Initialize(gameScene_->GetPlayer(), Service::Camera::GetActiveCamera().get());
+	startAnimation_->Initialize(gameScene_->GetPlayer(), gameScene_->GetCamera());
 }
 
 ///-------------------------------------------/// 
@@ -44857,8 +44662,8 @@ private:/// ===メンバ変数=== ///
 File Path: Project/application/Scene/Title/Animation/TitleSceneAnimation.cpp
 ============================================================
 #include "TitleSceneAnimation.h"
-// GameCamera
-#include "application/Game/Camera/GameCamera.h"
+// Camera
+#include "Engine/Camera/Base/CameraCommon.h"
 // Service
 #include "Service/DeltaTime.h"
 #include "Service/PostEffect.h"
@@ -44879,7 +44684,7 @@ bool TitleSceneAnimation::GetStartFadeOut() const {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void TitleSceneAnimation::Initialize(GameCamera* camera) {
+void TitleSceneAnimation::Initialize(MiiEngine::CameraCommon* camera) {
 	// カメラの設定
 	camera_ = camera;
 
@@ -44938,7 +44743,9 @@ File Path: Project/application/Scene/Title/Animation/TitleSceneAnimation.h
 #include "Engine/Graphics/OffScreen/Effect/RadiusBlurEffect.h"
 
 /// ===前方宣言=== ///
-class GameCamera;
+namespace MiiEngine {
+	class CameraCommon;
+}
 
 ///=====================================================/// 
 /// タイトルシーンのアニメーション管理クラス
@@ -44952,7 +44759,7 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(GameCamera* camera);
+	void Initialize(MiiEngine::CameraCommon* camera);
 
 	/// <summary>
 	/// カメラの更新処理
@@ -44974,7 +44781,7 @@ public: /// ===Getter=== ///
 private:
 
 	/// ===カメラ=== ///
-	GameCamera* camera_ = nullptr;
+	MiiEngine::CameraCommon* camera_ = nullptr;
 
 	/// ===カメラアニメーション=== ///
 	const float cameraAutoRotateSpeed_ = 0.3f; // カメラの自動回転速度
@@ -45013,6 +44820,9 @@ TitleScene::~TitleScene() {
 	titleUI_.reset();
 	// TitleSceneAnimationのリセット
 	animation_.reset();
+	// Cameraの解放
+	Service::Camera::Remove("Title");
+	camera_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -45023,13 +44833,13 @@ void TitleScene::Initialize() {
 	IScene::Initialize();
 
 	/// ===Camera=== ///
-	camera_ = std::make_shared<GameCamera>();
-	camera_->Init(CameraType::Follow);
-	camera_->SetFollowCamera(FollowCameraType::Orbiting);
+	camera_ = std::make_unique<MiiEngine::FollowCamera>();
+	camera_->Initialize();
+	camera_->SetFollowCamera(MiiEngine::FollowCameraType::Orbiting);
 	camera_->SetOrbitingOffset(cameraOrbitingOffset_);
 	camera_->SetRotate(cameraRotation_);
 	// カメラの設定
-	Service::Camera::AddCamera("Title", camera_);
+	Service::Camera::AddCamera("Title", camera_.get());
 	Service::Camera::SetActiveCamera("Title");
 
 	/// ===Stage=== ///	
@@ -45165,7 +44975,7 @@ void TitleScene::SpawnPlayer(const std::string& json_name) {
 		switch (obj.classType) {
 		case LevelData::ClassTypeLevel::Player:
 			// 初期化と座標設定
-			player_->InitGame(obj.translation);
+			player_->InitGame(obj.translation, camera_.get());
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
 			break;
 		}
@@ -45215,7 +45025,7 @@ public:/// ===メンバ関数=== ///
 private:/// ===メンバ変数=== ///
 	
 	/// ===Class=== ///
-	std::shared_ptr<GameCamera> camera_; // カメラ
+	std::unique_ptr<MiiEngine::FollowCamera> camera_; // カメラ
 	std::unique_ptr<Player> player_;	 // プレイヤー
 	std::unique_ptr<GameStage> stage_;	 // ステージ
 	std::unique_ptr<TitleUI> titleUI_;   // タイトルUI
