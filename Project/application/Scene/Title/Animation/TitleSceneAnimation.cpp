@@ -1,6 +1,6 @@
 #include "TitleSceneAnimation.h"
-// GameCamera
-#include "application/Game/Camera/GameCamera.h"
+// Camera
+#include "Engine/Camera/Base/CameraCommon.h"
 // Service
 #include "Service/DeltaTime.h"
 #include "Service/PostEffect.h"
@@ -21,7 +21,7 @@ bool TitleSceneAnimation::GetStartFadeOut() const {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void TitleSceneAnimation::Initialize(GameCamera* camera) {
+void TitleSceneAnimation::Initialize(MiiEngine::CameraCommon* camera) {
 	// カメラの設定
 	camera_ = camera;
 

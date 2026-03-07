@@ -22,6 +22,9 @@ TitleScene::~TitleScene() {
 	titleUI_.reset();
 	// TitleSceneAnimationのリセット
 	animation_.reset();
+	// Cameraの解放
+	Service::Camera::Remove("Title");
+	camera_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -32,13 +35,13 @@ void TitleScene::Initialize() {
 	IScene::Initialize();
 
 	/// ===Camera=== ///
-	camera_ = std::make_shared<GameCamera>();
-	camera_->Init(CameraType::Follow);
-	camera_->SetFollowCamera(FollowCameraType::Orbiting);
+	camera_ = std::make_unique<MiiEngine::FollowCamera>();
+	camera_->Initialize();
+	camera_->SetFollowCamera(MiiEngine::FollowCameraType::Orbiting);
 	camera_->SetOrbitingOffset(cameraOrbitingOffset_);
 	camera_->SetRotate(cameraRotation_);
 	// カメラの設定
-	Service::Camera::AddCamera("Title", camera_);
+	Service::Camera::AddCamera("Title", camera_.get());
 	Service::Camera::SetActiveCamera("Title");
 
 	/// ===Stage=== ///	
@@ -174,7 +177,7 @@ void TitleScene::SpawnPlayer(const std::string& json_name) {
 		switch (obj.classType) {
 		case LevelData::ClassTypeLevel::Player:
 			// 初期化と座標設定
-			player_->InitGame(obj.translation);
+			player_->InitGame(obj.translation, camera_.get());
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
 			break;
 		}

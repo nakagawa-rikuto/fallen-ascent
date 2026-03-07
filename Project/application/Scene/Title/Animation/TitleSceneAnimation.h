@@ -5,7 +5,9 @@
 #include "Engine/Graphics/OffScreen/Effect/RadiusBlurEffect.h"
 
 /// ===前方宣言=== ///
-class GameCamera;
+namespace MiiEngine {
+	class CameraCommon;
+}
 
 ///=====================================================/// 
 /// タイトルシーンのアニメーション管理クラス
@@ -19,7 +21,7 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(GameCamera* camera);
+	void Initialize(MiiEngine::CameraCommon* camera);
 
 	/// <summary>
 	/// カメラの更新処理
@@ -41,7 +43,7 @@ public: /// ===Getter=== ///
 private:
 
 	/// ===カメラ=== ///
-	GameCamera* camera_ = nullptr;
+	MiiEngine::CameraCommon* camera_ = nullptr;
 
 	/// ===カメラアニメーション=== ///
 	const float cameraAutoRotateSpeed_ = 0.3f; // カメラの自動回転速度

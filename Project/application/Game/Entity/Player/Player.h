@@ -15,6 +15,9 @@
 
 /// ===前方宣言=== ///
 class Enemy;
+namespace MiiEngine {
+	class FollowCamera;
+}
 
 ///=====================================================/// 
 /// Player
@@ -29,7 +32,7 @@ public:
 	/// ゲームの初期化処理
 	/// </summary>
 	/// <param name="translate">初期位置を表すベクトル。</param>
-	void InitGame(const Vector3& translate);
+	void InitGame(const Vector3& translate, MiiEngine::FollowCamera* camera);
 
 	/// <summary>
 	/// 初期化処理
@@ -81,7 +84,6 @@ public: /// ===Getter=== ///
 	Vector2 GetRightStickState() const { return stickState_.rightStick; };
 
 public: /// ===Setter=== ///
-
 	// Camera
 	void SetCameraTargetPlayer();
 	// 無敵時間の設定
@@ -105,7 +107,7 @@ public: /// ===State用関数=== ///
 
 private: /// ===変数の宣言=== ///
 	// カメラ
-	GameCamera* camera_ = nullptr; 
+	MiiEngine::FollowCamera* camera_ = nullptr;
 
 	/// ===Hand=== ///
 	std::unique_ptr<PlayerHand> rightHand_;

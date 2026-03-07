@@ -91,9 +91,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="application\Game\Camera\GameCamera.cpp">
-      <Filter>application\Game\Camera</Filter>
-    </ClCompile>
     <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacter.cpp">
       <Filter>application\Game\Entity\GameCharacter</Filter>
     </ClCompile>
@@ -620,11 +617,9 @@
       <Filter>application\Game\Entity\Enemy\MobEnemy\Base</Filter>
     </ClCompile>
     <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp" />
+    <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\Game\Camera\GameCamera.h">
-      <Filter>application\Game\Camera</Filter>
-    </ClInclude>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
       <Filter>application\Game\Entity\GameCharacter</Filter>
     </ClInclude>
@@ -1202,6 +1197,8 @@
       <Filter>application\Game\Entity\Enemy\MobEnemy\Base</Filter>
     </ClInclude>
     <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h" />
+    <ClInclude Include="Engine\Camera\Base\CameraCommon.h" />
+    <ClInclude Include="Engine\DataInfo\CameraData.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

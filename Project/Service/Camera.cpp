@@ -9,7 +9,7 @@ namespace Service {
 	///-------------------------------------------/// 
 	/// 追加
 	///-------------------------------------------///
-	void Camera::AddCamera(const std::string& name, std::shared_ptr<GameCamera> camera) {
+	void Camera::AddCamera(const std::string& name, MiiEngine::CameraCommon* camera) {
 		Locator::GetCameraManager()->AddCamera(name, camera);
 	}
 
@@ -30,7 +30,7 @@ namespace Service {
 	///-------------------------------------------/// 
 	/// アクティブカメラのGetter
 	///-------------------------------------------///
-	std::shared_ptr<GameCamera> Camera::GetActiveCamera() {
+	MiiEngine::CameraCommon* Camera::GetActiveCamera() {
 		return Locator::GetCameraManager()->GetActiveCamera();
 	}
 

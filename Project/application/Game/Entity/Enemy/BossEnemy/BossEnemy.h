@@ -72,7 +72,7 @@ public: /// ===Setter=== ///
 
 private:
 	/// ===ポインタ=== ///
-	GameCamera* camera_ = nullptr; // カメラ
+	MiiEngine::CameraCommon* camera_ = nullptr; // カメラ
 	Player* player_ = nullptr;	   // プレイヤー
 
 	/// ===State=== ///

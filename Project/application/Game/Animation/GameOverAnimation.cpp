@@ -1,6 +1,6 @@
 #include "GameOverAnimation.h"
 // Camera
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/FollowCamera.h"
 // Service
 #include "Service/GraphicsResourceGetter.h"
 // C++
@@ -27,7 +27,7 @@ namespace {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void GameOverAnimation::Initialize(GameCamera* camera) {
+void GameOverAnimation::Initialize(MiiEngine::FollowCamera* camera) {
     camera_ = camera;
 
     // スプライトの初期化

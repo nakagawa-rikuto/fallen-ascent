@@ -2,7 +2,7 @@
 // Entity
 #include "application/Game/Entity/Player/Player.h"
 // Camera
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/FollowCamera.h"
 // Service
 #include "Service/DeltaTime.h"
 // Math
@@ -14,7 +14,7 @@
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void GameClearAnimation::Initialize(Player* player, GameCamera* camera) {
+void GameClearAnimation::Initialize(Player* player, MiiEngine::FollowCamera* camera) {
 	player_ = player;
 	camera_ = camera;
 
@@ -51,12 +51,14 @@ void GameClearAnimation::Initialize(Player* player, GameCamera* camera) {
 	finalJumpInfo_.timer = 0.0f;
 
 	/// ===カメラの設定=== ///
+	// カメラ
+	auto followCamera = dynamic_cast<MiiEngine::FollowCamera*>(camera_);
 	// 回転可能型に設定
-	camera_->SetFollowCamera(FollowCameraType::Orbiting); 
+	followCamera->SetFollowCamera(MiiEngine::FollowCameraType::Orbiting);
 	// カメラのターゲットを設定
-	camera_->SetTarget(&smallJumpInfo_.basePlayerPosition, &playerRotation); 
+	followCamera->SetTarget(&smallJumpInfo_.basePlayerPosition, &playerRotation);
 	// 初期オフセットを設定
-	camera_->SetOrbitingOffset(startOffset); 
+	followCamera->SetOrbitingOffset(startOffset);
 
 	/// ===Playerの設定=== ///
 	player_->SetGravity(-9.8f); 

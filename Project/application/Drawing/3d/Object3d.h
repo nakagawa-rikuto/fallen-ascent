@@ -1,12 +1,7 @@
 #pragma once
 /// ===Include=== ///
-#include "Engine/Graphics/3d/Model/ModelCommon.h"
-
-/// ===オブジェクトのタイプ=== ///
-enum class ObjectType {
-	Model,
-	AnimationModel
-};
+#include "Engine/Graphics/3d/Model/Model.h"
+#include "Engine/Graphics/3d/Model/AnimationModel.h"
 
 ///=====================================================/// 
 /// Object3D
@@ -22,7 +17,7 @@ public:
 	/// <param name="type">初期化するオブジェクトの種類を指定します。</param>
 	/// <param name="modelName">使用するモデルの名前（識別またはロードに使われる文字列）。</param>
 	/// <param name="light">照明の種類を指定します。省略時は LightType::None（照明なし）が使用されます。</param>
-	void Init(ObjectType type, const std::string& modelName, MiiEngine::LightType light = MiiEngine::LightType::None);
+	void Init(std::unique_ptr<MiiEngine::ModelCommon> model, const std::string& modelName, MiiEngine::LightType light = MiiEngine::LightType::None);
 
 	/// <summary>
 	/// 更新処理
@@ -76,15 +71,10 @@ public: /// ===Setter=== ///
 	void SetLightData(MiiEngine::LightInfo light);
 	// 環境マップ
 	void SetEnvironmentMapData(bool flag, float string);
-	// Animation
-	void SetAnimation(const std::string& animationName, bool isLoop = true);
 
 private: /// ===Variables(変数)=== ///
 
 	/// ===クラス=== ///
 	std::unique_ptr<MiiEngine::ModelCommon> model_;
-
-	/// ===モデルかアニメーションモデルかを判断するフラグ=== ///
-	ObjectType type_ = ObjectType::Model;
 };
 

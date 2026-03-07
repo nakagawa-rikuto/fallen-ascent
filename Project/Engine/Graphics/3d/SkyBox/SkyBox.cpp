@@ -7,7 +7,7 @@
 #include "Service/Render.h"
 #include "Service/Camera.h"
 // camera
-#include "application/Game/Camera/GameCamera.h"
+#include "Engine/Camera/Base/CameraCommon.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/MatrixMath.h"
@@ -103,7 +103,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void SkyBox::Update() {
 		/// ===カメラの設定=== ///
-		camera_ = Service::Camera::GetActiveCamera().get();
+		camera_ = Service::Camera::GetActiveCamera();
 
 		/// ===データの書き込み=== ///
 		VertexDataWrite();

@@ -4,7 +4,9 @@
 #include <memory>
 
 /// ===前方宣言=== ///
-class GameCamera;
+namespace MiiEngine{
+	class FollowCamera;
+}
 
 ///-------------------------------------------/// 
 /// GameOverAnimation 
@@ -18,7 +20,7 @@ public:
 	/// 初期化処理
 	/// </summary>
 	/// <param name="camera">初期化する GameCamera オブジェクトへのポインタ。</param>
-	void Initialize(GameCamera* camera);
+	void Initialize(MiiEngine::FollowCamera* camera);
 
 	/// <summary>
 	/// 更新処理
@@ -41,7 +43,7 @@ public: /// ===Getter=== ///
 
 private:
 	/// ===ポインタ=== ///
-	GameCamera* camera_ = nullptr;  // カメラ
+	MiiEngine::FollowCamera* camera_ = nullptr;  // カメラ
 
 	/// ===Sprite=== ///
 	std::unique_ptr<Sprite> gameOverSprite_;  // ゲームオーバースプライト
