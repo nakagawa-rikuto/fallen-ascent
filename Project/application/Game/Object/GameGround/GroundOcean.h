@@ -3,7 +3,7 @@
 // Collider
 #include "application/Game/Object/GameObject/GameObject.h"
 // Ocean
-#include "Engine/Graphics/3d/Ocean/Ocean.h"
+#include "Engine/Graphics/Ocean/Ocean.h"
 
 ///=====================================================/// 
 /// GroundOcean

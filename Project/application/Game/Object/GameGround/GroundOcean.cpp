@@ -2,7 +2,6 @@
 // Service
 #include "Service/Input.h"
 
-
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
@@ -21,9 +20,9 @@ void GroundOcean::Initialize() {
 
 	// オーシャンの初期化
 	ocean_ = std::make_unique<MiiEngine::Ocean>();
-	ocean_->Initialize(500);
+	ocean_->Initialize(100);
 	ocean_->SetTranslate({ 0.0f, -30.0f, 0.0f });
-	ocean_->SetScale({ 300.0f, 1.0f, 300.0f });
+	ocean_->SetScale({ 10.0f, 1.0f, 10.0f });
 
 	ocean_->SetWaveInfo(0, { 0.7f, 0.4f, 0.2f }, 1.15f, 12.5f, 0.6f);
 	ocean_->SetWaveInfo(1, { 0.25f, 0.55f, 1.0f }, 0.5f, 7.5f, 0.6f);
