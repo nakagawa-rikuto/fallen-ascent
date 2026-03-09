@@ -7,7 +7,6 @@ namespace MiiEngine {
 	/// PipelineType
 	///-------------------------------------------///
 	enum PipelineType {
-		// === GraphicsPipelines === //
 		// 前景2D
 		ForGround2D,
 		// 背景2D
@@ -19,7 +18,9 @@ namespace MiiEngine {
 		// SkyBox
 		PrimitiveSkyBox,
 		// Ocean
-		PrimitiveOcean,
+		Ocean,
+		// FFTOcean
+		FFTOcean,
 		// Particle
 		Particle,
 		// Skinning3D
@@ -45,12 +46,23 @@ namespace MiiEngine {
 		// ShatterGlass
 		ShatterGlass,
 
-		// === ComputePipelines === //
-		CSOcean,
-
 		// 総数(これは最後にしなければいけない)
 		CountOfPipelineType,
 	};
+
+	///-------------------------------------------/// 
+	/// CSPipelineType
+	///-------------------------------------------///
+	enum class CSPipelineType {
+		// Ocean
+		Ocean,
+		// FFTOcean
+		FFTOcean,
+
+		// 総数(これは最後にしなければいけない)
+		CountOfCSPipelineType,
+	};
+
 
 	// 列挙型の全値を取得する関数
 	constexpr std::array<PipelineType, static_cast<size_t>(PipelineType::CountOfPipelineType)> AllPipelineTypes() {
@@ -63,7 +75,8 @@ namespace MiiEngine {
 			PipelineType::PrimitiveSkyBox,
 			PipelineType::Particle ,
 			PipelineType::Skinning3D,
-			PipelineType::PrimitiveOcean,
+			PipelineType::Ocean,
+			PipelineType::FFTOcean,
 			PipelineType::Line3D,
 			PipelineType::OffScreen,
 			PipelineType::Grayscale,
@@ -74,40 +87,14 @@ namespace MiiEngine {
 			PipelineType::RadiusBlur,
 			PipelineType::OutLine,
 			PipelineType::ShatterGlass,
-			// Compute Pipelines
-			PipelineType::CSOcean,
 		};
 	}
 
-	// Computeパイプラインかどうかを判定する関数
-	inline bool IsComputePipeline(PipelineType type) {
-		switch (type) {
-			/// ===Compute Pipelines=== ///
-		case PipelineType::CSOcean:
-			return true;
-			/// ===Graphics Pipelines=== ///
-		case PipelineType::ForGround2D:
-		case PipelineType::BackGround2D:
-		case PipelineType::CircularGauge2D:
-		case PipelineType::Obj3D:
-		case PipelineType::Skinning3D:
-		case PipelineType::PrimitiveSkyBox:
-		case PipelineType::Particle:
-		case PipelineType::PrimitiveOcean:
-		case PipelineType::Line3D:
-		case PipelineType::OffScreen:
-		case PipelineType::Grayscale:
-		case PipelineType::Vignette:
-		case PipelineType::Dissolve:
-		case PipelineType::BoxFilter3x3:
-		case PipelineType::BoxFilter5x5:
-		case PipelineType::RadiusBlur:
-		case PipelineType::OutLine:
-		case PipelineType::ShatterGlass:
-			return false;
-
-		default:
-			return false;
-		}
+	// 列挙型の全値を取得する関数
+	constexpr std::array<CSPipelineType, static_cast<size_t>(CSPipelineType::CountOfCSPipelineType)> AllCSPipelineTypes() {
+		return {
+			CSPipelineType::Ocean,
+			CSPipelineType::FFTOcean,
+		};
 	}
 }

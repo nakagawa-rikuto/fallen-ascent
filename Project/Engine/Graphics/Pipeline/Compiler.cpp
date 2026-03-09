@@ -12,7 +12,6 @@ namespace MiiEngine {
 	Compiler::~Compiler() {
 		objVSBlob_.Reset();
 		objPSBlob_.Reset();
-		objCSBlob_.Reset();
 	}
 
 	///-------------------------------------------/// 
@@ -23,31 +22,29 @@ namespace MiiEngine {
 		struct ShaderInfo {
 			std::wstring vsPath;
 			std::wstring psPath;
-			std::wstring csPath;
 		};
 
 		// テーブル本体
 		const std::unordered_map<PipelineType, ShaderInfo> kShaderTable_ = {
-		{ PipelineType::ForGround2D,	 { L"2D/Obj2D.VS.hlsl",				 L"2D/Obj2D.PS.hlsl",						 L""}},
-		{ PipelineType::BackGround2D,	 { L"2D/Obj2D.VS.hlsl",				 L"2D/Obj2D.PS.hlsl",		 				 L""}},
-		{ PipelineType::CircularGauge2D, { L"2D/Obj2D.VS.hlsl",				 L"2D/CircularGauge.PS.hlsl",		 		 L""}},
-		{ PipelineType::Obj3D,			 { L"3D/Obj3D.VS.hlsl",				 L"3D/Obj3D.PS.hlsl",						 L""}},
-		{ PipelineType::PrimitiveSkyBox, { L"3D/SkyBox.VS.hlsl",             L"3D/SkyBox.PS.hlsl",						 L""}},
-		{ PipelineType::PrimitiveOcean,  { L"Ocean/Ocean.VS.hlsl",           L"Ocean/Ocean.PS.hlsl",					 L""}},
-		{ PipelineType::Skinning3D,		 { L"3D/SkinningObj3D.VS.hlsl",      L"3D/SkinningObj3D.PS.hlsl",				 L""}},
-		{ PipelineType::Line3D,			 { L"3D/Line3D.VS.hlsl",             L"3D/Line3D.PS.hlsl",						 L""}},
-		{ PipelineType::Particle,		 { L"Particle/Particle.VS.hlsl",     L"Particle/Particle.PS.hlsl",				 L""}},
-		{ PipelineType::OffScreen,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/CopyImage.PS.hlsl",			 L""}},
-		{ PipelineType::Grayscale,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Grayscale.PS.hlsl",			 L""}},
-		{ PipelineType::Vignette ,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Vignette.PS.hlsl",				 L""}},
-		{ PipelineType::Dissolve,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Dissolve.PS.hlsl",				 L""}},
-		{ PipelineType::BoxFilter3x3,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/BoxFilter3x3.PS.hlsl",			 L""}},
-		{ PipelineType::BoxFilter5x5,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/BoxFilter5x5.PS.hlsl",			 L""}},
-		{ PipelineType::RadiusBlur,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/RadialBlur.PS.hlsl",			 L""}},
-		{ PipelineType::OutLine,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/LuminanceBasedOutline.PS.hlsl", L""}},
-		{ PipelineType::ShatterGlass,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/ShatterGlass.PS.hlsl",			 L""}},
-		/// ===CS=== ///
-		{ PipelineType::CSOcean,		 { L"", L"", L"Ocean/Ocean.CS.hlsl"}},
+		{ PipelineType::ForGround2D,	 { L"2D/Obj2D.VS.hlsl",				 L"2D/Obj2D.PS.hlsl"}},
+		{ PipelineType::BackGround2D,	 { L"2D/Obj2D.VS.hlsl",				 L"2D/Obj2D.PS.hlsl"}},
+		{ PipelineType::CircularGauge2D, { L"2D/Obj2D.VS.hlsl",				 L"2D/CircularGauge.PS.hlsl"}},
+		{ PipelineType::Obj3D,			 { L"3D/Obj3D.VS.hlsl",				 L"3D/Obj3D.PS.hlsl"}},
+		{ PipelineType::PrimitiveSkyBox, { L"3D/SkyBox.VS.hlsl",             L"3D/SkyBox.PS.hlsl"}},
+		{ PipelineType::Ocean,			 { L"Ocean/Ocean.VS.hlsl",           L"Ocean/Ocean.PS.hlsl"}},
+		{ PipelineType::FFTOcean,		 { L"Ocean/FFTOcean.VS.hlsl",        L"Ocean/FFTOcean.PS.hlsl"}},
+		{ PipelineType::Skinning3D,		 { L"3D/SkinningObj3D.VS.hlsl",      L"3D/SkinningObj3D.PS.hlsl"}},
+		{ PipelineType::Line3D,			 { L"3D/Line3D.VS.hlsl",             L"3D/Line3D.PS.hlsl"}},
+		{ PipelineType::Particle,		 { L"Particle/Particle.VS.hlsl",     L"Particle/Particle.PS.hlsl"}},
+		{ PipelineType::OffScreen,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/CopyImage.PS.hlsl"}},
+		{ PipelineType::Grayscale,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Grayscale.PS.hlsl"}},
+		{ PipelineType::Vignette ,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Vignette.PS.hlsl"}},
+		{ PipelineType::Dissolve,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Dissolve.PS.hlsl"}},
+		{ PipelineType::BoxFilter3x3,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/BoxFilter3x3.PS.hlsl"}},
+		{ PipelineType::BoxFilter5x5,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/BoxFilter5x5.PS.hlsl"}},
+		{ PipelineType::RadiusBlur,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/RadialBlur.PS.hlsl"}},
+		{ PipelineType::OutLine,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/LuminanceBasedOutline.PS.hlsl"}},
+		{ PipelineType::ShatterGlass,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/ShatterGlass.PS.hlsl"}},	
 		};
 	}
 
@@ -74,12 +71,6 @@ namespace MiiEngine {
 				dxCommon->GetDxcUtils(), dxCommon->GetDxcCompiler(), dxCommon->GetIncludeHandler());
 			assert(objPSBlob_ && "Pixel Shader Compile Failed");
 		}
-		// CSシェーダのコンパイル
-		if (!info.csPath.empty()) {
-			objCSBlob_ = CompileShader(info.csPath, L"cs_6_0",
-				dxCommon->GetDxcUtils(), dxCommon->GetDxcCompiler(), dxCommon->GetIncludeHandler());
-			assert(objCSBlob_ && "Compute Shader Compile Failed");
-		}
 	}
 
 	///-------------------------------------------/// 
@@ -89,8 +80,6 @@ namespace MiiEngine {
 	IDxcBlob* Compiler::GetObjVS() { return objVSBlob_.Get(); }
 	// ObjectPixelShaderBlobの取得
 	IDxcBlob* Compiler::GetObjPS() { return objPSBlob_.Get(); }
-	// ObjectComputeShaderBlobの取得
-	IDxcBlob* Compiler::GetObjCS() { return objCSBlob_.Get(); }
 
 	///-------------------------------------------/// 
 	/// CompileShader関数

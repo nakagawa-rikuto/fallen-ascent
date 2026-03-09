@@ -618,6 +618,7 @@
     </ClCompile>
     <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp" />
     <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\CS\CSCompiler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -1199,6 +1200,7 @@
     <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h" />
     <ClInclude Include="Engine\Camera\Base\CameraCommon.h" />
     <ClInclude Include="Engine\DataInfo\CameraData.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\CS\CSCompiler.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

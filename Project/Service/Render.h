@@ -24,6 +24,14 @@ namespace Service {
 		static void SetPSO(ID3D12GraphicsCommandList* commandList, MiiEngine::PipelineType type, MiiEngine::BlendMode mode, D3D12_PRIMITIVE_TOPOLOGY topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		/// <summary>
+		/// コマンドリストにコンピュートシェーダーパイプラインステートオブジェクト（CSPSO）を設定します。
+		/// </summary>
+		/// <param name="commandList">CSPSOを設定するDirect3D 12グラフィックスコマンドリスト。</param>
+		/// <param name="type">使用するコンピュートシェーダーパイプラインの種類。</param>
+		/// <param name="kernelName">実行するカーネル関数の名前。デフォルトは "main" です。</param>
+		static void SetCSPSO(ID3D12GraphicsCommandList* commandList, MiiEngine::CSPipelineType type, const std::wstring& kernelName = L"main");
+
+		/// <summary>
 		/// 指定したキーに対応するディスクリプタテーブルを、指定したルートパラメータ位置に設定します。
 		/// </summary>
 		/// <param name="commandList">コマンドを記録する ID3D12GraphicsCommandList へのポインター。このコマンドリスト上でルートディスクリプタテーブルの設定が行われます。</param>

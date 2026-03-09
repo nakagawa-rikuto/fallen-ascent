@@ -17,33 +17,49 @@ namespace MiiEngine {
 	/// 初期化
 	///-------------------------------------------///
 	void PipelineManager::Initialize(DXCommon* dxCommon) {
+		/// ===GSPipeline=== ///
 		for (PipelineType type : AllPipelineTypes()) {
-
 			// Compilerの作成と初期化
 			auto compiler = std::make_unique<Compiler>();
 			compiler->Initialize(dxCommon, type);
 			compiler_[type] = std::move(compiler);
 
-			// Computeパイプラインの作成
-			if (IsComputePipeline(type)) {
-				auto CSPipeline = std::make_unique<CSPSOCommon>();
-				CSPipeline->Create(dxCommon, compiler_[type].get(), type);
+			// BlendMode毎にパイプラインを作成
+			for (BlendMode mode : AllBlendModes()) {
+
+				// ペアのキーをｓ作成
+				auto key = std::make_pair(type, mode);
+
+				// パイプラインの作成
+				auto gsPipeline = std::make_unique<GSPSOCommon>();
+				gsPipeline->Create(dxCommon, compiler_[type].get(), type, mode);
+
 				// パイプラインの追加
-				computePipelines_[type] = std::move(CSPipeline);
-			} else {
-				// BlendMode毎にパイプラインを作成
-				for (BlendMode mode : AllBlendModes()) {
+				graphicsPipelines_[key] = std::move(gsPipeline);
+			}
+		}
 
-					// ペアのキーをｓ作成
-					auto key = std::make_pair(type, mode);
+		/// ===CSPipeline=== ///
+		for (CSPipelineType type : AllCSPipelineTypes()) {
+			// CSCompilerの作成と初期化
+			auto csCompiler = std::make_unique<CSCompiler>();
+			csCompiler->Initialize(dxCommon, type);
+			// ムーブ前にカーネル名リストを取得する
+			const auto kernelNames = csCompiler->GetKernelNames();
+			csCompiler_[type] = std::move(csCompiler); // ← ここでムーブ
 
-					// パイプラインの作成
-					auto GSPipeline = std::make_unique<GSPSOCommon>();
-					GSPipeline->Create(dxCommon, compiler_[type].get(), type, mode);
+			// CSFFTOcean の場合、カーネルごとに CSPSOCommon を生成
+			for (const auto& kernelName : kernelNames) {
 
-					// パイプラインの追加
-					graphicsPipelines_[key] = std::move(GSPipeline);
-				}
+				// ペアのキーを作成
+				auto key = std::make_pair(type, kernelName);
+
+				// パイプラインの作成
+				auto csPipeline = std::make_unique<CSPSOCommon>();
+				csPipeline->Create(dxCommon, csCompiler_[type].get(), type, kernelName);
+
+				// パイプラインの追加
+				computePipelines_[key] = std::move(csPipeline);
 			}
 		}
 	}
@@ -53,25 +69,29 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void PipelineManager::SetPipeline(ID3D12GraphicsCommandList* commandList, PipelineType type, BlendMode mode, D3D12_PRIMITIVE_TOPOLOGY topology) {
 
-		// Computeパイプラインの場合
-		if (IsComputePipeline(type)) {
-			CSPSOCommon* CSPipeline = GetCSPipeline(type);
-			assert(CSPipeline != nullptr);
-			// PSO を設定
-			CSPipeline->SetPSO(commandList);
-		} else {
-			// Graphicsパイプラインの取得
-			GSPSOCommon* GSPipeline = GetGSPipeline(type, mode);
-			assert(GSPipeline != nullptr);
+		// Graphicsパイプラインの取得
+		GSPSOCommon* GSPipeline = GetGSPipeline(type, mode);
+		assert(GSPipeline != nullptr);
 
-			// PSO を設定
-			GSPipeline->SetPSO(commandList);
+		// PSO を設定
+		GSPipeline->SetPSO(commandList);
 
-			//プリミティブトポロジー設定
-			commandList->IASetPrimitiveTopology(topology);
-		}
+		//プリミティブトポロジー設定
+		commandList->IASetPrimitiveTopology(topology);
 	}
 
+	///-------------------------------------------/// 
+	/// CSパイプラインの登録 
+	///-------------------------------------------///
+	void PipelineManager::SetCSPipeline(ID3D12GraphicsCommandList* commandList, CSPipelineType type, const std::wstring& kernelName) {
+
+		// Computeパイプラインの取得
+		CSPSOCommon* CSPipeline = GetCSPipeline(type, kernelName);
+		assert(CSPipeline != nullptr);
+
+		// PSO を設定
+		CSPipeline->SetPSO(commandList);
+	}
 
 	///-------------------------------------------/// 
 	/// タイプとモードを取得
@@ -88,8 +108,9 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// CSパイプラインの取得
 	///-------------------------------------------///
-	CSPSOCommon* PipelineManager::GetCSPipeline(PipelineType type) {
-		auto it = computePipelines_.find(type);
+	CSPSOCommon* PipelineManager::GetCSPipeline(CSPipelineType type, const std::wstring& kernelName) {
+		auto key = std::make_pair(type, kernelName);
+		auto it = computePipelines_.find(key);
 		if (it != computePipelines_.end()) {
 			return it->second.get();
 		}
