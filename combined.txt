@@ -45798,7 +45798,7 @@ void TitleUI::UpdateMenuSelection() {
 	bool moved = false;
 	bool isUp = false; // 上キーが押されたかどうかのフラグ
 
-	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadUP) ||
+	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadDOWN) ||
 		Service::Input::TriggerKey(DIK_W)) {
 		// 上入力 → 上のアイテムが中央へ（右ローテーション）
 		int tmp = slotIndex_[2];
@@ -45809,7 +45809,7 @@ void TitleUI::UpdateMenuSelection() {
 		isUp = true;
 	}
 
-	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadDOWN) ||
+	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadUP) ||
 		Service::Input::TriggerKey(DIK_S)) {
 		// 下入力 → 下のアイテムが中央へ（左ローテーション）
 		int tmp = slotIndex_[0];
@@ -45849,7 +45849,7 @@ void TitleUI::StartSlotAnimation(bool flag) {
 	// ★開始Y座標をローテーション方向の逆にずらす★
    // 上キー(isUp=true)  → アイテムは下から上へ動く → 開始はひとつ下の位置
    // 下キー(isUp=false) → アイテムは上から下へ動く → 開始はひとつ上の位置
-	float offset = flag ? spaceY_ : -spaceY_;
+	float offset = flag ? -spaceY_ : spaceY_;
 
 	for (int i = 0; i < selectionIndex_; i++) {
 		slotAnimation_.posY.itemStartY[i] = targetY[i] + offset; // ずらした位置からスタート
