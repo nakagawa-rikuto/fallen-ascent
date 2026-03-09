@@ -786,7 +786,7 @@ namespace MiiEngine {
 			{ PipelineType::CircularGauge2D,	Type2D },
 			{ PipelineType::Obj3D,				Type3D },
 			{ PipelineType::PrimitiveSkyBox,	Type3D },
-			{ PipelineType::PrimitiveOcean,     TypeOcean },
+			{ PipelineType::Ocean,				TypeOcean },
 			{ PipelineType::Particle,			TypeParticle },
 			{ PipelineType::Skinning3D,			TypeSkinning3D  },
 			{ PipelineType::Line3D,				TypeLine3D },

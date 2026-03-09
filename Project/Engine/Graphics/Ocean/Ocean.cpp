@@ -211,7 +211,7 @@ namespace MiiEngine {
         commandList->ResourceBarrier(1, &barrier);
 
         // Graphics PSOを設定
-        Service::Render::SetPSO(commandList, PipelineType::PrimitiveOcean, mode);
+        Service::Render::SetPSO(commandList, PipelineType::Ocean, mode);
 
         commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
         commandList->IASetIndexBuffer(&indexBufferView_);

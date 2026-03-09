@@ -19,7 +19,7 @@ namespace MiiEngine {
 		// SkyBox
 		PrimitiveSkyBox,
 		// Ocean
-		PrimitiveOcean,
+		Ocean,
 		// Particle
 		Particle,
 		// Skinning3D
@@ -63,7 +63,7 @@ namespace MiiEngine {
 			PipelineType::PrimitiveSkyBox,
 			PipelineType::Particle ,
 			PipelineType::Skinning3D,
-			PipelineType::PrimitiveOcean,
+			PipelineType::Ocean,
 			PipelineType::Line3D,
 			PipelineType::OffScreen,
 			PipelineType::Grayscale,
@@ -93,7 +93,7 @@ namespace MiiEngine {
 		case PipelineType::Skinning3D:
 		case PipelineType::PrimitiveSkyBox:
 		case PipelineType::Particle:
-		case PipelineType::PrimitiveOcean:
+		case PipelineType::Ocean:
 		case PipelineType::Line3D:
 		case PipelineType::OffScreen:
 		case PipelineType::Grayscale:
