@@ -1,6 +1,6 @@
 #include "CSPSOCommon.h"
 // Compiler
-#include "Engine/Graphics/Pipeline/Compiler.h"
+#include "Engine/Graphics/Pipeline/CS/CSCompiler.h"
 // Engine
 #include "Engine/Core/DXCommon.h"
 // c++
@@ -18,13 +18,13 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// PSOの作成
 	///-------------------------------------------///
-	void CSPSOCommon::Create(DXCommon* dxCommon, Compiler* compiler, PipelineType Type) {
+	void CSPSOCommon::Create(DXCommon* dxCommon, CSCompiler* compiler, CSPipelineType Type, const std::wstring& kernelName) {
 		// RootSignatureの生成
 		rootSignature_ = std::make_unique<CSRootSignature>();
 		rootSignature_->Create(dxCommon, Type);
 		compiler_ = compiler;
 		// PipelineState
-		CreatePipelineState(dxCommon, Type);
+		CreatePipelineState(dxCommon, kernelName);
 	}
 
 	///-------------------------------------------/// 
@@ -44,19 +44,22 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// パイプラインステートの作成
 	///-------------------------------------------///
-	void CSPSOCommon::CreatePipelineState(DXCommon* dxCommon, PipelineType type) {
-		HRESULT hr;
-		type;
+	void CSPSOCommon::CreatePipelineState(DXCommon* dxCommon, const std::wstring& kernelName) {
+		// 指定カーネルのBlobを取得
+		IDxcBlob* csBlob = compiler_->GetKernel(kernelName);
+		assert(csBlob && "CS Kernel Blob is null");
 
 		// ComputePipelineStateDescの設定
-		computePipelineStateDesc_.CS = {
-			.pShaderBytecode = compiler_->GetObjCS()->GetBufferPointer(),
-			.BytecodeLength = compiler_->GetObjCS()->GetBufferSize()
-		};
-		// RootSignatureの設定
+		computePipelineStateDesc_ = {};
 		computePipelineStateDesc_.pRootSignature = rootSignature_->GetRootSignature();
-		// 実際に生成
-		hr = dxCommon->GetDevice()->CreateComputePipelineState(&computePipelineStateDesc_, IID_PPV_ARGS(&computePipelineState_));
+		computePipelineStateDesc_.CS = {
+			.pShaderBytecode = csBlob->GetBufferPointer(),
+			.BytecodeLength = csBlob->GetBufferSize(),
+		};
+
+		// PipelineStateの生成
+		HRESULT hr = dxCommon->GetDevice()->CreateComputePipelineState(
+			&computePipelineStateDesc_, IID_PPV_ARGS(&computePipelineState_));
 		assert(SUCCEEDED(hr));
 	}
 }

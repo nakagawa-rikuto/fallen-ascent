@@ -24,8 +24,8 @@ namespace MiiEngine {
 		/// ルートシグネイチャの生成処理
 		/// </summary>
 		/// <param name="dxCommon">DXCommon インスタンスへのポインタ。デバイスやコマンドキューなどの共通 DirectX リソースとコンテキストを提供します。</param>
-		/// <param name="Type">作成するパイプラインの種類を指定する PipelineType 値（例: グラフィックス、コンピュート）。</param>
-		void Create(DXCommon* dxCommon, PipelineType Type);
+		/// <param name="Type">作成するパイプラインの種類を指定する CSPipelineType 値（例: グラフィックス、コンピュート）。</param>
+		void Create(DXCommon* dxCommon, CSPipelineType Type);
 
 		/// <summary>
 		/// ルートシグネイチャの取得

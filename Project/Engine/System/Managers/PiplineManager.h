@@ -5,6 +5,7 @@
 #include "Engine/Graphics/Pipeline/GS/GSPSOCommon.h"
 #include "Engine/Graphics/Pipeline/CS/CSPSOCommon.h"
 #include "Engine/Graphics/Pipeline/Compiler.h"
+#include "Engine/Graphics/Pipeline/CS/CSCompiler.h"
 // c++
 #include <unordered_map>
 #include <memory>
@@ -21,6 +22,15 @@ namespace std {
             size_t h1 = std::hash<int>()(static_cast<int>(p.first));   // PipelineType のハッシュ値
             size_t h2 = std::hash<int>()(static_cast<int>(p.second)); // BlendMode のハッシュ値
             return h1 ^ (h2 << 1); // ハッシュ値を組み合わせる（XOR とシフト）
+        }
+    };
+
+    template <>
+    struct hash<std::pair<MiiEngine::CSPipelineType, std::wstring>> {
+        size_t operator()(const std::pair<MiiEngine::CSPipelineType, std::wstring>& p) const noexcept {
+            size_t h1 = std::hash<int>()(static_cast<int>(p.first));   // CSPipelineType のハッシュ値
+            size_t h2 = std::hash<std::wstring>()(p.second);          // std::wstring のハッシュ値
+			return h1 ^ (h2 << 1); // ハッシュ値を組み合わせる（XOR とシフト）
         }
     };
 }
@@ -53,14 +63,26 @@ namespace MiiEngine {
         /// <param name="topology">描画に使用するプリミティブのトポロジーを示すD3D12_PRIMITIVE_TOPOLOGY値。</param>
         void SetPipeline(ID3D12GraphicsCommandList* commandList, PipelineType type, BlendMode mode, D3D12_PRIMITIVE_TOPOLOGY topology);
 
+        /// <summary>
+        /// コマンドリストにコンピュートシェーダーパイプラインを設定します。
+        /// </summary>
+        /// <param name="commandList">パイプラインを設定する Direct3D 12 グラフィックスコマンドリスト。</param>
+        /// <param name="type">設定するコンピュートシェーダーパイプラインの種類。</param>
+        /// <param name="kernelName">設定するカーネルの名前を示す std::wstring の値。</param>
+        void SetCSPipeline(ID3D12GraphicsCommandList* commandList, CSPipelineType type, const std::wstring& kernelName);
+
     private:/// ===変数=== ///
         /// パイプラインの管理
         // Graphicsパイプライン
         std::unordered_map<std::pair<PipelineType, BlendMode>, std::unique_ptr<GSPSOCommon>> graphicsPipelines_;
         // Computeパイプライン
-        std::unordered_map<PipelineType, std::unique_ptr<CSPSOCommon>> computePipelines_;
+        std::unordered_map<std::pair<CSPipelineType, std::wstring>, std::unique_ptr<CSPSOCommon>> computePipelines_;
+
+        /// ===Compiler=== ///
         // Compilerの管理
         std::unordered_map<PipelineType, std::unique_ptr<Compiler>> compiler_;
+		// CSCompilerの管理
+		std::unordered_map<CSPipelineType, std::unique_ptr<CSCompiler>> csCompiler_;
 
     private:/// ===関数=== ///
         /// <summary>
@@ -75,7 +97,8 @@ namespace MiiEngine {
         /// 指定された種類の CSPSOCommon パイプラインへのポインタを取得します。
         /// </summary>
         /// <param name="type">取得するパイプラインの種類を示す PipelineType の値。</param>
+        /// <param name="kernelName">取得するカーネルの名前を示す std::wstring の値。</param>
         /// <returns>指定された種類に対応する CSPSOCommon へのポインタ。該当するパイプラインが存在しない場合は nullptr を返すことがあります。</returns>
-        CSPSOCommon* GetCSPipeline(PipelineType type);
+        CSPSOCommon* GetCSPipeline(CSPipelineType type, const std::wstring& kernelName);
     };
 }

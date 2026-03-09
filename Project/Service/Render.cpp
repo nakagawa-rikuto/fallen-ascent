@@ -16,6 +16,13 @@ namespace Service {
 	}
 
 	///-------------------------------------------/// 
+	/// CSPSOの設定 
+	///-------------------------------------------///
+	void Render::SetCSPSO(ID3D12GraphicsCommandList* commandList, MiiEngine::CSPipelineType type, const std::wstring& kernelName) {
+		Locator::GetPipelineManager()->SetCSPipeline(commandList, type, kernelName);
+	}
+
+	///-------------------------------------------/// 
 	/// Texture
 	///-------------------------------------------///
 	// SRVインデックス開始番号の取得

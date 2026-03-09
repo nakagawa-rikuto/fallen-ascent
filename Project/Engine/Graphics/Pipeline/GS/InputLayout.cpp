@@ -112,6 +112,7 @@ namespace MiiEngine {
 				{ PipelineType::Obj3D,        { inputElementDescs3,      _countof(inputElementDescs3)} },
 				{ PipelineType::PrimitiveSkyBox,  { inputElementDescs3,      _countof(inputElementDescs3) } },
 				{ PipelineType::Ocean,		  { inputElementDescs3,      _countof(inputElementDescs3) } },
+				{ PipelineType::FFTOcean,	  { inputElementDescs3,      _countof(inputElementDescs3) } },
 				{ PipelineType::Particle,     { inputElementDescs3,      _countof(inputElementDescs3) } },
 				{ PipelineType::Skinning3D,   { inputElementDescs5,		 _countof(inputElementDescs5) } },
 				{ PipelineType::Line3D,       { inputElementDescsLine,   _countof(inputElementDescsLine)} },

@@ -199,7 +199,7 @@ namespace MiiEngine {
         ID3D12GraphicsCommandList* commandList = Service::GraphicsResourceGetter::GetDXCommandList();
 
         // Compute PSOとRoot Signatureを設定
-        Service::Render::SetPSO(commandList, PipelineType::CSOcean, BlendMode::KBlendModeNormal);
+        Service::Render::SetCSPSO(commandList, CSPipelineType::Ocean);
         // Compute Shaderを実行
         waveCompute_->Dispatch(commandList);
         // UAV -> Vertex Bufferへの状態遷移
