@@ -150,6 +150,8 @@
 └── └── └── └── └── ParticleSetUp.h
 └── └── └── └── Pipeline/
 └── └── └──     ├── CS/
+└── └── └──     └── ├── CSCompiler.cpp
+└── └── └──     └── ├── CSCompiler.h
 └── └── └──     └── ├── CSPSOCommon.cpp
 └── └── └──     └── ├── CSPSOCommon.h
 └── └── └──     └── ├── CSRootSignature.cpp
@@ -5573,7 +5575,6 @@ namespace MiiEngine {
 	/// PipelineType
 	///-------------------------------------------///
 	enum PipelineType {
-		// === GraphicsPipelines === //
 		// 前景2D
 		ForGround2D,
 		// 背景2D
@@ -5585,7 +5586,9 @@ namespace MiiEngine {
 		// SkyBox
 		PrimitiveSkyBox,
 		// Ocean
-		PrimitiveOcean,
+		Ocean,
+		// FFTOcean
+		FFTOcean,
 		// Particle
 		Particle,
 		// Skinning3D
@@ -5611,12 +5614,23 @@ namespace MiiEngine {
 		// ShatterGlass
 		ShatterGlass,
 
-		// === ComputePipelines === //
-		CSOcean,
-
 		// 総数(これは最後にしなければいけない)
 		CountOfPipelineType,
 	};
+
+	///-------------------------------------------/// 
+	/// CSPipelineType
+	///-------------------------------------------///
+	enum class CSPipelineType {
+		// Ocean
+		Ocean,
+		// FFTOcean
+		FFTOcean,
+
+		// 総数(これは最後にしなければいけない)
+		CountOfCSPipelineType,
+	};
+
 
 	// 列挙型の全値を取得する関数
 	constexpr std::array<PipelineType, static_cast<size_t>(PipelineType::CountOfPipelineType)> AllPipelineTypes() {
@@ -5629,7 +5643,8 @@ namespace MiiEngine {
 			PipelineType::PrimitiveSkyBox,
 			PipelineType::Particle ,
 			PipelineType::Skinning3D,
-			PipelineType::PrimitiveOcean,
+			PipelineType::Ocean,
+			PipelineType::FFTOcean,
 			PipelineType::Line3D,
 			PipelineType::OffScreen,
 			PipelineType::Grayscale,
@@ -5640,41 +5655,15 @@ namespace MiiEngine {
 			PipelineType::RadiusBlur,
 			PipelineType::OutLine,
 			PipelineType::ShatterGlass,
-			// Compute Pipelines
-			PipelineType::CSOcean,
 		};
 	}
 
-	// Computeパイプラインかどうかを判定する関数
-	inline bool IsComputePipeline(PipelineType type) {
-		switch (type) {
-			/// ===Compute Pipelines=== ///
-		case PipelineType::CSOcean:
-			return true;
-			/// ===Graphics Pipelines=== ///
-		case PipelineType::ForGround2D:
-		case PipelineType::BackGround2D:
-		case PipelineType::CircularGauge2D:
-		case PipelineType::Obj3D:
-		case PipelineType::Skinning3D:
-		case PipelineType::PrimitiveSkyBox:
-		case PipelineType::Particle:
-		case PipelineType::PrimitiveOcean:
-		case PipelineType::Line3D:
-		case PipelineType::OffScreen:
-		case PipelineType::Grayscale:
-		case PipelineType::Vignette:
-		case PipelineType::Dissolve:
-		case PipelineType::BoxFilter3x3:
-		case PipelineType::BoxFilter5x5:
-		case PipelineType::RadiusBlur:
-		case PipelineType::OutLine:
-		case PipelineType::ShatterGlass:
-			return false;
-
-		default:
-			return false;
-		}
+	// 列挙型の全値を取得する関数
+	constexpr std::array<CSPipelineType, static_cast<size_t>(CSPipelineType::CountOfCSPipelineType)> AllCSPipelineTypes() {
+		return {
+			CSPipelineType::Ocean,
+			CSPipelineType::FFTOcean,
+		};
 	}
 }
 
@@ -9592,7 +9581,7 @@ namespace MiiEngine {
         ID3D12GraphicsCommandList* commandList = Service::GraphicsResourceGetter::GetDXCommandList();
 
         // Compute PSOとRoot Signatureを設定
-        Service::Render::SetPSO(commandList, PipelineType::CSOcean, BlendMode::KBlendModeNormal);
+        Service::Render::SetCSPSO(commandList, CSPipelineType::Ocean);
         // Compute Shaderを実行
         waveCompute_->Dispatch(commandList);
         // UAV -> Vertex Bufferへの状態遷移
@@ -9604,7 +9593,7 @@ namespace MiiEngine {
         commandList->ResourceBarrier(1, &barrier);
 
         // Graphics PSOを設定
-        Service::Render::SetPSO(commandList, PipelineType::PrimitiveOcean, mode);
+        Service::Render::SetPSO(commandList, PipelineType::Ocean, mode);
 
         commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
         commandList->IASetIndexBuffer(&indexBufferView_);
@@ -14688,11 +14677,266 @@ namespace MiiEngine {
 
 
 ============================================================
+File Path: Project/Engine/Graphics/Pipeline/CS/CSCompiler.cpp
+============================================================
+#include "CSCompiler.h"
+// Engine
+#include "Engine/Core/Logger.h"
+#include "Engine/Core/DXCommon.h"
+// C++
+#include <cassert>
+#include <format>
+
+namespace MiiEngine {
+	///-------------------------------------------/// 
+	/// デストラクタ
+	///-------------------------------------------///
+	CSCompiler::~CSCompiler() {
+		kernels_.clear();
+		kernelNames_.clear();
+	}
+
+
+	///-------------------------------------------/// 
+	/// テーブルの定義
+	///-------------------------------------------///
+	namespace {
+		// 情報
+		struct ShaderInfo {
+			std::wstring csPath;
+			std::vector<std::wstring> entryPoints; // 複数カーネルに対応
+		};
+
+		// テーブル本体
+		const std::unordered_map<CSPipelineType, ShaderInfo> kCSShaderTable_ = {
+			{ CSPipelineType::Ocean,    { L"Ocean/Ocean.CS.hlsl",   { L"main" } } },
+			{ CSPipelineType::FFTOcean, { L"Ocean/FFTOcean.CS.hlsl",{
+				L"InitSpectrum",
+				L"UpdateSpectrum",
+				L"BitReverseRows",
+				L"ButterflyIFFT",
+				L"BitReverseCols",
+				L"AssembleDisplacement",
+				L"ComputeNormalFoam",}}},
+		};
+	}
+
+
+	///-------------------------------------------/// 
+	///	初期化
+	///-------------------------------------------///
+	void CSCompiler::Initialize(DXCommon* dxCommon, CSPipelineType type) {
+		// 対応するシェーダーの検索
+		const auto& it = kCSShaderTable_.find(type);
+		assert(it != kCSShaderTable_.end() && "Unknown CS PipelineType");
+
+		// 対応する情報を取得
+		const ShaderInfo& info = it->second;
+
+		// 各エントリーポイントに対してカーネルをコンパイルし、マップに保存
+		for (const auto& entry : info.entryPoints) {
+			auto blob = CompileKernel(
+				info.csPath, entry,
+				dxCommon->GetDxcUtils(),
+				dxCommon->GetDxcCompiler(),
+				dxCommon->GetIncludeHandler());
+			assert(blob && "CS Kernel Compile Failed");
+
+			kernelNames_.push_back(entry);
+			kernels_[entry] = std::move(blob);
+		}
+	}
+
+
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	// カーネル名を指定してBlobを取得する
+	IDxcBlob* CSCompiler::GetKernel(const std::wstring& entryPoint) {
+		auto it = kernels_.find(entryPoint);
+		assert(it != kernels_.end() && "Kernel not found");
+		return it->second.Get();
+	}
+	// 登録されている全カーネル名のリストを取得する
+	const std::vector<std::wstring>& CSCompiler::GetKernelNames() const {
+		return kernelNames_;
+	}
+
+
+	///-------------------------------------------/// 
+	/// シェーダーカーネルをコンパイルします。
+	///-------------------------------------------///
+	ComPtr<IDxcBlob> CSCompiler::CompileKernel(const std::wstring& filePath, const std::wstring& entryPoint, IDxcUtils* dxcUtils, IDxcCompiler3* dxcCompiler, IDxcIncludeHandler* includeHandler) {
+		// シェーダーファイルのフルパスを構築
+		const std::wstring baseShaderPath = L"Resource/Shaders";
+		const std::wstring shaderFileName = baseShaderPath + L"/" + filePath;
+
+		/// ===1. hlslファイルを読み込む=== ///
+		// これからシェーダーをコンパイルする旨をログに出す
+		Log(ConvertString(std::format(
+			L"Begin CompileKernel, path:{}, entry:{}\n", shaderFileName, entryPoint)));
+
+		// hlslファイルを読む
+		ComPtr<IDxcBlobEncoding> shaderSource;
+		HRESULT hr = dxcUtils->LoadFile(shaderFileName.c_str(), nullptr, &shaderSource);
+		// 読めなかったら止める
+		assert(SUCCEEDED(hr));
+
+		// 読み込んだファイルの内容を設定する
+		DxcBuffer shaderSourceBuffer;
+		shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
+		shaderSourceBuffer.Size = shaderSource->GetBufferSize();
+		shaderSourceBuffer.Encoding = DXC_CP_UTF8;
+
+		/// ===2. Compileする === ///
+#ifdef _DEBUG
+		LPCWSTR arguments[] = {
+			shaderFileName.c_str(),
+			L"-E", entryPoint.c_str(),
+			L"-T", L"cs_6_0",
+			L"-Zi", L"-Qembed_debug",   // デバッグ情報あり
+			L"-Od",						// 最適化オフ
+			L"-Zpr",
+			L"-D", L"_DEBUG",			// _DEBUGマクロを定義
+		};
+#else
+		LPCWSTR arguments[] = {
+			shaderFileName.c_str(),
+			L"-E", entryPoint.c_str(),
+			L"-T", L"cs_6_0",
+			L"-O2",						// 高速化のための最適化
+			L"-Zpr",
+			L"-D", L"NDEBUG",			// NDEBUGマクロを定義（必要なら）
+		};
+#endif
+
+		// 実際にShaderをコンパイルする
+		ComPtr<IDxcResult> shaderResult;
+		hr = dxcCompiler->Compile(
+			&shaderSourceBuffer,          // 読み込んだファイル
+			arguments,                    // コンパイルオプション
+			_countof(arguments),          // コンパイルオプションの数
+			includeHandler,               // includeが含まれた諸々
+			IID_PPV_ARGS(&shaderResult)   // コンパイル結果
+		);
+
+		// コンパイルエラーではなくDxcが起動できないなど致命的な状況
+		assert(SUCCEEDED(hr));
+
+		/// ===3. 警告・エラーが出ていないかを確認する=== ///
+		// 警告・エラーが出てたらログを出して止める
+		ComPtr<IDxcBlobUtf8> shaderError;
+		shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
+		if (shaderError != nullptr && shaderError->GetStringLength() != 0) {
+			Log(shaderError->GetStringPointer());
+
+			// 警告・エラーダメゼッタイ
+			assert(false);
+		}
+
+		/// ===4. Compile結果を受け取ってます=== ///
+		// コンパイル結果から実行用のバイナリ部分を取得
+		ComPtr<IDxcBlob> shaderBlob;
+		hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
+		assert(SUCCEEDED(hr));
+
+		// 成功したログを出す
+		Log(ConvertString(std::format(
+			L"Compile Succeeded, path:{}, entry:{}\n", shaderFileName, entryPoint)));
+
+		// 実行用のバイナリを返却
+		return shaderBlob;
+	}
+}
+
+
+============================================================
+File Path: Project/Engine/Graphics/Pipeline/CS/CSCompiler.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// ComPtr
+#include "Engine/Core/ComPtr.h"
+// PipelineType
+#include "Engine/DataInfo/PipelineStateObjectType.h"
+// directX
+#include <d3d12.h>
+#include <dxcapi.h>
+// c++
+#include <string>
+#include <unordered_map>
+#include <vector>
+// dxcompiler.libのリンク指定
+#pragma comment(lib, "dxcompiler.lib")
+
+namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class DXCommon;
+
+	///=====================================================/// 
+	/// CSCompiler
+	///=====================================================///
+	class CSCompiler {
+	public:
+
+		CSCompiler() = default;
+		~CSCompiler();
+
+		/// <summary>
+		/// 指定されたパイプラインタイプでコンピュートシェーダーを初期化します。
+		/// </summary>
+		/// <param name="dxCommon">DirectX共通リソースへのポインタ。</param>
+		/// <param name="type">初期化するコンピュートシェーダーパイプラインのタイプ。</param>
+		void Initialize(DXCommon* dxCommon, CSPipelineType type);
+
+	public: /// ===Getter=== ///
+		/// <summary>
+		/// カーネル名を指定してBlobを取得する
+		/// </summary>
+		/// <param name="entryPoint">カーネル関数名（例: L"InitSpectrum"）</param>
+		IDxcBlob* GetKernel(const std::wstring& entryPoint);
+
+		/// <summary>
+		/// 登録されている全カーネル名のリストを取得する
+		/// </summary>
+		const std::vector<std::wstring>& GetKernelNames() const;
+
+	private:
+		// カーネル名 → Blob のマップ
+		std::unordered_map<std::wstring, ComPtr<IDxcBlob>> kernels_;
+		// 登録順を保持するリスト（ディスパッチ順管理用）
+		std::vector<std::wstring> kernelNames_;
+
+	private:
+		/// <summary>
+		/// シェーダーカーネルをコンパイルします。
+		/// </summary>
+		/// <param name="filePath">コンパイルするシェーダーファイルのパス。</param>
+		/// <param name="entryPoint">シェーダーのエントリーポイント関数名。</param>
+		/// <param name="dxcUtils">DXCユーティリティインターフェイスへのポインタ。</param>
+		/// <param name="dxcCompiler">DXCコンパイラインターフェイスへのポインタ。</param>
+		/// <param name="includeHandler">インクルードファイルを処理するハンドラーへのポインタ。</param>
+		/// <returns>コンパイルされたシェーダーバイトコードを含むBlobオブジェクト。</returns>
+		ComPtr<IDxcBlob> CompileKernel(
+			// CompilerするShaderファイルへのパス
+			const std::wstring& filePath,
+			// シェーダーのエントリーポイント関数名
+			const std::wstring& entryPoint,
+			// DXC関連のインターフェイス
+			IDxcUtils* dxcUtils,
+			IDxcCompiler3* dxcCompiler,
+			IDxcIncludeHandler* includeHandler);
+	};
+}
+
+
+
+============================================================
 File Path: Project/Engine/Graphics/Pipeline/CS/CSPSOCommon.cpp
 ============================================================
 #include "CSPSOCommon.h"
 // Compiler
-#include "Engine/Graphics/Pipeline/Compiler.h"
+#include "Engine/Graphics/Pipeline/CS/CSCompiler.h"
 // Engine
 #include "Engine/Core/DXCommon.h"
 // c++
@@ -14710,13 +14954,13 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// PSOの作成
 	///-------------------------------------------///
-	void CSPSOCommon::Create(DXCommon* dxCommon, Compiler* compiler, PipelineType Type) {
+	void CSPSOCommon::Create(DXCommon* dxCommon, CSCompiler* compiler, CSPipelineType Type, const std::wstring& kernelName) {
 		// RootSignatureの生成
 		rootSignature_ = std::make_unique<CSRootSignature>();
 		rootSignature_->Create(dxCommon, Type);
 		compiler_ = compiler;
 		// PipelineState
-		CreatePipelineState(dxCommon, Type);
+		CreatePipelineState(dxCommon, kernelName);
 	}
 
 	///-------------------------------------------/// 
@@ -14736,19 +14980,22 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// パイプラインステートの作成
 	///-------------------------------------------///
-	void CSPSOCommon::CreatePipelineState(DXCommon* dxCommon, PipelineType type) {
-		HRESULT hr;
-		type;
+	void CSPSOCommon::CreatePipelineState(DXCommon* dxCommon, const std::wstring& kernelName) {
+		// 指定カーネルのBlobを取得
+		IDxcBlob* csBlob = compiler_->GetKernel(kernelName);
+		assert(csBlob && "CS Kernel Blob is null");
 
 		// ComputePipelineStateDescの設定
-		computePipelineStateDesc_.CS = {
-			.pShaderBytecode = compiler_->GetObjCS()->GetBufferPointer(),
-			.BytecodeLength = compiler_->GetObjCS()->GetBufferSize()
-		};
-		// RootSignatureの設定
+		computePipelineStateDesc_ = {};
 		computePipelineStateDesc_.pRootSignature = rootSignature_->GetRootSignature();
-		// 実際に生成
-		hr = dxCommon->GetDevice()->CreateComputePipelineState(&computePipelineStateDesc_, IID_PPV_ARGS(&computePipelineState_));
+		computePipelineStateDesc_.CS = {
+			.pShaderBytecode = csBlob->GetBufferPointer(),
+			.BytecodeLength = csBlob->GetBufferSize(),
+		};
+
+		// PipelineStateの生成
+		HRESULT hr = dxCommon->GetDevice()->CreateComputePipelineState(
+			&computePipelineStateDesc_, IID_PPV_ARGS(&computePipelineState_));
 		assert(SUCCEEDED(hr));
 	}
 }
@@ -14765,6 +15012,7 @@ File Path: Project/Engine/Graphics/Pipeline/CS/CSPSOCommon.h
 #include <memory>
 #include <array>
 #include <cassert>
+#include <string>
 // directX
 #include <d3d12.h>
 #include <dxgidebug.h>
@@ -14774,7 +15022,7 @@ File Path: Project/Engine/Graphics/Pipeline/CS/CSPSOCommon.h
 namespace MiiEngine {
 	/// ===前方宣言=== ///
 	class DXCommon;
-	class Compiler;
+	class CSCompiler;
 
 	///=====================================================/// 
 	/// ComputePipelineStateObjectCommon
@@ -14791,7 +15039,8 @@ namespace MiiEngine {
 		/// <param name="DXCommon">DirectX に関連する共通リソース、デバイス、コンテキストを保持するオブジェクトへのポインタ。パイプライン作成に必要な環境情報を提供します。</param>
 		/// <param name="compiler">シェーダやパイプラインステージをコンパイルするためのコンパイラオブジェクトへのポインタ。</param>
 		/// <param name="Type">作成するパイプラインの種類を指定する列挙型（PipelineType）の値。</param>
-		void Create(DXCommon* dxcommon, Compiler* compiler, PipelineType Type);
+		/// <param name="kernelName">カーネルの名前。</param>
+		void Create(DXCommon* dxcommon, CSCompiler* compiler, CSPipelineType Type, const std::wstring& kernelName = L"main");
 
 		/// <summary>
 		/// PSOの設定処理
@@ -14803,7 +15052,7 @@ namespace MiiEngine {
 
 		/// ===PSOに必要な情報=== ///
 		std::unique_ptr<CSRootSignature> rootSignature_;    // RootSignature
-		Compiler* compiler_;                                // Compiler
+		CSCompiler* compiler_;                              // Compiler
 
 		ComPtr<ID3D12PipelineState> computePipelineState_;
 		D3D12_COMPUTE_PIPELINE_STATE_DESC computePipelineStateDesc_{};
@@ -14814,8 +15063,8 @@ namespace MiiEngine {
 		/// パイプラインステートを作成します。
 		/// </summary>
 		/// <param name="dxCommon">DirectX の共通リソースやコンテキストを保持する DXCommon オブジェクトへのポインタ。</param>
-		/// <param name="type">作成するパイプラインの種類を示す PipelineType の値。</param>
-		void CreatePipelineState(DXCommon* dxCommon, PipelineType type);
+		/// <param name="kernelName">使用するシェーダーカーネルの名前。通常はエントリーポイント関数名（例: L"main"）を指定します。</param>
+		void CreatePipelineState(DXCommon* dxCommon, const std::wstring& kernelName);
 	};
 }
 
@@ -14850,7 +15099,7 @@ namespace MiiEngine {
 	namespace {
 
 		/// ===CSOcean=== ///
-		ComPtr<ID3D12RootSignature> TypeCSOcean(ID3D12Device* device) {
+		ComPtr<ID3D12RootSignature> TypeOcean(ID3D12Device* device) {
 			// SRV用のDescriptorRange (t0: 波情報)
 			D3D12_DESCRIPTOR_RANGE srvRange = {};
 			srvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -14919,44 +15168,93 @@ namespace MiiEngine {
 			return rootSignature;
 		}
 
-		/// ===マップに登録=== ///
-		using RootSigGenerator = std::function<ComPtr<ID3D12RootSignature>(ID3D12Device*)>;
-
-		// IsComputePipeline関数を使用して、Compute用のみを登録
-		std::unordered_map<PipelineType, RootSigGenerator> CreateCSRootSignatureTable() {
-			std::unordered_map<PipelineType, RootSigGenerator> table;
-
-			// 全てのPipelineTypeをチェック
-			for (PipelineType type : AllPipelineTypes()) {
-				// Computeパイプラインのみ登録
-				if (IsComputePipeline(type)) {
-					switch (type) {
-					case PipelineType::CSOcean:
-						table[type] = TypeCSOcean;
-						break;
-					default:
-						// Computeと判定されたが、対応する関数がない場合
-						assert(false && "CS RootSignature not implemented for this type");
-						break;
-					}
-				}
+		/// ===CSFFTOcean=== ///
+		ComPtr<ID3D12RootSignature> TypeFFTOcean(ID3D12Device* device) {
+			/// UAV用のDescriptorRange（u0〜u7）
+			D3D12_DESCRIPTOR_RANGE uavRange[8] = {};
+			for (uint32_t i = 0; i < 8; ++i) {
+				uavRange[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+				uavRange[i].NumDescriptors = 1;
+				uavRange[i].BaseShaderRegister = i;
+				uavRange[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 			}
 
-			return table;
+			/// SRV用のDescriptorRange（t0〜t2）
+			D3D12_DESCRIPTOR_RANGE srvRange[3] = {};
+			for (uint32_t i = 0; i < 3; ++i) {
+				srvRange[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+				srvRange[i].NumDescriptors = 1;
+				srvRange[i].BaseShaderRegister = i;
+				srvRange[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+			}
+
+			/// RootParameterの生成
+			D3D12_ROOT_PARAMETER rootParameters[13] = {};
+			// (b0) OceanParams
+			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+			rootParameters[0].Descriptor.ShaderRegister = 0;
+			// (b1) ButterflyParams
+			rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+			rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+			rootParameters[1].Descriptor.ShaderRegister = 1;
+			// (u0〜u7) UAV
+			for (uint32_t i = 0; i < 8; ++i) {
+				rootParameters[2 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+				rootParameters[2 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+				rootParameters[2 + i].DescriptorTable.pDescriptorRanges = &uavRange[i];
+				rootParameters[2 + i].DescriptorTable.NumDescriptorRanges = 1;
+			}
+			// (t0〜t2) SRV: HeightIFFT, DxIFFT, DzIFFT
+			for (uint32_t i = 0; i < 3; ++i) {
+				rootParameters[10 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+				rootParameters[10 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+				rootParameters[10 + i].DescriptorTable.pDescriptorRanges = &srvRange[i];
+				rootParameters[10 + i].DescriptorTable.NumDescriptorRanges = 1;
+			}
+
+			/// RootSignatureの生成
+			D3D12_ROOT_SIGNATURE_DESC desc{};
+			desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+			desc.pParameters = rootParameters;
+			desc.NumParameters = _countof(rootParameters);
+			desc.pStaticSamplers = nullptr;
+			desc.NumStaticSamplers = 0;
+
+			/// シリアライズ作成
+			ComPtr<ID3DBlob> signatureBlob;
+			ComPtr<ID3DBlob> errorBlob;
+			HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+			if (FAILED(hr)) {
+				if (errorBlob) {
+					OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+				}
+				assert(false);
+				return nullptr;
+			}
+
+			ComPtr<ID3D12RootSignature> rootSignature;
+			hr = device->CreateRootSignature(
+				0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
+				IID_PPV_ARGS(&rootSignature));
+			assert(SUCCEEDED(hr));
+			return rootSignature;
 		}
 
-		const std::unordered_map<PipelineType, RootSigGenerator> kCSRootSignatureTable_ = CreateCSRootSignatureTable();
+		/// ===マップに登録=== ///
+		using RootSigGenerator = std::function<ComPtr<ID3D12RootSignature>(ID3D12Device*)>;
+		const std::unordered_map<CSPipelineType, RootSigGenerator> kRootSignatureTable_ = {
+			{CSPipelineType::Ocean,     TypeOcean},
+			{CSPipelineType::FFTOcean,  TypeFFTOcean},
+		};
 	}
 
 	///-------------------------------------------/// 
 	/// ルートシグネイチャの生成
 	///-------------------------------------------///
-	void CSRootSignature::Create(DXCommon* dxCommon, PipelineType Type) {
-		// Computeパイプラインかチェック
-		assert(IsComputePipeline(Type) && "CSRootSignature can only be used for Compute Pipelines");
-
-		auto it = kCSRootSignatureTable_.find(Type);
-		if (it != kCSRootSignatureTable_.end()) {
+	void CSRootSignature::Create(DXCommon* dxCommon, CSPipelineType Type) {
+		auto it = kRootSignatureTable_.find(Type);
+		if (it != kRootSignatureTable_.end()) {
 			// 直接 RootSignature を作って返す構成に変更
 			rootSignature_ = it->second(dxCommon->GetDevice());
 		} else {
@@ -14999,8 +15297,8 @@ namespace MiiEngine {
 		/// ルートシグネイチャの生成処理
 		/// </summary>
 		/// <param name="dxCommon">DXCommon インスタンスへのポインタ。デバイスやコマンドキューなどの共通 DirectX リソースとコンテキストを提供します。</param>
-		/// <param name="Type">作成するパイプラインの種類を指定する PipelineType 値（例: グラフィックス、コンピュート）。</param>
-		void Create(DXCommon* dxCommon, PipelineType Type);
+		/// <param name="Type">作成するパイプラインの種類を指定する CSPipelineType 値（例: グラフィックス、コンピュート）。</param>
+		void Create(DXCommon* dxCommon, CSPipelineType Type);
 
 		/// <summary>
 		/// ルートシグネイチャの取得
@@ -15033,7 +15331,6 @@ namespace MiiEngine {
 	Compiler::~Compiler() {
 		objVSBlob_.Reset();
 		objPSBlob_.Reset();
-		objCSBlob_.Reset();
 	}
 
 	///-------------------------------------------/// 
@@ -15044,31 +15341,29 @@ namespace MiiEngine {
 		struct ShaderInfo {
 			std::wstring vsPath;
 			std::wstring psPath;
-			std::wstring csPath;
 		};
 
 		// テーブル本体
 		const std::unordered_map<PipelineType, ShaderInfo> kShaderTable_ = {
-		{ PipelineType::ForGround2D,	 { L"2D/Obj2D.VS.hlsl",				 L"2D/Obj2D.PS.hlsl",						 L""}},
-		{ PipelineType::BackGround2D,	 { L"2D/Obj2D.VS.hlsl",				 L"2D/Obj2D.PS.hlsl",		 				 L""}},
-		{ PipelineType::CircularGauge2D, { L"2D/Obj2D.VS.hlsl",				 L"2D/CircularGauge.PS.hlsl",		 		 L""}},
-		{ PipelineType::Obj3D,			 { L"3D/Obj3D.VS.hlsl",				 L"3D/Obj3D.PS.hlsl",						 L""}},
-		{ PipelineType::PrimitiveSkyBox, { L"3D/SkyBox.VS.hlsl",             L"3D/SkyBox.PS.hlsl",						 L""}},
-		{ PipelineType::PrimitiveOcean,  { L"Ocean/Ocean.VS.hlsl",           L"Ocean/Ocean.PS.hlsl",					 L""}},
-		{ PipelineType::Skinning3D,		 { L"3D/SkinningObj3D.VS.hlsl",      L"3D/SkinningObj3D.PS.hlsl",				 L""}},
-		{ PipelineType::Line3D,			 { L"3D/Line3D.VS.hlsl",             L"3D/Line3D.PS.hlsl",						 L""}},
-		{ PipelineType::Particle,		 { L"Particle/Particle.VS.hlsl",     L"Particle/Particle.PS.hlsl",				 L""}},
-		{ PipelineType::OffScreen,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/CopyImage.PS.hlsl",			 L""}},
-		{ PipelineType::Grayscale,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Grayscale.PS.hlsl",			 L""}},
-		{ PipelineType::Vignette ,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Vignette.PS.hlsl",				 L""}},
-		{ PipelineType::Dissolve,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Dissolve.PS.hlsl",				 L""}},
-		{ PipelineType::BoxFilter3x3,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/BoxFilter3x3.PS.hlsl",			 L""}},
-		{ PipelineType::BoxFilter5x5,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/BoxFilter5x5.PS.hlsl",			 L""}},
-		{ PipelineType::RadiusBlur,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/RadialBlur.PS.hlsl",			 L""}},
-		{ PipelineType::OutLine,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/LuminanceBasedOutline.PS.hlsl", L""}},
-		{ PipelineType::ShatterGlass,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/ShatterGlass.PS.hlsl",			 L""}},
-		/// ===CS=== ///
-		{ PipelineType::CSOcean,		 { L"", L"", L"Ocean/Ocean.CS.hlsl"}},
+		{ PipelineType::ForGround2D,	 { L"2D/Obj2D.VS.hlsl",				 L"2D/Obj2D.PS.hlsl"}},
+		{ PipelineType::BackGround2D,	 { L"2D/Obj2D.VS.hlsl",				 L"2D/Obj2D.PS.hlsl"}},
+		{ PipelineType::CircularGauge2D, { L"2D/Obj2D.VS.hlsl",				 L"2D/CircularGauge.PS.hlsl"}},
+		{ PipelineType::Obj3D,			 { L"3D/Obj3D.VS.hlsl",				 L"3D/Obj3D.PS.hlsl"}},
+		{ PipelineType::PrimitiveSkyBox, { L"3D/SkyBox.VS.hlsl",             L"3D/SkyBox.PS.hlsl"}},
+		{ PipelineType::Ocean,			 { L"Ocean/Ocean.VS.hlsl",           L"Ocean/Ocean.PS.hlsl"}},
+		{ PipelineType::FFTOcean,		 { L"Ocean/FFTOcean.VS.hlsl",        L"Ocean/FFTOcean.PS.hlsl"}},
+		{ PipelineType::Skinning3D,		 { L"3D/SkinningObj3D.VS.hlsl",      L"3D/SkinningObj3D.PS.hlsl"}},
+		{ PipelineType::Line3D,			 { L"3D/Line3D.VS.hlsl",             L"3D/Line3D.PS.hlsl"}},
+		{ PipelineType::Particle,		 { L"Particle/Particle.VS.hlsl",     L"Particle/Particle.PS.hlsl"}},
+		{ PipelineType::OffScreen,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/CopyImage.PS.hlsl"}},
+		{ PipelineType::Grayscale,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Grayscale.PS.hlsl"}},
+		{ PipelineType::Vignette ,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Vignette.PS.hlsl"}},
+		{ PipelineType::Dissolve,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/Dissolve.PS.hlsl"}},
+		{ PipelineType::BoxFilter3x3,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/BoxFilter3x3.PS.hlsl"}},
+		{ PipelineType::BoxFilter5x5,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/BoxFilter5x5.PS.hlsl"}},
+		{ PipelineType::RadiusBlur,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/RadialBlur.PS.hlsl"}},
+		{ PipelineType::OutLine,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/LuminanceBasedOutline.PS.hlsl"}},
+		{ PipelineType::ShatterGlass,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/ShatterGlass.PS.hlsl"}},	
 		};
 	}
 
@@ -15095,12 +15390,6 @@ namespace MiiEngine {
 				dxCommon->GetDxcUtils(), dxCommon->GetDxcCompiler(), dxCommon->GetIncludeHandler());
 			assert(objPSBlob_ && "Pixel Shader Compile Failed");
 		}
-		// CSシェーダのコンパイル
-		if (!info.csPath.empty()) {
-			objCSBlob_ = CompileShader(info.csPath, L"cs_6_0",
-				dxCommon->GetDxcUtils(), dxCommon->GetDxcCompiler(), dxCommon->GetIncludeHandler());
-			assert(objCSBlob_ && "Compute Shader Compile Failed");
-		}
 	}
 
 	///-------------------------------------------/// 
@@ -15110,8 +15399,6 @@ namespace MiiEngine {
 	IDxcBlob* Compiler::GetObjVS() { return objVSBlob_.Get(); }
 	// ObjectPixelShaderBlobの取得
 	IDxcBlob* Compiler::GetObjPS() { return objPSBlob_.Get(); }
-	// ObjectComputeShaderBlobの取得
-	IDxcBlob* Compiler::GetObjCS() { return objCSBlob_.Get(); }
 
 	///-------------------------------------------/// 
 	/// CompileShader関数
@@ -15246,15 +15533,12 @@ namespace MiiEngine {
 		IDxcBlob* GetObjVS();
 		// PixelShader
 		IDxcBlob* GetObjPS();
-		// ComputeShader
-		IDxcBlob* GetObjCS();
 
 	private:
 
 		//　ObjectShader
 		ComPtr<IDxcBlob> objVSBlob_;
 		ComPtr<IDxcBlob> objPSBlob_;
-		ComPtr<IDxcBlob> objCSBlob_;
 
 	private:
 		/// <summary>
@@ -15432,7 +15716,9 @@ namespace MiiEngine {
 			// SkyBox（深度有効, 書き込みなし, 比較LessEqual）
 			{ PipelineType::PrimitiveSkyBox, CreateDepthDesc(true,  D3D12_DEPTH_WRITE_MASK_ZERO, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
 			// Ocean (深度有効、書き込み無し、比較LessEqual)
-			{ PipelineType::PrimitiveOcean, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL)},
+			{ PipelineType::Ocean, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL)},
+			// FFTOcean (深度有効、書き込み無し、比較LessEqual)
+			{ PipelineType::Ocean, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL)},
 			// Particle（深度有効, 書き込みなし, 比較LessEqual）
 			{ PipelineType::Particle, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ZERO, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
 			// Skinning 3D（深度有効, 書き込みあり, 比較LessEqual）
@@ -16452,7 +16738,7 @@ namespace MiiEngine {
 			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 			rootParameters[3].Descriptor.ShaderRegister = 3;
 
-			// b10: OceanColor
+			// b4: OceanColor
 			rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 			rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 			rootParameters[4].Descriptor.ShaderRegister = 4;
@@ -16486,6 +16772,93 @@ namespace MiiEngine {
 			return rootSignature;
 		}
 
+		/// ===FFTOcean=== ///
+		ComPtr<ID3D12RootSignature> TypeFFTOcean(ID3D12Device* device) {
+			/// SRV用のDescriptorRange
+			D3D12_DESCRIPTOR_RANGE vsSrvRange[2] = {}; // VSでSRVを2つ使う想定
+			// t0用
+			vsSrvRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			vsSrvRange[0].NumDescriptors = 1;
+			vsSrvRange[0].BaseShaderRegister = 0;
+			vsSrvRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+			// t1用
+			vsSrvRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			vsSrvRange[1].NumDescriptors = 1;
+			vsSrvRange[1].BaseShaderRegister = 1;
+			vsSrvRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+			D3D12_DESCRIPTOR_RANGE psSrvRange = {}; // PSでSRVを1つ使う想定
+			psSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			psSrvRange.NumDescriptors = 1;
+			psSrvRange.BaseShaderRegister = 0;
+			psSrvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+			/// RootParameterの生成
+			D3D12_ROOT_PARAMETER rootParameters[5] = {};
+			// VS（b0）
+			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+			rootParameters[0].Descriptor.ShaderRegister = 0;
+			// PS（b0）
+			rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+			rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+			rootParameters[1].Descriptor.ShaderRegister = 0;
+			// VSのSRVテクスチャ用（t0）
+			rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+			rootParameters[2].DescriptorTable.pDescriptorRanges = &vsSrvRange[0];
+			rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
+			// VSのSRVテクスチャ用（t1）
+			rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+			rootParameters[3].DescriptorTable.pDescriptorRanges = &vsSrvRange[1];
+			rootParameters[3].DescriptorTable.NumDescriptorRanges = 1;
+			// PSのSRVテクスチャ用（t0）
+			rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+			rootParameters[4].DescriptorTable.pDescriptorRanges = &psSrvRange;
+			rootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
+
+			/// Samplerの設定
+			D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
+			staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+			staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+			staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+			staticSamplers[0].ShaderRegister = 0; // s0
+			staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // 全てのシェーダーステージで使用可能
+
+			/// RootSignatureの生成
+			D3D12_ROOT_SIGNATURE_DESC desc{};
+			desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+			desc.pParameters = rootParameters;
+			desc.NumParameters = _countof(rootParameters);
+			desc.pStaticSamplers = staticSamplers;
+			desc.NumStaticSamplers = _countof(staticSamplers);
+
+			/// シリアライズ & 作成
+			ComPtr<ID3DBlob> signatureBlob;
+			ComPtr<ID3DBlob> errorBlob;
+			HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+			if (FAILED(hr)) {
+				if (errorBlob) {
+					OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+				}
+				assert(false);
+				return nullptr;
+			}
+
+			ComPtr<ID3D12RootSignature> rootSignature;
+			hr = device->CreateRootSignature(
+				0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
+				IID_PPV_ARGS(&rootSignature));
+			assert(SUCCEEDED(hr));
+
+			return rootSignature;
+		}
+
 		/// ===マップに登録=== ///
 		using RootSigGenerator = std::function<ComPtr<ID3D12RootSignature>(ID3D12Device*)>;
 		const std::unordered_map<PipelineType, RootSigGenerator> kRootSignatureTable_ = {
@@ -16494,7 +16867,8 @@ namespace MiiEngine {
 			{ PipelineType::CircularGauge2D,	Type2D },
 			{ PipelineType::Obj3D,				Type3D },
 			{ PipelineType::PrimitiveSkyBox,	Type3D },
-			{ PipelineType::PrimitiveOcean,     TypeOcean },
+			{ PipelineType::Ocean,				TypeOcean },
+			{ PipelineType::FFTOcean,			TypeFFTOcean },
 			{ PipelineType::Particle,			TypeParticle },
 			{ PipelineType::Skinning3D,			TypeSkinning3D  },
 			{ PipelineType::Line3D,				TypeLine3D },
@@ -16693,7 +17067,8 @@ namespace MiiEngine {
 				{ PipelineType::CircularGauge2D,  { inputElementDescs2,      _countof(inputElementDescs2)} },
 				{ PipelineType::Obj3D,        { inputElementDescs3,      _countof(inputElementDescs3)} },
 				{ PipelineType::PrimitiveSkyBox,  { inputElementDescs3,      _countof(inputElementDescs3) } },
-				{ PipelineType::PrimitiveOcean,   { inputElementDescs3,      _countof(inputElementDescs3) } },
+				{ PipelineType::Ocean,		  { inputElementDescs3,      _countof(inputElementDescs3) } },
+				{ PipelineType::FFTOcean,	  { inputElementDescs3,      _countof(inputElementDescs3) } },
 				{ PipelineType::Particle,     { inputElementDescs3,      _countof(inputElementDescs3) } },
 				{ PipelineType::Skinning3D,   { inputElementDescs5,		 _countof(inputElementDescs5) } },
 				{ PipelineType::Line3D,       { inputElementDescsLine,   _countof(inputElementDescsLine)} },
@@ -16789,7 +17164,8 @@ namespace MiiEngine {
 		{ PipelineType::BackGround2D,		D3D12_CULL_MODE_NONE },
 		{ PipelineType::Obj3D,				D3D12_CULL_MODE_BACK },
 		{ PipelineType::PrimitiveSkyBox,    D3D12_CULL_MODE_NONE },
-		{ PipelineType::PrimitiveOcean,     D3D12_CULL_MODE_BACK },
+		{ PipelineType::Ocean,				D3D12_CULL_MODE_BACK },
+		{ PipelineType::FFTOcean,			D3D12_CULL_MODE_BACK },
 		{ PipelineType::Particle,			D3D12_CULL_MODE_NONE },
 		{ PipelineType::Skinning3D,			D3D12_CULL_MODE_BACK },
 		{ PipelineType::Line3D,				D3D12_CULL_MODE_NONE },
@@ -24064,33 +24440,49 @@ namespace MiiEngine {
 	/// 初期化
 	///-------------------------------------------///
 	void PipelineManager::Initialize(DXCommon* dxCommon) {
+		/// ===GSPipeline=== ///
 		for (PipelineType type : AllPipelineTypes()) {
-
 			// Compilerの作成と初期化
 			auto compiler = std::make_unique<Compiler>();
 			compiler->Initialize(dxCommon, type);
 			compiler_[type] = std::move(compiler);
 
-			// Computeパイプラインの作成
-			if (IsComputePipeline(type)) {
-				auto CSPipeline = std::make_unique<CSPSOCommon>();
-				CSPipeline->Create(dxCommon, compiler_[type].get(), type);
+			// BlendMode毎にパイプラインを作成
+			for (BlendMode mode : AllBlendModes()) {
+
+				// ペアのキーをｓ作成
+				auto key = std::make_pair(type, mode);
+
+				// パイプラインの作成
+				auto gsPipeline = std::make_unique<GSPSOCommon>();
+				gsPipeline->Create(dxCommon, compiler_[type].get(), type, mode);
+
 				// パイプラインの追加
-				computePipelines_[type] = std::move(CSPipeline);
-			} else {
-				// BlendMode毎にパイプラインを作成
-				for (BlendMode mode : AllBlendModes()) {
+				graphicsPipelines_[key] = std::move(gsPipeline);
+			}
+		}
 
-					// ペアのキーをｓ作成
-					auto key = std::make_pair(type, mode);
+		/// ===CSPipeline=== ///
+		for (CSPipelineType type : AllCSPipelineTypes()) {
+			// CSCompilerの作成と初期化
+			auto csCompiler = std::make_unique<CSCompiler>();
+			csCompiler->Initialize(dxCommon, type);
+			// ムーブ前にカーネル名リストを取得する
+			const auto kernelNames = csCompiler->GetKernelNames();
+			csCompiler_[type] = std::move(csCompiler); // ← ここでムーブ
 
-					// パイプラインの作成
-					auto GSPipeline = std::make_unique<GSPSOCommon>();
-					GSPipeline->Create(dxCommon, compiler_[type].get(), type, mode);
+			// CSFFTOcean の場合、カーネルごとに CSPSOCommon を生成
+			for (const auto& kernelName : kernelNames) {
 
-					// パイプラインの追加
-					graphicsPipelines_[key] = std::move(GSPipeline);
-				}
+				// ペアのキーを作成
+				auto key = std::make_pair(type, kernelName);
+
+				// パイプラインの作成
+				auto csPipeline = std::make_unique<CSPSOCommon>();
+				csPipeline->Create(dxCommon, csCompiler_[type].get(), type, kernelName);
+
+				// パイプラインの追加
+				computePipelines_[key] = std::move(csPipeline);
 			}
 		}
 	}
@@ -24100,25 +24492,29 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void PipelineManager::SetPipeline(ID3D12GraphicsCommandList* commandList, PipelineType type, BlendMode mode, D3D12_PRIMITIVE_TOPOLOGY topology) {
 
-		// Computeパイプラインの場合
-		if (IsComputePipeline(type)) {
-			CSPSOCommon* CSPipeline = GetCSPipeline(type);
-			assert(CSPipeline != nullptr);
-			// PSO を設定
-			CSPipeline->SetPSO(commandList);
-		} else {
-			// Graphicsパイプラインの取得
-			GSPSOCommon* GSPipeline = GetGSPipeline(type, mode);
-			assert(GSPipeline != nullptr);
+		// Graphicsパイプラインの取得
+		GSPSOCommon* GSPipeline = GetGSPipeline(type, mode);
+		assert(GSPipeline != nullptr);
 
-			// PSO を設定
-			GSPipeline->SetPSO(commandList);
+		// PSO を設定
+		GSPipeline->SetPSO(commandList);
 
-			//プリミティブトポロジー設定
-			commandList->IASetPrimitiveTopology(topology);
-		}
+		//プリミティブトポロジー設定
+		commandList->IASetPrimitiveTopology(topology);
 	}
 
+	///-------------------------------------------/// 
+	/// CSパイプラインの登録 
+	///-------------------------------------------///
+	void PipelineManager::SetCSPipeline(ID3D12GraphicsCommandList* commandList, CSPipelineType type, const std::wstring& kernelName) {
+
+		// Computeパイプラインの取得
+		CSPSOCommon* CSPipeline = GetCSPipeline(type, kernelName);
+		assert(CSPipeline != nullptr);
+
+		// PSO を設定
+		CSPipeline->SetPSO(commandList);
+	}
 
 	///-------------------------------------------/// 
 	/// タイプとモードを取得
@@ -24135,8 +24531,9 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// CSパイプラインの取得
 	///-------------------------------------------///
-	CSPSOCommon* PipelineManager::GetCSPipeline(PipelineType type) {
-		auto it = computePipelines_.find(type);
+	CSPSOCommon* PipelineManager::GetCSPipeline(CSPipelineType type, const std::wstring& kernelName) {
+		auto key = std::make_pair(type, kernelName);
+		auto it = computePipelines_.find(key);
 		if (it != computePipelines_.end()) {
 			return it->second.get();
 		}
@@ -24154,6 +24551,7 @@ File Path: Project/Engine/System/Managers/PiplineManager.h
 #include "Engine/Graphics/Pipeline/GS/GSPSOCommon.h"
 #include "Engine/Graphics/Pipeline/CS/CSPSOCommon.h"
 #include "Engine/Graphics/Pipeline/Compiler.h"
+#include "Engine/Graphics/Pipeline/CS/CSCompiler.h"
 // c++
 #include <unordered_map>
 #include <memory>
@@ -24170,6 +24568,15 @@ namespace std {
             size_t h1 = std::hash<int>()(static_cast<int>(p.first));   // PipelineType のハッシュ値
             size_t h2 = std::hash<int>()(static_cast<int>(p.second)); // BlendMode のハッシュ値
             return h1 ^ (h2 << 1); // ハッシュ値を組み合わせる（XOR とシフト）
+        }
+    };
+
+    template <>
+    struct hash<std::pair<MiiEngine::CSPipelineType, std::wstring>> {
+        size_t operator()(const std::pair<MiiEngine::CSPipelineType, std::wstring>& p) const noexcept {
+            size_t h1 = std::hash<int>()(static_cast<int>(p.first));   // CSPipelineType のハッシュ値
+            size_t h2 = std::hash<std::wstring>()(p.second);          // std::wstring のハッシュ値
+			return h1 ^ (h2 << 1); // ハッシュ値を組み合わせる（XOR とシフト）
         }
     };
 }
@@ -24202,14 +24609,26 @@ namespace MiiEngine {
         /// <param name="topology">描画に使用するプリミティブのトポロジーを示すD3D12_PRIMITIVE_TOPOLOGY値。</param>
         void SetPipeline(ID3D12GraphicsCommandList* commandList, PipelineType type, BlendMode mode, D3D12_PRIMITIVE_TOPOLOGY topology);
 
+        /// <summary>
+        /// コマンドリストにコンピュートシェーダーパイプラインを設定します。
+        /// </summary>
+        /// <param name="commandList">パイプラインを設定する Direct3D 12 グラフィックスコマンドリスト。</param>
+        /// <param name="type">設定するコンピュートシェーダーパイプラインの種類。</param>
+        /// <param name="kernelName">設定するカーネルの名前を示す std::wstring の値。</param>
+        void SetCSPipeline(ID3D12GraphicsCommandList* commandList, CSPipelineType type, const std::wstring& kernelName);
+
     private:/// ===変数=== ///
         /// パイプラインの管理
         // Graphicsパイプライン
         std::unordered_map<std::pair<PipelineType, BlendMode>, std::unique_ptr<GSPSOCommon>> graphicsPipelines_;
         // Computeパイプライン
-        std::unordered_map<PipelineType, std::unique_ptr<CSPSOCommon>> computePipelines_;
+        std::unordered_map<std::pair<CSPipelineType, std::wstring>, std::unique_ptr<CSPSOCommon>> computePipelines_;
+
+        /// ===Compiler=== ///
         // Compilerの管理
         std::unordered_map<PipelineType, std::unique_ptr<Compiler>> compiler_;
+		// CSCompilerの管理
+		std::unordered_map<CSPipelineType, std::unique_ptr<CSCompiler>> csCompiler_;
 
     private:/// ===関数=== ///
         /// <summary>
@@ -24224,8 +24643,9 @@ namespace MiiEngine {
         /// 指定された種類の CSPSOCommon パイプラインへのポインタを取得します。
         /// </summary>
         /// <param name="type">取得するパイプラインの種類を示す PipelineType の値。</param>
+        /// <param name="kernelName">取得するカーネルの名前を示す std::wstring の値。</param>
         /// <returns>指定された種類に対応する CSPSOCommon へのポインタ。該当するパイプラインが存在しない場合は nullptr を返すことがあります。</returns>
-        CSPSOCommon* GetCSPipeline(PipelineType type);
+        CSPSOCommon* GetCSPipeline(CSPipelineType type, const std::wstring& kernelName);
     };
 }
 
@@ -25487,6 +25907,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyHitReactionState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\CS\CSCompiler.cpp" />
     <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSRootSignature.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.cpp" />
@@ -25655,6 +26076,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\UI\SpriteBaseScale.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\CS\CSCompiler.h" />
     <ClInclude Include="Engine\Camera\Base\CameraCommon.h" />
     <ClInclude Include="Engine\Collider\ColliderConcept.h" />
     <ClInclude Include="application\Game\Editor\Data\AttackData.h" />
@@ -26701,6 +27123,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     </ClCompile>
     <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp" />
     <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\CS\CSCompiler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -27282,6 +27705,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h" />
     <ClInclude Include="Engine\Camera\Base\CameraCommon.h" />
     <ClInclude Include="Engine\DataInfo\CameraData.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\CS\CSCompiler.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -31693,6 +32117,13 @@ namespace Service {
 	}
 
 	///-------------------------------------------/// 
+	/// CSPSOの設定 
+	///-------------------------------------------///
+	void Render::SetCSPSO(ID3D12GraphicsCommandList* commandList, MiiEngine::CSPipelineType type, const std::wstring& kernelName) {
+		Locator::GetPipelineManager()->SetCSPipeline(commandList, type, kernelName);
+	}
+
+	///-------------------------------------------/// 
 	/// Texture
 	///-------------------------------------------///
 	// SRVインデックス開始番号の取得
@@ -31729,6 +32160,14 @@ namespace Service {
 		/// <param name="mode">使用するブレンドモードを指定する BlendMode 列挙値。</param>
 		/// <param name="topology">プリミティブトポロジーを指定する D3D12_PRIMITIVE_TOPOLOGY 値。既定値は D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST。</param>
 		static void SetPSO(ID3D12GraphicsCommandList* commandList, MiiEngine::PipelineType type, MiiEngine::BlendMode mode, D3D12_PRIMITIVE_TOPOLOGY topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		/// <summary>
+		/// コマンドリストにコンピュートシェーダーパイプラインステートオブジェクト（CSPSO）を設定します。
+		/// </summary>
+		/// <param name="commandList">CSPSOを設定するDirect3D 12グラフィックスコマンドリスト。</param>
+		/// <param name="type">使用するコンピュートシェーダーパイプラインの種類。</param>
+		/// <param name="kernelName">実行するカーネル関数の名前。デフォルトは "main" です。</param>
+		static void SetCSPSO(ID3D12GraphicsCommandList* commandList, MiiEngine::CSPipelineType type, const std::wstring& kernelName = L"main");
 
 		/// <summary>
 		/// 指定したキーに対応するディスクリプタテーブルを、指定したルートパラメータ位置に設定します。
