@@ -9759,21 +9759,21 @@ namespace MiiEngine {
 		/// UAVテクスチャリソースの生成
 		///-------------------------------------------///
 		// u0: H0Texture
-		CreateTextureUAV(device, h0Resource_, h0UAV_, 0, N, N, DXGI_FORMAT_UNKNOWN);
+		CreateTextureUAV(device, h0Resource_, h0UAV_, 0, N, N);
 		// u1: HktTexture
-		CreateTextureUAV(device, hktResource_, hktUAV_, 1, N, N, DXGI_FORMAT_UNKNOWN);
+		CreateTextureUAV(device, hktResource_, hktUAV_, 1, N, N);
 		// u2: DxTexture
-		CreateTextureUAV(device, dxResource_, dxUAV_, 2, N, N, DXGI_FORMAT_UNKNOWN);
+		CreateTextureUAV(device, dxResource_, dxUAV_, 2, N, N);
 		// u3: DzTexture
-		CreateTextureUAV(device, dzResource_, dzUAV_, 3, N, N, DXGI_FORMAT_UNKNOWN);
+		CreateTextureUAV(device, dzResource_, dzUAV_, 3, N, N);
 		// u4: PingTexture
-		CreateTextureUAV(device, pingResource_, pingUAV_, 4, N, N, DXGI_FORMAT_UNKNOWN);
+		CreateTextureUAV(device, pingResource_, pingUAV_, 4, N, N);
 		// u5: PongTexture
-		CreateTextureUAV(device, pongResource_, pongUAV_, 5, N, N, DXGI_FORMAT_UNKNOWN);
+		CreateTextureUAV(device, pongResource_, pongUAV_, 5, N, N);
 		// u6: DisplaceMap
-		CreateTextureUAV(device, displaceResource_, displaceUAV_, 6, N, N, DXGI_FORMAT_UNKNOWN);
+		CreateTextureUAV(device, displaceResource_, displaceUAV_, 6, N, N);
 		// u7: NormalFoamMap
-		CreateTextureUAV(device, normalFoamResource_, normalFoamUAV_, 7, N, N, DXGI_FORMAT_UNKNOWN);
+		CreateTextureUAV(device, normalFoamResource_, normalFoamUAV_, 7, N, N);
 
 		///-------------------------------------------/// 
 		/// SRVインデックスの管理
@@ -10031,7 +10031,7 @@ namespace MiiEngine {
 		uint32_t width, uint32_t height, 
 		DXGI_FORMAT format) {
 
-		format;
+		HRESULT hr;
 
 		// Texture2D リソースとして作成
 		D3D12_RESOURCE_DESC texDesc{};
@@ -10040,7 +10040,7 @@ namespace MiiEngine {
 		texDesc.Height = height;
 		texDesc.DepthOrArraySize = 1;
 		texDesc.MipLevels = 1;
-		texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; // RWTexture2D<float4>
+		texDesc.Format = format; // RWTexture2D<float4>
 		texDesc.SampleDesc.Count = 1;
 		texDesc.SampleDesc.Quality = 0;
 		texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
@@ -10051,7 +10051,7 @@ namespace MiiEngine {
 
 		// Texture2Dリソースを直接作成
 		Microsoft::WRL::ComPtr<ID3D12Resource> resource;
-		HRESULT hr = device->CreateCommittedResource(
+		hr = device->CreateCommittedResource(
 			&heapProps,
 			D3D12_HEAP_FLAG_NONE,
 			&texDesc,
@@ -43570,7 +43570,7 @@ void GroundOcean::Initialize() {
 
 	// FFTオーシャンの初期化
 	fftOcean_ = std::make_unique<MiiEngine::FFTOceanGenerator>();
-	fftOcean_->Initialize(512);
+	fftOcean_->Initialize(256);
 	fftOcean_->SetTranslate({ 0.0f, -30.0f, 0.0f });
 	fftOcean_->SetScale({ 2000.0f, 1.0f, 2000.0f });
 
