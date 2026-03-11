@@ -103,10 +103,17 @@
 └── └── └── └── ├── UAV.cpp
 └── └── └── └── └── UAV.h
 └── └── └── ├── Ocean/
-└── └── └── └── ├── Ocean.cpp
-└── └── └── └── ├── Ocean.h
+└── └── └── └── ├── FFT/
+└── └── └── └── └── ├── FFTOceanBase.cpp
+└── └── └── └── └── ├── FFTOceanBase.h
+└── └── └── └── └── ├── FFTOceanCompute.cpp
+└── └── └── └── └── ├── FFTOceanCompute.h
+└── └── └── └── └── ├── FFTOceanGenerator.cpp
+└── └── └── └── └── └── FFTOceanGenerator.h
 └── └── └── └── ├── OceanCommon.cpp
 └── └── └── └── ├── OceanCommon.h
+└── └── └── └── ├── OceanGenerator.cpp
+└── └── └── └── ├── OceanGenerator.h
 └── └── └── └── ├── OceanWaveCompute.cpp
 └── └── └── └── └── OceanWaveCompute.h
 └── └── └── ├── OffScreen/
@@ -156,11 +163,11 @@
 └── └── └──     └── ├── CSPSOCommon.h
 └── └── └──     └── ├── CSRootSignature.cpp
 └── └── └──     └── └── CSRootSignature.h
-└── └── └──     ├── Compiler.cpp
-└── └── └──     ├── Compiler.h
 └── └── └──     ├── GS/
 └── └── └──     └── ├── BlendState.cpp
 └── └── └──     └── ├── BlendState.h
+└── └── └──     └── ├── Compiler.cpp
+└── └── └──     └── ├── Compiler.h
 └── └── └──     └── ├── DepthStencil.cpp
 └── └── └──     └── ├── DepthStencil.h
 └── └── └──     └── ├── GSPSOCommon.cpp
@@ -308,6 +315,7 @@
 └── └──     ├── Animation/
 └── └──     ├── DDS/
 └── └──     ├── GameUI/
+└── └──     ├── Ocean/
 └── └──     ├── OffScreen/
 └── └──     ├── OptionUI/
 └── └──     ├── Particle/
@@ -4921,13 +4929,14 @@ namespace MiiEngine {
 		ID3D12Device* device,
 		size_t sizeInBytes,
 		DXGI_FORMAT format,
-		D3D12_RESOURCE_FLAGS flags) {
+		D3D12_RESOURCE_FLAGS flags,
+		D3D12_HEAP_TYPE heapType) {
 
 		HRESULT hr;
 
 		// リソース用のヒープの設定
 		D3D12_HEAP_PROPERTIES uploadHeapProperties{};
-		uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;  // UploadHeapを使う
+		uploadHeapProperties.Type = heapType;  // UploadHeapを使う
 
 		// リソースの設定
 		D3D12_RESOURCE_DESC resourceDesc{};
@@ -4950,13 +4959,19 @@ namespace MiiEngine {
 		// バッファの場合はこれにする決まり
 		resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
+		// ヒープタイプに応じて初期状態を切り替える
+		D3D12_RESOURCE_STATES initialState =
+			(heapType == D3D12_HEAP_TYPE_UPLOAD)
+			? D3D12_RESOURCE_STATE_GENERIC_READ
+			: D3D12_RESOURCE_STATE_COMMON;
+
 		// 実際に頂点リソースを作る
 		ComPtr<ID3D12Resource> bufferResource = nullptr;
 		hr = device->CreateCommittedResource(
 			&uploadHeapProperties,
 			D3D12_HEAP_FLAG_NONE,
 			&resourceDesc,
-			D3D12_RESOURCE_STATE_GENERIC_READ,
+			initialState,
 			nullptr,
 			IID_PPV_ARGS(&bufferResource)
 		);
@@ -5000,7 +5015,9 @@ namespace MiiEngine {
 		ID3D12Device* device,
 		size_t sizeInBytes,
 		DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN,
-		D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE);
+		D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE,
+		D3D12_HEAP_TYPE heapType = D3D12_HEAP_TYPE_UPLOAD
+	);
 }
 
 ============================================================
@@ -5308,6 +5325,7 @@ namespace MiiEngine {
 		float amplitude;         // 波の振幅
 		float lambda;            // 波長
 		float foamThreshold;     // 泡の閾値
+        Vector3 padding;
     };
 
     ///-------------------------------------------/// 
@@ -5317,6 +5335,8 @@ namespace MiiEngine {
 		uint32_t stages;         // バタフライアルゴリズムのステージ数
 		uint32_t pingPong;       // ピンポンバッファの切り替えフラグ
 		uint32_t direction;      // バタフライアルゴリズムの方向（0: 水平, 1: 垂直）
+		uint32_t inputSource;    // インプットソース（0: 初期スペクトル, 1: 前のステージの出力）
+        uint32_t bfPad;
     };
 
     ///=====================================================/// 
@@ -5335,7 +5355,9 @@ namespace MiiEngine {
         Vector3 foamColor; // 泡の色
         float foamSoftness; // 泡のエッジの柔らかさ
         Vector3 skyColorHorizon; // 地平線の空の色
+        float pad0;
         Vector3 skyColorZenith; // 天頂の空の色
+        float pad1;
     };
 
     ///=====================================================/// 
@@ -5349,6 +5371,15 @@ namespace MiiEngine {
         Vector3 cameraPos;
         float size;
         float tileScale;
+        Vector3 cbPad;
+    };
+
+    ///-------------------------------------------/// 
+    /// OceanGridVertex
+    ///-------------------------------------------///
+    struct OceanGridVertex {
+        Vector3 position; // POSITION (x, 0, z)
+        Vector2 texCoord; // TEXCOORD0
     };
 }
 
@@ -9241,8 +9272,8 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// リソースの生成
 	///-------------------------------------------///
-	void BufferBase::Create(ID3D12Device* device, size_t sizeInBytes, DXGI_FORMAT format, D3D12_RESOURCE_FLAGS flags) {
-		buffer_ = CreateBufferResourceComPtr(device, sizeInBytes, format, flags);
+	void BufferBase::Create(ID3D12Device* device, size_t sizeInBytes, DXGI_FORMAT format, D3D12_RESOURCE_FLAGS flags, D3D12_HEAP_TYPE heapType) {
+		buffer_ = CreateBufferResourceComPtr(device, sizeInBytes, format, flags, heapType);
 	}
 
 	///-------------------------------------------/// 
@@ -9277,7 +9308,12 @@ namespace MiiEngine {
 		/// </summary>
 		/// <param name="device">リソースの作成に使用する ID3D12Device へのポインタ。</param>
 		/// <param name="sizeInBytes">作成するリソースのサイズ（バイト単位）。</param>
-		void Create(ID3D12Device* device, size_t sizeInBytes, DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE);
+		void Create(
+			ID3D12Device* device, 
+			size_t sizeInBytes, 
+			DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN, 
+			D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE, 
+			D3D12_HEAP_TYPE heapType = D3D12_HEAP_TYPE_UPLOAD);
 
 	public: /// ===設定=== ///
 
@@ -9323,6 +9359,23 @@ namespace MiiEngine {
 	}
 
 	///-------------------------------------------/// 
+	/// 2DテクスチャとしてUAVを生成する処理
+	///-------------------------------------------///
+	void UAV::CreateAsTexture2D(ID3D12Device* device, ID3D12Resource* targetResource, DXGI_FORMAT format, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle) {
+		// リソースを保存
+		resource_ = targetResource;
+
+		// デスクの設定
+		desc_.Format = format;
+		desc_.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+		desc_.Texture2D.MipSlice = 0;
+		desc_.Texture2D.PlaneSlice = 0;
+
+		// UAVの作成
+		device->CreateUnorderedAccessView(resource_, nullptr, &desc_, cpuHandle);
+	}
+
+	///-------------------------------------------/// 
 	/// Getter
 	///-------------------------------------------///
 	D3D12_UNORDERED_ACCESS_VIEW_DESC UAV::GetUAVDesc() const { return desc_; }
@@ -9332,6 +9385,7 @@ namespace MiiEngine {
 ============================================================
 File Path: Project/Engine/Graphics/Base/UAV.h
 ============================================================
+#pragma once
 /// ===Include=== ///
 // Engine
 #include "Engine/Core/ComPtr.h"
@@ -9358,6 +9412,19 @@ namespace MiiEngine {
 		void Create(ID3D12Device* device, ID3D12Resource* targetResorce, UINT numElements, UINT structureByteStride, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle);
 
 		/// <summary>
+		/// 2Dテクスチャとしてシェーダーリソースビューを作成します。
+		/// </summary>
+		/// <param name="device">ビューの作成に使用するD3D12デバイス。</param>
+		/// <param name="targetResource">ビューが参照するリソース。</param>
+		/// <param name="format">テクスチャのピクセル形式。</param>
+		/// <param name="cpuHandle">ビューを作成する記述子ヒープ内のCPU記述子ハンドル。</param>
+		void CreateAsTexture2D(
+			ID3D12Device* device,
+			ID3D12Resource* targetResource,
+			DXGI_FORMAT format,
+			D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle);
+
+		/// <summary>
 		/// UAVの取得
 		/// </summary>
 		/// <returns></returns>
@@ -9378,613 +9445,1262 @@ namespace MiiEngine {
 }
 
 ============================================================
-File Path: Project/Engine/Graphics/Ocean/Ocean.cpp
+File Path: Project/Engine/Graphics/Ocean/FFT/FFTOceanBase.cpp
 ============================================================
-#include "Ocean.h"
-// c++
-#include <cassert>
+#include "FFTOceanBase.h"
+// CameraCommon
+#include "Engine/Camera/Base/CameraCommon.h"
+// SRVManager
+#include "Engine/System/Managers/SRVManager.h"
 // Service
-#include "Service/GraphicsResourceGetter.h"
+#include "Service/Locator.h"
 #include "Service/Render.h"
-#include "Service/DeltaTime.h"
-// Math
-#include "Math/sMath.h"
-#include "Math/MatrixMath.h"
-
-#ifdef USE_IMGUI
-#include <imgui.h>
-#endif
+// C++
+#include <cassert>
 
 namespace MiiEngine {
-    ///-------------------------------------------/// 
-    /// デストラクタ
-    ///-------------------------------------------///
-    Ocean::~Ocean() {
-        vertex_.reset();
-        index_.reset();
-        material_.reset();
-        wvp_.reset();
-        directionalLight_.reset();
-        camera3D_.reset();
-        oceanColorBuffer_.reset();
-        waveCompute_.reset();
-    }
-
-    ///-------------------------------------------/// 
-    /// Setter
-    ///-------------------------------------------///
-    // 波情報の設定
-    void Ocean::SetWaveInfo(int waveIndex, const Vector3& direction, float amplitude, float length, float speed) {
-        if (waveIndex >= 0 && waveIndex < kWaveCount_) {
-            waveInfos_[waveIndex].distance = direction;
-            waveInfos_[waveIndex].amplitude = amplitude;
-            waveInfos_[waveIndex].length = length;
-            waveInfos_[waveIndex].speed = speed;
-        }
-    }
-    // 色情報の設定
-    void Ocean::SetColorInfo(const OceanColorInfo& colorInfo) {
-        colorInfo_ = colorInfo;
-    }
-    // 波紋パラメータの設定
-    void Ocean::SetRippleSpeed(float speed) { rippleSpeed_ = speed; }
-    void Ocean::SetRippleDecay(float decay) { rippleDecay_ = decay; }
-
-    ///-------------------------------------------/// 
-    /// 初期化
-    ///-------------------------------------------///
-    void Ocean::Initialize(int gridSize) {
-        ID3D12Device* device = Service::GraphicsResourceGetter::GetDXDevice();
-
-        /// ===生成=== ///
-        vertex_ = std::make_unique<BufferBase>();
-        index_ = std::make_unique<BufferBase>();
-        material_ = std::make_unique<Material3D>();
-        wvp_ = std::make_unique<Transform3D>();
-        camera3D_ = std::make_unique<BufferBase>();
-        directionalLight_ = std::make_unique<BufferBase>();
-        oceanColorBuffer_ = std::make_unique<BufferBase>();
-        waveCompute_ = std::make_unique<OceanWaveCompute>();
-
-        /// ===グリッドサイズの設定=== ///
-        gridSize_ = gridSize;
-        vertexCount_ = (gridSize_ + 1) * (gridSize_ + 1);
-        indexCount_ = gridSize_ * gridSize_ * 6;
-
-        /// ===worldTransform=== ///
-        worldTransform_ = { { 0.5f, 1.0f, 0.5f }, { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
-        uvTransform_ = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
-
-        /// ===WaveCompute初期化=== ///
-        waveCompute_->Initialize(device, gridSize_);
-
-        /// ===vertex=== ///
-        // Compute Shaderの出力サイズに合わせる（WaveVertexDataと同じサイズ）
-        vertex_->SetBuffer(waveCompute_->GetOutputBuffer());
-        vertexBufferView_.BufferLocation = vertex_->GetBuffer()->GetGPUVirtualAddress();
-        vertexBufferView_.SizeInBytes = sizeof(VertexData3D) * vertexCount_;
-        vertexBufferView_.StrideInBytes = sizeof(VertexData3D);
-        //CreateGridMesh(); // 初期状態（平面）を作成
-
-        vertexBufferView_.BufferLocation = vertex_->GetBuffer()->GetGPUVirtualAddress();
-        vertexBufferView_.SizeInBytes = sizeof(VertexData3D) * vertexCount_;
-        vertexBufferView_.StrideInBytes = sizeof(VertexData3D);
-
-        /// ===index=== ///
-        index_->Create(device, sizeof(uint32_t) * indexCount_);
-        index_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&indexData_));
-
-        int idx = 0;
-        for (int z = 0; z < gridSize_; ++z) {
-            for (int x = 0; x < gridSize_; ++x) {
-                int topLeft = z * (gridSize_ + 1) + x;
-                int topRight = topLeft + 1;
-                int bottomLeft = (z + 1) * (gridSize_ + 1) + x;
-                int bottomRight = bottomLeft + 1;
-
-                indexData_[idx++] = topLeft;
-                indexData_[idx++] = bottomLeft;
-                indexData_[idx++] = topRight;
-                indexData_[idx++] = topRight;
-                indexData_[idx++] = bottomLeft;
-                indexData_[idx++] = bottomRight;
-            }
-        }
-
-        indexBufferView_.BufferLocation = index_->GetBuffer()->GetGPUVirtualAddress();
-        indexBufferView_.SizeInBytes = sizeof(uint32_t) * indexCount_;
-        indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
-
-        /// ===OceanCommon=== ///
-        OceanCommon::Initialize(device);
-
-        /// ===波情報の初期化=== ///
-        InitializeWaveInfos();
-
-        /// ===波紋バッファの初期化=== ///
-        for (int i = 0; i < 8; ++i) {
-            ripples_[i].isActive = false;
-            ripples_[i].position = { 0.0f, 0.0f };
-            ripples_[i].startTime = 0.0f;
-            ripples_[i].intensity = 0.0f;
-            ripples_[i].duration = 3.0f;
-            ripples_[i].maxRadius = 20.0f;
-            ripples_[i].speed = 4.0f;
-            ripples_[i].priority = 0;
-        }
-
-        rippleBuffer_.activeCount = 0;
-        rippleBuffer_.currentTime = 0.0f;
-        rippleBuffer_.rippleSpeed = rippleSpeed_;
-        rippleBuffer_.rippleDecay = rippleDecay_;
-
-        // 波紋データの初期化
-        for (int i = 0; i < 8; ++i) {
-            rippleBuffer_.ripples[i].position = { 0.0f, 0.0f };
-            rippleBuffer_.ripples[i].startTime = 0.0f;
-            rippleBuffer_.ripples[i].intensity = 0.0f;
-            rippleBuffer_.ripples[i].duration = 0.0f;
-            rippleBuffer_.ripples[i].maxRadius = 0.0f;
-            rippleBuffer_.ripples[i].speed = 0.0f;
-            rippleBuffer_.ripples[i].padding = 0.0f;
-        }
-
-        nextPriority_ = 0;
-
-        /// ===OceanColorBuffer=== ///
-        oceanColorBuffer_->Create(device, sizeof(OceanColorInfo));
-        oceanColorBuffer_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&oceanColorData_));
-        *oceanColorData_ = colorInfo_;
-    }
-
-    ///-------------------------------------------/// 
-    /// 波情報の初期化（12個）
-    ///-------------------------------------------///
-    void Ocean::InitializeWaveInfos() {
-
-        // 最初の3つは従来の波
-        waveInfos_[0] = { { 0.0f, 0.0f, 0.0f }, 1.308f, 10.033f, 2.187f, 0.0f, 0.0f };
-        waveInfos_[1] = { { 0.0f, 0.0f, 0.0f }, 0.056f, 7.369f, 2.320f, 0.0f, 0.0f };
-        waveInfos_[2] = { { 0.0f, 0.0f, 0.0f }, 0.879f, 4.355f, 2.098f, 0.0f, 0.0f };
-    }
-
-    ///-------------------------------------------/// 
-    /// 更新
-    ///-------------------------------------------///
-    void Ocean::Update() {
-        currentTime_ += Service::DeltaTime::GetDeltaTime();
-
-        /// ===時間の更新=== ///
-        for (int i = 0; i < kWaveCount_; ++i) {
-            waveInfos_[i].time = currentTime_;
-        }
-
-        /// ===波紋の更新=== ///
-        UpdateRipples();
-
-        /// ===WorldMatrixの更新=== ///
-        waveCompute_->UpdateWorldMatrix(Math::MakeAffineQuaternionMatrix(worldTransform_.scale, worldTransform_.rotate, worldTransform_.translate));
-
-        /// ===Compute Shaderで波を計算=== ///
-        waveCompute_->UpdateWaveInfos(waveInfos_);
-        waveCompute_->UpdateRippleBuffer(rippleBuffer_);
-
-        /// ===データの書き込み=== ///
-        OceanCommon::Update();
-        ColorDataWrite();
-    }
-
-    ///-------------------------------------------/// 
-    /// 描画
-    ///-------------------------------------------///
-    void Ocean::Draw(BlendMode mode) {
-        ID3D12GraphicsCommandList* commandList = Service::GraphicsResourceGetter::GetDXCommandList();
-
-        // Compute PSOとRoot Signatureを設定
-        Service::Render::SetCSPSO(commandList, CSPipelineType::Ocean);
-        // Compute Shaderを実行
-        waveCompute_->Dispatch(commandList);
-        // UAV -> Vertex Bufferへの状態遷移
-        D3D12_RESOURCE_BARRIER barrier = {};
-        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrier.Transition.pResource = vertex_->GetBuffer();
-        barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-        barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-        commandList->ResourceBarrier(1, &barrier);
-
-        // Graphics PSOを設定
-        Service::Render::SetPSO(commandList, PipelineType::Ocean, mode);
-
-        commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
-        commandList->IASetIndexBuffer(&indexBufferView_);
-
-        // バッファの設定
-        commandList->SetGraphicsRootConstantBufferView(0, material_->GetBuffer()->GetGPUVirtualAddress());
-        commandList->SetGraphicsRootConstantBufferView(1, wvp_->GetBuffer()->GetGPUVirtualAddress());
-        commandList->SetGraphicsRootConstantBufferView(2, directionalLight_->GetBuffer()->GetGPUVirtualAddress());
-        commandList->SetGraphicsRootConstantBufferView(3, camera3D_->GetBuffer()->GetGPUVirtualAddress());
-        // OceanColorBufferの設定
-        commandList->SetGraphicsRootConstantBufferView(4, oceanColorBuffer_->GetBuffer()->GetGPUVirtualAddress());
-
-        commandList->DrawIndexedInstanced(indexCount_, 1, 0, 0, 0);
-
-        // 描画後、次のフレームのために VERTEX_AND_CONSTANT_BUFFER -> COMMON へ戻す
-        D3D12_RESOURCE_BARRIER barrierToCommon = {};
-        barrierToCommon.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrierToCommon.Transition.pResource = vertex_->GetBuffer();
-        barrierToCommon.Transition.StateBefore = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-        barrierToCommon.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
-        barrierToCommon.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-        commandList->ResourceBarrier(1, &barrierToCommon);
-    }
-
-    ///-------------------------------------------/// 
-    /// ImGui
-    ///-------------------------------------------///
-    void Ocean::ShowImGui() {
-#ifdef USE_IMGUI
-        ImGui::Begin("海洋シェーダー");
-
-        /// ===Transform情報=== ///
-        if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-            ImGui::DragFloat3("Translate", &worldTransform_.translate.x, 0.1f);
-            ImGui::DragFloat4("Rotate", &worldTransform_.rotate.x, 0.01f);
-            ImGui::DragFloat3("Scale", &worldTransform_.scale.x, 0.1f);
-        }
-
-        /// ===グリッド情報=== ///
-        if (ImGui::CollapsingHeader("グリッド情報")) {
-            ImGui::Text("グリッドサイズ : %d x %d", gridSize_, gridSize_);
-            ImGui::Text("Vertex数 : %d", vertexCount_);
-            ImGui::Text("Index数 : %d", indexCount_);
-            ImGui::Text("Triangle数 : %d", indexCount_ / 3);
-        }
-
-        /// ===波の情報=== ///
-        if (ImGui::CollapsingHeader("波のパラメータ", ImGuiTreeNodeFlags_DefaultOpen)) {
-            for (int i = 0; i < kWaveCount_; ++i) {
-                ImGui::PushID(i);
-                if (ImGui::TreeNode("波", "波 %d", i)) {
-                    ImGui::Text("波の方向 : (%.2f, %.2f, %.2f)", waveInfos_[i].distance.x, waveInfos_[i].distance.y, waveInfos_[i].distance.z);
-                    ImGui::Text("波の振幅 : %.2f", waveInfos_[i].amplitude);
-                    ImGui::Text("波の波長 : %.2f", waveInfos_[i].length);
-                    ImGui::Text("波の速度 : %.2f", waveInfos_[i].speed);
-
-                    ImGui::Separator();
-
-                    ImGui::DragFloat3("方向", &waveInfos_[i].distance.x, 0.01f, -1.0f, 1.0f);
-                    ImGui::SliderFloat("振幅", &waveInfos_[i].amplitude, 0.0f, 2.0f);
-                    ImGui::SliderFloat("波長", &waveInfos_[i].length, 1.0f, 30.0f);
-                    ImGui::SliderFloat("速度", &waveInfos_[i].speed, 0.5f, 10.0f);
-
-                    ImGui::TreePop();
-                }
-                ImGui::PopID();
-            }
-        }
-
-        /// ===波紋情報=== ///
-        if (ImGui::CollapsingHeader("波紋情報", ImGuiTreeNodeFlags_DefaultOpen)) {
-            ImGui::Text("Active Ripples: %d / 8", rippleBuffer_.activeCount);
-
-            ImGui::Text("波紋の速度 : %.2f", rippleSpeed_);
-            ImGui::Text("波紋の減衰 : %.2f", rippleDecay_);
-
-            if (ImGui::SliderFloat("速度", &rippleSpeed_, 1.0f, 10.0f)) {
-                rippleBuffer_.rippleSpeed = rippleSpeed_;
-            }
-            if (ImGui::SliderFloat("減衰", &rippleDecay_, 0.1f, 3.0f)) {
-                rippleBuffer_.rippleDecay = rippleDecay_;
-            }
-            if (ImGui::Button("全ての波紋をクリア")) {
-                ClearRipples();
-            }
-        }
-
-        /// ===色情報=== ///
-        if (ImGui::CollapsingHeader("色")) {
-            ImGui::ColorEdit3("海面の基本色", &colorInfo_.seaBase.x);
-            ImGui::ColorEdit3("浅瀬の色", &colorInfo_.seaShallow.x);
-            ImGui::ColorEdit3("空の色", &colorInfo_.sky.x);
-            ImGui::ColorEdit3("深海の色", &colorInfo_.deepWater.x);
-            ImGui::SliderFloat("基本色の強度", &colorInfo_.baseStrength, 0.0f, 2.0f);
-            ImGui::SliderFloat("水の透明度", &colorInfo_.waterClarity, 0.0f, 1.0f);
-            ImGui::SliderFloat("泡の閾値", &colorInfo_.foamThreshold, 0.0f, 3.0f);
-        }
-
-        /// ===ライト情報=== ///
-        if (ImGui::CollapsingHeader("ライト情報")) {
-            ImGui::Text("光沢度: %.2f", light_.shininess);
-            ImGui::DragFloat("光沢度", &light_.shininess, 0.1f);
-            ImGui::ColorEdit4("ライトの色", &light_.directional.color.x);
-            ImGui::SliderFloat3("方向", &light_.directional.direction.x, -1.0f, 1.0f);
-            ImGui::SliderFloat("強度", &light_.directional.intensity, 0.0f, 5.0f);
-        }
-
-        // テスト機能
-        if (ImGui::CollapsingHeader("テスト")) {
-            static float testIntensity = 1.0f;
-            static float testPosX = 0.0f;
-            static float testPosZ = 0.0f;
-
-            ImGui::SliderFloat("テスト強度", &testIntensity, 0.1f, 10.0f);
-            ImGui::SliderFloat("テスト座標X", &testPosX, -50.0f, 50.0f);
-            ImGui::SliderFloat("テスト座標Z", &testPosZ, -50.0f, 50.0f);
-
-            if (ImGui::Button("波紋の追加")) {
-                AddCircularRipple({ testPosX, 0.0f, testPosZ }, 3.0f, testIntensity);
-            }
-            ImGui::SameLine();
-
-            if (ImGui::Button("ランダムな位置に追加")) {
-                float randX = static_cast<float>(rand() % 100 - 50);
-                float randZ = static_cast<float>(rand() % 100 - 50);
-                float randIntensity = 0.5f + (rand() % 100) / 100.0f * 1.5f;
-                AddCircularRipple({ randX, 0.0f, randZ }, 3.0f, randIntensity);
-            }
-        }
-
-        ImGui::End();
-#endif
-    }
-
-    ///-------------------------------------------/// 
-    /// グリッドメッシュの生成
-    ///-------------------------------------------///
-    void Ocean::CreateGridMesh() {
-        float gridWidth = 100.0f;
-        float gridDepth = 100.0f;
-        float step = gridWidth / gridSize_;
-
-        int vertexIndex = 0;
-        for (int i = 0; i <= gridSize_; i++) {
-            for (int j = 0; j <= gridSize_; j++) {
-                float x = -gridWidth * 0.5f + j * step;
-                float z = -gridDepth * 0.5f + i * step;
-                float u = (float)j / gridSize_;
-                float v = (float)i / gridSize_;
-
-                vertexData_[vertexIndex] = {
-                    {x, 0.0f, z, 1.0f},
-                    {u, v},
-                    {0.0f, 1.0f, 0.0f}
-                };
-                vertexIndex++;
-            }
-        }
-    }
-
-    ///-------------------------------------------/// 
-    /// ColorDataの書き込み
-    ///-------------------------------------------///
-    void Ocean::ColorDataWrite() {
-        *oceanColorData_ = colorInfo_;
-    }
-
-    ///-------------------------------------------/// 
-    /// 波紋の更新
-    ///-------------------------------------------///
-    void Ocean::UpdateRipples() {
-        int activeCount = 0;
-
-        for (int i = 0; i < 8; ++i) {
-            if (ripples_[i].isActive) {
-                float elapsed = currentTime_ - ripples_[i].startTime;
-
-                if (elapsed > ripples_[i].duration) {
-                    ripples_[i].isActive = false;
-                } else {
-                    rippleBuffer_.ripples[activeCount].position = ripples_[i].position;
-                    rippleBuffer_.ripples[activeCount].startTime = ripples_[i].startTime;
-                    rippleBuffer_.ripples[activeCount].intensity = ripples_[i].intensity;
-                    rippleBuffer_.ripples[activeCount].duration = ripples_[i].duration;
-                    rippleBuffer_.ripples[activeCount].maxRadius = ripples_[i].maxRadius;
-                    rippleBuffer_.ripples[activeCount].speed = ripples_[i].speed;
-                    activeCount++;
-                }
-            }
-        }
-
-        rippleBuffer_.activeCount = activeCount;
-        rippleBuffer_.currentTime = currentTime_;
-        rippleBuffer_.rippleSpeed = rippleSpeed_;
-        rippleBuffer_.rippleDecay = rippleDecay_;
-    }
-
-    ///-------------------------------------------/// 
-    /// 波紋の追加
-    ///-------------------------------------------///
-    void Ocean::AddCircularRipple(const Vector3& center, float duration, float intensity, float maxRadius) {
-        int targetSlot = -1;
-
-        for (int i = 0; i < 8; ++i) {
-            if (!ripples_[i].isActive) {
-                targetSlot = i;
-                break;
-            }
-        }
-
-        if (targetSlot == -1) {
-            int lowestPriority = ripples_[0].priority;
-            targetSlot = 0;
-
-            for (int i = 1; i < 8; ++i) {
-                if (ripples_[i].priority < lowestPriority) {
-                    lowestPriority = ripples_[i].priority;
-                    targetSlot = i;
-                }
-            }
-        }
-
-        if (targetSlot >= 0 && targetSlot < 8) {
-            ripples_[targetSlot].position = { center.x, center.z };
-            ripples_[targetSlot].startTime = currentTime_;
-            ripples_[targetSlot].intensity = intensity;
-            ripples_[targetSlot].duration = duration;
-            ripples_[targetSlot].maxRadius = maxRadius;
-            ripples_[targetSlot].speed = maxRadius / duration;
-            ripples_[targetSlot].priority = nextPriority_++;
-            ripples_[targetSlot].isActive = true;
-        }
-    }
-
-    ///-------------------------------------------/// 
-    /// 波紋のクリア
-    ///-------------------------------------------///
-    void Ocean::ClearRipples() {
-        for (int i = 0; i < 8; ++i) {
-            ripples_[i].isActive = false;
-        }
-        rippleBuffer_.activeCount = 0;
-        hitRecords_.clear();
-    }
+	///-------------------------------------------/// 
+	/// デストラクタ
+	///-------------------------------------------///
+	FFTOceanBase::~FFTOceanBase() {}
+
+	///-------------------------------------------/// 
+	/// 初期化
+	///-------------------------------------------///
+	void FFTOceanBase::Initialize(ID3D12Device* device) {
+		assert(device);
+
+		srvManager_ = Service::Locator::GetSRVManager();
+
+		// OceanRenderCBバッファ生成
+		oceanBuffer_ = std::make_unique<BufferBase>();
+		oceanBuffer_->Create(device, sizeof(OceanRenderCB));
+
+		void* oceanMapped = nullptr;
+		oceanBuffer_->GetBuffer()->Map(0, nullptr, &oceanMapped);
+		oceanRenderCBData_ = static_cast<OceanRenderCB*>(oceanMapped);
+
+		// TransformCBバッファ生成
+		transformBuffer_ = std::make_unique<BufferBase>();
+		transformBuffer_->Create(device, sizeof(TransformCB));
+
+		void* transformMapped = nullptr;
+		transformBuffer_->GetBuffer()->Map(0, nullptr, &transformMapped);
+		transformCBData_ = static_cast<TransformCB*>(transformMapped);
+
+		// 初期値書き込み
+		WriteOceanRenderCB();
+	}
+
+	///-------------------------------------------/// 
+	/// 更新
+	///-------------------------------------------///
+	void FFTOceanBase::Update() {
+		WriteOceanRenderCB();
+		WriteTransformCB();
+	}
+
+	///-------------------------------------------/// 
+	/// バインド
+	///-------------------------------------------///
+	void FFTOceanBase::Bind(ID3D12GraphicsCommandList* commandList) {
+		assert(commandList);
+		assert(oceanBuffer_);
+		assert(transformBuffer_);
+
+		// SRVManagerからヒープを取得, 設定
+		ID3D12DescriptorHeap* heaps[] = { srvManager_->GetDescriptorHeap() };
+		commandList->SetDescriptorHeaps(1, heaps);
+
+		// TransformCB（VS）
+		commandList->SetGraphicsRootConstantBufferView(0, transformBuffer_->GetBuffer()->GetGPUVirtualAddress());
+		// OceanRenderCB（PS）
+		commandList->SetGraphicsRootConstantBufferView(1, oceanBuffer_->GetBuffer()->GetGPUVirtualAddress());
+		// テクスチャ３つ(t0~t1)は、FFTOceanRendererでバインド
+		// [2] t0:DisplaceMap, t1:NormalFoamMap（CSの出力をSRVとして渡す）
+		commandList->SetGraphicsRootDescriptorTable(2, srvManager_->GetGPUDescriptorHandle(srvDisplaceIndex_));
+		// [3] t2:FoamTexture（通常テクスチャ）
+		Service::Render::SetGraphicsRootDescriptorTable(commandList, 3, foamTextureName_);
+	}
+
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	// OceanRenderCBの取得
+	OceanRenderCB& FFTOceanBase::GetOceanRenderCB() {return oceanRenderCB_;}
+	// TileScaleの取得
+	float FFTOceanBase::GetTileScale() const {return tileScale_;}
+	// Sizeの取得
+	float FFTOceanBase::GetSize() const { return size_; }
+
+	///-------------------------------------------/// 
+	/// Setter
+	///-------------------------------------------///
+	// Cameraの設定
+	void FFTOceanBase::SetCamera(CameraCommon* camera) {camera_ = camera;}
+	// OceanRenderCBの設定
+	void FFTOceanBase::SetOceanRenderCB(const OceanRenderCB& data) {oceanRenderCB_ = data;}
+	// ワールド行列の設定
+	void FFTOceanBase::SetWorldMatrix(const Matrix4x4& world) {worldMatrix_ = world;}
+	// タイルスケールの設定
+	void FFTOceanBase::SetTileScale(float tileScale) {tileScale_ = tileScale;}
+	// サイズの設定
+	void FFTOceanBase::SetSize(float size) {size_ = size;}
+	// CS側のSRVインデックスを受け取る
+	void FFTOceanBase::SetDisplaceSRVIndex(uint32_t index) { srvDisplaceIndex_ = index; }
+	// CS側のSRVインデックスを受け取る
+	void FFTOceanBase::SetNormalFoamSRVIndex(uint32_t index) { srvNormalFoamIndex_ = index; }
+	// 泡テクスチャ名の設定
+	void FFTOceanBase::SetFoamTextureName(const std::string& name) { foamTextureName_ = name; }
+
+	///-------------------------------------------/// 
+	/// OceanRenderCBの書き込み処理
+	///-------------------------------------------///
+	void FFTOceanBase::WriteOceanRenderCB() {
+		if (oceanRenderCBData_) {
+			*oceanRenderCBData_ = oceanRenderCB_;
+		}
+	}
+
+	///-------------------------------------------/// 
+	/// TransformCBの書き込み処理
+	///-------------------------------------------///
+	void FFTOceanBase::WriteTransformCB() {
+		if (!transformCBData_ || !camera_) {
+			return;
+		}
+		transformCBData_->world = worldMatrix_;
+		transformCBData_->view = camera_->GetViewMatrix();
+		transformCBData_->projection = camera_->GetProjectionMatrix();
+		transformCBData_->cameraPos = camera_->GetTranslate();
+		transformCBData_->size = size_;
+		transformCBData_->tileScale = tileScale_;
+	}
 }
 
+
 ============================================================
-File Path: Project/Engine/Graphics/Ocean/Ocean.h
+File Path: Project/Engine/Graphics/Ocean/FFT/FFTOceanBase.h
 ============================================================
 #pragma once
-/// ===Include=== ///
-// buffer
+/// ===include=== ///
 #include "Engine/Graphics/Base/BufferBase.h"
-// Common
-#include "OceanCommon.h"
-// Wave Compute
-#include "OceanWaveCompute.h"
-// Pipeline
-#include "Engine/DataInfo/PipelineStateObjectType.h"
-// Data
 #include "Engine/DataInfo/OceanData.h"
+#include "Math/Matrix4x4.h"
 // c++
-#include <vector>
-#include <array>
-#include <algorithm>
+#include <memory>
+#include <d3d12.h>
 
 namespace MiiEngine {
-    ///=====================================================/// 
-    /// Ocean
-    ///=====================================================///
-    class Ocean : public OceanCommon {
-    public:
-        Ocean() = default;
-        ~Ocean();
+	/// ===前方宣言=== ///
+	class CameraCommon;
+	class SRVManager;
 
-        /// <summary>
-        /// 初期化処理
-        /// </summary>
-        /// <param name="gridSize">グリッドのサイズ（縦横の分割数）</param>
-        void Initialize(int gridSize);
+	///=====================================================/// 
+	/// FFTOceanBase
+	///=====================================================///
+	class FFTOceanBase {
+	public:
 
-        /// <summary>
-        /// 更新処理
-        /// </summary>
-        void Update();
+		FFTOceanBase() = default;
+		~FFTOceanBase();
 
-        /// <summary>
-        /// 描画処理
-        /// </summary>
-        /// <param name="mode">ブレンドモード</param>
-        void Draw(BlendMode mode = BlendMode::KBlendModeNormal);
+		/// <summary>
+		/// 初期化処理
+		/// </summary>
+		/// <param name="device">初期化に使用するD3D12デバイスへのポインタ。</param>
+		void Initialize(ID3D12Device* device);
 
-        /// <summary>
-        /// ImGui情報の表示
-        /// </summary>
-        void ShowImGui();
+		/// <summary>
+		/// 更新処理
+		/// </summary>
+		void Update();
 
-        /// <summary>
-        /// 円状に広がる波紋を追加
-        /// </summary>
-        void AddCircularRipple(const Vector3& center, float duration = 3.0f, float intensity = 1.0f, float maxRadius = 20.0f);
+		/// <summary>
+		/// 指定されたコマンドリストにバインドします。
+		/// </summary>
+		/// <param name="commandList">バインド先のDirect3D 12グラフィックスコマンドリスト。</param>
+		void Bind(ID3D12GraphicsCommandList* commandList);
 
-        /// <summary>
-        /// すべての波紋をクリア
-        /// </summary>
-        void ClearRipples();
+	public: /// ===Getter=== ///
+		// OceanRenderCBの取得
+		OceanRenderCB& GetOceanRenderCB();
+		float GetTileScale() const;
+		float GetSize() const;
 
-    public: /// ===Setter=== ///
-        // Ocean Wave Parameters（12個の波対応）
-        void SetWaveInfo(int waveIndex, const Vector3& direction, float amplitude, float length, float speed);
-        // Ocean Color Parameters
-        void SetColorInfo(const OceanColorInfo& colorInfo);
-        // Ripple Parameters
-        void SetRippleSpeed(float speed);
-        void SetRippleDecay(float decay);
+	public: /// ===Setter=== ///
+		// カメラの設定
+		void SetCamera(CameraCommon* camera);
+		// OceanRenderCBの設定
+		void SetOceanRenderCB(const OceanRenderCB& data);
+		// ワールド行列の設定
+		void SetWorldMatrix(const Matrix4x4& world);
+		// タイルスケールの設定
+		void SetTileScale(float tileScale);
+		// サイズの設定
+		void SetSize(float size);
+		// CS側のSRVインデックスを受け取る
+		void SetDisplaceSRVIndex(uint32_t index);
+		// CS側のSRVインデックスを受け取る
+		void SetNormalFoamSRVIndex(uint32_t index);
+		// 泡テクスチャ名の設定
+		void SetFoamTextureName(const std::string& name);
 
-    private:
-        /// ===バッファリソース=== ///
-        std::unique_ptr<BufferBase> vertex_;
-        std::unique_ptr<BufferBase> index_;
-        std::unique_ptr<BufferBase> oceanColorBuffer_;    // 色情報バッファ
+	protected:
+		// SRVマネージャーへのポインタ
+		SRVManager* srvManager_ = nullptr;
 
-        /// ===Wave Compute=== ///
-        std::unique_ptr<OceanWaveCompute> waveCompute_;
+		/// ===バッファリソース=== ///
+		// TransformCB(b0)VS
+		std::unique_ptr<BufferBase> transformBuffer_;
+		TransformCB* transformCBData_ = nullptr;
+		// OceanRenderCB(b1)PS
+		std::unique_ptr<BufferBase> oceanBuffer_;
+		OceanRenderCB* oceanRenderCBData_ = nullptr;
+		// テクスチャ３つ(t0~t1)
+		uint32_t srvDisplaceIndex_ = 0;	  // t0
+		uint32_t srvNormalFoamIndex_ = 0; // t1
+		std::string foamTextureName_;	  // t2
 
-        /// ===バッファリソース内のデータを指すポインタ=== ///
-        VertexData3D* vertexData_ = nullptr;
-        uint32_t* indexData_ = nullptr;
-        OceanColorInfo* oceanColorData_ = nullptr;
+		/// ===カメラ=== ///
+		CameraCommon* camera_ = nullptr;
 
-        /// ===バッファビュー=== ///
-        D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
-        D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
+		/// ===Transform=== ///
+		Matrix4x4 worldMatrix_{};
+		float tileScale_ = 1.0f;
+		float size_ = 1.0f;
 
-        /// ===グリッド情報=== ///
-        int gridSize_ = 64;
-        int vertexCount_ = 0;
-        int indexCount_ = 0;
+		/// ===OceanRenderCBデフォルト値=== ///
+		OceanRenderCB oceanRenderCB_ = {
+			{ 0.0f, -1.0f, 0.0f },    // sunDirection
+			30.0f,                    // sunPower
+			{ 1.0f, 0.95f, 0.8f },    // sunColor
+			0.02f,                    // fresnelBias
+			{ 0.0f, 0.05f, 0.1f },    // deepColor
+			0.1f,                     // roughness
+			{ 0.0f, 0.5f, 0.5f },     // shallowColor
+			0.5f,                     // sssStrength
+			{ 1.0f, 1.0f, 1.0f },     // foamColor
+			0.5f,                     // foamSoftness
+			{ 0.6f, 0.7f, 0.9f },     // skyColorHorizon
+			0.0f,                     // pad0
+			{ 0.1f, 0.2f, 0.5f },     // skyColorZenith
+			0.0f                      // pad1
+		};
 
-        /// ===波情報（12個）=== ///
-        std::array<OceanShaderInfo, kWaveCount_> waveInfos_;
+	private:
 
-        /// ===波紋管理=== ///
-        std::array<RippleData, 8> ripples_;
-        RippleBufferForGPU rippleBuffer_;
-        float currentTime_ = 0.0f;
-        float rippleSpeed_ = 4.0f;
-        float rippleDecay_ = 1.0f;
-        int nextPriority_ = 0;
+		/// <summary>
+		/// OceanRenderCBの書き込み処理
+		/// </summary>
+		void WriteOceanRenderCB();
 
-        // 衝突検知用
-        struct HitRecord {
-            int objectID;
-            Vector3 lastPosition;
-            bool wasHitting;
-        };
-        std::vector<HitRecord> hitRecords_;
+		/// <summary>
+		/// TransformCBの書き込み処理
+		/// </summary>
+		void WriteTransformCB();
+	};
+}
 
-        /// ===Ocean Color情報=== ///
-        OceanColorInfo colorInfo_ = {
-            { 0.1f, 0.4f, 0.6f }, 0.0f,
-            { 0.2f, 0.7f, 0.8f }, 0.0f,
-            { 0.4f, 0.6f, 0.9f }, 0.0f,
-            { 0.0f, 0.05f, 0.2f },
-            1.2f,
-            0.3f,
-            0.4f,
-            0.5f
-        };
 
-    private: /// ===Functions=== ///
-        /// <summary>
-        /// グリッドメッシュの生成（初期状態・平面）
-        /// </summary>
-        void CreateGridMesh();
 
-        /// <summary>
-        /// ColorData書き込み処理
-        /// </summary>
-        void ColorDataWrite();
 
-        /// <summary>
-        /// 波紋の更新処理
-        /// </summary>
-        void UpdateRipples();
+============================================================
+File Path: Project/Engine/Graphics/Ocean/FFT/FFTOceanCompute.cpp
+============================================================
+#include "FFTOceanCompute.h"
+// SRVManager
+#include "Engine/System/Managers/SRVManager.h"
+// Service
+#include "Service/Locator.h"
+#include "Service/Render.h"
+#include <cassert>
 
-        /// <summary>
-        /// 波情報の初期化（12個）
-        /// </summary>
-        void InitializeWaveInfos();
-    };
+namespace MiiEngine {
+	///-------------------------------------------/// 
+	/// デストラクタ
+	///-------------------------------------------///
+	FFTOceanCompute::~FFTOceanCompute() {}
+
+	///-------------------------------------------/// 
+	/// 初期化
+	///-------------------------------------------///
+	void FFTOceanCompute::Initialize(ID3D12Device* device, int gridSize) {
+		assert(device);
+
+		// SRVManagerを取得
+		srvManager_ = Service::Locator::GetSRVManager();
+
+		// グリッドサイズ設定
+		params_.gridSize = gridSize;
+		const uint32_t N = params_.gridSize;
+
+		// -----------------------------------------------
+		// OceanParams 定数バッファ
+		// -----------------------------------------------
+		oceanParamsBuffer_ = std::make_unique<BufferBase>();
+		oceanParamsBuffer_->Create(device, sizeof(OceanParams)); {
+			void* mapped = nullptr;
+			oceanParamsBuffer_->GetBuffer()->Map(0, nullptr, &mapped);
+			oceanParamsData_ = static_cast<OceanParams*>(mapped);
+		}
+
+		// -----------------------------------------------
+		// ButterflyParams 定数バッファ
+		// -----------------------------------------------
+		butterflyParamsBuffer_ = std::make_unique<BufferBase>();
+		butterflyParamsBuffer_->Create(device, sizeof(ButterflyParams)); {
+			void* mapped = nullptr;
+			butterflyParamsBuffer_->GetBuffer()->Map(0, nullptr, &mapped);
+			butterflyParamsData_ = static_cast<ButterflyParams*>(mapped);
+		}
+
+		///-------------------------------------------/// 
+		/// UAVテクスチャリソースの生成
+		///-------------------------------------------///
+		// u0: H0Texture
+		CreateTextureUAV(device, h0Resource_, h0UAV_, 0, N, N, DXGI_FORMAT_UNKNOWN);
+		// u1: HktTexture
+		CreateTextureUAV(device, hktResource_, hktUAV_, 1, N, N, DXGI_FORMAT_UNKNOWN);
+		// u2: DxTexture
+		CreateTextureUAV(device, dxResource_, dxUAV_, 2, N, N, DXGI_FORMAT_UNKNOWN);
+		// u3: DzTexture
+		CreateTextureUAV(device, dzResource_, dzUAV_, 3, N, N, DXGI_FORMAT_UNKNOWN);
+		// u4: PingTexture
+		CreateTextureUAV(device, pingResource_, pingUAV_, 4, N, N, DXGI_FORMAT_UNKNOWN);
+		// u5: PongTexture
+		CreateTextureUAV(device, pongResource_, pongUAV_, 5, N, N, DXGI_FORMAT_UNKNOWN);
+		// u6: DisplaceMap
+		CreateTextureUAV(device, displaceResource_, displaceUAV_, 6, N, N, DXGI_FORMAT_UNKNOWN);
+		// u7: NormalFoamMap
+		CreateTextureUAV(device, normalFoamResource_, normalFoamUAV_, 7, N, N, DXGI_FORMAT_UNKNOWN);
+
+		///-------------------------------------------/// 
+		/// SRVインデックスの管理
+		///-------------------------------------------///
+		// srvHeightIndex（t0）
+		CreateTextureSRV(srvHeightIndex_, pingResource_);
+		// srvDxIndex（t1）
+		CreateTextureSRV(srvDxIndex_, dxResource_);
+		// srvDzIndex（t2）
+		CreateTextureSRV(srvDzIndex_, dzResource_);
+		// srvDisplaceIndex（t0:VS）
+		CreateTextureSRV(srvDisplaceIndex_, displaceResource_);
+		// srvNormalFoamIndex（t1:VS）
+		CreateTextureSRV(srvNormalFoamIndex_, normalFoamResource_);
+
+		// 初期値書き込み
+		WriteOceanParams();
+
+		preParams_ = params_;
+	}
+
+	///-------------------------------------------/// 
+	/// 更新
+	///-------------------------------------------///
+	void FFTOceanCompute::Update(float deltaTime) {
+		elapsedTime_ += deltaTime;
+		params_.time = elapsedTime_;
+
+		// スペクトルに影響するパラメータが変更されたか検知
+		if (params_.gridWidth != preParams_.gridWidth || 
+			params_.windowSpeed != preParams_.windowSpeed ||
+		    params_.windDirection.x != preParams_.windDirection.x || params_.windDirection.y != preParams_.windDirection.y ||
+		    params_.amplitude != preParams_.amplitude || 
+			params_.gridSize != preParams_.gridSize ||
+			params_.lambda != preParams_.lambda ||
+			params_.foamThreshold != preParams_.foamThreshold
+			) {
+
+			// InitSpectrum を再実行させる
+			isInitialized_ = false;
+
+			// 前回値を更新
+			preParams_ = params_;
+		}
+
+		WriteOceanParams();
+	}
+
+	///-------------------------------------------/// 
+	/// ディスパッチ
+	///-------------------------------------------///
+	void FFTOceanCompute::Dispatch(ID3D12GraphicsCommandList* commandList) {
+		assert(commandList);
+
+		// SRVManagerからヒープを取得, 設定
+		ID3D12DescriptorHeap* heaps[] = { srvManager_->GetDescriptorHeap() };
+		commandList->SetDescriptorHeaps(1, heaps);
+
+		const uint32_t N = params_.gridSize;
+		const uint32_t threadGroupX = (N + kThreadGroupSize_ - 1) / kThreadGroupSize_;
+		const uint32_t threadGroupY = threadGroupX;
+		const uint32_t stages = static_cast<uint32_t>(std::log2(static_cast<float>(N)));
+
+		auto CBV0 = oceanParamsBuffer_->GetBuffer()->GetGPUVirtualAddress();
+		auto CBV1 = butterflyParamsBuffer_->GetBuffer()->GetGPUVirtualAddress();
+		auto UAVTable = srvManager_->GetGPUDescriptorHandle(uavIndices_[0]);
+
+		// =============================================
+		//   InitSpectrum（初回のみ）
+		//   h0(k) を H0Texture(u0) に書き込む
+		// =============================================
+		if (!isInitialized_) {
+			Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"InitSpectrum");
+			commandList->SetComputeRootConstantBufferView(0, CBV0);
+			commandList->SetComputeRootDescriptorTable(2, UAVTable);
+			commandList->Dispatch(threadGroupX, threadGroupY, 1);
+			UAVBarrier(commandList, h0Resource_->GetBuffer());
+			isInitialized_ = true;
+		}
+
+		// =============================================
+		// Step 1: UpdateSpectrum（毎フレーム）
+		//   HktTexture(u1) / DxTexture(u2) / DzTexture(u3) を更新
+		// =============================================
+		Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"UpdateSpectrum");
+		commandList->SetComputeRootConstantBufferView(0, CBV0);
+		commandList->SetComputeRootDescriptorTable(2, UAVTable);
+		commandList->Dispatch(threadGroupX, threadGroupY, 1);
+		UAVBarrier(commandList, hktResource_->GetBuffer());
+		UAVBarrier(commandList, dxResource_->GetBuffer());
+		UAVBarrier(commandList, dzResource_->GetBuffer());
+
+		// =============================================
+		//   IFFT（Height / Dx / Dz 共通の処理フロー）
+		//   BitReverseRows → ButterflyIFFT(水平) → BitReverseCols → ButterflyIFFT(垂直)
+		// =============================================
+		for (uint32_t inputSource = 0; inputSource < 3; ++inputSource) {
+
+			// --- BitReverseRows: inputSource → Ping(u4) ---
+			WriteButterflyParams(0, 0, 0, inputSource);
+			Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"BitReverseRows");
+			commandList->SetComputeRootConstantBufferView(0, CBV0);
+			commandList->SetComputeRootConstantBufferView(1, CBV1);
+			commandList->SetComputeRootDescriptorTable(2, UAVTable);
+			commandList->Dispatch(threadGroupX, threadGroupY, 1);
+			UAVBarrier(commandList, pingResource_->GetBuffer());
+
+			// --- ButterflyIFFT 水平方向 ---
+			for (uint32_t s = 0; s < stages; ++s) {
+				WriteButterflyParams(s, s % 2, 0, inputSource);
+				Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"ButterflyIFFT");
+				commandList->SetComputeRootConstantBufferView(0, CBV0);
+				commandList->SetComputeRootConstantBufferView(1, CBV1);
+				commandList->SetComputeRootDescriptorTable(2, UAVTable);
+				commandList->Dispatch(threadGroupX, threadGroupY, 1);
+				UAVBarrier(commandList, pingResource_->GetBuffer());
+				UAVBarrier(commandList, pongResource_->GetBuffer());
+			}
+
+			// --- BitReverseCols: Pong(u5) → Ping(u4) ---
+			WriteButterflyParams(0, 0, 0, inputSource);
+			Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"BitReverseCols");
+			commandList->SetComputeRootConstantBufferView(0, CBV0);
+			commandList->SetComputeRootConstantBufferView(1, CBV1);
+			commandList->SetComputeRootDescriptorTable(2, UAVTable);
+			commandList->Dispatch(threadGroupX, threadGroupY, 1);
+			UAVBarrier(commandList, pingResource_->GetBuffer());
+
+			// --- ButterflyIFFT 垂直方向 ---
+			for (uint32_t s = 0; s < stages; ++s) {
+				WriteButterflyParams(s, s % 2, 1, inputSource);
+				Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"ButterflyIFFT");
+				commandList->SetComputeRootConstantBufferView(0, CBV0);
+				commandList->SetComputeRootConstantBufferView(1, CBV1);
+				commandList->SetComputeRootDescriptorTable(2, UAVTable);
+				commandList->Dispatch(threadGroupX, threadGroupY, 1);
+				UAVBarrier(commandList, pingResource_->GetBuffer());
+				UAVBarrier(commandList, pongResource_->GetBuffer());
+			}
+
+			// IFFT結果を保存（inputSource=1:Dx, 2:Dz のみ実行、0:Heightは不要）
+			if (inputSource != 0) {
+				WriteButterflyParams(0, 0, 0, inputSource);
+				Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"SaveIFFTResult");
+				commandList->SetComputeRootConstantBufferView(0, CBV0);
+				commandList->SetComputeRootConstantBufferView(1, CBV1);
+				commandList->SetComputeRootDescriptorTable(2, UAVTable);
+				commandList->Dispatch(threadGroupX, threadGroupY, 1);
+				UAVBarrier(commandList, dxResource_->GetBuffer());
+				UAVBarrier(commandList, dzResource_->GetBuffer());
+			}
+		}
+
+		// =============================================
+		//   AssembleDisplacement
+		//   Ping/Pong の結果を DisplaceMap(u6) に合成
+		// =============================================
+		// バリアの遷移
+		auto TransitionBarrier = [&](ID3D12Resource* res,
+			D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
+				D3D12_RESOURCE_BARRIER b = {};
+				b.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+				b.Transition.pResource = res;
+				b.Transition.StateBefore = before;
+				b.Transition.StateAfter = after;
+				b.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+				commandList->ResourceBarrier(1, &b);
+			};
+
+		// Ping(Height) / Dx / Dz を UAV → SRV に遷移
+		TransitionBarrier(pingResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		TransitionBarrier(dxResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		TransitionBarrier(dzResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+		// AssembleDisplacement
+		Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"AssembleDisplacement");
+		commandList->SetComputeRootConstantBufferView(0, CBV0);
+		commandList->SetComputeRootDescriptorTable(2, UAVTable);
+		// t0〜t2 を DescriptorTable でセット
+		commandList->SetComputeRootDescriptorTable(3, srvManager_->GetGPUDescriptorHandle(srvHeightIndex_));
+		commandList->Dispatch(threadGroupX, threadGroupY, 1);
+		UAVBarrier(commandList, displaceResource_->GetBuffer());
+
+		// =============================================
+		//   ComputeNormalFoam
+		//   法線 + 泡強度を NormalFoamMap(u7) に書き込む
+		// =============================================
+		Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"ComputeNormalFoam");
+		commandList->SetComputeRootConstantBufferView(0, CBV0);
+		commandList->Dispatch(threadGroupX, threadGroupY, 1);
+		UAVBarrier(commandList, normalFoamResource_->GetBuffer());
+
+		// SRV → UAV に戻す（次フレームでまた書き込むため）
+		TransitionBarrier(pingResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		TransitionBarrier(dxResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		TransitionBarrier(dzResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+		// DisplaceMap と NormalFoamMap を UAV → SRV に遷移（レンダリングで使用するため）
+		TransitionBarrier(displaceResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS,D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		TransitionBarrier(normalFoamResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	}
+
+	///-------------------------------------------/// 
+	/// 次のフレームのためにリソース状態をリセットします 
+	///-------------------------------------------///
+	void FFTOceanCompute::ResetResourceStatesForNextFrame(ID3D12GraphicsCommandList* commandList) {
+
+		// バリアの遷移
+		auto TransitionBarrier = [&](ID3D12Resource* res,
+			D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
+				D3D12_RESOURCE_BARRIER b = {};
+				b.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+				b.Transition.pResource = res;
+				b.Transition.StateBefore = before;
+				b.Transition.StateAfter = after;
+				b.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+				commandList->ResourceBarrier(1, &b);
+		};
+
+		// SRV->UAVに遷移
+		TransitionBarrier(displaceResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		TransitionBarrier(normalFoamResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	}
+
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	// 最終変位マップの取得（SRVとして使用）
+	ID3D12Resource* FFTOceanCompute::GetDisplacementMap() const {return displaceResource_->GetBuffer();}
+	// 法線・泡マップの取得（SRVとして使用）
+	ID3D12Resource* FFTOceanCompute::GetNormalFoamMap() const {return normalFoamResource_->GetBuffer();}
+	// OceanParamsの取得
+	OceanParams& FFTOceanCompute::GetOceanParams() {return params_;}
+	// SRVDisplaceIndexの取得
+	uint32_t FFTOceanCompute::GetSRVDisplaceIndex() const { return srvDisplaceIndex_; }
+	// SRVNormalFoamIndexの取得
+	uint32_t FFTOceanCompute::GetSRVNormalFoamIndex() const { return srvNormalFoamIndex_; }
+
+	///-------------------------------------------/// 
+	/// Setter
+	///-------------------------------------------///
+	// OceanParamsの設定
+	void FFTOceanCompute::SetOceanParams(const OceanParams& params) {params_ = params;}
+	// グリッドサイズの設定
+	void FFTOceanCompute::SetGridSize(uint32_t gridSize) {params_.gridSize = gridSize;}
+
+	///-------------------------------------------/// 
+	/// テクスチャUAVリソースの生成
+	///-------------------------------------------///
+	void FFTOceanCompute::CreateTextureUAV(
+		ID3D12Device* device, 
+		std::unique_ptr<BufferBase>& outResource, 
+		UAV& outUAV, 
+		int uavSlot, 
+		uint32_t width, uint32_t height, 
+		DXGI_FORMAT format) {
+
+		format;
+
+		// Texture2D リソースとして作成
+		D3D12_RESOURCE_DESC texDesc{};
+		texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+		texDesc.Width = width;
+		texDesc.Height = height;
+		texDesc.DepthOrArraySize = 1;
+		texDesc.MipLevels = 1;
+		texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; // RWTexture2D<float4>
+		texDesc.SampleDesc.Count = 1;
+		texDesc.SampleDesc.Quality = 0;
+		texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+		texDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+
+		D3D12_HEAP_PROPERTIES heapProps{};
+		heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+		// Texture2Dリソースを直接作成
+		Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+		HRESULT hr = device->CreateCommittedResource(
+			&heapProps,
+			D3D12_HEAP_FLAG_NONE,
+			&texDesc,
+			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+			nullptr,
+			IID_PPV_ARGS(&resource)
+		);
+		assert(SUCCEEDED(hr));
+
+		// BufferBaseにリソースを渡す
+		outResource = std::make_unique<BufferBase>();
+		outResource->SetBuffer(resource.Get());
+
+		// UAVの作成
+		uavIndices_[uavSlot] = srvManager_->Allocate();
+		outUAV.CreateAsTexture2D(
+			device,
+			outResource->GetBuffer(),
+			DXGI_FORMAT_R32G32B32A32_FLOAT,
+			srvManager_->GetCPUDescriptorHandle(uavIndices_[uavSlot])
+		);
+	}
+
+	///-------------------------------------------/// 
+	/// SRVリソースの生成
+	///-------------------------------------------///
+	void FFTOceanCompute::CreateTextureSRV(uint32_t& index, std::unique_ptr<BufferBase>& outResource) {
+		// SRVの生成処理を実装
+		index = srvManager_->Allocate();
+		srvManager_->CreateSRVForTexture2D(
+			index, 
+			outResource->GetBuffer(),
+			DXGI_FORMAT_R32G32B32A32_FLOAT, 
+			1
+		);
+	}
+
+	///-------------------------------------------/// 
+	/// OceanParamsバッファの書き込み
+	///-------------------------------------------///
+	void FFTOceanCompute::WriteOceanParams() {
+		if (oceanParamsData_) {
+			*oceanParamsData_ = params_;
+		}
+	}
+
+	///-------------------------------------------/// 
+	/// ButterflyParamsバッファの書き込み
+	///-------------------------------------------///
+	void FFTOceanCompute::WriteButterflyParams(uint32_t stage, uint32_t pingPong, uint32_t direction, uint32_t inputSource) {
+		if (butterflyParamsData_) {
+			butterflyParamsData_->stages = stage;
+			butterflyParamsData_->pingPong = pingPong;
+			butterflyParamsData_->direction = direction;
+			butterflyParamsData_->inputSource = inputSource;
+		}
+	}
+
+	///-------------------------------------------/// 
+	/// UAVバリア
+	///-------------------------------------------///
+	void FFTOceanCompute::UAVBarrier(ID3D12GraphicsCommandList* commandList, ID3D12Resource* resource) {
+		D3D12_RESOURCE_BARRIER barrier = {};
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+		barrier.UAV.pResource = resource;
+		commandList->ResourceBarrier(1, &barrier);
+	}
+}
+
+
+============================================================
+File Path: Project/Engine/Graphics/Ocean/FFT/FFTOceanCompute.h
+============================================================
+#pragma once
+/// ===include=== ///
+#include "Engine/Graphics/Base/BufferBase.h"
+#include "Engine/Graphics/Base/UAV.h"
+#include "Engine/Graphics/Pipeline/CS/CSPSOCommon.h"
+#include "Engine/DataInfo/OceanData.h"
+// c++
+#include <memory>
+#include <d3d12.h>
+#include <wrl.h>
+
+namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class SRVManager;
+
+	///=====================================================/// 
+	/// FFTOceanCompute
+	///=====================================================///
+	class FFTOceanCompute {
+	public:
+
+		FFTOceanCompute() = default;
+		~FFTOceanCompute();
+
+		/// <summary>
+		/// 初期化処理
+		/// </summary>
+		/// <param name="device">使用するID3D12Deviceへのポインタ。</param>
+		/// <param name="gridSize">グリッドサイズ。</param>
+		void Initialize(ID3D12Device* device, int gridSize);
+
+		/// <summary>
+		/// 更新処理（OceanParamsの時間等を更新）
+		/// </summary>
+		/// <param name="deltaTime">前フレームからの経過時間。</param>
+		void Update(float deltaTime);
+
+		/// <summary>
+		/// コンピュートシェーダーのディスパッチ処理
+		/// </summary>
+		/// <param name="commandList">使用するコマンドリスト。</param>
+		void Dispatch(ID3D12GraphicsCommandList* commandList);
+
+		/// <summary>
+		/// 次のフレームのためにリソース状態をリセットします。
+		/// </summary>
+		/// <param name="commandList">リソース状態の遷移を記録するために使用されるDirect3D 12グラフィックスコマンドリスト。</param>
+		void ResetResourceStatesForNextFrame(ID3D12GraphicsCommandList* commandList);
+
+
+
+	public: /// ===Getter=== ///
+		// 最終変位マップ（SRVとして使用）
+		ID3D12Resource* GetDisplacementMap() const;
+		// 法線・泡マップ（SRVとして使用）
+		ID3D12Resource* GetNormalFoamMap() const;
+		// OceanParamsの取得
+		OceanParams& GetOceanParams();
+		// SRVインデックスの取得
+		uint32_t GetSRVDisplaceIndex() const;
+		uint32_t GetSRVNormalFoamIndex() const;
+
+	public: /// ===Setter=== ///
+
+		// OceanParamsの設定
+		void SetOceanParams(const OceanParams& params);
+		// グリッドサイズの設定
+		void SetGridSize(uint32_t gridSize);
+
+	private:
+
+		/// ===定数=== ///
+		static constexpr uint32_t kDefaultGridSize_ = 256;
+		static constexpr uint32_t kThreadGroupSize_ = 16;
+
+		/// ===経過時間=== ///
+		float elapsedTime_ = 0.0f;
+		bool isInitialized_ = false;
+
+		/// ===SRVManager=== ///
+		SRVManager* srvManager_ = nullptr;
+
+		/// ===OceanParams定数バッファ=== ///
+		std::unique_ptr<BufferBase> oceanParamsBuffer_;
+		OceanParams* oceanParamsData_ = nullptr;
+
+		/// ===ButterflyParams定数バッファ=== ///
+		std::unique_ptr<BufferBase> butterflyParamsBuffer_;
+		ButterflyParams* butterflyParamsData_ = nullptr;
+
+		/// ===UAVテクスチャリソース（u0〜u7）=== ///
+		//  u0: H0Texture      初期スペクトル
+		std::unique_ptr<BufferBase> h0Resource_;
+		UAV h0UAV_;
+		//  u1: HktTexture     時間更新スペクトル（高さ）
+		std::unique_ptr<BufferBase> hktResource_;
+		UAV hktUAV_;
+		//  u2: DxTexture      水平変位スペクトル X
+		std::unique_ptr<BufferBase> dxResource_;
+		UAV dxUAV_;
+		//  u3: DzTexture      水平変位スペクトル Z
+		std::unique_ptr<BufferBase> dzResource_;
+		UAV dzUAV_;
+		//  u4: PingTexture    IFFT Ping バッファ
+		std::unique_ptr<BufferBase> pingResource_;
+		UAV pingUAV_;
+		//  u5: PongTexture    IFFT Pong バッファ
+		std::unique_ptr<BufferBase> pongResource_;
+		UAV pongUAV_;
+		//  u6: DisplaceMap    最終変位マップ
+		std::unique_ptr<BufferBase> displaceResource_;
+		UAV displaceUAV_;
+		//  u7: NormalFoamMap  法線 + 泡強度
+		std::unique_ptr<BufferBase> normalFoamResource_;
+		UAV normalFoamUAV_;
+
+		// UAVインデックスを管理
+		uint32_t uavIndices_[8] = {};
+
+		// SRVインデックスを管理
+		uint32_t srvHeightIndex_ = 0;
+		uint32_t srvDxIndex_ = 0;
+		uint32_t srvDzIndex_ = 0;
+		uint32_t srvDisplaceIndex_ = 0;
+		uint32_t srvNormalFoamIndex_ = 0;
+
+		/// ===OceanParams初期値=== ///
+		OceanParams params_ = {
+			kDefaultGridSize_,   // gridSize
+			1000.0f,             // gridWidth
+			0.0f,                // time
+			10.0f,               // windowSpeed
+			{ 1.0f, 0.0f },      // windDirection
+			1.0f,                // amplitude
+			1.0f,                // lambda
+			0.0f                 // foamThreshold
+		};
+
+		OceanParams preParams_;
+
+	private:
+
+		/// <summary>
+		/// テクスチャUAVリソースの生成
+		/// </summary>
+		void CreateTextureUAV(
+			ID3D12Device* device,
+			std::unique_ptr<BufferBase>& outResource,
+			UAV& outUAV,
+			int uavSlot,
+			uint32_t width, uint32_t height,
+			DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT);
+
+		/// <summary>
+		/// SRVリソースの生成
+		/// </summary>
+		/// <param name="index">SRVインデックス。</param>
+		void CreateTextureSRV(
+			uint32_t& index, 
+			std::unique_ptr<BufferBase>& outResource);
+
+		/// <summary>
+		/// OceanParamsバッファの書き込み
+		/// </summary>
+		void WriteOceanParams();
+
+		/// <summary>
+		/// ButterflyParamsバッファの書き込み
+		/// </summary>
+		void WriteButterflyParams(uint32_t stage, uint32_t pingPong, uint32_t direction, uint32_t inputSource);
+
+		/// <summary>
+		/// UAVバリア
+		/// </summary>
+		void UAVBarrier(ID3D12GraphicsCommandList* commandList, ID3D12Resource* resource);
+	};
+}
+
+
+
+
+============================================================
+File Path: Project/Engine/Graphics/Ocean/FFT/FFTOceanGenerator.cpp
+============================================================
+#include "FFTOceanGenerator.h"
+// CameraCommon
+#include "Engine/Camera/Base/CameraCommon.h"
+// Service
+#include "Service/DeltaTime.h"
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/Render.h"
+// C++
+#include <cassert>
+// Math
+#include "Math/MatrixMath.h"
+#ifdef USE_IMGUI
+#include <imgui.h>// ImGui
+#endif // USE_IMGUI
+
+namespace MiiEngine {
+	///-------------------------------------------/// 
+	/// デストラクタ
+	///-------------------------------------------///
+	FFTOceanGenerator::~FFTOceanGenerator() {
+		vertex_.reset();
+		index_.reset();
+		base_.reset();
+		compute_.reset();
+	}
+
+	///-------------------------------------------/// 
+	/// 初期化
+	///-------------------------------------------///
+	void FFTOceanGenerator::Initialize(int gridSize) {
+		ID3D12Device* device = Service::GraphicsResourceGetter::GetDXDevice();
+		assert(device);
+
+		gridSize_ = gridSize;
+
+		// Countの設定
+		vertexCount_ = (gridSize_ + 1) * (gridSize_ + 1);
+		indexCount_ = gridSize_ * gridSize_ * 6;
+
+		/// ===FFTOceanBase=== ///
+		// 初期化
+		base_ = std::make_unique<FFTOceanBase>();
+		base_->Initialize(device);
+
+		/// ===FFTOceanCompute=== ///
+		// 初期化
+		compute_ = std::make_unique<FFTOceanCompute>();
+		compute_->Initialize(device, gridSize_);
+
+		// Compute側のSRVインデックスをBaseに渡す
+		base_->SetDisplaceSRVIndex(compute_->GetSRVDisplaceIndex());
+		base_->SetNormalFoamSRVIndex(compute_->GetSRVNormalFoamIndex());
+		// テクスチャの設定
+		base_->SetFoamTextureName("oceanFFT");
+
+		/// ===vertex=== ///
+		CreateVertexBuffer(device);
+
+		/// ===Index=== ///
+		CreateIndexBuffer(device);
+
+		// ワールド行列の初期化
+		SetTileScale(1.0f);
+	}
+
+	///-------------------------------------------/// 
+	/// 更新
+	///-------------------------------------------///
+	void FFTOceanGenerator::Update() {
+		float deltaTime = Service::DeltaTime::GetDeltaTime();
+
+		// ワールド行列を更新してBaseに渡す
+		UpdateWorldMatrix();
+
+		// Compute側の時間更新
+		compute_->Update(deltaTime);
+
+		// Base側の更新
+		base_->Update();
+	}
+
+	///-------------------------------------------/// 
+	/// 描画
+	///-------------------------------------------///
+	void FFTOceanGenerator::Draw(BlendMode mode) {
+		// コマンドリストの取得
+		ID3D12GraphicsCommandList* commandList = Service::GraphicsResourceGetter::GetDXCommandList();
+		assert(commandList);
+
+		// コンピュートシェーダーのディスパッチ
+		compute_->Dispatch(commandList);
+
+		// パイプラインのセット
+		Service::Render::SetPSO(commandList, PipelineType::FFTOcean, mode);
+
+		// 頂点バッファ・インデックスバッファをセット
+		commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
+		commandList->IASetIndexBuffer(&indexBufferView_);
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		// CBV・テクスチャのバインド
+		base_->Bind(commandList);
+
+		// 描画
+		commandList->DrawIndexedInstanced(indexCount_, 1, 0, 0, 0);
+
+		// 次フレームのためにリソース状態をリセット
+		compute_->ResetResourceStatesForNextFrame(commandList);
+	}
+
+	///-------------------------------------------/// 
+	/// ImGui表示
+	///-------------------------------------------///
+	void FFTOceanGenerator::ShowImGui() {
+#ifdef _DEBUG
+		if (ImGui::Begin("FFTOcean")) {
+
+			// --- Transform ---
+			if (ImGui::CollapsingHeader("Transform")) {
+				ImGui::DragFloat3("Translate", &transform_.translate.x, 0.1f);
+				ImGui::DragFloat3("Scale", &transform_.scale.x, 0.1f);
+			}
+
+			// --- TransformCB（VS用）---
+			if (ImGui::CollapsingHeader("TransformCB")) {
+				float tileScale = base_->GetTileScale();
+				ImGui::DragFloat("タイルスケール", &tileScale, 0.01f, 0.01f, 100.0f);
+				base_->SetTileScale(tileScale);
+			}
+
+			// --- OceanRenderCB（PS用）---
+			if (ImGui::CollapsingHeader("色の設定")) {
+				OceanRenderCB& r = base_->GetOceanRenderCB();
+				ImGui::DragFloat3("光の方向", &r.sunDirection.x, 0.01f, -1.0f, 1.0f);
+				ImGui::DragFloat("光の強さ", &r.sunPower, 0.5f, 0.0f, 500.0f);
+				ImGui::ColorEdit3("光の色", &r.sunColor.x);
+				ImGui::DragFloat("フレネルバイアス", &r.fresnelBias, 0.001f, 0.0f, 1.0f);
+				ImGui::ColorEdit3("深海の色", &r.deepColor.x);
+				ImGui::DragFloat("粗さ", &r.roughness, 0.01f, 0.0f, 1.0f);
+				ImGui::ColorEdit3("浅瀬の色", &r.shallowColor.x);
+				ImGui::DragFloat("SSSの強さ", &r.sssStrength, 0.01f, 0.0f, 5.0f);
+				ImGui::ColorEdit3("泡の色", &r.foamColor.x);
+				ImGui::DragFloat("泡の柔らかさ", &r.foamSoftness, 0.01f, 0.0f, 1.0f);
+				ImGui::ColorEdit3("空の色（地平線）", &r.skyColorHorizon.x);
+				ImGui::ColorEdit3("空の色（天頂）", &r.skyColorZenith.x);
+			}
+
+			// --- OceanParams（CS用）---
+			if (ImGui::CollapsingHeader("波のパラメータ")) {
+				OceanParams& p = compute_->GetOceanParams();
+				ImGui::DragFloat("グリッド幅", &p.gridWidth, 0.1f, 0.1f, 10000.0f);
+				ImGui::DragFloat("風速", &p.windowSpeed, 0.1f, 0.0f, 100.0f);
+				ImGui::DragFloat2("風向", &p.windDirection.x, 0.01f, -1.0f, 1.0f);
+				ImGui::DragFloat("振幅", &p.amplitude, 0.01f, 0.0f, 100.0f);
+				ImGui::DragFloat("波長", &p.lambda, 0.1f, 0.0f, 512.0f);
+				ImGui::DragFloat("泡のしきい値", &p.foamThreshold, 0.01f, 0.0f, 5.0f);
+			}
+		}
+		ImGui::End();
+#endif // _DEBUG
+	}
+
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	// OceanParamsの取得
+	OceanParams& FFTOceanGenerator::GetOceanParams() const { return compute_->GetOceanParams(); }
+	// OceanRenderCBの取得
+	OceanRenderCB& FFTOceanGenerator::GetOceanRenderCB() const { return base_->GetOceanRenderCB(); }
+
+	///-------------------------------------------/// 
+	/// Setter
+	///-------------------------------------------///
+	// Camera
+	void FFTOceanGenerator::SetCamera(CameraCommon* camera) {base_->SetCamera(camera);}
+	// 座標の設定
+	void FFTOceanGenerator::SetTranslate(const Vector3& translate) {transform_.translate = translate;}
+	// 回転の設定
+	void FFTOceanGenerator::SetRotate(const Quaternion& rotate) {transform_.rotate = rotate;}
+	// スケールの設定
+	void FFTOceanGenerator::SetScale(const Vector3& scale) {transform_.scale = scale;}
+	// OceanRenderCBの設定
+	void FFTOceanGenerator::SetOceanRenderCB(const OceanRenderCB& data) {base_->SetOceanRenderCB(data);}
+	// OceanParamsの設定（CS側）
+	void FFTOceanGenerator::SetOceanParams(const OceanParams& params) {compute_->SetOceanParams(params);}
+	// タイルスケールの設定
+	void FFTOceanGenerator::SetTileScale(float tileScale) {base_->SetTileScale(tileScale);}
+	// サイズの設定
+	void FFTOceanGenerator::SetSize(float size) {base_->SetSize(size);}
+
+	///-------------------------------------------/// 
+	/// 頂点バッファの生成
+	///-------------------------------------------///
+	void FFTOceanGenerator::CreateVertexBuffer(ID3D12Device* device) {
+		vertex_ = std::make_unique<BufferBase>();
+		vertex_->Create(device, sizeof(OceanGridVertex) * vertexCount_);
+
+		// マッピング
+		void* mapped = nullptr;
+		vertex_->GetBuffer()->Map(0, nullptr, &mapped);
+		vertexData_ = static_cast<OceanGridVertex*>(mapped);
+
+		// グリッド頂点データを生成（XZ 平面上、Y=0）
+		// UV は [0, 1] で正規化、後で VS 側で TileScale を掛ける
+		for (int z = 0; z <= gridSize_; ++z) {
+			for (int x = 0; x <= gridSize_; ++x) {
+				int index = z * (gridSize_ + 1) + x;
+				float fx = static_cast<float>(x) / static_cast<float>(gridSize_);
+				float fz = static_cast<float>(z) / static_cast<float>(gridSize_);
+
+				// Position: XZ 平面上に [-0.5, 0.5] の範囲で配置
+				vertexData_[index].position = { fx - 0.5f, 0.0f, fz - 0.5f };
+				// TexCoord: [0, 1] で正規化
+				vertexData_[index].texCoord = { fx, fz };
+			}
+		}
+
+		// VertexBufferView の設定
+		vertexBufferView_.BufferLocation = vertex_->GetBuffer()->GetGPUVirtualAddress();
+		vertexBufferView_.SizeInBytes = sizeof(OceanGridVertex) * vertexCount_;
+		vertexBufferView_.StrideInBytes = sizeof(OceanGridVertex);
+	}
+
+	///-------------------------------------------/// 
+	/// インデックスバッファの生成
+	///-------------------------------------------///
+	void FFTOceanGenerator::CreateIndexBuffer(ID3D12Device* device) {
+		index_ = std::make_unique<BufferBase>();
+		index_->Create(device, sizeof(uint32_t) * indexCount_);
+
+		// マッピング
+		void* mapped = nullptr;
+		index_->GetBuffer()->Map(0, nullptr, &mapped);
+		indexData_ = static_cast<uint32_t*>(mapped);
+
+		// インデックスデータを生成
+		uint32_t idx = 0;
+		for (int z = 0; z < gridSize_; ++z) {
+			for (int x = 0; x < gridSize_; ++x) {
+				uint32_t topLeft = z * (gridSize_ + 1) + x;
+				uint32_t topRight = z * (gridSize_ + 1) + x + 1;
+				uint32_t bottomLeft = (z + 1) * (gridSize_ + 1) + x;
+				uint32_t bottomRight = (z + 1) * (gridSize_ + 1) + x + 1;
+
+				// 三角形1: topLeft → bottomLeft → topRight
+				indexData_[idx++] = topLeft;
+				indexData_[idx++] = bottomLeft;
+				indexData_[idx++] = topRight;
+
+				// 三角形2: topRight → bottomLeft → bottomRight
+				indexData_[idx++] = topRight;
+				indexData_[idx++] = bottomLeft;
+				indexData_[idx++] = bottomRight;
+			}
+		}
+
+		// IndexBufferView の設定
+		indexBufferView_.BufferLocation = index_->GetBuffer()->GetGPUVirtualAddress();
+		indexBufferView_.SizeInBytes = sizeof(uint32_t) * indexCount_;
+		indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+	}
+
+	///-------------------------------------------/// 
+	/// ワールド行列の更新
+	///-------------------------------------------///
+	void FFTOceanGenerator::UpdateWorldMatrix() {
+		// Scale → Rotate → Translate のSRT行列を合成
+		Matrix4x4 worldMatrix = Math::MakeAffineQuaternionMatrix(transform_.scale, transform_.rotate, transform_.translate);
+		base_->SetWorldMatrix(worldMatrix);
+	}
+}
+
+
+============================================================
+File Path: Project/Engine/Graphics/Ocean/FFT/FFTOceanGenerator.h
+============================================================
+#pragma once
+/// ===include=== ///
+#include "Engine/Graphics/Ocean/FFT/FFTOceanBase.h"
+#include "Engine/Graphics/Ocean/FFT/FFTOceanCompute.h"
+#include "Engine/DataInfo/OceanData.h"
+#include "Math/Vector3.h"
+#include "Math/Quaternion.h"
+// c++
+#include <memory>
+#include <d3d12.h>
+
+namespace MiiEngine {
+	/// ===前方宣言=== ///
+	class CameraCommon;
+
+	///=====================================================/// 
+	/// FFTOceanGenerator
+	///=====================================================///
+	class FFTOceanGenerator {
+	public:
+
+		FFTOceanGenerator() = default;
+		~FFTOceanGenerator();
+
+		/// <summary>
+		/// 初期化処理
+		/// </summary>
+		void Initialize(int gridSize);
+
+		/// <summary>
+		/// 更新処理
+		/// </summary>
+		void Update();
+
+		/// <summary>
+		/// 描画処理
+		/// </summary>
+		/// <param name="commandList">使用するコマンドリスト。</param>
+		void Draw(BlendMode mode = BlendMode::KBlendModeNormal);
+
+		/// <summary>
+		/// ImGui表示処理
+		/// </summary>
+		void ShowImGui();
+
+	public: /// ===Getter=== ///
+
+		// OceanParamsの取得
+		OceanParams& GetOceanParams() const;
+		// OceanRenderCBの取得
+		OceanRenderCB& GetOceanRenderCB() const;
+
+	public: /// ===Setter=== ///
+
+		// カメラの設定
+		void SetCamera(CameraCommon* camera);
+		// 座標の設定
+		void SetTranslate(const Vector3& translate);
+		// 回転の設定
+		void SetRotate(const Quaternion& rotate);
+		// スケールの設定
+		void SetScale(const Vector3& scale);
+		// OceanRenderCBの設定
+		void SetOceanRenderCB(const OceanRenderCB& data);
+		// OceanParamsの設定（CS側）
+		void SetOceanParams(const OceanParams& params);
+		// タイルスケールの設定
+		void SetTileScale(float tileScale);
+		// サイズの設定
+		void SetSize(float size);
+
+	private:
+
+		// グリッドサイズ
+		int gridSize_ = 256;
+
+		/// ===バッファリソース=== ///
+		std::unique_ptr<BufferBase> vertex_; // 頂点バッファ
+		std::unique_ptr<BufferBase> index_;  // インデックスバッファ
+
+		/// ===データポインタ=== ///
+		OceanGridVertex* vertexData_ = nullptr;
+		uint32_t* indexData_ = nullptr;
+
+		/// ===バッファービュー=== ///
+		D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+		D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
+
+		// Count
+		uint32_t vertexCount_ = 0;
+		uint32_t indexCount_ = 0;
+
+		/// ===コンポーネント=== ///
+		std::unique_ptr<FFTOceanBase> base_;       // VS/PS用バッファ管理
+		std::unique_ptr<FFTOceanCompute> compute_; // CS用バッファ・ディスパッチ管理
+
+		/// ===Transform=== ///
+		QuaternionTransform transform_;
+
+	private:
+
+		/// <summary>
+		/// 頂点バッファの生成（XZ 平面グリッド）
+		/// </summary>
+		void CreateVertexBuffer(ID3D12Device* device);
+
+		/// <summary>
+		/// インデックスバッファの生成
+		/// </summary>
+		void CreateIndexBuffer(ID3D12Device* device);
+
+		/// <summary>
+		/// ワールド行列の更新
+		/// </summary>
+		void UpdateWorldMatrix();
+	};
 }
 
 ============================================================
@@ -10272,6 +10988,616 @@ namespace MiiEngine {
 
 
 ============================================================
+File Path: Project/Engine/Graphics/Ocean/OceanGenerator.cpp
+============================================================
+#include "OceanGenerator.h"
+// c++
+#include <cassert>
+// Service
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/Render.h"
+#include "Service/DeltaTime.h"
+// Math
+#include "Math/sMath.h"
+#include "Math/MatrixMath.h"
+
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif
+
+namespace MiiEngine {
+    ///-------------------------------------------/// 
+    /// デストラクタ
+    ///-------------------------------------------///
+    OceanGenerator::~OceanGenerator() {
+        vertex_.reset();
+        index_.reset();
+        material_.reset();
+        wvp_.reset();
+        directionalLight_.reset();
+        camera3D_.reset();
+        oceanColorBuffer_.reset();
+        waveCompute_.reset();
+    }
+
+    ///-------------------------------------------/// 
+    /// Setter
+    ///-------------------------------------------///
+    // 波情報の設定
+    void OceanGenerator::SetWaveInfo(int waveIndex, const Vector3& direction, float amplitude, float length, float speed) {
+        if (waveIndex >= 0 && waveIndex < kWaveCount_) {
+            waveInfos_[waveIndex].distance = direction;
+            waveInfos_[waveIndex].amplitude = amplitude;
+            waveInfos_[waveIndex].length = length;
+            waveInfos_[waveIndex].speed = speed;
+        }
+    }
+    // 色情報の設定
+    void OceanGenerator::SetColorInfo(const OceanColorInfo& colorInfo) {
+        colorInfo_ = colorInfo;
+    }
+    // 波紋パラメータの設定
+    void OceanGenerator::SetRippleSpeed(float speed) { rippleSpeed_ = speed; }
+    void OceanGenerator::SetRippleDecay(float decay) { rippleDecay_ = decay; }
+
+    ///-------------------------------------------/// 
+    /// 初期化
+    ///-------------------------------------------///
+    void OceanGenerator::Initialize(int gridSize) {
+        ID3D12Device* device = Service::GraphicsResourceGetter::GetDXDevice();
+
+        /// ===生成=== ///
+        vertex_ = std::make_unique<BufferBase>();
+        index_ = std::make_unique<BufferBase>();
+        material_ = std::make_unique<Material3D>();
+        wvp_ = std::make_unique<Transform3D>();
+        camera3D_ = std::make_unique<BufferBase>();
+        directionalLight_ = std::make_unique<BufferBase>();
+        oceanColorBuffer_ = std::make_unique<BufferBase>();
+        waveCompute_ = std::make_unique<OceanWaveCompute>();
+
+        /// ===グリッドサイズの設定=== ///
+        gridSize_ = gridSize;
+        vertexCount_ = (gridSize_ + 1) * (gridSize_ + 1);
+        indexCount_ = gridSize_ * gridSize_ * 6;
+
+        /// ===worldTransform=== ///
+        worldTransform_ = { { 0.5f, 1.0f, 0.5f }, { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
+        uvTransform_ = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
+
+        /// ===WaveCompute初期化=== ///
+        waveCompute_->Initialize(device, gridSize_);
+
+        /// ===vertex=== ///
+        // Compute Shaderの出力サイズに合わせる（WaveVertexDataと同じサイズ）
+        vertex_->SetBuffer(waveCompute_->GetOutputBuffer());
+        vertexBufferView_.BufferLocation = vertex_->GetBuffer()->GetGPUVirtualAddress();
+        vertexBufferView_.SizeInBytes = sizeof(VertexData3D) * vertexCount_;
+        vertexBufferView_.StrideInBytes = sizeof(VertexData3D);
+        //CreateGridMesh(); // 初期状態（平面）を作成
+
+        vertexBufferView_.BufferLocation = vertex_->GetBuffer()->GetGPUVirtualAddress();
+        vertexBufferView_.SizeInBytes = sizeof(VertexData3D) * vertexCount_;
+        vertexBufferView_.StrideInBytes = sizeof(VertexData3D);
+
+        /// ===index=== ///
+        index_->Create(device, sizeof(uint32_t) * indexCount_);
+        index_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&indexData_));
+
+        int idx = 0;
+        for (int z = 0; z < gridSize_; ++z) {
+            for (int x = 0; x < gridSize_; ++x) {
+                int topLeft = z * (gridSize_ + 1) + x;
+                int topRight = topLeft + 1;
+                int bottomLeft = (z + 1) * (gridSize_ + 1) + x;
+                int bottomRight = bottomLeft + 1;
+
+                indexData_[idx++] = topLeft;
+                indexData_[idx++] = bottomLeft;
+                indexData_[idx++] = topRight;
+                indexData_[idx++] = topRight;
+                indexData_[idx++] = bottomLeft;
+                indexData_[idx++] = bottomRight;
+            }
+        }
+
+        indexBufferView_.BufferLocation = index_->GetBuffer()->GetGPUVirtualAddress();
+        indexBufferView_.SizeInBytes = sizeof(uint32_t) * indexCount_;
+        indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
+        /// ===OceanCommon=== ///
+        OceanCommon::Initialize(device);
+
+        /// ===波情報の初期化=== ///
+        InitializeWaveInfos();
+
+        /// ===波紋バッファの初期化=== ///
+        for (int i = 0; i < 8; ++i) {
+            ripples_[i].isActive = false;
+            ripples_[i].position = { 0.0f, 0.0f };
+            ripples_[i].startTime = 0.0f;
+            ripples_[i].intensity = 0.0f;
+            ripples_[i].duration = 3.0f;
+            ripples_[i].maxRadius = 20.0f;
+            ripples_[i].speed = 4.0f;
+            ripples_[i].priority = 0;
+        }
+
+        rippleBuffer_.activeCount = 0;
+        rippleBuffer_.currentTime = 0.0f;
+        rippleBuffer_.rippleSpeed = rippleSpeed_;
+        rippleBuffer_.rippleDecay = rippleDecay_;
+
+        // 波紋データの初期化
+        for (int i = 0; i < 8; ++i) {
+            rippleBuffer_.ripples[i].position = { 0.0f, 0.0f };
+            rippleBuffer_.ripples[i].startTime = 0.0f;
+            rippleBuffer_.ripples[i].intensity = 0.0f;
+            rippleBuffer_.ripples[i].duration = 0.0f;
+            rippleBuffer_.ripples[i].maxRadius = 0.0f;
+            rippleBuffer_.ripples[i].speed = 0.0f;
+            rippleBuffer_.ripples[i].padding = 0.0f;
+        }
+
+        nextPriority_ = 0;
+
+        /// ===OceanColorBuffer=== ///
+        oceanColorBuffer_->Create(device, sizeof(OceanColorInfo));
+        oceanColorBuffer_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&oceanColorData_));
+        *oceanColorData_ = colorInfo_;
+    }
+
+    ///-------------------------------------------/// 
+    /// 波情報の初期化（12個）
+    ///-------------------------------------------///
+    void OceanGenerator::InitializeWaveInfos() {
+
+        // 最初の3つは従来の波
+        waveInfos_[0] = { { 0.0f, 0.0f, 0.0f }, 1.308f, 10.033f, 2.187f, 0.0f, 0.0f };
+        waveInfos_[1] = { { 0.0f, 0.0f, 0.0f }, 0.056f, 7.369f, 2.320f, 0.0f, 0.0f };
+        waveInfos_[2] = { { 0.0f, 0.0f, 0.0f }, 0.879f, 4.355f, 2.098f, 0.0f, 0.0f };
+    }
+
+    ///-------------------------------------------/// 
+    /// 更新
+    ///-------------------------------------------///
+    void OceanGenerator::Update() {
+        currentTime_ += Service::DeltaTime::GetDeltaTime();
+
+        /// ===時間の更新=== ///
+        for (int i = 0; i < kWaveCount_; ++i) {
+            waveInfos_[i].time = currentTime_;
+        }
+
+        /// ===波紋の更新=== ///
+        UpdateRipples();
+
+        /// ===WorldMatrixの更新=== ///
+        waveCompute_->UpdateWorldMatrix(Math::MakeAffineQuaternionMatrix(worldTransform_.scale, worldTransform_.rotate, worldTransform_.translate));
+
+        /// ===Compute Shaderで波を計算=== ///
+        waveCompute_->UpdateWaveInfos(waveInfos_);
+        waveCompute_->UpdateRippleBuffer(rippleBuffer_);
+
+        /// ===データの書き込み=== ///
+        OceanCommon::Update();
+        ColorDataWrite();
+    }
+
+    ///-------------------------------------------/// 
+    /// 描画
+    ///-------------------------------------------///
+    void OceanGenerator::Draw(BlendMode mode) {
+        ID3D12GraphicsCommandList* commandList = Service::GraphicsResourceGetter::GetDXCommandList();
+
+        // Compute PSOとRoot Signatureを設定
+        Service::Render::SetCSPSO(commandList, CSPipelineType::Ocean);
+        // Compute Shaderを実行
+        waveCompute_->Dispatch(commandList);
+        // UAV -> Vertex Bufferへの状態遷移
+        D3D12_RESOURCE_BARRIER barrier = {};
+        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barrier.Transition.pResource = vertex_->GetBuffer();
+        barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+        barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+        commandList->ResourceBarrier(1, &barrier);
+
+        // Graphics PSOを設定
+        Service::Render::SetPSO(commandList, PipelineType::Ocean, mode);
+
+        commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
+        commandList->IASetIndexBuffer(&indexBufferView_);
+
+        // バッファの設定
+        commandList->SetGraphicsRootConstantBufferView(0, material_->GetBuffer()->GetGPUVirtualAddress());
+        commandList->SetGraphicsRootConstantBufferView(1, wvp_->GetBuffer()->GetGPUVirtualAddress());
+        commandList->SetGraphicsRootConstantBufferView(2, directionalLight_->GetBuffer()->GetGPUVirtualAddress());
+        commandList->SetGraphicsRootConstantBufferView(3, camera3D_->GetBuffer()->GetGPUVirtualAddress());
+        // OceanColorBufferの設定
+        commandList->SetGraphicsRootConstantBufferView(4, oceanColorBuffer_->GetBuffer()->GetGPUVirtualAddress());
+
+        commandList->DrawIndexedInstanced(indexCount_, 1, 0, 0, 0);
+
+        // 描画後、次のフレームのために VERTEX_AND_CONSTANT_BUFFER -> COMMON へ戻す
+        D3D12_RESOURCE_BARRIER barrierToCommon = {};
+        barrierToCommon.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barrierToCommon.Transition.pResource = vertex_->GetBuffer();
+        barrierToCommon.Transition.StateBefore = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+        barrierToCommon.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
+        barrierToCommon.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        commandList->ResourceBarrier(1, &barrierToCommon);
+    }
+
+    ///-------------------------------------------/// 
+    /// ImGui
+    ///-------------------------------------------///
+    void OceanGenerator::ShowImGui() {
+#ifdef USE_IMGUI
+        ImGui::Begin("海洋シェーダー");
+
+        /// ===Transform情報=== ///
+        if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+            ImGui::DragFloat3("Translate", &worldTransform_.translate.x, 0.1f);
+            ImGui::DragFloat4("Rotate", &worldTransform_.rotate.x, 0.01f);
+            ImGui::DragFloat3("Scale", &worldTransform_.scale.x, 0.1f);
+        }
+
+        /// ===グリッド情報=== ///
+        if (ImGui::CollapsingHeader("グリッド情報")) {
+            ImGui::Text("グリッドサイズ : %d x %d", gridSize_, gridSize_);
+            ImGui::Text("Vertex数 : %d", vertexCount_);
+            ImGui::Text("Index数 : %d", indexCount_);
+            ImGui::Text("Triangle数 : %d", indexCount_ / 3);
+        }
+
+        /// ===波の情報=== ///
+        if (ImGui::CollapsingHeader("波のパラメータ", ImGuiTreeNodeFlags_DefaultOpen)) {
+            for (int i = 0; i < kWaveCount_; ++i) {
+                ImGui::PushID(i);
+                if (ImGui::TreeNode("波", "波 %d", i)) {
+                    ImGui::Text("波の方向 : (%.2f, %.2f, %.2f)", waveInfos_[i].distance.x, waveInfos_[i].distance.y, waveInfos_[i].distance.z);
+                    ImGui::Text("波の振幅 : %.2f", waveInfos_[i].amplitude);
+                    ImGui::Text("波の波長 : %.2f", waveInfos_[i].length);
+                    ImGui::Text("波の速度 : %.2f", waveInfos_[i].speed);
+
+                    ImGui::Separator();
+
+                    ImGui::DragFloat3("方向", &waveInfos_[i].distance.x, 0.01f, -1.0f, 1.0f);
+                    ImGui::SliderFloat("振幅", &waveInfos_[i].amplitude, 0.0f, 2.0f);
+                    ImGui::SliderFloat("波長", &waveInfos_[i].length, 1.0f, 30.0f);
+                    ImGui::SliderFloat("速度", &waveInfos_[i].speed, 0.5f, 10.0f);
+
+                    ImGui::TreePop();
+                }
+                ImGui::PopID();
+            }
+        }
+
+        /// ===波紋情報=== ///
+        if (ImGui::CollapsingHeader("波紋情報", ImGuiTreeNodeFlags_DefaultOpen)) {
+            ImGui::Text("Active Ripples: %d / 8", rippleBuffer_.activeCount);
+
+            ImGui::Text("波紋の速度 : %.2f", rippleSpeed_);
+            ImGui::Text("波紋の減衰 : %.2f", rippleDecay_);
+
+            if (ImGui::SliderFloat("速度", &rippleSpeed_, 1.0f, 10.0f)) {
+                rippleBuffer_.rippleSpeed = rippleSpeed_;
+            }
+            if (ImGui::SliderFloat("減衰", &rippleDecay_, 0.1f, 3.0f)) {
+                rippleBuffer_.rippleDecay = rippleDecay_;
+            }
+            if (ImGui::Button("全ての波紋をクリア")) {
+                ClearRipples();
+            }
+        }
+
+        /// ===色情報=== ///
+        if (ImGui::CollapsingHeader("色")) {
+            ImGui::ColorEdit3("海面の基本色", &colorInfo_.seaBase.x);
+            ImGui::ColorEdit3("浅瀬の色", &colorInfo_.seaShallow.x);
+            ImGui::ColorEdit3("空の色", &colorInfo_.sky.x);
+            ImGui::ColorEdit3("深海の色", &colorInfo_.deepWater.x);
+            ImGui::SliderFloat("基本色の強度", &colorInfo_.baseStrength, 0.0f, 2.0f);
+            ImGui::SliderFloat("水の透明度", &colorInfo_.waterClarity, 0.0f, 1.0f);
+            ImGui::SliderFloat("泡の閾値", &colorInfo_.foamThreshold, 0.0f, 3.0f);
+        }
+
+        /// ===ライト情報=== ///
+        if (ImGui::CollapsingHeader("ライト情報")) {
+            ImGui::Text("光沢度: %.2f", light_.shininess);
+            ImGui::DragFloat("光沢度", &light_.shininess, 0.1f);
+            ImGui::ColorEdit4("ライトの色", &light_.directional.color.x);
+            ImGui::SliderFloat3("方向", &light_.directional.direction.x, -1.0f, 1.0f);
+            ImGui::SliderFloat("強度", &light_.directional.intensity, 0.0f, 5.0f);
+        }
+
+        // テスト機能
+        if (ImGui::CollapsingHeader("テスト")) {
+            static float testIntensity = 1.0f;
+            static float testPosX = 0.0f;
+            static float testPosZ = 0.0f;
+
+            ImGui::SliderFloat("テスト強度", &testIntensity, 0.1f, 10.0f);
+            ImGui::SliderFloat("テスト座標X", &testPosX, -50.0f, 50.0f);
+            ImGui::SliderFloat("テスト座標Z", &testPosZ, -50.0f, 50.0f);
+
+            if (ImGui::Button("波紋の追加")) {
+                AddCircularRipple({ testPosX, 0.0f, testPosZ }, 3.0f, testIntensity);
+            }
+            ImGui::SameLine();
+
+            if (ImGui::Button("ランダムな位置に追加")) {
+                float randX = static_cast<float>(rand() % 100 - 50);
+                float randZ = static_cast<float>(rand() % 100 - 50);
+                float randIntensity = 0.5f + (rand() % 100) / 100.0f * 1.5f;
+                AddCircularRipple({ randX, 0.0f, randZ }, 3.0f, randIntensity);
+            }
+        }
+
+        ImGui::End();
+#endif
+    }
+
+    ///-------------------------------------------/// 
+    /// グリッドメッシュの生成
+    ///-------------------------------------------///
+    void OceanGenerator::CreateGridMesh() {
+        float gridWidth = 100.0f;
+        float gridDepth = 100.0f;
+        float step = gridWidth / gridSize_;
+
+        int vertexIndex = 0;
+        for (int i = 0; i <= gridSize_; i++) {
+            for (int j = 0; j <= gridSize_; j++) {
+                float x = -gridWidth * 0.5f + j * step;
+                float z = -gridDepth * 0.5f + i * step;
+                float u = (float)j / gridSize_;
+                float v = (float)i / gridSize_;
+
+                vertexData_[vertexIndex] = {
+                    {x, 0.0f, z, 1.0f},
+                    {u, v},
+                    {0.0f, 1.0f, 0.0f}
+                };
+                vertexIndex++;
+            }
+        }
+    }
+
+    ///-------------------------------------------/// 
+    /// ColorDataの書き込み
+    ///-------------------------------------------///
+    void OceanGenerator::ColorDataWrite() {
+        *oceanColorData_ = colorInfo_;
+    }
+
+    ///-------------------------------------------/// 
+    /// 波紋の更新
+    ///-------------------------------------------///
+    void OceanGenerator::UpdateRipples() {
+        int activeCount = 0;
+
+        for (int i = 0; i < 8; ++i) {
+            if (ripples_[i].isActive) {
+                float elapsed = currentTime_ - ripples_[i].startTime;
+
+                if (elapsed > ripples_[i].duration) {
+                    ripples_[i].isActive = false;
+                } else {
+                    rippleBuffer_.ripples[activeCount].position = ripples_[i].position;
+                    rippleBuffer_.ripples[activeCount].startTime = ripples_[i].startTime;
+                    rippleBuffer_.ripples[activeCount].intensity = ripples_[i].intensity;
+                    rippleBuffer_.ripples[activeCount].duration = ripples_[i].duration;
+                    rippleBuffer_.ripples[activeCount].maxRadius = ripples_[i].maxRadius;
+                    rippleBuffer_.ripples[activeCount].speed = ripples_[i].speed;
+                    activeCount++;
+                }
+            }
+        }
+
+        rippleBuffer_.activeCount = activeCount;
+        rippleBuffer_.currentTime = currentTime_;
+        rippleBuffer_.rippleSpeed = rippleSpeed_;
+        rippleBuffer_.rippleDecay = rippleDecay_;
+    }
+
+    ///-------------------------------------------/// 
+    /// 波紋の追加
+    ///-------------------------------------------///
+    void OceanGenerator::AddCircularRipple(const Vector3& center, float duration, float intensity, float maxRadius) {
+        int targetSlot = -1;
+
+        for (int i = 0; i < 8; ++i) {
+            if (!ripples_[i].isActive) {
+                targetSlot = i;
+                break;
+            }
+        }
+
+        if (targetSlot == -1) {
+            int lowestPriority = ripples_[0].priority;
+            targetSlot = 0;
+
+            for (int i = 1; i < 8; ++i) {
+                if (ripples_[i].priority < lowestPriority) {
+                    lowestPriority = ripples_[i].priority;
+                    targetSlot = i;
+                }
+            }
+        }
+
+        if (targetSlot >= 0 && targetSlot < 8) {
+            ripples_[targetSlot].position = { center.x, center.z };
+            ripples_[targetSlot].startTime = currentTime_;
+            ripples_[targetSlot].intensity = intensity;
+            ripples_[targetSlot].duration = duration;
+            ripples_[targetSlot].maxRadius = maxRadius;
+            ripples_[targetSlot].speed = maxRadius / duration;
+            ripples_[targetSlot].priority = nextPriority_++;
+            ripples_[targetSlot].isActive = true;
+        }
+    }
+
+    ///-------------------------------------------/// 
+    /// 波紋のクリア
+    ///-------------------------------------------///
+    void OceanGenerator::ClearRipples() {
+        for (int i = 0; i < 8; ++i) {
+            ripples_[i].isActive = false;
+        }
+        rippleBuffer_.activeCount = 0;
+        hitRecords_.clear();
+    }
+}
+
+============================================================
+File Path: Project/Engine/Graphics/Ocean/OceanGenerator.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// buffer
+#include "Engine/Graphics/Base/BufferBase.h"
+// Common
+#include "OceanCommon.h"
+// Wave Compute
+#include "OceanWaveCompute.h"
+// Pipeline
+#include "Engine/DataInfo/PipelineStateObjectType.h"
+// Data
+#include "Engine/DataInfo/OceanData.h"
+// c++
+#include <vector>
+#include <array>
+#include <algorithm>
+
+namespace MiiEngine {
+    ///=====================================================/// 
+    /// OceanGenerator
+    ///=====================================================///
+    class OceanGenerator : public OceanCommon {
+    public:
+        OceanGenerator() = default;
+        ~OceanGenerator();
+
+        /// <summary>
+        /// 初期化処理
+        /// </summary>
+        /// <param name="gridSize">グリッドのサイズ（縦横の分割数）</param>
+        void Initialize(int gridSize);
+
+        /// <summary>
+        /// 更新処理
+        /// </summary>
+        void Update();
+
+        /// <summary>
+        /// 描画処理
+        /// </summary>
+        /// <param name="mode">ブレンドモード</param>
+        void Draw(BlendMode mode = BlendMode::KBlendModeNormal);
+
+        /// <summary>
+        /// ImGui情報の表示
+        /// </summary>
+        void ShowImGui();
+
+        /// <summary>
+        /// 円状に広がる波紋を追加
+        /// </summary>
+        void AddCircularRipple(const Vector3& center, float duration = 3.0f, float intensity = 1.0f, float maxRadius = 20.0f);
+
+        /// <summary>
+        /// すべての波紋をクリア
+        /// </summary>
+        void ClearRipples();
+
+    public: /// ===Setter=== ///
+        // Ocean Wave Parameters（12個の波対応）
+        void SetWaveInfo(int waveIndex, const Vector3& direction, float amplitude, float length, float speed);
+        // Ocean Color Parameters
+        void SetColorInfo(const OceanColorInfo& colorInfo);
+        // Ripple Parameters
+        void SetRippleSpeed(float speed);
+        void SetRippleDecay(float decay);
+
+    private:
+        /// ===バッファリソース=== ///
+        std::unique_ptr<BufferBase> vertex_;
+        std::unique_ptr<BufferBase> index_;
+        std::unique_ptr<BufferBase> oceanColorBuffer_;    // 色情報バッファ
+
+        /// ===Wave Compute=== ///
+        std::unique_ptr<OceanWaveCompute> waveCompute_;
+
+        /// ===バッファリソース内のデータを指すポインタ=== ///
+        VertexData3D* vertexData_ = nullptr;
+        uint32_t* indexData_ = nullptr;
+        OceanColorInfo* oceanColorData_ = nullptr;
+
+        /// ===バッファビュー=== ///
+        D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+        D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
+
+        /// ===グリッド情報=== ///
+        int gridSize_ = 64;
+        int vertexCount_ = 0;
+        int indexCount_ = 0;
+
+        /// ===波情報（12個）=== ///
+        std::array<OceanShaderInfo, kWaveCount_> waveInfos_;
+
+        /// ===波紋管理=== ///
+        std::array<RippleData, 8> ripples_;
+        RippleBufferForGPU rippleBuffer_;
+        float currentTime_ = 0.0f;
+        float rippleSpeed_ = 4.0f;
+        float rippleDecay_ = 1.0f;
+        int nextPriority_ = 0;
+
+        // 衝突検知用
+        struct HitRecord {
+            int objectID;
+            Vector3 lastPosition;
+            bool wasHitting;
+        };
+        std::vector<HitRecord> hitRecords_;
+
+        /// ===Ocean Color情報=== ///
+        OceanColorInfo colorInfo_ = {
+            { 0.1f, 0.4f, 0.6f }, 0.0f,
+            { 0.2f, 0.7f, 0.8f }, 0.0f,
+            { 0.4f, 0.6f, 0.9f }, 0.0f,
+            { 0.0f, 0.05f, 0.2f },
+            1.2f,
+            0.3f,
+            0.4f,
+            0.5f
+        };
+
+    private: /// ===Functions=== ///
+        /// <summary>
+        /// グリッドメッシュの生成（初期状態・平面）
+        /// </summary>
+        void CreateGridMesh();
+
+        /// <summary>
+        /// ColorData書き込み処理
+        /// </summary>
+        void ColorDataWrite();
+
+        /// <summary>
+        /// 波紋の更新処理
+        /// </summary>
+        void UpdateRipples();
+
+        /// <summary>
+        /// 波情報の初期化（12個）
+        /// </summary>
+        void InitializeWaveInfos();
+    };
+}
+
+============================================================
 File Path: Project/Engine/Graphics/Ocean/OceanWaveCompute.cpp
 ============================================================
 #include "OceanWaveCompute.h"
@@ -10366,8 +11692,6 @@ namespace MiiEngine {
     /// 波の計算を実行
     ///-------------------------------------------///
     void OceanWaveCompute::Dispatch(ID3D12GraphicsCommandList* commandList) {
-
-        // OceanWaveCompute::Dispatch を呼び出す前に追加
         ID3D12DescriptorHeap* descriptorHeaps[] = {
             srvManager_->GetDescriptorHeap()  // SRVManagerからヒープを取得
         };
@@ -14716,6 +16040,7 @@ namespace MiiEngine {
 				L"BitReverseRows",
 				L"ButterflyIFFT",
 				L"BitReverseCols",
+				L"SaveIFFTResult",
 				L"AssembleDisplacement",
 				L"ComputeNormalFoam",}}},
 		};
@@ -14985,6 +16310,8 @@ namespace MiiEngine {
 		IDxcBlob* csBlob = compiler_->GetKernel(kernelName);
 		assert(csBlob && "CS Kernel Blob is null");
 
+		HRESULT hr;
+
 		// ComputePipelineStateDescの設定
 		computePipelineStateDesc_ = {};
 		computePipelineStateDesc_.pRootSignature = rootSignature_->GetRootSignature();
@@ -14994,7 +16321,7 @@ namespace MiiEngine {
 		};
 
 		// PipelineStateの生成
-		HRESULT hr = dxCommon->GetDevice()->CreateComputePipelineState(
+		hr = dxCommon->GetDevice()->CreateComputePipelineState(
 			&computePipelineStateDesc_, IID_PPV_ARGS(&computePipelineState_));
 		assert(SUCCEEDED(hr));
 	}
@@ -15170,48 +16497,39 @@ namespace MiiEngine {
 
 		/// ===CSFFTOcean=== ///
 		ComPtr<ID3D12RootSignature> TypeFFTOcean(ID3D12Device* device) {
-			/// UAV用のDescriptorRange（u0〜u7）
-			D3D12_DESCRIPTOR_RANGE uavRange[8] = {};
-			for (uint32_t i = 0; i < 8; ++i) {
-				uavRange[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-				uavRange[i].NumDescriptors = 1;
-				uavRange[i].BaseShaderRegister = i;
-				uavRange[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-			}
-
-			/// SRV用のDescriptorRange（t0〜t2）
-			D3D12_DESCRIPTOR_RANGE srvRange[3] = {};
-			for (uint32_t i = 0; i < 3; ++i) {
-				srvRange[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-				srvRange[i].NumDescriptors = 1;
-				srvRange[i].BaseShaderRegister = i;
-				srvRange[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-			}
+			// UAV用のDescriptorRange (u0〜u7)
+			D3D12_DESCRIPTOR_RANGE uavRange = {};
+			uavRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+			uavRange.NumDescriptors = 8; // u0〜u7
+			uavRange.BaseShaderRegister = 0; // u0から開始
+			uavRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+			// SRV用のDescriptorRange (t0〜t2)
+			D3D12_DESCRIPTOR_RANGE srvRange = {};
+			srvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			srvRange.NumDescriptors = 3; // t0〜t2
+			srvRange.BaseShaderRegister = 0; // t0から開始
+			srvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 			/// RootParameterの生成
-			D3D12_ROOT_PARAMETER rootParameters[13] = {};
-			// (b0) OceanParams
+			D3D12_ROOT_PARAMETER rootParameters[4] = {};
+			// パラメータ0: CBV - OceanParams (b0)
 			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 			rootParameters[0].Descriptor.ShaderRegister = 0;
-			// (b1) ButterflyParams
+			// パラメータ1: CBV - ButterflyParams (b1)
 			rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 			rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 			rootParameters[1].Descriptor.ShaderRegister = 1;
-			// (u0〜u7) UAV
-			for (uint32_t i = 0; i < 8; ++i) {
-				rootParameters[2 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-				rootParameters[2 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-				rootParameters[2 + i].DescriptorTable.pDescriptorRanges = &uavRange[i];
-				rootParameters[2 + i].DescriptorTable.NumDescriptorRanges = 1;
-			}
-			// (t0〜t2) SRV: HeightIFFT, DxIFFT, DzIFFT
-			for (uint32_t i = 0; i < 3; ++i) {
-				rootParameters[10 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-				rootParameters[10 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-				rootParameters[10 + i].DescriptorTable.pDescriptorRanges = &srvRange[i];
-				rootParameters[10 + i].DescriptorTable.NumDescriptorRanges = 1;
-			}
+			// パラメータ2: UAV
+			rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
+			rootParameters[2].DescriptorTable.pDescriptorRanges = &uavRange;
+			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+			// パラメータ3: SRV
+			rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[3].DescriptorTable.NumDescriptorRanges = 1;
+			rootParameters[3].DescriptorTable.pDescriptorRanges = &srvRange;
+			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 			/// RootSignatureの生成
 			D3D12_ROOT_SIGNATURE_DESC desc{};
@@ -15315,7 +16633,129 @@ namespace MiiEngine {
 
 
 ============================================================
-File Path: Project/Engine/Graphics/Pipeline/Compiler.cpp
+File Path: Project/Engine/Graphics/Pipeline/GS/BlendState.cpp
+============================================================
+#include "BlendState.h"
+
+namespace MiiEngine {
+	///-------------------------------------------/// 
+	/// ブレンドステートの生成
+	///-------------------------------------------///
+	void BlendState::Create(BlendMode mode) {
+		// BlendStateの設定
+		// すべての色要素を書き込む
+		blendDesc_.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+		if (mode == BlendMode::kBlendModeAdd) {
+			blendDesc_.RenderTarget[0].BlendEnable = TRUE;
+
+			// 加算合成
+			blendDesc_.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+			blendDesc_.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+			blendDesc_.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+
+			// a値の設定
+			blendDesc_.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
+			blendDesc_.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+			blendDesc_.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
+		} else if (mode == BlendMode::kBlendModeSubtract) {
+			blendDesc_.RenderTarget[0].BlendEnable = TRUE;
+
+			// 減算合成
+			blendDesc_.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+			blendDesc_.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
+			blendDesc_.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+
+			// a値の設定
+			blendDesc_.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
+			blendDesc_.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+			blendDesc_.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
+		} else if (mode == BlendMode::kBlendModeMultily) {
+			blendDesc_.RenderTarget[0].BlendEnable = TRUE;
+
+			// 乗算合成
+			blendDesc_.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
+			blendDesc_.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+			blendDesc_.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
+
+			// a値の設定
+			blendDesc_.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
+			blendDesc_.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+			blendDesc_.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
+		} else if (mode == BlendMode::kBlendModeScreen) {
+			blendDesc_.RenderTarget[0].BlendEnable = TRUE;
+
+			// スクリーン合成
+			blendDesc_.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
+			blendDesc_.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+			blendDesc_.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+
+			// a値の設定
+			blendDesc_.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
+			blendDesc_.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+			blendDesc_.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
+		} else if (mode == BlendMode::KBlendModeNormal) {
+			blendDesc_.RenderTarget[0].BlendEnable = TRUE;
+
+			// Normal
+			blendDesc_.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+			blendDesc_.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+			blendDesc_.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+
+			// a値の設定
+			blendDesc_.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
+			blendDesc_.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+			blendDesc_.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
+		}
+	}
+
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	D3D12_BLEND_DESC BlendState::GetBlendDesc() { return blendDesc_; }
+}
+
+============================================================
+File Path: Project/Engine/Graphics/Pipeline/GS/BlendState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// PipelineType
+#include "Engine/DataInfo/PipelineStateObjectType.h"
+// c++
+#include <d3d12.h>
+
+namespace MiiEngine {
+	///=====================================================/// 
+	/// BlendState
+	///=====================================================///
+	class BlendState {
+	public:
+
+		BlendState() = default;
+		~BlendState() = default;
+
+		/// <summary>
+		///  ブレンドステートの生成
+		/// </summary>
+		/// <param name="mode">使用するブレンド（合成）モード。BlendMode 列挙型の値を指定します。</param>
+		void Create(BlendMode mode);
+
+		/// <summary>
+		/// ブレンドステートの取得
+		/// </summary>
+		/// <returns></returns>
+		D3D12_BLEND_DESC GetBlendDesc();
+
+	private:
+
+		D3D12_BLEND_DESC blendDesc_{}; // BlendState
+	};
+}
+
+
+============================================================
+File Path: Project/Engine/Graphics/Pipeline/GS/Compiler.cpp
 ============================================================
 #include "Compiler.h"
 // Engine
@@ -15491,7 +16931,7 @@ namespace MiiEngine {
 }
 
 ============================================================
-File Path: Project/Engine/Graphics/Pipeline/Compiler.h
+File Path: Project/Engine/Graphics/Pipeline/GS/Compiler.h
 ============================================================
 #pragma once
 /// ===Include=== ///
@@ -15564,128 +17004,6 @@ namespace MiiEngine {
 
 	};
 }
-
-============================================================
-File Path: Project/Engine/Graphics/Pipeline/GS/BlendState.cpp
-============================================================
-#include "BlendState.h"
-
-namespace MiiEngine {
-	///-------------------------------------------/// 
-	/// ブレンドステートの生成
-	///-------------------------------------------///
-	void BlendState::Create(BlendMode mode) {
-		// BlendStateの設定
-		// すべての色要素を書き込む
-		blendDesc_.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-		if (mode == BlendMode::kBlendModeAdd) {
-			blendDesc_.RenderTarget[0].BlendEnable = TRUE;
-
-			// 加算合成
-			blendDesc_.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-			blendDesc_.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-			blendDesc_.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-
-			// a値の設定
-			blendDesc_.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
-			blendDesc_.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-			blendDesc_.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
-		} else if (mode == BlendMode::kBlendModeSubtract) {
-			blendDesc_.RenderTarget[0].BlendEnable = TRUE;
-
-			// 減算合成
-			blendDesc_.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-			blendDesc_.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
-			blendDesc_.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-
-			// a値の設定
-			blendDesc_.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
-			blendDesc_.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-			blendDesc_.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
-		} else if (mode == BlendMode::kBlendModeMultily) {
-			blendDesc_.RenderTarget[0].BlendEnable = TRUE;
-
-			// 乗算合成
-			blendDesc_.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
-			blendDesc_.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-			blendDesc_.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
-
-			// a値の設定
-			blendDesc_.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
-			blendDesc_.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-			blendDesc_.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
-		} else if (mode == BlendMode::kBlendModeScreen) {
-			blendDesc_.RenderTarget[0].BlendEnable = TRUE;
-
-			// スクリーン合成
-			blendDesc_.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
-			blendDesc_.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-			blendDesc_.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-
-			// a値の設定
-			blendDesc_.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
-			blendDesc_.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-			blendDesc_.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
-		} else if (mode == BlendMode::KBlendModeNormal) {
-			blendDesc_.RenderTarget[0].BlendEnable = TRUE;
-
-			// Normal
-			blendDesc_.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-			blendDesc_.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-			blendDesc_.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-
-			// a値の設定
-			blendDesc_.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
-			blendDesc_.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-			blendDesc_.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
-		}
-	}
-
-	///-------------------------------------------/// 
-	/// Getter
-	///-------------------------------------------///
-	D3D12_BLEND_DESC BlendState::GetBlendDesc() { return blendDesc_; }
-}
-
-============================================================
-File Path: Project/Engine/Graphics/Pipeline/GS/BlendState.h
-============================================================
-#pragma once
-/// ===Include=== ///
-// PipelineType
-#include "Engine/DataInfo/PipelineStateObjectType.h"
-// c++
-#include <d3d12.h>
-
-namespace MiiEngine {
-	///=====================================================/// 
-	/// BlendState
-	///=====================================================///
-	class BlendState {
-	public:
-
-		BlendState() = default;
-		~BlendState() = default;
-
-		/// <summary>
-		///  ブレンドステートの生成
-		/// </summary>
-		/// <param name="mode">使用するブレンド（合成）モード。BlendMode 列挙型の値を指定します。</param>
-		void Create(BlendMode mode);
-
-		/// <summary>
-		/// ブレンドステートの取得
-		/// </summary>
-		/// <returns></returns>
-		D3D12_BLEND_DESC GetBlendDesc();
-
-	private:
-
-		D3D12_BLEND_DESC blendDesc_{}; // BlendState
-	};
-}
-
 
 ============================================================
 File Path: Project/Engine/Graphics/Pipeline/GS/DepthStencil.cpp
@@ -15802,7 +17120,7 @@ File Path: Project/Engine/Graphics/Pipeline/GS/GSPSOCommon.cpp
 ============================================================
 #include "GSPSOCommon.h"
 // Compiler
-#include "Engine/Graphics/Pipeline/Compiler.h"
+#include "Compiler.h"
 // Engine
 #include "Engine/Core/DXCommon.h"
 // c++
@@ -16774,50 +18092,37 @@ namespace MiiEngine {
 
 		/// ===FFTOcean=== ///
 		ComPtr<ID3D12RootSignature> TypeFFTOcean(ID3D12Device* device) {
-			/// SRV用のDescriptorRange
-			D3D12_DESCRIPTOR_RANGE vsSrvRange[2] = {}; // VSでSRVを2つ使う想定
-			// t0用
-			vsSrvRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-			vsSrvRange[0].NumDescriptors = 1;
-			vsSrvRange[0].BaseShaderRegister = 0;
-			vsSrvRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-			// t1用
-			vsSrvRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-			vsSrvRange[1].NumDescriptors = 1;
-			vsSrvRange[1].BaseShaderRegister = 1;
-			vsSrvRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-			D3D12_DESCRIPTOR_RANGE psSrvRange = {}; // PSでSRVを1つ使う想定
+			// VS用のSRV
+			D3D12_DESCRIPTOR_RANGE vsSrvRange = {};
+			vsSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			vsSrvRange.NumDescriptors = 2;
+			vsSrvRange.BaseShaderRegister = 0; // t0, t1
+			// PS用のSRV
+			D3D12_DESCRIPTOR_RANGE psSrvRange = {};
 			psSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 			psSrvRange.NumDescriptors = 1;
-			psSrvRange.BaseShaderRegister = 0;
-			psSrvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+			psSrvRange.BaseShaderRegister = 2; // t2
 
 			/// RootParameterの生成
-			D3D12_ROOT_PARAMETER rootParameters[5] = {};
+			D3D12_ROOT_PARAMETER rootParameters[4] = {};
 			// VS（b0）
 			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 			rootParameters[0].Descriptor.ShaderRegister = 0;
-			// PS（b0）
+			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+			// PS（b1）
 			rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+			rootParameters[1].Descriptor.ShaderRegister = 1;
 			rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-			rootParameters[1].Descriptor.ShaderRegister = 0;
-			// VSのSRVテクスチャ用（t0）
+			// VSのSRVテクスチャ用（t0,t1）
 			rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-			rootParameters[2].DescriptorTable.pDescriptorRanges = &vsSrvRange[0];
 			rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
-			// VSのSRVテクスチャ用（t1）
+			rootParameters[2].DescriptorTable.pDescriptorRanges = &vsSrvRange;
+			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+			// PSのSRVテクスチャ用（t2）
 			rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-			rootParameters[3].DescriptorTable.pDescriptorRanges = &vsSrvRange[1];
 			rootParameters[3].DescriptorTable.NumDescriptorRanges = 1;
-			// PSのSRVテクスチャ用（t0）
-			rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-			rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-			rootParameters[4].DescriptorTable.pDescriptorRanges = &psSrvRange;
-			rootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
+			rootParameters[3].DescriptorTable.pDescriptorRanges = &psSrvRange;
+			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 			/// Samplerの設定
 			D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
@@ -18206,6 +19511,8 @@ namespace MiiEngine {
 		// OffScreen
 		Loader::LoadTexture("noise0", "OffScreen/noise0.png");
 		Loader::LoadTexture("noise1", "OffScreen/noise1.png");
+		// Ocean
+		Loader::LoadTexture("oceanFFT", "Ocean/foam_noise.png");
 		// DDS
 		Loader::LoadTexture("skyBox", "DDS/rostock_laage_airport_4k.dds");
 
@@ -24550,7 +25857,7 @@ File Path: Project/Engine/System/Managers/PiplineManager.h
 #include "Engine/DataInfo/PipelineStateObjectType.h"
 #include "Engine/Graphics/Pipeline/GS/GSPSOCommon.h"
 #include "Engine/Graphics/Pipeline/CS/CSPSOCommon.h"
-#include "Engine/Graphics/Pipeline/Compiler.h"
+#include "Engine/Graphics/Pipeline/GS/Compiler.h"
 #include "Engine/Graphics/Pipeline/CS/CSCompiler.h"
 // c++
 #include <unordered_map>
@@ -25912,6 +27219,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSRootSignature.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.cpp" />
     <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp" />
+    <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanGenerator.cpp" />
+    <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.cpp" />
+    <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.cpp" />
     <ClCompile Include="Service\DeltaTime.cpp" />
     <ClCompile Include="Engine\System\GameTime\GameTime.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.cpp" />
@@ -25980,7 +27290,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Math\Vector3.cpp" />
     <ClCompile Include="Math\Vector4.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\GS\BlendState.cpp" />
-    <ClCompile Include="Engine\Graphics\Pipeline\Compiler.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\GS\Compiler.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\GS\InputLayout.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\GS\GSPSOCommon.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\GS\RasterizerState.cpp" />
@@ -26047,7 +27357,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp" />
     <ClCompile Include="Engine\Graphics\2d\Base\Object2DCommon.cpp" />
     <ClCompile Include="application\Game\Animation\StartAnimation.cpp" />
-    <ClCompile Include="Engine\Graphics\Ocean\Ocean.cpp" />
+    <ClCompile Include="Engine\Graphics\Ocean\OceanGenerator.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\OceanCommon.cpp" />
     <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp" />
@@ -26096,6 +27406,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.h" />
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
+    <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanGenerator.h" />
+    <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.h" />
+    <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.h" />
     <ClInclude Include="Service\DeltaTime.h" />
     <ClInclude Include="Engine\System\GameTime\GameTime.h" />
     <ClInclude Include="Engine\DataInfo\OceanData.h" />
@@ -26176,7 +27489,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Math\Vector3.h" />
     <ClInclude Include="Math\Vector4.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\GS\BlendState.h" />
-    <ClInclude Include="Engine\Graphics\Pipeline\Compiler.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\GS\Compiler.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\GS\InputLayout.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\GS\GSPSOCommon.h" />
     <ClInclude Include="Engine\DataInfo\PipelineStateObjectType.h" />
@@ -26245,7 +27558,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h" />
     <ClInclude Include="Engine\Graphics\2d\Base\Object2DCommon.h" />
     <ClInclude Include="application\Game\Animation\StartAnimation.h" />
-    <ClInclude Include="Engine\Graphics\Ocean\Ocean.h" />
+    <ClInclude Include="Engine\Graphics\Ocean\OceanGenerator.h" />
     <ClInclude Include="Engine\Graphics\Ocean\OceanCommon.h" />
     <ClInclude Include="application\Game\Object\StageObject\StageObject.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
@@ -26581,18 +27894,24 @@ File Path: Project/FallenAscent.vcxproj.filters
     <FxCompile Include="Resource\Shaders\2D\CircularGauge.PS.hlsl">
       <Filter>Resource\Shaders\2D</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\Ocean.CS.hlsl">
-      <Filter>Resource\Shaders\3D</Filter>
+    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.PS.hlsl">
+      <Filter>Resource\Shaders\Ocean</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\Ocean.PS.hlsl">
-      <Filter>Resource\Shaders\3D</Filter>
+    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.VS.hlsl">
+      <Filter>Resource\Shaders\Ocean</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.CS.hlsl">
+      <Filter>Resource\Shaders\Ocean</Filter>
     </FxCompile>
     <FxCompile Include="Resource\Shaders\Ocean\Ocean.VS.hlsl">
-      <Filter>Resource\Shaders\3D</Filter>
+      <Filter>Resource\Shaders\Ocean</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.CS.hlsl" />
-    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.VS.hlsl" />
-    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.PS.hlsl" />
+    <FxCompile Include="Resource\Shaders\Ocean\Ocean.CS.hlsl">
+      <Filter>Resource\Shaders\Ocean</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\Ocean\Ocean.PS.hlsl">
+      <Filter>Resource\Shaders\Ocean</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -26752,9 +28071,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Engine\Graphics\OffScreen\RenderTexture.cpp">
       <Filter>Engine\Graphics\OffScreen</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\Compiler.cpp">
-      <Filter>Engine\Graphics\Pipeline</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Scene\AbstractSceneFactory.cpp">
       <Filter>Engine\Scene</Filter>
     </ClCompile>
@@ -26893,9 +28209,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp">
       <Filter>Engine\Graphics\OffScreen\Effect</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\Title\UI\TitleUI.cpp">
-      <Filter>application\Game\UI\Title</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Graphics\2d\Sprite\SpriteCommon.cpp">
       <Filter>Engine\Graphics\2D\Sprite</Filter>
     </ClCompile>
@@ -26934,12 +28247,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     </ClCompile>
     <ClCompile Include="application\Game\Object\GameStage.cpp">
       <Filter>application\Game\Object</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Ocean\Ocean.cpp">
-      <Filter>Engine\Graphics\3D\Oshan</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Ocean\OceanCommon.cpp">
-      <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp">
       <Filter>application\Game\Animation</Filter>
@@ -27003,9 +28310,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     </ClCompile>
     <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp">
       <Filter>Engine\Collider\Collision</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Ocean\OceanWaveCompute.cpp">
-      <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Base\UAV.cpp">
       <Filter>Engine\Graphics\Base</Filter>
@@ -27121,9 +28425,39 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.cpp">
       <Filter>application\Game\Entity\Enemy\MobEnemy\Base</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp" />
-    <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp" />
-    <ClCompile Include="Engine\Graphics\Pipeline\CS\CSCompiler.cpp" />
+    <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp">
+      <Filter>Engine\Camera\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp">
+      <Filter>application\Scene\Title\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Title\UI\TitleUI.cpp">
+      <Filter>application\Scene\Title\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Pipeline\CS\CSCompiler.cpp">
+      <Filter>Engine\Graphics\Pipeline\CS</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Pipeline\GS\Compiler.cpp">
+      <Filter>Engine\Graphics\Pipeline\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanGenerator.cpp">
+      <Filter>Engine\Graphics\Ocean\FFT</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.cpp">
+      <Filter>Engine\Graphics\Ocean\FFT</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.cpp">
+      <Filter>Engine\Graphics\Ocean\FFT</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Ocean\OceanGenerator.cpp">
+      <Filter>Engine\Graphics\Ocean</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Ocean\OceanCommon.cpp">
+      <Filter>Engine\Graphics\Ocean</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Ocean\OceanWaveCompute.cpp">
+      <Filter>Engine\Graphics\Ocean</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -27321,9 +28655,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\Graphics\OffScreen\RenderTexture.h">
       <Filter>Engine\Graphics\OffScreen</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\Compiler.h">
-      <Filter>Engine\Graphics\Pipeline</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Scene\AbstractSceneFactory.h">
       <Filter>Engine\Scene</Filter>
     </ClInclude>
@@ -27462,9 +28793,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h">
       <Filter>Engine\Graphics\OffScreen\Effect</Filter>
     </ClInclude>
-    <ClInclude Include="application\Scene\Title\UI\TitleUI.h">
-      <Filter>application\Game\UI\Title</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Graphics\2d\Sprite\SpriteCommon.h">
       <Filter>Engine\Graphics\2D\Sprite</Filter>
     </ClInclude>
@@ -27503,12 +28831,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     </ClInclude>
     <ClInclude Include="application\Game\Object\GameStage.h">
       <Filter>application\Game\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Ocean\Ocean.h">
-      <Filter>Engine\Graphics\3D\Oshan</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Ocean\OceanCommon.h">
-      <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClInclude>
     <ClInclude Include="Engine\DataInfo\OceanData.h">
       <Filter>Engine\DataInfo</Filter>
@@ -27581,9 +28903,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     </ClInclude>
     <ClInclude Include="Engine\Collider\ColliderConcept.h">
       <Filter>Engine\Collider</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Ocean\OceanWaveCompute.h">
-      <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Base\UAV.h">
       <Filter>Engine\Graphics\Base</Filter>
@@ -27702,10 +29021,40 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.h">
       <Filter>application\Game\Entity\Enemy\MobEnemy\Base</Filter>
     </ClInclude>
-    <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h" />
-    <ClInclude Include="Engine\Camera\Base\CameraCommon.h" />
-    <ClInclude Include="Engine\DataInfo\CameraData.h" />
-    <ClInclude Include="Engine\Graphics\Pipeline\CS\CSCompiler.h" />
+    <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.h" />
+    <ClInclude Include="Engine\Camera\Base\CameraCommon.h">
+      <Filter>Engine\Camera\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\DataInfo\CameraData.h">
+      <Filter>Engine\DataInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h">
+      <Filter>application\Scene\Title\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Title\UI\TitleUI.h">
+      <Filter>application\Scene\Title\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Pipeline\CS\CSCompiler.h">
+      <Filter>Engine\Graphics\Pipeline\CS</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Pipeline\GS\Compiler.h">
+      <Filter>Engine\Graphics\Pipeline\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanGenerator.h">
+      <Filter>Engine\Graphics\Ocean\FFT</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.h">
+      <Filter>Engine\Graphics\Ocean\FFT</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Ocean\OceanGenerator.h">
+      <Filter>Engine\Graphics\Ocean</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Ocean\OceanCommon.h">
+      <Filter>Engine\Graphics\Ocean</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Ocean\OceanWaveCompute.h">
+      <Filter>Engine\Graphics\Ocean</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -27729,11 +29078,11 @@ File Path: Project/FallenAscent.vcxproj.filters
     <None Include="Resource\Shaders\OffScreen\Fullscreen.hlsli">
       <Filter>Resource\Shaders\OffScreen</Filter>
     </None>
-    <None Include="Resource\Shaders\Ocean\Ocean.hlsli">
-      <Filter>Resource\Shaders\3D</Filter>
-    </None>
     <None Include="Resource\Shaders\2D\Obj2D.hlsli">
       <Filter>Resource\Shaders\2D</Filter>
+    </None>
+    <None Include="Resource\Shaders\Ocean\Ocean.hlsli">
+      <Filter>Resource\Shaders\Ocean</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -27760,9 +29109,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     </Filter>
     <Filter Include="application\Game\Entity">
       <UniqueIdentifier>{fd701977-b533-4bad-b59e-8792fda0bb3e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Camera">
-      <UniqueIdentifier>{5c33d645-33cb-4a19-b636-6e94dbf7890c}</UniqueIdentifier>
     </Filter>
     <Filter Include="application\Game\Object">
       <UniqueIdentifier>{dc046158-1126-47f6-aec7-738569fcbfe3}</UniqueIdentifier>
@@ -27899,9 +29245,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <Filter Include="application\Game\Object\GameObject">
       <UniqueIdentifier>{4a5f8f95-907f-4a10-baee-87153ed89ae1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Graphics\3D\Oshan">
-      <UniqueIdentifier>{162736ff-601d-43a0-a358-c07c7e42961a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="application\Game\Entity\Player\Component">
       <UniqueIdentifier>{343c8ccc-cc5a-47b8-a85a-2136b5da5a63}</UniqueIdentifier>
     </Filter>
@@ -27925,9 +29268,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     </Filter>
     <Filter Include="application\Game\UI">
       <UniqueIdentifier>{40deb47d-99c0-4514-b379-f9406b1914b1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\UI\Title">
-      <UniqueIdentifier>{3a1fbc3e-6980-4309-b497-63300e33f2de}</UniqueIdentifier>
     </Filter>
     <Filter Include="application\Game\UI\Game">
       <UniqueIdentifier>{1d39f8ad-5b70-4b35-8c83-53ceb7761d60}</UniqueIdentifier>
@@ -28006,6 +29346,24 @@ File Path: Project/FallenAscent.vcxproj.filters
     </Filter>
     <Filter Include="Service">
       <UniqueIdentifier>{482e8d8e-2156-475d-93ae-2d00c96bdd5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Camera\Base">
+      <UniqueIdentifier>{d5723da5-314a-4869-b1d9-048073e90010}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Shaders\Ocean">
+      <UniqueIdentifier>{7fc230fa-b515-46a3-9d0b-35b227c9c914}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Title\Animation">
+      <UniqueIdentifier>{4f10f110-9125-43a5-8b92-3b0f2085af67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Title\UI">
+      <UniqueIdentifier>{0ee76fe2-6665-42d7-93f1-b9d032d5e748}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Graphics\Ocean">
+      <UniqueIdentifier>{e8265952-23a6-4e2d-b2a3-31d93934c880}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Graphics\Ocean\FFT">
+      <UniqueIdentifier>{de13c019-91ec-4868-a5b4-5f61e3542050}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
@@ -42192,12 +43550,13 @@ File Path: Project/application/Game/Object/GameGround/GroundOcean.cpp
 #include "GroundOcean.h"
 // Service
 #include "Service/Input.h"
+#include "Service/Camera.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
 GroundOcean::~GroundOcean() {
-	ocean_.reset();
+	fftOcean_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -42209,18 +43568,36 @@ void GroundOcean::Initialize() {
 	GameObject::Initialize();
 	GameObject::SetAABB({ { -500.0f, -2.0f, -500.0f }, { 500.0f, 0.0f, 500.0f } });
 
-	// オーシャンの初期化
-	ocean_ = std::make_unique<MiiEngine::Ocean>();
-	ocean_->Initialize(100);
-	ocean_->SetTranslate({ 0.0f, -30.0f, 0.0f });
-	ocean_->SetScale({ 10.0f, 1.0f, 10.0f });
+	// FFTオーシャンの初期化
+	fftOcean_ = std::make_unique<MiiEngine::FFTOceanGenerator>();
+	fftOcean_->Initialize(512);
+	fftOcean_->SetTranslate({ 0.0f, -30.0f, 0.0f });
+	fftOcean_->SetScale({ 2000.0f, 1.0f, 2000.0f });
 
-	ocean_->SetWaveInfo(0, { 0.7f, 0.4f, 0.2f }, 1.15f, 12.5f, 0.6f);
-	ocean_->SetWaveInfo(1, { 0.25f, 0.55f, 1.0f }, 0.5f, 7.5f, 0.6f);
-	ocean_->SetWaveInfo(2, { 0.6f, 0.2f, 0.46f }, 0.4f, 2.5f, 0.6f);
+	// アクティブカメラを設定
+	fftOcean_->SetCamera(Service::Camera::GetActiveCamera());
 
 	// 初回更新
-	ocean_->Update();
+	fftOcean_->Update();
+
+	// OceanParamsの初期設定
+	MiiEngine::OceanParams oceanParams = fftOcean_->GetOceanParams();
+	oceanParams.gridWidth = 2000.0f;
+	oceanParams.windowSpeed = 9.5f;
+	oceanParams.amplitude = 30.0f;
+	oceanParams.lambda = 0.5f;
+	fftOcean_->SetOceanParams(oceanParams);
+	
+
+	// Oceanの描画コールバックを設定
+	MiiEngine::OceanRenderCB oceanRenderCB = fftOcean_->GetOceanRenderCB();
+	oceanRenderCB.sunDirection = { 0.0f, 0.7f, 0.9f };
+	oceanRenderCB.sunPower = 24.0f;
+	oceanRenderCB.fresnelBias = 0.02f;
+	oceanRenderCB.roughness = 0.08f;
+	oceanRenderCB.sssStrength = 0.01f;
+	oceanRenderCB.foamSoftness = 1.0f;
+	fftOcean_->SetOceanRenderCB(oceanRenderCB);
 }
 
 ///-------------------------------------------/// 
@@ -42228,26 +43605,18 @@ void GroundOcean::Initialize() {
 ///-------------------------------------------///
 void GroundOcean::Update() {
 
-#ifdef _DEBUG
-	// デバッグ用
-	if (Service::Input::TriggerKey(DIK_SPACE)) {
-		// 波紋を追加
-		Vector3 ripplePos = { 0.0f, 0.0f, 0.0f };
-		ocean_->AddCircularRipple(ripplePos, 1.0f, 1.0f, 4.0f);
-	}
-
-#endif // _DEBUG
-
+	// アクティブカメラを毎フレーム同期
+	fftOcean_->SetCamera(Service::Camera::GetActiveCamera());
 	// オーシャンの更新
-	ocean_->Update();
+	fftOcean_->Update();
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
 void GroundOcean::Draw(MiiEngine::BlendMode mode) {
-	// オーシャンの描画
-	ocean_->Draw(mode);
+	// 描画
+	fftOcean_->Draw(mode);
 }
 
 ///-------------------------------------------/// 
@@ -42256,7 +43625,7 @@ void GroundOcean::Draw(MiiEngine::BlendMode mode) {
 void GroundOcean::ShowImGui() {
 #ifdef USE_IMGUI
 	// オーシャンのImGui表示
-	ocean_->ShowImGui();
+	fftOcean_->ShowImGui();
 #endif // USE_IMGUI
 }
 
@@ -42264,9 +43633,7 @@ void GroundOcean::ShowImGui() {
 /// 衝突判定
 ///-------------------------------------------///
 void GroundOcean::OnCollision(MiiEngine::Collider* collider) {
-	// オーシャンに波紋を追加
-	Vector3 collisionPos = collider->GetTransform().translate;
-	ocean_->AddCircularRipple(collisionPos, 2.0f, 1.0f, 4.0f);
+	collider;
 }
 
 
@@ -42278,7 +43645,7 @@ File Path: Project/application/Game/Object/GameGround/GroundOcean.h
 // Collider
 #include "application/Game/Object/GameObject/GameObject.h"
 // Ocean
-#include "Engine/Graphics/Ocean/Ocean.h"
+#include "Engine/Graphics/Ocean/FFT/FFTOceanGenerator.h"
 
 ///=====================================================/// 
 /// GroundOcean
@@ -42321,7 +43688,7 @@ public: /// ===衝突処理=== ///
 private:
 
 	/// ===オーシャン=== ///
-	std::unique_ptr<MiiEngine::Ocean> ocean_;
+	std::unique_ptr<MiiEngine::FFTOceanGenerator> fftOcean_;
 };
 
 
@@ -42525,13 +43892,6 @@ void GameStage::Draw(MiiEngine::BlendMode mode) {
 	for (const auto& ground : grounds_) {
 		if (ground) {
 			ground->Draw(mode);
-		}
-	}
-
-	// GroundOceanの更新
-	for (const auto& ocean : Oceans_) {
-		if (ocean) {
-			ocean->Draw(mode);
 		}
 	}
 
@@ -45283,6 +46643,11 @@ File Path: Project/application/Scene/Title/TitleScene.cpp
 // Math
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
+#ifdef USE_IMGUI
+// Service
+#include "Service/Input.h"
+#endif // USE_IMGUI
+
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -45350,6 +46715,24 @@ void TitleScene::Update() {
 	ImGui::Text("Fade State: %d", static_cast<int>(currentFade_));
 	ImGui::End();
 
+	// Camera
+	if (Service::Camera::GetActiveCamera() == camera_.get()) {
+		camera_->ImGuiUpdate();
+		camera_->DebugUpdate();
+	} else {
+		defaultCamera_->ImGuiUpdate();
+		defaultCamera_->DebugUpdate();
+	}
+
+	// デバッグカメラの切り替え
+	if (Service::Input::TriggerKey(DIK_TAB)) {
+		if (Service::Camera::GetActiveCamera() == camera_.get()) {
+			Service::Camera::SetActiveCamera("Default");
+		} else {
+			Service::Camera::SetActiveCamera("Game");
+		}
+	}
+
 	// Cameraの情報表示
 	camera_->ImGuiUpdate();
 
@@ -45392,11 +46775,12 @@ void TitleScene::Update() {
 /// 描画
 ///-------------------------------------------///
 void TitleScene::Draw() {
-	/// ===Player=== ///
-	player_->Draw();
 
 	/// ===stage=== ///
 	stage_->Draw();
+
+	/// ===Player=== ///
+	player_->Draw();
 
 	/// ===TitleUIの描画=== ///
 	titleUI_->Draw();
