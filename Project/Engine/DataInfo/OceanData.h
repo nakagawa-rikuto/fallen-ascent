@@ -105,6 +105,7 @@ namespace MiiEngine {
 		float amplitude;         // 波の振幅
 		float lambda;            // 波長
 		float foamThreshold;     // 泡の閾値
+        Vector3 padding;
     };
 
     ///-------------------------------------------/// 
@@ -114,6 +115,8 @@ namespace MiiEngine {
 		uint32_t stages;         // バタフライアルゴリズムのステージ数
 		uint32_t pingPong;       // ピンポンバッファの切り替えフラグ
 		uint32_t direction;      // バタフライアルゴリズムの方向（0: 水平, 1: 垂直）
+		uint32_t inputSource;    // インプットソース（0: 初期スペクトル, 1: 前のステージの出力）
+        uint32_t bfPad;
     };
 
     ///=====================================================/// 
@@ -132,7 +135,9 @@ namespace MiiEngine {
         Vector3 foamColor; // 泡の色
         float foamSoftness; // 泡のエッジの柔らかさ
         Vector3 skyColorHorizon; // 地平線の空の色
+        float pad0;
         Vector3 skyColorZenith; // 天頂の空の色
+        float pad1;
     };
 
     ///=====================================================/// 
@@ -146,5 +151,14 @@ namespace MiiEngine {
         Vector3 cameraPos;
         float size;
         float tileScale;
+        Vector3 cbPad;
+    };
+
+    ///-------------------------------------------/// 
+    /// OceanGridVertex
+    ///-------------------------------------------///
+    struct OceanGridVertex {
+        Vector3 position; // POSITION (x, 0, z)
+        Vector2 texCoord; // TEXCOORD0
     };
 }

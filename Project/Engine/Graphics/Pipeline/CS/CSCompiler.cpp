@@ -35,6 +35,7 @@ namespace MiiEngine {
 				L"BitReverseRows",
 				L"ButterflyIFFT",
 				L"BitReverseCols",
+				L"SaveIFFTResult",
 				L"AssembleDisplacement",
 				L"ComputeNormalFoam",}}},
 		};

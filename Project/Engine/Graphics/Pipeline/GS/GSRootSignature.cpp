@@ -780,50 +780,37 @@ namespace MiiEngine {
 
 		/// ===FFTOcean=== ///
 		ComPtr<ID3D12RootSignature> TypeFFTOcean(ID3D12Device* device) {
-			/// SRV用のDescriptorRange
-			D3D12_DESCRIPTOR_RANGE vsSrvRange[2] = {}; // VSでSRVを2つ使う想定
-			// t0用
-			vsSrvRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-			vsSrvRange[0].NumDescriptors = 1;
-			vsSrvRange[0].BaseShaderRegister = 0;
-			vsSrvRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-			// t1用
-			vsSrvRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-			vsSrvRange[1].NumDescriptors = 1;
-			vsSrvRange[1].BaseShaderRegister = 1;
-			vsSrvRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-			D3D12_DESCRIPTOR_RANGE psSrvRange = {}; // PSでSRVを1つ使う想定
+			// VS用のSRV
+			D3D12_DESCRIPTOR_RANGE vsSrvRange = {};
+			vsSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			vsSrvRange.NumDescriptors = 2;
+			vsSrvRange.BaseShaderRegister = 0; // t0, t1
+			// PS用のSRV
+			D3D12_DESCRIPTOR_RANGE psSrvRange = {};
 			psSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 			psSrvRange.NumDescriptors = 1;
-			psSrvRange.BaseShaderRegister = 0;
-			psSrvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+			psSrvRange.BaseShaderRegister = 2; // t2
 
 			/// RootParameterの生成
-			D3D12_ROOT_PARAMETER rootParameters[5] = {};
+			D3D12_ROOT_PARAMETER rootParameters[4] = {};
 			// VS（b0）
 			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 			rootParameters[0].Descriptor.ShaderRegister = 0;
-			// PS（b0）
+			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+			// PS（b1）
 			rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+			rootParameters[1].Descriptor.ShaderRegister = 1;
 			rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-			rootParameters[1].Descriptor.ShaderRegister = 0;
-			// VSのSRVテクスチャ用（t0）
+			// VSのSRVテクスチャ用（t0,t1）
 			rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-			rootParameters[2].DescriptorTable.pDescriptorRanges = &vsSrvRange[0];
 			rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
-			// VSのSRVテクスチャ用（t1）
+			rootParameters[2].DescriptorTable.pDescriptorRanges = &vsSrvRange;
+			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+			// PSのSRVテクスチャ用（t2）
 			rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-			rootParameters[3].DescriptorTable.pDescriptorRanges = &vsSrvRange[1];
 			rootParameters[3].DescriptorTable.NumDescriptorRanges = 1;
-			// PSのSRVテクスチャ用（t0）
-			rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-			rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-			rootParameters[4].DescriptorTable.pDescriptorRanges = &psSrvRange;
-			rootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
+			rootParameters[3].DescriptorTable.pDescriptorRanges = &psSrvRange;
+			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 			/// Samplerの設定
 			D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};

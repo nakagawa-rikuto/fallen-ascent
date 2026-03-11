@@ -11,8 +11,8 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// リソースの生成
 	///-------------------------------------------///
-	void BufferBase::Create(ID3D12Device* device, size_t sizeInBytes, DXGI_FORMAT format, D3D12_RESOURCE_FLAGS flags) {
-		buffer_ = CreateBufferResourceComPtr(device, sizeInBytes, format, flags);
+	void BufferBase::Create(ID3D12Device* device, size_t sizeInBytes, DXGI_FORMAT format, D3D12_RESOURCE_FLAGS flags, D3D12_HEAP_TYPE heapType) {
+		buffer_ = CreateBufferResourceComPtr(device, sizeInBytes, format, flags, heapType);
 	}
 
 	///-------------------------------------------/// 

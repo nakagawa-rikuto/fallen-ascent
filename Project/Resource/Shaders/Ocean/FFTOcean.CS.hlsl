@@ -23,6 +23,7 @@ cbuffer ButterflyParams : register(b1)
     uint Stage;         // バタフライステージ（0 〜 log2(N)-1）
     uint PingPong;      // 0=Ping→Pong, 1=Pong→Ping
     uint Direction;     // 0=水平方向, 1=垂直方向
+    uint InputSource;   // 0=Hkt, 1=Dx, 2=Dz
     uint BfPad;
 }
 
@@ -196,7 +197,16 @@ void BitReverseRows(uint3 DTid : SV_DispatchThreadID)
     int2 id = (int2) DTid.xy;
     uint bits = (uint) round(log2((float) N));
     uint revX = BitReverse((uint) id.x, bits);
-    PingTexture[id] = HktTexture[int2(revX, id.y)];
+    
+    float4 src;
+    if (InputSource == 0)
+        src = HktTexture[int2(revX, id.y)]; // Height
+    else if (InputSource == 1)
+        src = DxTexture[int2(revX, id.y)]; // Dx
+    else
+        src = DzTexture[int2(revX, id.y)]; // Dz
+
+    PingTexture[id] = src;
 }
 
 /// ================================================================
@@ -288,6 +298,23 @@ void AssembleDisplacement(uint3 DTid : SV_DispatchThreadID)
     float dz = DzIFFT[id].x * scale * sign * Lambda;
 
     DisplaceMap[id] = float4(dx, height, dz, 1.0);
+}
+
+/// ================================================================
+/// Kernel 5: SaveIFFTResult
+///   垂直IFFT完了後、PingTexture の結果を
+///   InputSource に応じて Dx / Dz に書き戻す
+/// ================================================================
+[numthreads(16, 16, 1)]
+void SaveIFFTResult(uint3 DTid : SV_DispatchThreadID)
+{
+    int2 id = (int2) DTid.xy;
+    float4 result = PingTexture[id];
+
+    if (InputSource == 1)
+        DxTexture[id] = result; // Dx IFFT結果を保存
+    else if (InputSource == 2)
+        DzTexture[id] = result; // Dz IFFT結果を保存
 }
 
 /// ================================================================

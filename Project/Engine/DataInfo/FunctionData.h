@@ -29,5 +29,7 @@ namespace MiiEngine {
 		ID3D12Device* device,
 		size_t sizeInBytes,
 		DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN,
-		D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE);
+		D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE,
+		D3D12_HEAP_TYPE heapType = D3D12_HEAP_TYPE_UPLOAD
+	);
 }

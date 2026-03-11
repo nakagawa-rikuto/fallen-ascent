@@ -2,7 +2,7 @@
 /// ================================================================
 /// 定数バッファ
 /// ================================================================
-cbuffer OceanRenderCB : register(b0)
+cbuffer OceanRenderCB : register(b1)
 {
     float3 SunDirection;        // 太陽方向（正規化済み、光源→シーン方向の逆）
     float SunPower;             // 太陽強度
@@ -28,7 +28,7 @@ cbuffer OceanRenderCB : register(b0)
 /// ================================================================
 /// テクスチャ
 /// ================================================================
-Texture2D<float4> FoamTexture : register(t0); // 泡ノイズテクスチャ
+Texture2D<float4> FoamTexture : register(t2); // 泡ノイズテクスチャ
 SamplerState LinearWrap : register(s0);
 
 /// ================================================================

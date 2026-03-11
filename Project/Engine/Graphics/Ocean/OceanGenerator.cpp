@@ -1,4 +1,4 @@
-#include "Ocean.h"
+#include "OceanGenerator.h"
 // c++
 #include <cassert>
 // Service
@@ -17,7 +17,7 @@ namespace MiiEngine {
     ///-------------------------------------------/// 
     /// デストラクタ
     ///-------------------------------------------///
-    Ocean::~Ocean() {
+    OceanGenerator::~OceanGenerator() {
         vertex_.reset();
         index_.reset();
         material_.reset();
@@ -32,7 +32,7 @@ namespace MiiEngine {
     /// Setter
     ///-------------------------------------------///
     // 波情報の設定
-    void Ocean::SetWaveInfo(int waveIndex, const Vector3& direction, float amplitude, float length, float speed) {
+    void OceanGenerator::SetWaveInfo(int waveIndex, const Vector3& direction, float amplitude, float length, float speed) {
         if (waveIndex >= 0 && waveIndex < kWaveCount_) {
             waveInfos_[waveIndex].distance = direction;
             waveInfos_[waveIndex].amplitude = amplitude;
@@ -41,17 +41,17 @@ namespace MiiEngine {
         }
     }
     // 色情報の設定
-    void Ocean::SetColorInfo(const OceanColorInfo& colorInfo) {
+    void OceanGenerator::SetColorInfo(const OceanColorInfo& colorInfo) {
         colorInfo_ = colorInfo;
     }
     // 波紋パラメータの設定
-    void Ocean::SetRippleSpeed(float speed) { rippleSpeed_ = speed; }
-    void Ocean::SetRippleDecay(float decay) { rippleDecay_ = decay; }
+    void OceanGenerator::SetRippleSpeed(float speed) { rippleSpeed_ = speed; }
+    void OceanGenerator::SetRippleDecay(float decay) { rippleDecay_ = decay; }
 
     ///-------------------------------------------/// 
     /// 初期化
     ///-------------------------------------------///
-    void Ocean::Initialize(int gridSize) {
+    void OceanGenerator::Initialize(int gridSize) {
         ID3D12Device* device = Service::GraphicsResourceGetter::GetDXDevice();
 
         /// ===生成=== ///
@@ -158,7 +158,7 @@ namespace MiiEngine {
     ///-------------------------------------------/// 
     /// 波情報の初期化（12個）
     ///-------------------------------------------///
-    void Ocean::InitializeWaveInfos() {
+    void OceanGenerator::InitializeWaveInfos() {
 
         // 最初の3つは従来の波
         waveInfos_[0] = { { 0.0f, 0.0f, 0.0f }, 1.308f, 10.033f, 2.187f, 0.0f, 0.0f };
@@ -169,7 +169,7 @@ namespace MiiEngine {
     ///-------------------------------------------/// 
     /// 更新
     ///-------------------------------------------///
-    void Ocean::Update() {
+    void OceanGenerator::Update() {
         currentTime_ += Service::DeltaTime::GetDeltaTime();
 
         /// ===時間の更新=== ///
@@ -195,7 +195,7 @@ namespace MiiEngine {
     ///-------------------------------------------/// 
     /// 描画
     ///-------------------------------------------///
-    void Ocean::Draw(BlendMode mode) {
+    void OceanGenerator::Draw(BlendMode mode) {
         ID3D12GraphicsCommandList* commandList = Service::GraphicsResourceGetter::GetDXCommandList();
 
         // Compute PSOとRoot Signatureを設定
@@ -239,7 +239,7 @@ namespace MiiEngine {
     ///-------------------------------------------/// 
     /// ImGui
     ///-------------------------------------------///
-    void Ocean::ShowImGui() {
+    void OceanGenerator::ShowImGui() {
 #ifdef USE_IMGUI
         ImGui::Begin("海洋シェーダー");
 
@@ -349,7 +349,7 @@ namespace MiiEngine {
     ///-------------------------------------------/// 
     /// グリッドメッシュの生成
     ///-------------------------------------------///
-    void Ocean::CreateGridMesh() {
+    void OceanGenerator::CreateGridMesh() {
         float gridWidth = 100.0f;
         float gridDepth = 100.0f;
         float step = gridWidth / gridSize_;
@@ -375,14 +375,14 @@ namespace MiiEngine {
     ///-------------------------------------------/// 
     /// ColorDataの書き込み
     ///-------------------------------------------///
-    void Ocean::ColorDataWrite() {
+    void OceanGenerator::ColorDataWrite() {
         *oceanColorData_ = colorInfo_;
     }
 
     ///-------------------------------------------/// 
     /// 波紋の更新
     ///-------------------------------------------///
-    void Ocean::UpdateRipples() {
+    void OceanGenerator::UpdateRipples() {
         int activeCount = 0;
 
         for (int i = 0; i < 8; ++i) {
@@ -412,7 +412,7 @@ namespace MiiEngine {
     ///-------------------------------------------/// 
     /// 波紋の追加
     ///-------------------------------------------///
-    void Ocean::AddCircularRipple(const Vector3& center, float duration, float intensity, float maxRadius) {
+    void OceanGenerator::AddCircularRipple(const Vector3& center, float duration, float intensity, float maxRadius) {
         int targetSlot = -1;
 
         for (int i = 0; i < 8; ++i) {
@@ -449,7 +449,7 @@ namespace MiiEngine {
     ///-------------------------------------------/// 
     /// 波紋のクリア
     ///-------------------------------------------///
-    void Ocean::ClearRipples() {
+    void OceanGenerator::ClearRipples() {
         for (int i = 0; i < 8; ++i) {
             ripples_[i].isActive = false;
         }

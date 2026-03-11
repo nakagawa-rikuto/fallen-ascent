@@ -95,48 +95,39 @@ namespace MiiEngine {
 
 		/// ===CSFFTOcean=== ///
 		ComPtr<ID3D12RootSignature> TypeFFTOcean(ID3D12Device* device) {
-			/// UAV用のDescriptorRange（u0〜u7）
-			D3D12_DESCRIPTOR_RANGE uavRange[8] = {};
-			for (uint32_t i = 0; i < 8; ++i) {
-				uavRange[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-				uavRange[i].NumDescriptors = 1;
-				uavRange[i].BaseShaderRegister = i;
-				uavRange[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-			}
-
-			/// SRV用のDescriptorRange（t0〜t2）
-			D3D12_DESCRIPTOR_RANGE srvRange[3] = {};
-			for (uint32_t i = 0; i < 3; ++i) {
-				srvRange[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-				srvRange[i].NumDescriptors = 1;
-				srvRange[i].BaseShaderRegister = i;
-				srvRange[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-			}
+			// UAV用のDescriptorRange (u0〜u7)
+			D3D12_DESCRIPTOR_RANGE uavRange = {};
+			uavRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+			uavRange.NumDescriptors = 8; // u0〜u7
+			uavRange.BaseShaderRegister = 0; // u0から開始
+			uavRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+			// SRV用のDescriptorRange (t0〜t2)
+			D3D12_DESCRIPTOR_RANGE srvRange = {};
+			srvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			srvRange.NumDescriptors = 3; // t0〜t2
+			srvRange.BaseShaderRegister = 0; // t0から開始
+			srvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 			/// RootParameterの生成
-			D3D12_ROOT_PARAMETER rootParameters[13] = {};
-			// (b0) OceanParams
+			D3D12_ROOT_PARAMETER rootParameters[4] = {};
+			// パラメータ0: CBV - OceanParams (b0)
 			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 			rootParameters[0].Descriptor.ShaderRegister = 0;
-			// (b1) ButterflyParams
+			// パラメータ1: CBV - ButterflyParams (b1)
 			rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 			rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 			rootParameters[1].Descriptor.ShaderRegister = 1;
-			// (u0〜u7) UAV
-			for (uint32_t i = 0; i < 8; ++i) {
-				rootParameters[2 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-				rootParameters[2 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-				rootParameters[2 + i].DescriptorTable.pDescriptorRanges = &uavRange[i];
-				rootParameters[2 + i].DescriptorTable.NumDescriptorRanges = 1;
-			}
-			// (t0〜t2) SRV: HeightIFFT, DxIFFT, DzIFFT
-			for (uint32_t i = 0; i < 3; ++i) {
-				rootParameters[10 + i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-				rootParameters[10 + i].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-				rootParameters[10 + i].DescriptorTable.pDescriptorRanges = &srvRange[i];
-				rootParameters[10 + i].DescriptorTable.NumDescriptorRanges = 1;
-			}
+			// パラメータ2: UAV
+			rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
+			rootParameters[2].DescriptorTable.pDescriptorRanges = &uavRange;
+			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+			// パラメータ3: SRV
+			rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[3].DescriptorTable.NumDescriptorRanges = 1;
+			rootParameters[3].DescriptorTable.pDescriptorRanges = &srvRange;
+			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 			/// RootSignatureの生成
 			D3D12_ROOT_SIGNATURE_DESC desc{};

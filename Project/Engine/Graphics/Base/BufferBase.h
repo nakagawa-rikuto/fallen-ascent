@@ -16,7 +16,12 @@ namespace MiiEngine {
 		/// </summary>
 		/// <param name="device">リソースの作成に使用する ID3D12Device へのポインタ。</param>
 		/// <param name="sizeInBytes">作成するリソースのサイズ（バイト単位）。</param>
-		void Create(ID3D12Device* device, size_t sizeInBytes, DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE);
+		void Create(
+			ID3D12Device* device, 
+			size_t sizeInBytes, 
+			DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN, 
+			D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE, 
+			D3D12_HEAP_TYPE heapType = D3D12_HEAP_TYPE_UPLOAD);
 
 	public: /// ===設定=== ///
 

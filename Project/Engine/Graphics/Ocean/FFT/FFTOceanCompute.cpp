@@ -1,0 +1,412 @@
+#include "FFTOceanCompute.h"
+// SRVManager
+#include "Engine/System/Managers/SRVManager.h"
+// Service
+#include "Service/Locator.h"
+#include "Service/Render.h"
+#include <cassert>
+
+namespace MiiEngine {
+	///-------------------------------------------/// 
+	/// デストラクタ
+	///-------------------------------------------///
+	FFTOceanCompute::~FFTOceanCompute() {}
+
+	///-------------------------------------------/// 
+	/// 初期化
+	///-------------------------------------------///
+	void FFTOceanCompute::Initialize(ID3D12Device* device, int gridSize) {
+		assert(device);
+
+		// SRVManagerを取得
+		srvManager_ = Service::Locator::GetSRVManager();
+
+		// グリッドサイズ設定
+		params_.gridSize = gridSize;
+		const uint32_t N = params_.gridSize;
+
+		// -----------------------------------------------
+		// OceanParams 定数バッファ
+		// -----------------------------------------------
+		oceanParamsBuffer_ = std::make_unique<BufferBase>();
+		oceanParamsBuffer_->Create(device, sizeof(OceanParams)); {
+			void* mapped = nullptr;
+			oceanParamsBuffer_->GetBuffer()->Map(0, nullptr, &mapped);
+			oceanParamsData_ = static_cast<OceanParams*>(mapped);
+		}
+
+		// -----------------------------------------------
+		// ButterflyParams 定数バッファ
+		// -----------------------------------------------
+		butterflyParamsBuffer_ = std::make_unique<BufferBase>();
+		butterflyParamsBuffer_->Create(device, sizeof(ButterflyParams)); {
+			void* mapped = nullptr;
+			butterflyParamsBuffer_->GetBuffer()->Map(0, nullptr, &mapped);
+			butterflyParamsData_ = static_cast<ButterflyParams*>(mapped);
+		}
+
+		///-------------------------------------------/// 
+		/// UAVテクスチャリソースの生成
+		///-------------------------------------------///
+		// u0: H0Texture
+		CreateTextureUAV(device, h0Resource_, h0UAV_, 0, N, N, DXGI_FORMAT_UNKNOWN);
+		// u1: HktTexture
+		CreateTextureUAV(device, hktResource_, hktUAV_, 1, N, N, DXGI_FORMAT_UNKNOWN);
+		// u2: DxTexture
+		CreateTextureUAV(device, dxResource_, dxUAV_, 2, N, N, DXGI_FORMAT_UNKNOWN);
+		// u3: DzTexture
+		CreateTextureUAV(device, dzResource_, dzUAV_, 3, N, N, DXGI_FORMAT_UNKNOWN);
+		// u4: PingTexture
+		CreateTextureUAV(device, pingResource_, pingUAV_, 4, N, N, DXGI_FORMAT_UNKNOWN);
+		// u5: PongTexture
+		CreateTextureUAV(device, pongResource_, pongUAV_, 5, N, N, DXGI_FORMAT_UNKNOWN);
+		// u6: DisplaceMap
+		CreateTextureUAV(device, displaceResource_, displaceUAV_, 6, N, N, DXGI_FORMAT_UNKNOWN);
+		// u7: NormalFoamMap
+		CreateTextureUAV(device, normalFoamResource_, normalFoamUAV_, 7, N, N, DXGI_FORMAT_UNKNOWN);
+
+		///-------------------------------------------/// 
+		/// SRVインデックスの管理
+		///-------------------------------------------///
+		// srvHeightIndex（t0）
+		CreateTextureSRV(srvHeightIndex_, pingResource_);
+		// srvDxIndex（t1）
+		CreateTextureSRV(srvDxIndex_, dxResource_);
+		// srvDzIndex（t2）
+		CreateTextureSRV(srvDzIndex_, dzResource_);
+		// srvDisplaceIndex（t0:VS）
+		CreateTextureSRV(srvDisplaceIndex_, displaceResource_);
+		// srvNormalFoamIndex（t1:VS）
+		CreateTextureSRV(srvNormalFoamIndex_, normalFoamResource_);
+
+		// 初期値書き込み
+		WriteOceanParams();
+
+		preParams_ = params_;
+	}
+
+	///-------------------------------------------/// 
+	/// 更新
+	///-------------------------------------------///
+	void FFTOceanCompute::Update(float deltaTime) {
+		elapsedTime_ += deltaTime;
+		params_.time = elapsedTime_;
+
+		// スペクトルに影響するパラメータが変更されたか検知
+		if (params_.gridWidth != preParams_.gridWidth || 
+			params_.windowSpeed != preParams_.windowSpeed ||
+		    params_.windDirection.x != preParams_.windDirection.x || params_.windDirection.y != preParams_.windDirection.y ||
+		    params_.amplitude != preParams_.amplitude || 
+			params_.gridSize != preParams_.gridSize ||
+			params_.lambda != preParams_.lambda ||
+			params_.foamThreshold != preParams_.foamThreshold
+			) {
+
+			// InitSpectrum を再実行させる
+			isInitialized_ = false;
+
+			// 前回値を更新
+			preParams_ = params_;
+		}
+
+		WriteOceanParams();
+	}
+
+	///-------------------------------------------/// 
+	/// ディスパッチ
+	///-------------------------------------------///
+	void FFTOceanCompute::Dispatch(ID3D12GraphicsCommandList* commandList) {
+		assert(commandList);
+
+		// SRVManagerからヒープを取得, 設定
+		ID3D12DescriptorHeap* heaps[] = { srvManager_->GetDescriptorHeap() };
+		commandList->SetDescriptorHeaps(1, heaps);
+
+		const uint32_t N = params_.gridSize;
+		const uint32_t threadGroupX = (N + kThreadGroupSize_ - 1) / kThreadGroupSize_;
+		const uint32_t threadGroupY = threadGroupX;
+		const uint32_t stages = static_cast<uint32_t>(std::log2(static_cast<float>(N)));
+
+		auto CBV0 = oceanParamsBuffer_->GetBuffer()->GetGPUVirtualAddress();
+		auto CBV1 = butterflyParamsBuffer_->GetBuffer()->GetGPUVirtualAddress();
+		auto UAVTable = srvManager_->GetGPUDescriptorHandle(uavIndices_[0]);
+
+		// =============================================
+		//   InitSpectrum（初回のみ）
+		//   h0(k) を H0Texture(u0) に書き込む
+		// =============================================
+		if (!isInitialized_) {
+			Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"InitSpectrum");
+			commandList->SetComputeRootConstantBufferView(0, CBV0);
+			commandList->SetComputeRootDescriptorTable(2, UAVTable);
+			commandList->Dispatch(threadGroupX, threadGroupY, 1);
+			UAVBarrier(commandList, h0Resource_->GetBuffer());
+			isInitialized_ = true;
+		}
+
+		// =============================================
+		// Step 1: UpdateSpectrum（毎フレーム）
+		//   HktTexture(u1) / DxTexture(u2) / DzTexture(u3) を更新
+		// =============================================
+		Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"UpdateSpectrum");
+		commandList->SetComputeRootConstantBufferView(0, CBV0);
+		commandList->SetComputeRootDescriptorTable(2, UAVTable);
+		commandList->Dispatch(threadGroupX, threadGroupY, 1);
+		UAVBarrier(commandList, hktResource_->GetBuffer());
+		UAVBarrier(commandList, dxResource_->GetBuffer());
+		UAVBarrier(commandList, dzResource_->GetBuffer());
+
+		// =============================================
+		//   IFFT（Height / Dx / Dz 共通の処理フロー）
+		//   BitReverseRows → ButterflyIFFT(水平) → BitReverseCols → ButterflyIFFT(垂直)
+		// =============================================
+		for (uint32_t inputSource = 0; inputSource < 3; ++inputSource) {
+
+			// --- BitReverseRows: inputSource → Ping(u4) ---
+			WriteButterflyParams(0, 0, 0, inputSource);
+			Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"BitReverseRows");
+			commandList->SetComputeRootConstantBufferView(0, CBV0);
+			commandList->SetComputeRootConstantBufferView(1, CBV1);
+			commandList->SetComputeRootDescriptorTable(2, UAVTable);
+			commandList->Dispatch(threadGroupX, threadGroupY, 1);
+			UAVBarrier(commandList, pingResource_->GetBuffer());
+
+			// --- ButterflyIFFT 水平方向 ---
+			for (uint32_t s = 0; s < stages; ++s) {
+				WriteButterflyParams(s, s % 2, 0, inputSource);
+				Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"ButterflyIFFT");
+				commandList->SetComputeRootConstantBufferView(0, CBV0);
+				commandList->SetComputeRootConstantBufferView(1, CBV1);
+				commandList->SetComputeRootDescriptorTable(2, UAVTable);
+				commandList->Dispatch(threadGroupX, threadGroupY, 1);
+				UAVBarrier(commandList, pingResource_->GetBuffer());
+				UAVBarrier(commandList, pongResource_->GetBuffer());
+			}
+
+			// --- BitReverseCols: Pong(u5) → Ping(u4) ---
+			WriteButterflyParams(0, 0, 0, inputSource);
+			Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"BitReverseCols");
+			commandList->SetComputeRootConstantBufferView(0, CBV0);
+			commandList->SetComputeRootConstantBufferView(1, CBV1);
+			commandList->SetComputeRootDescriptorTable(2, UAVTable);
+			commandList->Dispatch(threadGroupX, threadGroupY, 1);
+			UAVBarrier(commandList, pingResource_->GetBuffer());
+
+			// --- ButterflyIFFT 垂直方向 ---
+			for (uint32_t s = 0; s < stages; ++s) {
+				WriteButterflyParams(s, s % 2, 1, inputSource);
+				Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"ButterflyIFFT");
+				commandList->SetComputeRootConstantBufferView(0, CBV0);
+				commandList->SetComputeRootConstantBufferView(1, CBV1);
+				commandList->SetComputeRootDescriptorTable(2, UAVTable);
+				commandList->Dispatch(threadGroupX, threadGroupY, 1);
+				UAVBarrier(commandList, pingResource_->GetBuffer());
+				UAVBarrier(commandList, pongResource_->GetBuffer());
+			}
+
+			// IFFT結果を保存（inputSource=1:Dx, 2:Dz のみ実行、0:Heightは不要）
+			if (inputSource != 0) {
+				WriteButterflyParams(0, 0, 0, inputSource);
+				Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"SaveIFFTResult");
+				commandList->SetComputeRootConstantBufferView(0, CBV0);
+				commandList->SetComputeRootConstantBufferView(1, CBV1);
+				commandList->SetComputeRootDescriptorTable(2, UAVTable);
+				commandList->Dispatch(threadGroupX, threadGroupY, 1);
+				UAVBarrier(commandList, dxResource_->GetBuffer());
+				UAVBarrier(commandList, dzResource_->GetBuffer());
+			}
+		}
+
+		// =============================================
+		//   AssembleDisplacement
+		//   Ping/Pong の結果を DisplaceMap(u6) に合成
+		// =============================================
+		// バリアの遷移
+		auto TransitionBarrier = [&](ID3D12Resource* res,
+			D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
+				D3D12_RESOURCE_BARRIER b = {};
+				b.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+				b.Transition.pResource = res;
+				b.Transition.StateBefore = before;
+				b.Transition.StateAfter = after;
+				b.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+				commandList->ResourceBarrier(1, &b);
+			};
+
+		// Ping(Height) / Dx / Dz を UAV → SRV に遷移
+		TransitionBarrier(pingResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		TransitionBarrier(dxResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		TransitionBarrier(dzResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+		// AssembleDisplacement
+		Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"AssembleDisplacement");
+		commandList->SetComputeRootConstantBufferView(0, CBV0);
+		commandList->SetComputeRootDescriptorTable(2, UAVTable);
+		// t0〜t2 を DescriptorTable でセット
+		commandList->SetComputeRootDescriptorTable(3, srvManager_->GetGPUDescriptorHandle(srvHeightIndex_));
+		commandList->Dispatch(threadGroupX, threadGroupY, 1);
+		UAVBarrier(commandList, displaceResource_->GetBuffer());
+
+		// =============================================
+		//   ComputeNormalFoam
+		//   法線 + 泡強度を NormalFoamMap(u7) に書き込む
+		// =============================================
+		Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"ComputeNormalFoam");
+		commandList->SetComputeRootConstantBufferView(0, CBV0);
+		commandList->Dispatch(threadGroupX, threadGroupY, 1);
+		UAVBarrier(commandList, normalFoamResource_->GetBuffer());
+
+		// SRV → UAV に戻す（次フレームでまた書き込むため）
+		TransitionBarrier(pingResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		TransitionBarrier(dxResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		TransitionBarrier(dzResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+		// DisplaceMap と NormalFoamMap を UAV → SRV に遷移（レンダリングで使用するため）
+		TransitionBarrier(displaceResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS,D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		TransitionBarrier(normalFoamResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	}
+
+	///-------------------------------------------/// 
+	/// 次のフレームのためにリソース状態をリセットします 
+	///-------------------------------------------///
+	void FFTOceanCompute::ResetResourceStatesForNextFrame(ID3D12GraphicsCommandList* commandList) {
+
+		// バリアの遷移
+		auto TransitionBarrier = [&](ID3D12Resource* res,
+			D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
+				D3D12_RESOURCE_BARRIER b = {};
+				b.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+				b.Transition.pResource = res;
+				b.Transition.StateBefore = before;
+				b.Transition.StateAfter = after;
+				b.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+				commandList->ResourceBarrier(1, &b);
+		};
+
+		// SRV->UAVに遷移
+		TransitionBarrier(displaceResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		TransitionBarrier(normalFoamResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	}
+
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	// 最終変位マップの取得（SRVとして使用）
+	ID3D12Resource* FFTOceanCompute::GetDisplacementMap() const {return displaceResource_->GetBuffer();}
+	// 法線・泡マップの取得（SRVとして使用）
+	ID3D12Resource* FFTOceanCompute::GetNormalFoamMap() const {return normalFoamResource_->GetBuffer();}
+	// OceanParamsの取得
+	OceanParams& FFTOceanCompute::GetOceanParams() {return params_;}
+	// SRVDisplaceIndexの取得
+	uint32_t FFTOceanCompute::GetSRVDisplaceIndex() const { return srvDisplaceIndex_; }
+	// SRVNormalFoamIndexの取得
+	uint32_t FFTOceanCompute::GetSRVNormalFoamIndex() const { return srvNormalFoamIndex_; }
+
+	///-------------------------------------------/// 
+	/// Setter
+	///-------------------------------------------///
+	// OceanParamsの設定
+	void FFTOceanCompute::SetOceanParams(const OceanParams& params) {params_ = params;}
+	// グリッドサイズの設定
+	void FFTOceanCompute::SetGridSize(uint32_t gridSize) {params_.gridSize = gridSize;}
+
+	///-------------------------------------------/// 
+	/// テクスチャUAVリソースの生成
+	///-------------------------------------------///
+	void FFTOceanCompute::CreateTextureUAV(
+		ID3D12Device* device, 
+		std::unique_ptr<BufferBase>& outResource, 
+		UAV& outUAV, 
+		int uavSlot, 
+		uint32_t width, uint32_t height, 
+		DXGI_FORMAT format) {
+
+		format;
+
+		// Texture2D リソースとして作成
+		D3D12_RESOURCE_DESC texDesc{};
+		texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+		texDesc.Width = width;
+		texDesc.Height = height;
+		texDesc.DepthOrArraySize = 1;
+		texDesc.MipLevels = 1;
+		texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; // RWTexture2D<float4>
+		texDesc.SampleDesc.Count = 1;
+		texDesc.SampleDesc.Quality = 0;
+		texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+		texDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+
+		D3D12_HEAP_PROPERTIES heapProps{};
+		heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+		// Texture2Dリソースを直接作成
+		Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+		HRESULT hr = device->CreateCommittedResource(
+			&heapProps,
+			D3D12_HEAP_FLAG_NONE,
+			&texDesc,
+			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+			nullptr,
+			IID_PPV_ARGS(&resource)
+		);
+		assert(SUCCEEDED(hr));
+
+		// BufferBaseにリソースを渡す
+		outResource = std::make_unique<BufferBase>();
+		outResource->SetBuffer(resource.Get());
+
+		// UAVの作成
+		uavIndices_[uavSlot] = srvManager_->Allocate();
+		outUAV.CreateAsTexture2D(
+			device,
+			outResource->GetBuffer(),
+			DXGI_FORMAT_R32G32B32A32_FLOAT,
+			srvManager_->GetCPUDescriptorHandle(uavIndices_[uavSlot])
+		);
+	}
+
+	///-------------------------------------------/// 
+	/// SRVリソースの生成
+	///-------------------------------------------///
+	void FFTOceanCompute::CreateTextureSRV(uint32_t& index, std::unique_ptr<BufferBase>& outResource) {
+		// SRVの生成処理を実装
+		index = srvManager_->Allocate();
+		srvManager_->CreateSRVForTexture2D(
+			index, 
+			outResource->GetBuffer(),
+			DXGI_FORMAT_R32G32B32A32_FLOAT, 
+			1
+		);
+	}
+
+	///-------------------------------------------/// 
+	/// OceanParamsバッファの書き込み
+	///-------------------------------------------///
+	void FFTOceanCompute::WriteOceanParams() {
+		if (oceanParamsData_) {
+			*oceanParamsData_ = params_;
+		}
+	}
+
+	///-------------------------------------------/// 
+	/// ButterflyParamsバッファの書き込み
+	///-------------------------------------------///
+	void FFTOceanCompute::WriteButterflyParams(uint32_t stage, uint32_t pingPong, uint32_t direction, uint32_t inputSource) {
+		if (butterflyParamsData_) {
+			butterflyParamsData_->stages = stage;
+			butterflyParamsData_->pingPong = pingPong;
+			butterflyParamsData_->direction = direction;
+			butterflyParamsData_->inputSource = inputSource;
+		}
+	}
+
+	///-------------------------------------------/// 
+	/// UAVバリア
+	///-------------------------------------------///
+	void FFTOceanCompute::UAVBarrier(ID3D12GraphicsCommandList* commandList, ID3D12Resource* resource) {
+		D3D12_RESOURCE_BARRIER barrier = {};
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+		barrier.UAV.pResource = resource;
+		commandList->ResourceBarrier(1, &barrier);
+	}
+}

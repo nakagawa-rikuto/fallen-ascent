@@ -3,7 +3,7 @@
 // Collider
 #include "application/Game/Object/GameObject/GameObject.h"
 // Ocean
-#include "Engine/Graphics/Ocean/Ocean.h"
+#include "Engine/Graphics/Ocean/FFT/FFTOceanGenerator.h"
 
 ///=====================================================/// 
 /// GroundOcean
@@ -46,6 +46,6 @@ public: /// ===衝突処理=== ///
 private:
 
 	/// ===オーシャン=== ///
-	std::unique_ptr<MiiEngine::Ocean> ocean_;
+	std::unique_ptr<MiiEngine::FFTOceanGenerator> fftOcean_;
 };
 
