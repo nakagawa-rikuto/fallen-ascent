@@ -76,18 +76,24 @@
     <FxCompile Include="Resource\Shaders\2D\CircularGauge.PS.hlsl">
       <Filter>Resource\Shaders\2D</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\Ocean.CS.hlsl">
-      <Filter>Resource\Shaders\3D</Filter>
+    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.PS.hlsl">
+      <Filter>Resource\Shaders\Ocean</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\Ocean.PS.hlsl">
-      <Filter>Resource\Shaders\3D</Filter>
+    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.VS.hlsl">
+      <Filter>Resource\Shaders\Ocean</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.CS.hlsl">
+      <Filter>Resource\Shaders\Ocean</Filter>
     </FxCompile>
     <FxCompile Include="Resource\Shaders\Ocean\Ocean.VS.hlsl">
-      <Filter>Resource\Shaders\3D</Filter>
+      <Filter>Resource\Shaders\Ocean</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.CS.hlsl" />
-    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.VS.hlsl" />
-    <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.PS.hlsl" />
+    <FxCompile Include="Resource\Shaders\Ocean\Ocean.CS.hlsl">
+      <Filter>Resource\Shaders\Ocean</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\Ocean\Ocean.PS.hlsl">
+      <Filter>Resource\Shaders\Ocean</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -247,9 +253,6 @@
     <ClCompile Include="Engine\Graphics\OffScreen\RenderTexture.cpp">
       <Filter>Engine\Graphics\OffScreen</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Pipeline\Compiler.cpp">
-      <Filter>Engine\Graphics\Pipeline</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Scene\AbstractSceneFactory.cpp">
       <Filter>Engine\Scene</Filter>
     </ClCompile>
@@ -388,9 +391,6 @@
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp">
       <Filter>Engine\Graphics\OffScreen\Effect</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\Title\UI\TitleUI.cpp">
-      <Filter>application\Game\UI\Title</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Graphics\2d\Sprite\SpriteCommon.cpp">
       <Filter>Engine\Graphics\2D\Sprite</Filter>
     </ClCompile>
@@ -429,12 +429,6 @@
     </ClCompile>
     <ClCompile Include="application\Game\Object\GameStage.cpp">
       <Filter>application\Game\Object</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Ocean\Ocean.cpp">
-      <Filter>Engine\Graphics\3D\Oshan</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Ocean\OceanCommon.cpp">
-      <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp">
       <Filter>application\Game\Animation</Filter>
@@ -498,9 +492,6 @@
     </ClCompile>
     <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp">
       <Filter>Engine\Collider\Collision</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Ocean\OceanWaveCompute.cpp">
-      <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Base\UAV.cpp">
       <Filter>Engine\Graphics\Base</Filter>
@@ -616,9 +607,39 @@
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.cpp">
       <Filter>application\Game\Entity\Enemy\MobEnemy\Base</Filter>
     </ClCompile>
-    <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp" />
-    <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp" />
-    <ClCompile Include="Engine\Graphics\Pipeline\CS\CSCompiler.cpp" />
+    <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp">
+      <Filter>Engine\Camera\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp">
+      <Filter>application\Scene\Title\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Title\UI\TitleUI.cpp">
+      <Filter>application\Scene\Title\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Pipeline\CS\CSCompiler.cpp">
+      <Filter>Engine\Graphics\Pipeline\CS</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Pipeline\GS\Compiler.cpp">
+      <Filter>Engine\Graphics\Pipeline\GS</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanGenerator.cpp">
+      <Filter>Engine\Graphics\Ocean\FFT</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.cpp">
+      <Filter>Engine\Graphics\Ocean\FFT</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.cpp">
+      <Filter>Engine\Graphics\Ocean\FFT</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Ocean\OceanGenerator.cpp">
+      <Filter>Engine\Graphics\Ocean</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Ocean\OceanCommon.cpp">
+      <Filter>Engine\Graphics\Ocean</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Ocean\OceanWaveCompute.cpp">
+      <Filter>Engine\Graphics\Ocean</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -816,9 +837,6 @@
     <ClInclude Include="Engine\Graphics\OffScreen\RenderTexture.h">
       <Filter>Engine\Graphics\OffScreen</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Pipeline\Compiler.h">
-      <Filter>Engine\Graphics\Pipeline</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Scene\AbstractSceneFactory.h">
       <Filter>Engine\Scene</Filter>
     </ClInclude>
@@ -957,9 +975,6 @@
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h">
       <Filter>Engine\Graphics\OffScreen\Effect</Filter>
     </ClInclude>
-    <ClInclude Include="application\Scene\Title\UI\TitleUI.h">
-      <Filter>application\Game\UI\Title</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Graphics\2d\Sprite\SpriteCommon.h">
       <Filter>Engine\Graphics\2D\Sprite</Filter>
     </ClInclude>
@@ -998,12 +1013,6 @@
     </ClInclude>
     <ClInclude Include="application\Game\Object\GameStage.h">
       <Filter>application\Game\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Ocean\Ocean.h">
-      <Filter>Engine\Graphics\3D\Oshan</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Ocean\OceanCommon.h">
-      <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClInclude>
     <ClInclude Include="Engine\DataInfo\OceanData.h">
       <Filter>Engine\DataInfo</Filter>
@@ -1076,9 +1085,6 @@
     </ClInclude>
     <ClInclude Include="Engine\Collider\ColliderConcept.h">
       <Filter>Engine\Collider</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Ocean\OceanWaveCompute.h">
-      <Filter>Engine\Graphics\3D\Oshan</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Base\UAV.h">
       <Filter>Engine\Graphics\Base</Filter>
@@ -1197,10 +1203,40 @@
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.h">
       <Filter>application\Game\Entity\Enemy\MobEnemy\Base</Filter>
     </ClInclude>
-    <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h" />
-    <ClInclude Include="Engine\Camera\Base\CameraCommon.h" />
-    <ClInclude Include="Engine\DataInfo\CameraData.h" />
-    <ClInclude Include="Engine\Graphics\Pipeline\CS\CSCompiler.h" />
+    <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.h" />
+    <ClInclude Include="Engine\Camera\Base\CameraCommon.h">
+      <Filter>Engine\Camera\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\DataInfo\CameraData.h">
+      <Filter>Engine\DataInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h">
+      <Filter>application\Scene\Title\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Title\UI\TitleUI.h">
+      <Filter>application\Scene\Title\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Pipeline\CS\CSCompiler.h">
+      <Filter>Engine\Graphics\Pipeline\CS</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Pipeline\GS\Compiler.h">
+      <Filter>Engine\Graphics\Pipeline\GS</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanGenerator.h">
+      <Filter>Engine\Graphics\Ocean\FFT</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.h">
+      <Filter>Engine\Graphics\Ocean\FFT</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Ocean\OceanGenerator.h">
+      <Filter>Engine\Graphics\Ocean</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Ocean\OceanCommon.h">
+      <Filter>Engine\Graphics\Ocean</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Ocean\OceanWaveCompute.h">
+      <Filter>Engine\Graphics\Ocean</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -1224,11 +1260,11 @@
     <None Include="Resource\Shaders\OffScreen\Fullscreen.hlsli">
       <Filter>Resource\Shaders\OffScreen</Filter>
     </None>
-    <None Include="Resource\Shaders\Ocean\Ocean.hlsli">
-      <Filter>Resource\Shaders\3D</Filter>
-    </None>
     <None Include="Resource\Shaders\2D\Obj2D.hlsli">
       <Filter>Resource\Shaders\2D</Filter>
+    </None>
+    <None Include="Resource\Shaders\Ocean\Ocean.hlsli">
+      <Filter>Resource\Shaders\Ocean</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -1255,9 +1291,6 @@
     </Filter>
     <Filter Include="application\Game\Entity">
       <UniqueIdentifier>{fd701977-b533-4bad-b59e-8792fda0bb3e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Camera">
-      <UniqueIdentifier>{5c33d645-33cb-4a19-b636-6e94dbf7890c}</UniqueIdentifier>
     </Filter>
     <Filter Include="application\Game\Object">
       <UniqueIdentifier>{dc046158-1126-47f6-aec7-738569fcbfe3}</UniqueIdentifier>
@@ -1394,9 +1427,6 @@
     <Filter Include="application\Game\Object\GameObject">
       <UniqueIdentifier>{4a5f8f95-907f-4a10-baee-87153ed89ae1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Graphics\3D\Oshan">
-      <UniqueIdentifier>{162736ff-601d-43a0-a358-c07c7e42961a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="application\Game\Entity\Player\Component">
       <UniqueIdentifier>{343c8ccc-cc5a-47b8-a85a-2136b5da5a63}</UniqueIdentifier>
     </Filter>
@@ -1420,9 +1450,6 @@
     </Filter>
     <Filter Include="application\Game\UI">
       <UniqueIdentifier>{40deb47d-99c0-4514-b379-f9406b1914b1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\UI\Title">
-      <UniqueIdentifier>{3a1fbc3e-6980-4309-b497-63300e33f2de}</UniqueIdentifier>
     </Filter>
     <Filter Include="application\Game\UI\Game">
       <UniqueIdentifier>{1d39f8ad-5b70-4b35-8c83-53ceb7761d60}</UniqueIdentifier>
@@ -1501,6 +1528,24 @@
     </Filter>
     <Filter Include="Service">
       <UniqueIdentifier>{482e8d8e-2156-475d-93ae-2d00c96bdd5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Camera\Base">
+      <UniqueIdentifier>{d5723da5-314a-4869-b1d9-048073e90010}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Shaders\Ocean">
+      <UniqueIdentifier>{7fc230fa-b515-46a3-9d0b-35b227c9c914}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Title\Animation">
+      <UniqueIdentifier>{4f10f110-9125-43a5-8b92-3b0f2085af67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Title\UI">
+      <UniqueIdentifier>{0ee76fe2-6665-42d7-93f1-b9d032d5e748}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Graphics\Ocean">
+      <UniqueIdentifier>{e8265952-23a6-4e2d-b2a3-31d93934c880}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Graphics\Ocean\FFT">
+      <UniqueIdentifier>{de13c019-91ec-4868-a5b4-5f61e3542050}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

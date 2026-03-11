@@ -9,6 +9,11 @@
 // Math
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
+#ifdef USE_IMGUI
+// Service
+#include "Service/Input.h"
+#endif // USE_IMGUI
+
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -76,6 +81,24 @@ void TitleScene::Update() {
 	ImGui::Text("Fade State: %d", static_cast<int>(currentFade_));
 	ImGui::End();
 
+	// Camera
+	if (Service::Camera::GetActiveCamera() == camera_.get()) {
+		camera_->ImGuiUpdate();
+		camera_->DebugUpdate();
+	} else {
+		defaultCamera_->ImGuiUpdate();
+		defaultCamera_->DebugUpdate();
+	}
+
+	// デバッグカメラの切り替え
+	if (Service::Input::TriggerKey(DIK_TAB)) {
+		if (Service::Camera::GetActiveCamera() == camera_.get()) {
+			Service::Camera::SetActiveCamera("Default");
+		} else {
+			Service::Camera::SetActiveCamera("Game");
+		}
+	}
+
 	// Cameraの情報表示
 	camera_->ImGuiUpdate();
 
@@ -118,11 +141,12 @@ void TitleScene::Update() {
 /// 描画
 ///-------------------------------------------///
 void TitleScene::Draw() {
-	/// ===Player=== ///
-	player_->Draw();
 
 	/// ===stage=== ///
 	stage_->Draw();
+
+	/// ===Player=== ///
+	player_->Draw();
 
 	/// ===TitleUIの描画=== ///
 	titleUI_->Draw();

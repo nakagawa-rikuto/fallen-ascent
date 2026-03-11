@@ -49,6 +49,8 @@ namespace MiiEngine {
 		IDxcBlob* csBlob = compiler_->GetKernel(kernelName);
 		assert(csBlob && "CS Kernel Blob is null");
 
+		HRESULT hr;
+
 		// ComputePipelineStateDescの設定
 		computePipelineStateDesc_ = {};
 		computePipelineStateDesc_.pRootSignature = rootSignature_->GetRootSignature();
@@ -58,7 +60,7 @@ namespace MiiEngine {
 		};
 
 		// PipelineStateの生成
-		HRESULT hr = dxCommon->GetDevice()->CreateComputePipelineState(
+		hr = dxCommon->GetDevice()->CreateComputePipelineState(
 			&computePipelineStateDesc_, IID_PPV_ARGS(&computePipelineState_));
 		assert(SUCCEEDED(hr));
 	}

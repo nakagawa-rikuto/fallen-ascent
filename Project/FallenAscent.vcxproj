@@ -132,6 +132,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSRootSignature.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.cpp" />
     <ClCompile Include="Engine\Collider\Collision\ColliderCollision.cpp" />
+    <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanGenerator.cpp" />
+    <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.cpp" />
+    <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.cpp" />
     <ClCompile Include="Service\DeltaTime.cpp" />
     <ClCompile Include="Engine\System\GameTime\GameTime.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.cpp" />
@@ -200,7 +203,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Math\Vector3.cpp" />
     <ClCompile Include="Math\Vector4.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\GS\BlendState.cpp" />
-    <ClCompile Include="Engine\Graphics\Pipeline\Compiler.cpp" />
+    <ClCompile Include="Engine\Graphics\Pipeline\GS\Compiler.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\GS\InputLayout.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\GS\GSPSOCommon.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\GS\RasterizerState.cpp" />
@@ -267,7 +270,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp" />
     <ClCompile Include="Engine\Graphics\2d\Base\Object2DCommon.cpp" />
     <ClCompile Include="application\Game\Animation\StartAnimation.cpp" />
-    <ClCompile Include="Engine\Graphics\Ocean\Ocean.cpp" />
+    <ClCompile Include="Engine\Graphics\Ocean\OceanGenerator.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\OceanCommon.cpp" />
     <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp" />
@@ -316,6 +319,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.h" />
     <ClInclude Include="Engine\Collider\Collision\ColliderCollision.h" />
+    <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanGenerator.h" />
+    <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.h" />
+    <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.h" />
     <ClInclude Include="Service\DeltaTime.h" />
     <ClInclude Include="Engine\System\GameTime\GameTime.h" />
     <ClInclude Include="Engine\DataInfo\OceanData.h" />
@@ -396,7 +402,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Math\Vector3.h" />
     <ClInclude Include="Math\Vector4.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\GS\BlendState.h" />
-    <ClInclude Include="Engine\Graphics\Pipeline\Compiler.h" />
+    <ClInclude Include="Engine\Graphics\Pipeline\GS\Compiler.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\GS\InputLayout.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\GS\GSPSOCommon.h" />
     <ClInclude Include="Engine\DataInfo\PipelineStateObjectType.h" />
@@ -465,7 +471,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h" />
     <ClInclude Include="Engine\Graphics\2d\Base\Object2DCommon.h" />
     <ClInclude Include="application\Game\Animation\StartAnimation.h" />
-    <ClInclude Include="Engine\Graphics\Ocean\Ocean.h" />
+    <ClInclude Include="Engine\Graphics\Ocean\OceanGenerator.h" />
     <ClInclude Include="Engine\Graphics\Ocean\OceanCommon.h" />
     <ClInclude Include="application\Game\Object\StageObject\StageObject.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />

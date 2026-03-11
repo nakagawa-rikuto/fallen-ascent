@@ -1,12 +1,13 @@
 #include "GroundOcean.h"
 // Service
 #include "Service/Input.h"
+#include "Service/Camera.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
 GroundOcean::~GroundOcean() {
-	ocean_.reset();
+	fftOcean_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -18,18 +19,36 @@ void GroundOcean::Initialize() {
 	GameObject::Initialize();
 	GameObject::SetAABB({ { -500.0f, -2.0f, -500.0f }, { 500.0f, 0.0f, 500.0f } });
 
-	// オーシャンの初期化
-	ocean_ = std::make_unique<MiiEngine::Ocean>();
-	ocean_->Initialize(100);
-	ocean_->SetTranslate({ 0.0f, -30.0f, 0.0f });
-	ocean_->SetScale({ 10.0f, 1.0f, 10.0f });
+	// FFTオーシャンの初期化
+	fftOcean_ = std::make_unique<MiiEngine::FFTOceanGenerator>();
+	fftOcean_->Initialize(512);
+	fftOcean_->SetTranslate({ 0.0f, -30.0f, 0.0f });
+	fftOcean_->SetScale({ 2000.0f, 1.0f, 2000.0f });
 
-	ocean_->SetWaveInfo(0, { 0.7f, 0.4f, 0.2f }, 1.15f, 12.5f, 0.6f);
-	ocean_->SetWaveInfo(1, { 0.25f, 0.55f, 1.0f }, 0.5f, 7.5f, 0.6f);
-	ocean_->SetWaveInfo(2, { 0.6f, 0.2f, 0.46f }, 0.4f, 2.5f, 0.6f);
+	// アクティブカメラを設定
+	fftOcean_->SetCamera(Service::Camera::GetActiveCamera());
 
 	// 初回更新
-	ocean_->Update();
+	fftOcean_->Update();
+
+	// OceanParamsの初期設定
+	MiiEngine::OceanParams oceanParams = fftOcean_->GetOceanParams();
+	oceanParams.gridWidth = 2000.0f;
+	oceanParams.windowSpeed = 9.5f;
+	oceanParams.amplitude = 30.0f;
+	oceanParams.lambda = 0.5f;
+	fftOcean_->SetOceanParams(oceanParams);
+	
+
+	// Oceanの描画コールバックを設定
+	MiiEngine::OceanRenderCB oceanRenderCB = fftOcean_->GetOceanRenderCB();
+	oceanRenderCB.sunDirection = { 0.0f, 0.7f, 0.9f };
+	oceanRenderCB.sunPower = 24.0f;
+	oceanRenderCB.fresnelBias = 0.02f;
+	oceanRenderCB.roughness = 0.08f;
+	oceanRenderCB.sssStrength = 0.01f;
+	oceanRenderCB.foamSoftness = 1.0f;
+	fftOcean_->SetOceanRenderCB(oceanRenderCB);
 }
 
 ///-------------------------------------------/// 
@@ -37,26 +56,18 @@ void GroundOcean::Initialize() {
 ///-------------------------------------------///
 void GroundOcean::Update() {
 
-#ifdef _DEBUG
-	// デバッグ用
-	if (Service::Input::TriggerKey(DIK_SPACE)) {
-		// 波紋を追加
-		Vector3 ripplePos = { 0.0f, 0.0f, 0.0f };
-		ocean_->AddCircularRipple(ripplePos, 1.0f, 1.0f, 4.0f);
-	}
-
-#endif // _DEBUG
-
+	// アクティブカメラを毎フレーム同期
+	fftOcean_->SetCamera(Service::Camera::GetActiveCamera());
 	// オーシャンの更新
-	ocean_->Update();
+	fftOcean_->Update();
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
 void GroundOcean::Draw(MiiEngine::BlendMode mode) {
-	// オーシャンの描画
-	ocean_->Draw(mode);
+	// 描画
+	fftOcean_->Draw(mode);
 }
 
 ///-------------------------------------------/// 
@@ -65,7 +76,7 @@ void GroundOcean::Draw(MiiEngine::BlendMode mode) {
 void GroundOcean::ShowImGui() {
 #ifdef USE_IMGUI
 	// オーシャンのImGui表示
-	ocean_->ShowImGui();
+	fftOcean_->ShowImGui();
 #endif // USE_IMGUI
 }
 
@@ -73,7 +84,5 @@ void GroundOcean::ShowImGui() {
 /// 衝突判定
 ///-------------------------------------------///
 void GroundOcean::OnCollision(MiiEngine::Collider* collider) {
-	// オーシャンに波紋を追加
-	Vector3 collisionPos = collider->GetTransform().translate;
-	ocean_->AddCircularRipple(collisionPos, 2.0f, 1.0f, 4.0f);
+	collider;
 }

@@ -17,12 +17,12 @@
 
 namespace MiiEngine {
     ///=====================================================/// 
-    /// Ocean
+    /// OceanGenerator
     ///=====================================================///
-    class Ocean : public OceanCommon {
+    class OceanGenerator : public OceanCommon {
     public:
-        Ocean() = default;
-        ~Ocean();
+        OceanGenerator() = default;
+        ~OceanGenerator();
 
         /// <summary>
         /// 初期化処理

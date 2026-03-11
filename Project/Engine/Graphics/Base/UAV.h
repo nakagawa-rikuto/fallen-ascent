@@ -1,3 +1,4 @@
+#pragma once
 /// ===Include=== ///
 // Engine
 #include "Engine/Core/ComPtr.h"
@@ -22,6 +23,19 @@ namespace MiiEngine {
 		/// <param name="structureByteStride">1要素あたりのバイトサイズ</param>
 		/// <param name="cpuHandle">DescriptorHeapのCPUハンドル（UAVを登録する場所）</param>
 		void Create(ID3D12Device* device, ID3D12Resource* targetResorce, UINT numElements, UINT structureByteStride, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle);
+
+		/// <summary>
+		/// 2Dテクスチャとしてシェーダーリソースビューを作成します。
+		/// </summary>
+		/// <param name="device">ビューの作成に使用するD3D12デバイス。</param>
+		/// <param name="targetResource">ビューが参照するリソース。</param>
+		/// <param name="format">テクスチャのピクセル形式。</param>
+		/// <param name="cpuHandle">ビューを作成する記述子ヒープ内のCPU記述子ハンドル。</param>
+		void CreateAsTexture2D(
+			ID3D12Device* device,
+			ID3D12Resource* targetResource,
+			DXGI_FORMAT format,
+			D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle);
 
 		/// <summary>
 		/// UAVの取得

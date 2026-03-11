@@ -127,6 +127,8 @@ namespace MiiEngine {
 		// OffScreen
 		Loader::LoadTexture("noise0", "OffScreen/noise0.png");
 		Loader::LoadTexture("noise1", "OffScreen/noise1.png");
+		// Ocean
+		Loader::LoadTexture("oceanFFT", "Ocean/foam_noise.png");
 		// DDS
 		Loader::LoadTexture("skyBox", "DDS/rostock_laage_airport_4k.dds");
 

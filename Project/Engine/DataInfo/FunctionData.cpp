@@ -61,13 +61,14 @@ namespace MiiEngine {
 		ID3D12Device* device,
 		size_t sizeInBytes,
 		DXGI_FORMAT format,
-		D3D12_RESOURCE_FLAGS flags) {
+		D3D12_RESOURCE_FLAGS flags,
+		D3D12_HEAP_TYPE heapType) {
 
 		HRESULT hr;
 
 		// リソース用のヒープの設定
 		D3D12_HEAP_PROPERTIES uploadHeapProperties{};
-		uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;  // UploadHeapを使う
+		uploadHeapProperties.Type = heapType;  // UploadHeapを使う
 
 		// リソースの設定
 		D3D12_RESOURCE_DESC resourceDesc{};
@@ -90,13 +91,19 @@ namespace MiiEngine {
 		// バッファの場合はこれにする決まり
 		resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
+		// ヒープタイプに応じて初期状態を切り替える
+		D3D12_RESOURCE_STATES initialState =
+			(heapType == D3D12_HEAP_TYPE_UPLOAD)
+			? D3D12_RESOURCE_STATE_GENERIC_READ
+			: D3D12_RESOURCE_STATE_COMMON;
+
 		// 実際に頂点リソースを作る
 		ComPtr<ID3D12Resource> bufferResource = nullptr;
 		hr = device->CreateCommittedResource(
 			&uploadHeapProperties,
 			D3D12_HEAP_FLAG_NONE,
 			&resourceDesc,
-			D3D12_RESOURCE_STATE_GENERIC_READ,
+			initialState,
 			nullptr,
 			IID_PPV_ARGS(&bufferResource)
 		);

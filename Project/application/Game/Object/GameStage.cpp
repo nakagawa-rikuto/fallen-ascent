@@ -80,13 +80,6 @@ void GameStage::Draw(MiiEngine::BlendMode mode) {
 		}
 	}
 
-	// GroundOceanの更新
-	for (const auto& ocean : Oceans_) {
-		if (ocean) {
-			ocean->Draw(mode);
-		}
-	}
-
 	// オブジェクトの描画
 	for (const auto& obj : objects_) {
 		if (obj) {

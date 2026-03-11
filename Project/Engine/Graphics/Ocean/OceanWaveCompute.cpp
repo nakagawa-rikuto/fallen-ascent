@@ -90,8 +90,6 @@ namespace MiiEngine {
     /// 波の計算を実行
     ///-------------------------------------------///
     void OceanWaveCompute::Dispatch(ID3D12GraphicsCommandList* commandList) {
-
-        // OceanWaveCompute::Dispatch を呼び出す前に追加
         ID3D12DescriptorHeap* descriptorHeaps[] = {
             srvManager_->GetDescriptorHeap()  // SRVManagerからヒープを取得
         };
