@@ -4,6 +4,7 @@
 // Engine
 #include "Service/GraphicsResourceGetter.h"
 #include "Service/Render.h"
+#include "Service/Sprite.h"
 // Math
 #include "Math/MatrixMath.h"
 
@@ -15,12 +16,34 @@ namespace MiiEngine {
 		vertex_.reset();
 		index_.reset();
 		common_.reset();
+		// SpriteManagerから登録解除
+		Service::Sprite::RemoveSprite(this);
 	}
+
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	//GroundTypeの取得
+	const GroundType& SpriteCommon::GetGroundType() const { return groundType_; }
+	// BlendModeの取得
+	const BlendMode& SpriteCommon::GetBlendMode() const { return blendMode_; }
+	// 描画フラグの取得
+	const bool& SpriteCommon::GetIsDraw() const { return isDraw_; }
+
+	///-------------------------------------------/// 
+	/// Setter
+	///-------------------------------------------///
+	// GroundTypeの設定
+	void SpriteCommon::SetGroundType(const GroundType& type) { groundType_ = type; }
+	// BlendModeの設定
+	void SpriteCommon::SetBlendMode(const BlendMode& mode) { blendMode_ = mode; }
+	// 描画フラグの設定
+	void SpriteCommon::SetIsDraw(const bool& isDraw) { isDraw_ = isDraw; }
 
 	///-------------------------------------------/// 
 	/// 初期化
 	///-------------------------------------------///
-	void SpriteCommon::Initialize(const std::string textureFilePath) {
+	void SpriteCommon::Initialize(const std::string textureFilePath, GroundType type) {
 
 		/// ===コマンドリストのポインタの取得=== ///
 		ID3D12Device* device = Service::GraphicsResourceGetter::GetDXDevice();
@@ -28,6 +51,9 @@ namespace MiiEngine {
 		/// ===テクスチャ=== ///
 		filePath_ = textureFilePath;
 		AdjustTextureSize(textureFilePath);
+
+		/// ===Typeの取得=== ///
+		groundType_ = type;
 
 		/// ===生成=== ///
 		vertex_ = std::make_unique<VertexBuffer2D>();
@@ -64,6 +90,9 @@ namespace MiiEngine {
 
 		/// ===WorldTransformの設定=== ///
 		worldTransform_ = { {1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f, }, { 0.0f, 0.0f, 0.0f } };
+
+		// SpriteManagerに登録
+		Service::Sprite::AddSprite(this);
 	}
 
 
@@ -82,18 +111,12 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// 描画
 	///-------------------------------------------///
-	void SpriteCommon::Draw(GroundType type, BlendMode mode) {
+	void SpriteCommon::Draw() {
 
 		/// ===コマンドリストのポインタの取得=== ///
 		ID3D12GraphicsCommandList* commandList = Service::GraphicsResourceGetter::GetDXCommandList();
 
 		/// ===コマンドリストに設定=== ///
-		// PSOの設定
-		if (type == GroundType::Front) {
-			Service::Render::SetPSO(commandList, PipelineType::ForGround2D, mode);
-		} else if (type == GroundType::Back) {
-			Service::Render::SetPSO(commandList, PipelineType::BackGround2D, mode);
-		}
 		// VertexBufferViewの設定
 		commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
 		// IndexBufferViewの設定
@@ -105,7 +128,6 @@ namespace MiiEngine {
 		// 描画(ドローコール)
 		commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 	}
-
 
 	///-------------------------------------------/// 
 	/// VertexResourceの書き込み

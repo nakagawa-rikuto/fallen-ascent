@@ -27,13 +27,11 @@ void GameSceneUI::Initialize() {
 	};
 
 	/// ===OptionSprite=== ///
-	optionMenuSprite_ = std::make_unique<Sprite>();
+	optionMenuSprite_ = std::make_unique<Object2d>();
 	optionMenuSprite_->Initialize("menuButton");
 	optionMenuSprite_->SetPosition({ windowSize.x - 100.0f, 100.0f});
 	optionMenuSprite_->SetSize({ 100.0f, 100.0f });
 	optionMenuSprite_->SetAnchorPoint({ 0.5f, 0.5f });
-	optionMenuSprite_->Update();
-
 }
 
 ///-------------------------------------------/// 
@@ -42,14 +40,4 @@ void GameSceneUI::Initialize() {
 void GameSceneUI::Update() {
 	// PlayerUIの更新
 	playerUI_->Update();
-}
-
-///-------------------------------------------/// 
-/// 描画処理
-///-------------------------------------------///
-void GameSceneUI::Draw() {
-	// PlayerUIの描画
-	playerUI_->Draw();
-	// オプションメニュースプライトの描画
-	optionMenuSprite_->Draw();
 }

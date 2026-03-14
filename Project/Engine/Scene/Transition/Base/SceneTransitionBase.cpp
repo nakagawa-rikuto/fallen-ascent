@@ -80,7 +80,7 @@ namespace MiiEngine {
 		animation_.isPlaying = false;
 		animation_.isFinished = false;
 		animation_.currentTime = 0.0f;
-		animation_.duration = 1.2f;
+		animation_.duration = 1.0f;
 		currentState_ = FadeState::None;
 	}
 }

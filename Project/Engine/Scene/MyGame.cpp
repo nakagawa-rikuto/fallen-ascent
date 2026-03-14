@@ -58,7 +58,7 @@ namespace MiiEngine {
 		sceneFactory_ = std::make_unique<SceneFactory>();
 		// シーンマネージャの初期化
 		sceneManager_ = std::make_unique<SceneManager>();
-		sceneManager_->Initialize(sceneFactory_.get());
+		sceneManager_->Initialize(sceneFactory_.get(), spriteManager_.get());
 		sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
 	}
 
@@ -153,7 +153,6 @@ namespace MiiEngine {
 		Loader::LoadTexture("leftStick", "GameUI/xbox_stick_l.png");
 		Loader::LoadTexture("rightStick", "GameUI/xbox_stick_r.png");
 		Loader::LoadTexture("menuButton", "GameUI/xbox_button_menu.png");
-
 		// OptionUI
 		Loader::LoadTexture("OptionTitle", "OptionUI/OptionTitle.png");
 		Loader::LoadTexture("OptionVolume", "OptionUI/Volume.png");
@@ -186,7 +185,6 @@ namespace MiiEngine {
 		Loader::LoadModel("Bridge2", "Object/Bridge/Bridge2.gltf");						// 橋
 		Loader::LoadModel("Stone", "Object/Object/Stone/Stone.gltf");					// 石
 		Loader::LoadModel("BossStageWall", "Object/Object/Wall/BossStageWall.gltf");	// 壁
-
 	}
 
 	///-------------------------------------------/// 

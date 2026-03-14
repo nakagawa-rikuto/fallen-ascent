@@ -28,7 +28,6 @@ void GameSceneInGameState::Enter(GameScene* gameScene) {
 	/// ===OptionUI=== ///
 	optionUI_ = std::make_unique<OptionUI>();
 	optionUI_->Initialize();
-	optionUI_->GameUpdate();
 	isOptionActive_ = false;
 }
 
@@ -38,7 +37,7 @@ void GameSceneInGameState::Enter(GameScene* gameScene) {
 void GameSceneInGameState::Update() {
 
 	// オプションアクティブ
-	if (Service::Input::TriggerButton(0, ControllerButtonType::Start)) {
+	if (Service::Input::TriggerButton(0, ControllerButtonType::Start) || Service::Input::TriggerKey(DIK_ESCAPE)) {
 		if (isOptionActive_) {
 			Service::DeltaTime::SetDeltaTime(1.0f / 60.0f);
 			isOptionActive_ = false;
@@ -48,11 +47,11 @@ void GameSceneInGameState::Update() {
 		}
 	}
 
-	// UIの更新
-	if (isOptionActive_) {
-		// OptionUIの更新
-		optionUI_->GameUpdate();
-	} else {
+	// OptionUIの更新
+	optionUI_->GameUpdate(isOptionActive_);
+
+	// 更新
+	if (!isOptionActive_) {
 		// EnemyManagerの更新
 		gameScene_->GetEnemyManager()->Update();
 		// Playerの更新
@@ -78,14 +77,7 @@ void GameSceneInGameState::Update() {
 ///-------------------------------------------/// 
 /// 描画処理
 ///-------------------------------------------///
-void GameSceneInGameState::Draw() {
-	
-	if (isOptionActive_) {
-		optionUI_->GameDraw();
-	} else {
-		ui_->Draw();
-	}
-}
+void GameSceneInGameState::Draw() {}
 
 ///-------------------------------------------/// 
 /// 終了処理

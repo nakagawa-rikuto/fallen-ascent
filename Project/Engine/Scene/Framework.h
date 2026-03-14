@@ -10,6 +10,8 @@
 #include "Engine/System/Managers/ParticleManager.h"
 // ColliderManager
 #include "Engine/System/Managers/ColliderManager.h"
+// SpriteManager
+#include "Engine/System/Managers/SpriteManager.h"
 // DeltaTime
 #include "Engine/System/GameTime/GameTime.h"
 // ｃ++
@@ -81,6 +83,8 @@ namespace MiiEngine {
 		bool endRequest_ = false;
 		// シーンファクトリー
 		std::unique_ptr<AbstractSceneFactory> sceneFactory_;
+		// SpriteManager
+		std::unique_ptr<SpriteManager> spriteManager_;
 	};
 }
 

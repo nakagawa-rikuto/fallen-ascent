@@ -1,6 +1,6 @@
 #pragma once
 /// ===Include=== ///
-#include "application/Drawing/2d/Sprite.h"
+#include "application/Drawing/2d/Object2d.h"
 #include <memory>
 
 /// ===前方宣言=== ///
@@ -46,8 +46,8 @@ private:
 	MiiEngine::FollowCamera* camera_ = nullptr;  // カメラ
 
 	/// ===Sprite=== ///
-	std::unique_ptr<Sprite> gameOverSprite_;  // ゲームオーバースプライト
-	std::unique_ptr<Sprite> blackSprite_;     // ブラックアウト用スプライト
+	std::unique_ptr<Object2d> gameOverSprite_;  // ゲームオーバースプライト
+	std::unique_ptr<Object2d> blackSprite_;     // ブラックアウト用スプライト
 
 	/// ===アニメーション制御=== ///
 	bool isCompleted_ = false;

@@ -2,7 +2,9 @@
 // c++
 #include <cassert>
 // SceneTransitionManager
-#include "Engine/Scene/Transition/SceneTransitionManager.h"
+#include "Engine/Scene/Transition/Manager/SceneTransitionManager.h"
+// SpriteManager
+#include "SpriteManager.h"
 // 各シーン
 #include "application/Scene/Title/TitleScene.h"
 #include "application/Scene/Select/SelectScene.h"
@@ -40,13 +42,16 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// 初期化
 	///-------------------------------------------///
-	void SceneManager::Initialize(AbstractSceneFactory* sceneFactor) {
+	void SceneManager::Initialize(AbstractSceneFactory* sceneFactor, SpriteManager* spriteManager) {
 		// シーンファクトリーのセット
 		SetSceneFactory(sceneFactor);
 
 		// シーントランジションマネージャの生成
 		sceneTransitionManager_ = std::make_unique<SceneTransitionManager>();
 		sceneTransitionManager_->Initialize();
+
+		// SpriteManagerのセット
+		spriteManager_ = spriteManager;
 	}
 
 	///-------------------------------------------/// 
@@ -176,6 +181,8 @@ namespace MiiEngine {
 		if (currentScene_) {
 			// 現在のシーンの初期化
 			currentScene_->Initialize();
+			// シーンの最初にスプライトを更新
+			spriteManager_->Update();
 		}
 	}
 }

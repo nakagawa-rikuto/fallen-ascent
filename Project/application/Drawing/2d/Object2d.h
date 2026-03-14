@@ -4,31 +4,19 @@
 #include "Engine/Graphics/2d/Sprite/SpriteCommon.h"
 
 ///=====================================================/// 
-/// スプライト
+/// Object2d
 ///=====================================================///
-class Sprite : public MiiEngine::SpriteCommon {
+class Object2d : public MiiEngine::SpriteCommon {
 public: /// ===基本的な関数=== ///
 
-	Sprite() = default;
-	~Sprite();
+	Object2d() = default;
+	~Object2d();
 
 	/// <summary>
 	/// 初期化処理
 	/// </summary>
 	/// <param name="textureFilePath">初期化に使用するテクスチャファイルのパスを表す文字列。</param>
-	void Initialize(const std::string textureFilePath) override;
-
-	/// <summary>
-	/// 更新処理
-	/// </summary>
-	void Update() override;
-
-	/// <summary>
-	/// 描画処理
-	/// </summary>
-	/// <param name="type">描画するグラウンドの種類。既定値は GroundType::Front。</param>
-	/// <param name="mode">使用するブレンドモード。既定値は BlendMode::KBlendModeNormal。</param>
-	void Draw(MiiEngine::GroundType type = MiiEngine::GroundType::Front, MiiEngine::BlendMode mode = MiiEngine::BlendMode::KBlendModeNormal) override;
+	void Initialize(const std::string textureFilePath, MiiEngine::GroundType type = MiiEngine::GroundType::Front) override;
 
 public:/// ===Getter=== ///
 

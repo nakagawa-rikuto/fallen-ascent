@@ -1,14 +1,19 @@
 #pragma once
 /// ===Include=== ///
 #include "Engine/Scene/IScene.h"
-// Player
-#include "application/Game/Entity/Player/Player.h"
-// Stage
-#include "application/Game/Object/GameStage.h"
+// Line
+#include "application/Drawing/3d/Line.h"
 // UI
 #include "UI/TitleUI.h"
 // Animation
 #include "Animation/TitleSceneAnimation.h"
+// C++
+#include <random>
+
+/// ===前方宣言=== ///
+namespace MiiEngine {
+	class ParticleGroup;
+}
 
 ///=====================================================/// 
 /// タイトルシーン
@@ -36,12 +41,19 @@ public:/// ===メンバ関数=== ///
 
 private:/// ===メンバ変数=== ///
 	
+	/// ===ポインタ=== ///
+	// パーティクル
+	MiiEngine::ParticleGroup* particle_;
+
 	/// ===Class=== ///
-	std::unique_ptr<MiiEngine::FollowCamera> camera_; // カメラ
-	std::unique_ptr<Player> player_;	 // プレイヤー
-	std::unique_ptr<GameStage> stage_;	 // ステージ
-	std::unique_ptr<TitleUI> titleUI_;   // タイトルUI
-	std::unique_ptr<TitleSceneAnimation> animation_; // タイトルシーンアニメーション
+	// Line
+	std::vector<std::unique_ptr<Line>> lines_;
+	// カメラ
+	std::unique_ptr<MiiEngine::NormalCamera> camera_; 
+	// タイトルUI
+	std::unique_ptr<TitleUI> titleUI_;
+	// タイトルシーンアニメーション
+	std::unique_ptr<TitleSceneAnimation> animation_; 
 
 	/// ===Fade=== ///
 	enum class FadeState {
@@ -50,10 +62,6 @@ private:/// ===メンバ変数=== ///
 		FadeOut,
 	};
 	FadeState currentFade_ = FadeState::FadeIn;
-
-	/// ===カメラ=== ///
-	Vector3 cameraOrbitingOffset_{ 0.0f, 10.0f, -100.0f }; // カメラOffSet
-	Quaternion cameraRotation_{ 0.158f, 0.0f, 0.0f, 0.987f };   // カメラ位置
 
 	// フェードアウトフラグ
 	bool isStartFadeOut_ = false;
@@ -69,10 +77,4 @@ private:/// ===プライベート関数=== ///
 	/// フェードアウトの状態を更新します。
 	/// </summary>
 	void UpdateFadeOut();
-
-	/// <summary>
-	/// プレイヤーを生成します。
-	/// </summary>
-	/// <param name="json">プレイヤーの設定が記述されたJSON文字列</param>
-	void SpawnPlayer(const std::string& json_name);
 };

@@ -9,6 +9,7 @@
 enum class TransitionType {
 	None,
 	ShatterGlass,
+	BlackOut,
 };
 
 namespace MiiEngine {

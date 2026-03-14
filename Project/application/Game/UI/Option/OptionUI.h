@@ -1,7 +1,7 @@
 #pragma once
 /// ===Include=== ///
 // Sprite
-#include "application/Drawing/2d/Sprite.h"
+#include "application/Drawing/2d/Object2d.h"
 // C++
 #include <memory>
 
@@ -21,22 +21,12 @@ public:
 	/// <summary>
 	/// 更新処理(タイトル)
 	/// </summary>
-	void TitleUpdate();
+	void TitleUpdate(bool flag);
 
 	/// <summary>
 	/// 更新処理(ゲーム中)
 	/// </summary>
-	void GameUpdate();
-
-	/// <summary>
-	/// 描画処理
-	/// </summary>
-	void TitleDraw();
-
-	/// <summary>
-	/// 描画処理
-	/// </summary>
-	void GameDraw();
+	void GameUpdate(bool flag);
 
 public: /// ===Getter=== ///
 	// タイトルに戻るフラグの取得
@@ -44,13 +34,13 @@ public: /// ===Getter=== ///
 
 private: /// ===メンバ変数=== ///
 
-	/// ===スプライト=== ///
-	std::unique_ptr<Sprite> dimSprite_;          // 薄暗いオーバーレイ
-	std::unique_ptr<Sprite> titleButtonSprite_;  // タイトルに戻るボタン
-	std::unique_ptr<Sprite> audioButtonSprite_;  // オーディオボタン
-	std::unique_ptr<Sprite> audioTextSprite_;    // 音量調整テキスト
-	std::unique_ptr<Sprite> audioSliderSprite_;  // 音量調整スライダー
-	std::unique_ptr<Sprite> audioHandleSprite_;  // 音量調整ハンドル
+	/// ===Object2d=== ///
+	std::unique_ptr<Object2d> dimSprite_;          // 薄暗いオーバーレイ
+	std::unique_ptr<Object2d> titleButtonSprite_;  // タイトルに戻るボタン
+	std::unique_ptr<Object2d> audioButtonSprite_;  // オーディオボタン
+	std::unique_ptr<Object2d> audioTextSprite_;    // 音量調整テキスト
+	std::unique_ptr<Object2d> audioSliderSprite_;  // 音量調整スライダー
+	std::unique_ptr<Object2d> audioHandleSprite_;  // 音量調整ハンドル
 
 	/// ===参照スケール倍率=== ///
 	Vector2 scale_ = { 1.0f, 1.0f };

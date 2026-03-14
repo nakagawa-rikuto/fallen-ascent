@@ -1,0 +1,142 @@
+{
+    "advanced": {
+        "clearOnStop": true,
+        "colorGradient": {
+            "colorBlendCurve": 1.0,
+            "oscillateColor": false,
+            "primaryColor": [
+                0.20000000298023224,
+                0.800000011920929,
+                1.0,
+                1.0
+            ],
+            "secondaryColor": [
+                1.0,
+                0.8999999761581421,
+                0.30000001192092896,
+                1.0
+            ],
+            "useGradient": false
+        },
+        "emissionPattern": {
+            "particlesPerEmit": 5,
+            "pattern": "Sphere",
+            "patternAngle": 0.0,
+            "patternRadius": 0.25
+        },
+        "isTrajectoryParticle": false,
+        "motion": {
+            "billboardRotationSpeed": 5.400000095367432,
+            "enableBillboardRotation": true,
+            "enableSwirling": false,
+            "expansionRate": 0.800000011920929,
+            "followEmitter": false,
+            "followStrength": 1.0,
+            "rotationInfluence": 1.2000000476837158,
+            "swirlingSpeed": 3.0,
+            "useRotationInfluence": false,
+            "velocityDamping": 0.949999988079071
+        },
+        "scaleAnimation": {
+            "endScale": 0.10000000149011612,
+            "maxScale": 1.5,
+            "startScale": 0.30000001192092896,
+            "type": "Bounce"
+        },
+        "trailSpacing": 0.00800000037997961
+    },
+    "appearance": {
+        "endColor": [
+            1.0,
+            0.7529411911964417,
+            0.0,
+            0.0
+        ],
+        "endScale": [
+            0.5,
+            0.5,
+            0.5
+        ],
+        "startColor": [
+            0.5316452980041504,
+            0.0,
+            1.0,
+            1.0
+        ],
+        "startScaleMax": [
+            0.699999988079071,
+            0.699999988079071,
+            0.699999988079071
+        ],
+        "startScaleMin": [
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612
+        ],
+        "texturePath": "circle2",
+        "useColorGradient": true,
+        "useScaleAnimation": true
+    },
+    "emission": {
+        "burstCount": 0,
+        "emissionRate": 400.0,
+        "frequency": 0.20000000298023224,
+        "isBurst": false,
+        "lifetimeMax": 4.0,
+        "lifetimeMin": 2.0
+    },
+    "maxInstance": 100,
+    "modelName": "plane",
+    "name": "Title",
+    "physics": {
+        "acceleration": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "explosionRange": [
+            20.0,
+            15.0,
+            20.0
+        ],
+        "gravity": 0.0,
+        "upwardForce": 0.0,
+        "useRandomVelocity": true,
+        "velocityMax": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "velocityMin": [
+            -1.0,
+            -1.0,
+            -1.0
+        ]
+    },
+    "rotation": {
+        "enableRotation": true,
+        "initialRotationMax": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "initialRotationMin": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "randomInitialRotation": false,
+        "randomRotation": true,
+        "rotationSpeedMax": [
+            0.20000000298023224,
+            0.20000000298023224,
+            0.20000000298023224
+        ],
+        "rotationSpeedMin": [
+            -0.20000000298023224,
+            -0.20000000298023224,
+            -0.20000000298023224
+        ]
+    },
+    "shape": "None"
+}

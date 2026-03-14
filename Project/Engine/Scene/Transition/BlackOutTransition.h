@@ -1,20 +1,19 @@
 #pragma once
 /// ===Include=== ///
 #include "Engine/Scene/Transition/Base/SceneTransitionBase.h"
-#include "Engine/Graphics/OffScreen/Effect/ShatterGlassEffect.h"
 #include "application/Drawing/2d/Object2d.h"
 
 namespace MiiEngine {
-    ///=====================================================/// 
-    /// ShatterGlassTransition
-    ///=====================================================///
-    class ShatterGlassTransition : public SceneTransitionBase {
-    public:
+	///=====================================================/// 
+	/// BlackOutTransition
+	///=====================================================///
+	class BlackOutTransition : public SceneTransitionBase {
+	public:
 
-        ShatterGlassTransition() = default;
-        ~ShatterGlassTransition();
+		BlackOutTransition() = default;
+		~BlackOutTransition();
 
-        /// <summary>
+		/// <summary>
         /// フェードイン開始処理
         /// </summary>
         /// <param name="duration">フェードインにかかる時間（秒）。省略時は1.2秒が使用されます。</param>
@@ -32,12 +31,10 @@ namespace MiiEngine {
         void Draw() override;
 
     private:
-        // Sprite
-        std::unique_ptr<Object2d> sprite_;
-        // Data
-        ShatterGlassData data_;
 
-    protected:
+        // Sprite
+		std::unique_ptr<Object2d> sprite_;
+
         /// <summary>
         /// フェードイン固有の更新処理
         /// </summary>
@@ -47,6 +44,7 @@ namespace MiiEngine {
         /// フェードアウト固有の更新処理
         /// </summary>
         void OnFadeOutUpdate() override;
-    };
+	};
 }
+
 

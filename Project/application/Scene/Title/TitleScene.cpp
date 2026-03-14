@@ -2,10 +2,10 @@
 // SceneManager
 #include "Engine/System/Managers/SceneManager.h"
 // Service
-#include "Service/GraphicsResourceGetter.h"
 #include "Service/Camera.h"
-#include "Service/Collision.h"
 #include "Service/PostEffect.h"
+#include "Service/Particle.h"
+#include "Service/Sprite.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
@@ -21,12 +21,14 @@
 TitleScene::~TitleScene() {
 	// ISceneのデストラクタ
 	IScene::~IScene();
-	// Colliderのリセット
-	Service::Collision::Reset();
 	// TitleUIのリセット
 	titleUI_.reset();
-	// TitleSceneAnimationのリセット
+	lines_.clear();
+	// Animationのリセット
 	animation_.reset();
+	// Particleのリセット
+	particle_->Stop();
+	particle_ = nullptr;
 	// Cameraの解放
 	Service::Camera::Remove("Title");
 	camera_.reset();
@@ -39,36 +41,40 @@ void TitleScene::Initialize() {
 	// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 	IScene::Initialize();
 
+	/// ===Particle=== ///
+	Service::Particle::LoadParticleDefinition("Title.json");
+	particle_ = Service::Particle::Emit("Title", { 0.0f, 0.0f, 0.0f });
+
+	/// ===Line=== ///
+	for (uint32_t i = 0; i < 2; ++i) {
+		auto line = std::make_unique<Line>();
+		lines_.push_back(std::move(line));
+	}
+
 	/// ===Camera=== ///
-	camera_ = std::make_unique<MiiEngine::FollowCamera>();
+	camera_ = std::make_unique<MiiEngine::NormalCamera>();
 	camera_->Initialize();
-	camera_->SetFollowCamera(MiiEngine::FollowCameraType::Orbiting);
-	camera_->SetOrbitingOffset(cameraOrbitingOffset_);
-	camera_->SetRotate(cameraRotation_);
+	camera_->SetTranslate({ 0.0f, 0.0f, 0.0f });
 	// カメラの設定
 	Service::Camera::AddCamera("Title", camera_.get());
 	Service::Camera::SetActiveCamera("Title");
-
-	/// ===Stage=== ///	
-	stage_ = std::make_unique<GameStage>();
-	stage_->Initialize("Level/StageData2.json");
-
-	/// ===Playerの生成=== ///
-	player_ = std::make_unique<Player>();
-	SpawnPlayer("Level/EntityData2.json");
-	player_->SetCameraTargetPlayer();
 
 	/// ===TitleUI=== ///
 	titleUI_ = std::make_unique<TitleUI>();
 	titleUI_->Initialize();
 
-	/// ===TitleSceneAnimation=== ///
+	/// ===Animation=== ///
 	animation_ = std::make_unique<TitleSceneAnimation>();
-	animation_->Initialize(camera_.get());
+	animation_->Initialize();
 
 	/// ===Fadeの設定=== ///
 	isStartFadeOut_ = false;
-	currentFade_ = FadeState::Selecting; // デバッグ用にフェードインをスキップ
+	currentFade_ = FadeState::FadeIn;
+	float fadeDuration = 0.8f;
+	sceneManager_->StartFadeIn(TransitionType::BlackOut, fadeDuration);
+
+	/// ===PostEffectの設定=== ///
+	Service::PostEffect::SetOffScreenType(MiiEngine::OffScreenType::Vignette);
 }
 
 ///-------------------------------------------/// 
@@ -82,39 +88,12 @@ void TitleScene::Update() {
 	ImGui::End();
 
 	// Camera
-	if (Service::Camera::GetActiveCamera() == camera_.get()) {
-		camera_->ImGuiUpdate();
-		camera_->DebugUpdate();
-	} else {
-		defaultCamera_->ImGuiUpdate();
-		defaultCamera_->DebugUpdate();
-	}
-
-	// デバッグカメラの切り替え
-	if (Service::Input::TriggerKey(DIK_TAB)) {
-		if (Service::Camera::GetActiveCamera() == camera_.get()) {
-			Service::Camera::SetActiveCamera("Default");
-		} else {
-			Service::Camera::SetActiveCamera("Game");
-		}
-	}
-
-	// Cameraの情報表示
 	camera_->ImGuiUpdate();
-
-	// Playerの情報表示
-	player_->Information();
 
 #endif // USE_IMGUI
 
-	/// ===Player=== ///
-	player_->UpdateAnimation();
-
-	/// ===Stage=== ///
-	stage_->Update();
-
-	/// ===カメラアニメーション=== ///
-	animation_->UpdateCameraAnimation(player_->GetTransform().translate);
+	/// ===オブジェクトの回転・色アニメーション=== ///
+	animation_->UpdateObjectsAnimation();
 
 	/// ===フェーズ別更新=== ///
 	switch (currentFade_) {
@@ -142,14 +121,11 @@ void TitleScene::Update() {
 ///-------------------------------------------///
 void TitleScene::Draw() {
 
-	/// ===stage=== ///
-	stage_->Draw();
-
-	/// ===Player=== ///
-	player_->Draw();
-
-	/// ===TitleUIの描画=== ///
-	titleUI_->Draw();
+	// Lineの描画
+	const auto& rotations = animation_->GetRotations();
+	for (size_t i = 0; i < lines_.size() && i < rotations.size(); ++i) {
+		lines_[i]->DrawTorus({ 0.0f, 0.0f, 50.0f }, rotations[i], animation_->GetSize(), animation_->GetColor());
+	}
 
 	/// ===ISceneの描画=== ///
 	IScene::Draw();
@@ -183,27 +159,5 @@ void TitleScene::UpdateFadeOut() {
 	if (sceneManager_->GetTransitionFinished()) {
 		// ゲームシーンへ遷移
 		sceneManager_->ChangeScene(MiiEngine::SceneType::Game);
-	}
-}
-
-///-------------------------------------------/// 
-/// プレイヤーの生成
-///-------------------------------------------///
-void TitleScene::SpawnPlayer(const std::string& json_name) {
-	LevelData* levelData = Service::GraphicsResourceGetter::GetLevelData(json_name);
-
-	// オブジェクト分回す
-	for (const auto& obj : levelData->objects) {
-		// OBBの半分の大きさを計算
-		Vector3 obbHalfSize = obj.colliderInfo2 / 2.0f;
-
-		/// ===クラス名で分岐=== ///
-		switch (obj.classType) {
-		case LevelData::ClassTypeLevel::Player:
-			// 初期化と座標設定
-			player_->InitGame(obj.translation, camera_.get());
-			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
-			break;
-		}
 	}
 }

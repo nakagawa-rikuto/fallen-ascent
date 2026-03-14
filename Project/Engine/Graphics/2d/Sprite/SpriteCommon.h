@@ -27,19 +27,33 @@ namespace MiiEngine {
 		/// 初期化処理
 		/// </summary>
 		/// <param name="textureFilePath">読み込むテクスチャファイルへのパス。関数はこのファイルからテクスチャを読み込み初期化を行います。</param>
-		virtual void Initialize(const std::string textureFilePath);
+		virtual void Initialize(const std::string textureFilePath, GroundType type);
 
 		/// <summary>
 		/// 更新処理
 		/// </summary>
-		virtual void Update();
+		void Update();
 
 		/// <summary>
 		/// 描画処理
 		/// </summary>
-		/// <param name="type">描画する地面の種類を指定します（GroundType）。</param>
-		/// <param name="mode">描画に使用するブレンドモードを指定します（BlendMode）。</param>
-		virtual void Draw(GroundType type, BlendMode mode);
+		void Draw();
+
+	public:/// ===Getter=== ///
+		// GroundTypeの取得
+		const GroundType& GetGroundType() const;
+		// BlendModeの取得
+		const BlendMode& GetBlendMode() const;
+		// 描画フラグの取得
+		const bool& GetIsDraw() const;
+
+	public:/// ===Setter=== ///
+		// GroundTypeの設定
+		void SetGroundType(const GroundType& type);
+		// BlendModeの設定
+		void SetBlendMode(const BlendMode& mode);
+		// 描画フラグの設定
+		void SetIsDraw(const bool& isDraw);
 
 	private:/// ===Variables(変数)=== ///
 
@@ -60,6 +74,15 @@ namespace MiiEngine {
 		// バッファビュー
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
 		D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
+
+		// GroundType
+		GroundType groundType_ = GroundType::Front; // 描画する地面の種類
+
+		// BlendMode
+		BlendMode blendMode_ = BlendMode::KBlendModeNormal; // 描画に使用するブレンドモード
+
+		// 描画フラグ
+		bool isDraw_ = true; // 描画するかどうかのフラグ
 
 	protected:
 
