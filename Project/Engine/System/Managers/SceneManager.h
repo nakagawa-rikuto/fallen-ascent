@@ -6,7 +6,7 @@
 // Game
 #include "Engine/Scene/AbstractSceneFactory.h"
 // SceneTransitionManager
-#include "Engine/Scene/Transition/SceneTransitionManager.h"
+#include "Engine/Scene/Transition/Manager/SceneTransitionManager.h"
 // IScene
 #include "Engine/Scene/IScene.h"
 
@@ -16,6 +16,9 @@
 #endif // USE_IMGUI
 
 namespace MiiEngine {
+
+	class SpriteManager;
+
 	///=====================================================/// 
 	/// シーンマネージャー
 	///=====================================================///
@@ -28,7 +31,7 @@ namespace MiiEngine {
 		/// <summary>
 		/// 初期化処理
 		/// </summary>
-		void Initialize(AbstractSceneFactory* sceneFactor);
+		void Initialize(AbstractSceneFactory* sceneFactor, SpriteManager* spriteManager);
 
 		/// <summary>
 		/// 現在のシーンの更新処理
@@ -92,6 +95,9 @@ namespace MiiEngine {
 
 		// シーントランジションマネージャ
 		std::unique_ptr<SceneTransitionManager> sceneTransitionManager_;
+
+		// SpriteManager
+		SpriteManager* spriteManager_ = nullptr;
 
 		// 現在のシーン
 		SceneType currentSceneType_ = SceneType::Title; // 初期のシーン

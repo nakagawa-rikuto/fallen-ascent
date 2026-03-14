@@ -18,6 +18,8 @@ namespace MiiEngine {
 		// ColliderManager
 		colliderManager_ = std::make_unique<ColliderManager>();
 		colliderManager_->Initialize();
+		// SpriteManager
+		spriteManager_ = std::make_unique<SpriteManager>();
 		// DeltaTime
 		gameTime_ = std::make_unique<GameTime>();
 
@@ -43,6 +45,7 @@ namespace MiiEngine {
 			cameraManager_.get(),
 			particleManager_.get(),
 			colliderManager_.get(),
+			spriteManager_.get(),
 			gameTime_.get()
 		};
 		Service::Locator::ProvideAll(registry);
@@ -61,6 +64,8 @@ namespace MiiEngine {
 		particleManager_.reset();
 		// ColliderManager
 		colliderManager_.reset();
+		// SpriteManager
+		spriteManager_.reset();
 		// MiiEngine
 		Engine_->Finalize();
 		Engine_.reset();
@@ -75,8 +80,11 @@ namespace MiiEngine {
 		cameraManager_->UpdateAllCameras();
 		// ParticleManager
 		particleManager_->Update();
+		// SpriteManager
+		spriteManager_->Update();
 		// ColliderManager
 		colliderManager_->CheckAllCollisions();
+		
 	}
 
 	///-------------------------------------------/// 
@@ -112,6 +120,8 @@ namespace MiiEngine {
 	void Framework::PreDraw() {
 		// フレームの開始
 		Engine_->BeginFrame();
+		// SpriteManager
+		spriteManager_->BackDraw();
 	}
 
 	///-------------------------------------------/// 
@@ -120,7 +130,8 @@ namespace MiiEngine {
 	void Framework::PostDraw() {
 		// ParticleManager
 		particleManager_->Draw(BlendMode::kBlendModeAdd);
-
+		// SpriteManager
+		spriteManager_->FrontDraw();
 		// フレームの終了
 		Engine_->EndFrame();
 	}

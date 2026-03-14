@@ -156,6 +156,71 @@ void Line::DrawSphere(const MiiEngine::Sphere& sphere, const Vector4 & color) {
 }
 
 ///-------------------------------------------/// 
+/// Torus
+///-------------------------------------------///
+void Line::DrawTorus(const Vector3& center, const Quaternion& rotate, float holeRadius, const Vector4& color) {
+	// 固定値
+	const uint32_t kSubdivision = 16;
+	//const float kMajorRadius = 20.0f;
+	const float radius = 2.0f;
+
+	// 0以下は描かない（暴走防止）
+	if (holeRadius <= 0.0f) {
+		return;
+	}
+
+	const float uStep = 2.0f * Math::Pi() / float(kSubdivision); // メジャー方向
+	const float vStep = 2.0f * Math::Pi() / float(kSubdivision); // マイナー方向
+
+	// ローカル点生成（XY平面上にメジャー円、断面はXZで回す）
+	auto MakeLocalPoint = [&](float u, float v) -> Vector3 {
+		const float cu = cos(u);
+		const float su = sin(u);
+		const float cv = cos(v);
+		const float sv = sin(v);
+
+		// トーラスのパラメトリック式（軸Y回りを想定）
+		// x = (R + r*cos(v)) * cos(u)
+		// y = r * sin(v)
+		// z = (R + r*cos(v)) * sin(u)
+		const float rr = holeRadius + radius * cv;
+
+		return Vector3{
+			rr * cu,
+			radius* sv,
+			rr * su
+		};
+		};
+
+	// 点を回転 + 平行移動してワールドへ
+	auto ToWorld = [&](const Vector3& local) -> Vector3 {
+		Vector3 rotated = Math::RotateVector(local, rotate);
+		return rotated + center;
+		};
+
+	for (uint32_t i = 0; i < kSubdivision; ++i) {
+		const uint32_t iNext = (i + 1) % kSubdivision;
+		const float u0 = uStep * float(i);
+		const float u1 = uStep * float(iNext);
+
+		for (uint32_t j = 0; j < kSubdivision; ++j) {
+			const uint32_t jNext = (j + 1) % kSubdivision;
+			const float v0 = vStep * float(j);
+			const float v1 = vStep * float(jNext);
+
+			// 4点（セルの角）
+			const Vector3 p00 = ToWorld(MakeLocalPoint(u0, v0));
+			const Vector3 p10 = ToWorld(MakeLocalPoint(u1, v0));
+			const Vector3 p01 = ToWorld(MakeLocalPoint(u0, v1));
+
+			// 2方向の線（メジャー方向・マイナー方向）
+			DrawLine(p00, p10, color); // u方向
+			DrawLine(p00, p01, color); // v方向
+		}
+	}
+}
+
+///-------------------------------------------/// 
 /// Grid
 ///-------------------------------------------///
 void Line::DrawGrid(const Vector3 & center, const Vector3 & size, uint32_t division, const Vector4& color) {

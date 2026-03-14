@@ -73,8 +73,15 @@ void TitleUI::Initialize() {
 	slotIndex_[2] = 1; // 下 = Option
 
 	/// ===スプライトの初期化=== ///
+	// 背景スプライト
+	backgroundSprite_ = std::make_unique<Object2d>();
+	backgroundSprite_->Initialize("White", MiiEngine::GroundType::Back);
+	backgroundSprite_->SetSize({ 2000.0f, 2000.0f });
+	backgroundSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	backgroundSprite_->Update();
+
 	// タイトルスプライト
-	titleSprite_ = std::make_unique<Sprite>();
+	titleSprite_ = std::make_unique<Object2d>();
 	titleSprite_->Initialize("Title");
 	titleSprite_->SetPosition({ startPos_.x, windowSize.y / 4.0f });
 	titleSprite_->SetSize({ 1000.0f * scale_.x, 1000.0f * scale_.y });
@@ -82,7 +89,7 @@ void TitleUI::Initialize() {
 	titleSprite_->Update();
 
 	// 開始スプライト
-	selectSprite_.start_ = std::make_unique<Sprite>();
+	selectSprite_.start_ = std::make_unique<Object2d>();
 	selectSprite_.start_->Initialize("Start");
 	selectSprite_.start_->SetPosition({ startPos_.x, startPos_.y });
 	selectSprite_.start_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
@@ -91,7 +98,7 @@ void TitleUI::Initialize() {
 	selectSprite_.start_->Update();
 
 	// オプションスプライト
-	selectSprite_.option_ = std::make_unique<Sprite>();
+	selectSprite_.option_ = std::make_unique<Object2d>();
 	selectSprite_.option_->Initialize("Option");
 	selectSprite_.option_->SetPosition({ startPos_.x, startPos_.y + spaceY_ });
 	selectSprite_.option_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
@@ -100,7 +107,7 @@ void TitleUI::Initialize() {
 	selectSprite_.option_->Update();
 
 	// 終了スプライト
-	selectSprite_.exit_ = std::make_unique<Sprite>();
+	selectSprite_.exit_ = std::make_unique<Object2d>();
 	selectSprite_.exit_->Initialize("Exit");
 	selectSprite_.exit_->SetPosition({ startPos_.x, startPos_.y + spaceY_ * 2.0f });
 	selectSprite_.exit_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
@@ -109,7 +116,7 @@ void TitleUI::Initialize() {
 	selectSprite_.exit_->Update();
 
 	// 選択オーバーレイスプライト
-	selectSprite_.overlay_ = std::make_unique<Sprite>();
+	selectSprite_.overlay_ = std::make_unique<Object2d>();
 	selectSprite_.overlay_->Initialize("OverLay"); // テクスチャファイルパスは適宜変更
 	selectSprite_.overlay_->SetPosition({ startPos_.x, startPos_.y }); // 初期位置は開始の位置
 	selectSprite_.overlay_->SetSize({ 400.0f * scale_.x, 80.0f * scale_.y }); // メニュー項目より少し大きめ
@@ -124,6 +131,9 @@ void TitleUI::Initialize() {
 	/// ===フラグの初期化=== ///
 	isOptionOpen_ = false;
 	isGameStart_ = false;
+
+	// スプライトの位置更新
+	UpdateSlotSprites();
 }
 
 ///-------------------------------------------/// 
@@ -140,29 +150,10 @@ void TitleUI::Update() {
 	UpdateSlotSprites();
 
 	// オプションの更新
-	if (isOptionOpen_) {
-		optionUI_->TitleUpdate();
-	}
+	optionUI_->TitleUpdate(isOptionOpen_);
 
 	// 選択状態の更新
 	UpdateSelecting();
-}
-
-///-------------------------------------------/// 
-/// 描画処理
-///-------------------------------------------///
-void TitleUI::Draw() {
-	// スプライトの描画
-	titleSprite_->Draw(MiiEngine::GroundType::Front);
-	selectSprite_.start_->Draw(MiiEngine::GroundType::Front);
-	selectSprite_.option_->Draw(MiiEngine::GroundType::Front);
-	selectSprite_.exit_->Draw(MiiEngine::GroundType::Front);
-	selectSprite_.overlay_->Draw(MiiEngine::GroundType::Front, MiiEngine::BlendMode::kBlendModeAdd);
-
-	// オプションの描画
-	if (isOptionOpen_) {
-		optionUI_->TitleDraw();
-	}
 }
 
 ///-------------------------------------------/// 
@@ -195,14 +186,14 @@ void TitleUI::UpdateAnimation(float deltaTime) {
 ///-------------------------------------------///
 void TitleUI::UpdateSlotSprites() {
 	// スプライトの配列（
-	Sprite* sprites[selectionIndex_] = {
+	Object2d* sprites[selectionIndex_] = {
 		selectSprite_.start_.get(),
 		selectSprite_.option_.get(),
 		selectSprite_.exit_.get()
 	};
 
 	for (int slot = 0; slot < selectionIndex_; slot++) {
-		Sprite* sp = sprites[slotIndex_[slot]];
+		Object2d* sp = sprites[slotIndex_[slot]];
 
 		sp->SetPosition({ startPos_.x, slotAnimation_.posY.itemCurrentY[slot] });
 		sp->SetSize({
@@ -215,8 +206,6 @@ void TitleUI::UpdateSlotSprites() {
 		} else {
 			sp->SetColor({ 0.6f, 0.6f, 0.6f, 0.6f });
 		}
-
-		sp->Update();
 	}
 }
 

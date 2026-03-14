@@ -15,7 +15,7 @@ void GameSceneExitState::Enter(GameScene* gameScene) {
 	float fadeInDuration = 1.0f;
 
 	// シーンマネージャーでフェードインを開始
-	sceneManager_->StartFadeOut(TransitionType::None, fadeInDuration);
+	sceneManager_->StartFadeOut(TransitionType::BlackOut, fadeInDuration);
 }
 
 ///-------------------------------------------/// 
@@ -27,9 +27,6 @@ void GameSceneExitState::Update() {
 		// タイトルへ遷移
 		sceneManager_->ChangeScene(MiiEngine::SceneType::Title);
 	}
-
-	// タイトルへ遷移
-	sceneManager_->ChangeScene(MiiEngine::SceneType::Title);
 }
 
 ///-------------------------------------------/// 

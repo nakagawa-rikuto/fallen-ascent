@@ -35,6 +35,8 @@ namespace MiiEngine {
 	class ParticleManager;
 	// ColliderManager
 	class ColliderManager;
+	// SpriteManager
+	class SpriteManager;
 	// GameTime
 	class GameTime;
 }
@@ -62,6 +64,7 @@ namespace Service {
 		MiiEngine::CameraManager* cameraManager = nullptr;
 		MiiEngine::ParticleManager* particleManager = nullptr;
 		MiiEngine::ColliderManager* colliderManager = nullptr;
+		MiiEngine::SpriteManager* spriteManager = nullptr;
 		MiiEngine::GameTime* gameTime = nullptr;
 	};
 
@@ -113,6 +116,8 @@ namespace Service {
 		static MiiEngine::ParticleManager* GetParticleManager();
 		// ColliderManager
 		static MiiEngine::ColliderManager* GetColliderManager();
+		// SpriteManager
+		static MiiEngine::SpriteManager* GetSpriteManager();
 		// GameTime
 		static MiiEngine::GameTime* GetGameTime();
 
@@ -142,6 +147,7 @@ namespace Service {
 		static inline MiiEngine::CameraManager* cameraManager_ = nullptr;
 		static inline MiiEngine::ParticleManager* particleManager_ = nullptr;
 		static inline MiiEngine::ColliderManager* colliderManager_ = nullptr;
+		static inline MiiEngine::SpriteManager* spriteManager_ = nullptr;
 		static inline MiiEngine::GameTime* gameTime_ = nullptr;
 	};
 }

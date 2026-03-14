@@ -1,6 +1,6 @@
 #include "TitleSceneAnimation.h"
-// Camera
-#include "Engine/Camera/Base/CameraCommon.h"
+// Object
+#include "application/Drawing/3d/Object3d.h"
 // Service
 #include "Service/DeltaTime.h"
 #include "Service/PostEffect.h"
@@ -21,41 +21,74 @@ bool TitleSceneAnimation::GetStartFadeOut() const {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void TitleSceneAnimation::Initialize(MiiEngine::CameraCommon* camera) {
-	// カメラの設定
-	camera_ = camera;
+void TitleSceneAnimation::Initialize() {
+	/// ===乱数エンジンの初期化=== ///
+	std::random_device rd;
+	randomEngine_.seed(rd());
+
+	/// ===Rotation初期化=== ///
+	ringRotations_.assign(2, Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f });
+
+	/// ===Color初期化=== ///
+	ringColorFrom_ = { 1.0f, 1.0f, 1.0f, 1.0f };
+	ringColorTo_ = { 1.0f, 1.0f, 1.0f, 1.0f };
+	ringColorT_ = 1.0f;
+
+	/// ===Scale初期化=== ///
+	ringScaleXZFrom_ = 10.0f;
+	ringScaleXZTo_ = 10.0f;
+	ringScaleT_ = 10.0f;
 
 	// ラジアスブラーの初期設定
 	radiusBlurData_ = {
-		.center = { 0.5f, 0.7f }, // ブラーの中心を画面中央に設定
+		.center = { 0.5f, 0.5f }, // ブラーの中心を画面中央に設定
 		.numSamples = 0,           // サンプリング数を初期化
 		.blurWidth = 0.005f,       // ブラーの幅を初期化
 	};
 }
 
 ///-------------------------------------------/// 
-/// カメラの更新処理
+/// オブジェクトの回転と色をまとめて更新
 ///-------------------------------------------///
-void TitleSceneAnimation::UpdateCameraAnimation(const Vector3& translate) {
-	// 回転角度の更新
-	float yawAngle = cameraAutoRotateSpeed_ * Service::DeltaTime::GetDeltaTime(); // Y軸回転の角度を計算
+void TitleSceneAnimation::UpdateObjectsAnimation() {
+	const float deltaTime = Service::DeltaTime::GetDeltaTime();
 
-	// ターゲット位置からカメラの位置を計算
-	Vector3 toCamera = camera_->GetTranslate() - translate; // ターゲットからカメラへのベクトル
+	/// ===Rotation=== ///
+	for (size_t i = 0; i < 2; ++i) {
+		// リングごとに傾きの方向を変える
+		const float sign = (i % 2 == 0) ? 1.0f : -1.0f;
+		const Vector3 diagonalAxis = Normalize(Vector3{
+			sign * 0.6f,
+			1.0f,
+			sign * 0.5f + static_cast<float>(i) * 0.3f
+			});
+		const Quaternion ringRotate = Math::MakeRotateAxisAngle(
+			diagonalAxis, sign * (0.6f + static_cast<float>(i) * 0.2f) * deltaTime);
+		ringRotations_[i] = Normalize(ringRotate * ringRotations_[i]);
+	}
 
-	// Yaw回転（ワールドのY軸周り）
-	Quaternion yawRotation = Math::MakeRotateAxisAngle(Vector3(0, 1, 0), yawAngle);
+	/// ===Color=== ///
+	ringColorT_ += ringColorSpeed_ * deltaTime;
+	if (ringColorT_ >= 1.0f) {
+		ringColorT_ = 0.0f;
+		ringColorFrom_ = ringColorTo_;
+		ringColorTo_ = GenerateRandomColor();
+	}
+	color_ = {
+		Math::Lerp(ringColorFrom_.x, ringColorTo_.x, ringColorT_),
+		Math::Lerp(ringColorFrom_.y, ringColorTo_.y, ringColorT_),
+		Math::Lerp(ringColorFrom_.z, ringColorTo_.z, ringColorT_),
+		1.0f
+	};
 
-	// Pitch回転（カメラの右方向軸周り）
-	Vector3 rightAxis = Math::RotateVector(Vector3(1, 0, 0), camera_->GetRotate());
-
-	// 回転を適用
-	Quaternion totalRotation = yawRotation;
-	camera_->SetRotate(Normalize(totalRotation * camera_->GetRotate()));
-
-	// ターゲットを中心にカメラ位置を回転
-	Vector3 newOffset = Math::RotateVector(toCamera, totalRotation);
-	camera_->SetTranslate(translate + newOffset);
+	/// ===Size=== ///
+	ringScaleT_ += ringScaleSpeed_ * deltaTime;
+	if (ringScaleT_ >= 1.0f) {
+		ringScaleT_ = 0.0f;
+		ringScaleXZFrom_ = ringScaleXZTo_;
+		ringScaleXZTo_ = GenerateRandomScale();
+	}
+	size_ = Math::Lerp(ringScaleXZFrom_, ringScaleXZTo_, ringScaleT_);
 }
 
 ///-------------------------------------------/// 
@@ -68,3 +101,13 @@ void TitleSceneAnimation::UpdateRadiusBlurAnimation() {
 		Service::PostEffect::SetRadiusBlurData(radiusBlurData_); // データをシェーダーに送る
 	}
 }
+
+///-------------------------------------------/// 
+/// ランダムなRGB色（アルファ=1）を生成して返す
+///-------------------------------------------///
+Vector4 TitleSceneAnimation::GenerateRandomColor() { return { colorDist_(randomEngine_), colorDist_(randomEngine_), colorDist_(randomEngine_), 1.0f }; }
+
+///-------------------------------------------/// 
+/// 5〜30 の範囲でランダムなスケール値を生成して返す
+///-------------------------------------------///
+float TitleSceneAnimation::GenerateRandomScale() { return scaleDist_(randomEngine_); }

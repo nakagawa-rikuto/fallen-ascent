@@ -42,6 +42,15 @@ public:
 	void DrawSphere(const MiiEngine::Sphere& sphere, const Vector4& color);
 
 	/// <summary>
+	/// トーラスを線で描画
+	/// </summary>
+	/// <param name="center">中心座標</param>
+	/// <param name="rotate">回転（クォータニオン）</param>
+	/// <param name="holeRadius">ドーナツ状の穴の大きさ半径（= マイナー半径）</param>
+	/// <param name="color">線の色（RGBA）</param>
+	void DrawTorus(const Vector3& center, const Quaternion& rotate, float holeRadius, const Vector4& color);
+
+	/// <summary>
 	/// グリッドを描画
 	/// </summary>
 	/// <param name="center">グリッドの中心座標</param>
@@ -111,7 +120,7 @@ private:
 	Vector3 CalculateCubicBezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t);
 
 	/// <summary>
-	/// De Casteljauのアルゴリズムでベジェ曲線上の点を計算（任意の制御点数に対応）
+	/// DeCasteljauのアルゴリズムでベジェ曲線上の点を計算（任意の制御点数に対応）
 	/// </summary>
 	Vector3 CalculateBezierPointDeCasteljau(const std::vector<MiiEngine::BezierControlPointData>& controlPoints, float t);
 };

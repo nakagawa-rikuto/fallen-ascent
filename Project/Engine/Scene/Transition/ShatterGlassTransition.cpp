@@ -23,10 +23,6 @@ namespace MiiEngine {
 	void ShatterGlassTransition::StartFadeIn(float duration) {
 		// エフェクトタイプの設定
 		Service::PostEffect::SetOffScreenType(OffScreenType::ShatterGlass);
-		// Spriteの色をリセット
-		if (sprite_) {
-			sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 透明で初期化
-		}
 
 		// デフォルトパラメータの設定
 		data_.progress = 0.0f;
@@ -40,6 +36,9 @@ namespace MiiEngine {
 		// 新しいランダムパターンを生成
 		data_.randomSeed = static_cast<float>(rand() % 10000) / 10.0f;
 
+		// 設定
+		Service::PostEffect::SetShatterGlassData(data_);
+
 		// フェードアウト開始
 		SceneTransitionBase::StartFadeIn(duration);
 	}
@@ -49,13 +48,12 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void ShatterGlassTransition::StartFadeOut(float duration) {
 		// Sprite
-		sprite_ = std::make_unique<Sprite>();
+		sprite_ = std::make_unique<Object2d>();
 		sprite_->Initialize("ShatterGlass");
 		sprite_->SetAnchorPoint({ 0.5f, 0.5f });
 		sprite_->SetPosition({static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()) / 2.0f, static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight()) / 2.0f});
 		sprite_->SetSize({0.0f, 0.0f});
 		sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f }); // 透明で初期化
-		sprite_->Update();
 
 		// フェードイン開始
 		SceneTransitionBase::StartFadeOut(duration);
@@ -64,16 +62,13 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// 描画
 	///-------------------------------------------///
-	void ShatterGlassTransition::Draw() {
-		if (sprite_) {
-			sprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
-		}
-	}
+	void ShatterGlassTransition::Draw() {}
 
 	///-------------------------------------------/// 
 	/// フェードイン固有の更新処理
 	///-------------------------------------------///
 	void ShatterGlassTransition::OnFadeInUpdate() {
+
 		// 進行度を計算（0.0 ~ 1.0）
 		float normalizedTime = (std::min)(animation_.currentTime / animation_.duration, 1.0f);
 
@@ -103,9 +98,9 @@ namespace MiiEngine {
 
 		// 設定
 		Service::PostEffect::SetShatterGlassData(data_);
-		if (sprite_) {
-			sprite_->Update();
-		}
+
+		// スプライトは描画しない
+		sprite_->SetIsDraw(false); 
 	}
 
 	///-------------------------------------------/// 

@@ -38,7 +38,7 @@ namespace MiiEngine {
 		/// 描画処理
 		/// </summary>
 		/// <param name="mode">描画時の合成（ブレンド）モードを指定します。</param>
-		void Draw(BlendMode mode);
+		void Draw(BlendMode mode = BlendMode::kBlendModeAdd);
 
 		/// <summary>
 		/// 停止処理

@@ -44,6 +44,8 @@ namespace Service {
 		assert(registry.particleManager);
 		// ColliderManager
 		assert(registry.colliderManager);
+		// SpriteManager
+		assert(registry.spriteManager);
 		// DeltaTime
 		assert(registry.gameTime);
 
@@ -84,6 +86,8 @@ namespace Service {
 		particleManager_ = registry.particleManager;
 		// ColliderManager
 		colliderManager_ = registry.colliderManager;
+		// SpriteManager
+		spriteManager_ = registry.spriteManager;
 		// DeltaTime
 		gameTime_ = registry.gameTime;
 	}
@@ -92,6 +96,7 @@ namespace Service {
 	/// 全てのサービスを終了
 	///-------------------------------------------///
 	void Locator::Finalize() {
+		spriteManager_ = nullptr;
 		colliderManager_ = nullptr;
 		particleManager_ = nullptr;
 		cameraManager_ = nullptr;
@@ -206,6 +211,11 @@ namespace Service {
 	/// ColliderManager
 	///-------------------------------------------///
 	MiiEngine::ColliderManager* Locator::GetColliderManager() { return colliderManager_; }
+
+	///-------------------------------------------/// 
+	/// SpriteManager
+	///-------------------------------------------///
+	MiiEngine::SpriteManager* Locator::GetSpriteManager() { return spriteManager_; }
 
 	///-------------------------------------------/// 
 	/// GameTime

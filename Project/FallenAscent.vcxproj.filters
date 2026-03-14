@@ -142,7 +142,7 @@
     <ClCompile Include="application\Game\Entity\Player\State\RootState.cpp">
       <Filter>application\Game\Entity\Player\State</Filter>
     </ClCompile>
-    <ClCompile Include="application\Drawing\2d\Sprite.cpp">
+    <ClCompile Include="application\Drawing\2d\Object2d.cpp">
       <Filter>application\Drawing\2D</Filter>
     </ClCompile>
     <ClCompile Include="application\Drawing\3d\Line.cpp">
@@ -469,7 +469,7 @@
     <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp">
       <Filter>Engine\Scene\Transition\Base</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Scene\Transition\SceneTransitionManager.cpp">
+    <ClCompile Include="Engine\Scene\Transition\Manager\SceneTransitionManager.cpp">
       <Filter>Engine\Scene\Transition</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp">
@@ -640,6 +640,9 @@
     <ClCompile Include="Engine\Graphics\Ocean\OceanWaveCompute.cpp">
       <Filter>Engine\Graphics\Ocean</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\System\Managers\SpriteManager.cpp" />
+    <ClCompile Include="Service\Sprite.cpp" />
+    <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -687,7 +690,7 @@
     <ClInclude Include="application\Game\Entity\Player\State\RootState.h">
       <Filter>application\Game\Entity\Player\State</Filter>
     </ClInclude>
-    <ClInclude Include="application\Drawing\2d\Sprite.h">
+    <ClInclude Include="application\Drawing\2d\Object2d.h">
       <Filter>application\Drawing\2D</Filter>
     </ClInclude>
     <ClInclude Include="application\Drawing\3d\Line.h">
@@ -1056,7 +1059,7 @@
     <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h">
       <Filter>Engine\Scene\Transition\Base</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Scene\Transition\SceneTransitionManager.h">
+    <ClInclude Include="Engine\Scene\Transition\Manager\SceneTransitionManager.h">
       <Filter>Engine\Scene\Transition</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h">
@@ -1237,6 +1240,9 @@
     <ClInclude Include="Engine\Graphics\Ocean\OceanWaveCompute.h">
       <Filter>Engine\Graphics\Ocean</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\System\Managers\SpriteManager.h" />
+    <ClInclude Include="Service\Sprite.h" />
+    <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

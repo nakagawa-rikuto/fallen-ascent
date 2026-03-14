@@ -1,7 +1,7 @@
 #pragma once
 /// ===Include=== ///
 // Sprite
-#include "application/Drawing/2d/Sprite.h"
+#include "application/Drawing/2d/Object2d.h"
 #include "application/Game/UI/Option/OptionUI.h"
 // C++
 #include <memory>
@@ -24,25 +24,21 @@ public:
 	/// </summary>
 	void Update();
 
-	/// <summary>
-	/// 描画処理
-	/// </summary>
-	void Draw();
-
 private: /// ===メンバ変数=== ///
 
 	// オプションUI
 	std::unique_ptr<OptionUI> optionUI_;
 
 	/// ===スプライト=== ///
-	std::unique_ptr<Sprite> titleSprite_;      // タイトル
+	std::unique_ptr<Object2d> titleSprite_;      // タイトル
+	std::unique_ptr<Object2d> backgroundSprite_; // 背景
 
 	/// ===セレクトスプライト=== ///
 	struct SelectSprite {
-		std::unique_ptr<Sprite> start_;      // 開始
-		std::unique_ptr<Sprite> option_;     // オプション
-		std::unique_ptr<Sprite> exit_;       // 終了
-		std::unique_ptr<Sprite> overlay_;    // 選択中のオーバーレイ
+		std::unique_ptr<Object2d> start_;      // 開始
+		std::unique_ptr<Object2d> option_;     // オプション
+		std::unique_ptr<Object2d> exit_;       // 終了
+		std::unique_ptr<Object2d> overlay_;    // 選択中のオーバーレイ
 	};
 	SelectSprite selectSprite_;
 

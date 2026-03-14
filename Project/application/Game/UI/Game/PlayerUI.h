@@ -1,6 +1,6 @@
 #pragma once
 /// ===Include=== ///
-#include "application/Drawing/2d/Sprite.h"
+#include "application/Drawing/2d/Object2d.h"
 
 /// ===前方宣言=== ///
 class Player;
@@ -24,11 +24,6 @@ public:
 	/// </summary>
 	void Update();
 
-	/// <summary>
-	/// 描画処理
-	/// </summary>
-	void Draw();
-
 public: /// ===Setter=== ///
 	// Playerのセット
 	void SetPlayer(Player* player) { player_ = player; }
@@ -37,17 +32,17 @@ private:
 	// Player
 	Player* player_;
 
-	/// ===Sprite=== ///
+	/// ===Object2d=== ///
 	// アクション
-	std::shared_ptr<Sprite> moveUI_;      // 移動UI
-	std::shared_ptr<Sprite> cameraUI_;    // カメラUI
-	std::shared_ptr<Sprite> attackUI_;    // 攻撃UI
-	std::shared_ptr<Sprite> avoidanceUI_; // 回避UI
+	std::shared_ptr<Object2d> moveUI_;      // 移動UI
+	std::shared_ptr<Object2d> cameraUI_;    // カメラUI
+	std::shared_ptr<Object2d> attackUI_;    // 攻撃UI
+	std::shared_ptr<Object2d> avoidanceUI_; // 回避UI
 	// コントローラー
-	std::shared_ptr<Sprite> xButton_;	  // X
-	std::shared_ptr<Sprite> aButton_;	  // A
-	std::shared_ptr<Sprite> leftStick_;	  // 左スティック
-	std::shared_ptr<Sprite> rightStick_;  // 右スティック
+	std::shared_ptr<Object2d> xButton_;	  // X
+	std::shared_ptr<Object2d> aButton_;	  // A
+	std::shared_ptr<Object2d> leftStick_;	  // 左スティック
+	std::shared_ptr<Object2d> rightStick_;  // 右スティック
 
 	/// ===位置=== ///
 	Vector2 moveUIPos_ = { 100.0f, 500.0f };      // 移動UI位置

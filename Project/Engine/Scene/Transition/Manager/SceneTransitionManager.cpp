@@ -1,6 +1,7 @@
 #include "SceneTransitionManager.h"
 // Transition
 #include "Engine/Scene/Transition/ShatterGlassTransition.h"
+#include "Engine/Scene/Transition/BlackOutTransition.h"
 
 namespace MiiEngine {
 	///-------------------------------------------/// 
@@ -97,6 +98,14 @@ namespace MiiEngine {
 				currentTransition_.reset();
 				// 新しいトランジションを作成
 				currentTransition_ = std::move(std::make_unique<ShatterGlassTransition>());
+				// 現在のトランジションタイプを更新
+				currentType_ = type;
+				break;
+			case TransitionType::BlackOut:
+				// 既存のトランジションを破棄
+				currentTransition_.reset();
+				// 新しいトランジションを作成
+				currentTransition_ = std::move(std::make_unique<BlackOutTransition>());
 				// 現在のトランジションタイプを更新
 				currentType_ = type;
 				break;

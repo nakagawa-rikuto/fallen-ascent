@@ -24,11 +24,6 @@ public:
 	/// </summary>
 	void Update();
 
-	/// <summary>
-	/// 描画処理
-	/// </summary>
-	void Draw();
-
 public: /// ===Setter=== ///
 	// Playerのセット
 	void SetPlayer(Player* player);
@@ -39,7 +34,7 @@ private:
 	// PlayerUI
 	std::unique_ptr<PlayerUI> playerUI_;
 
-	/// ===Sprite=== ///
-	std::unique_ptr<Sprite> optionMenuSprite_;
+	/// ===Object2d=== ///
+	std::unique_ptr<Object2d> optionMenuSprite_;
 };
 

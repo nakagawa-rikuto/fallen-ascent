@@ -31,7 +31,7 @@ void GameOverAnimation::Initialize(MiiEngine::FollowCamera* camera) {
     camera_ = camera;
 
     // スプライトの初期化
-    gameOverSprite_ = std::make_unique<Sprite>();
+    gameOverSprite_ = std::make_unique<Object2d>();
     gameOverSprite_->Initialize("GameOverAnimation");
 
     // ウィンドウサイズの取得
@@ -45,7 +45,7 @@ void GameOverAnimation::Initialize(MiiEngine::FollowCamera* camera) {
     gameOverSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 初期は透明
 
     // ブラックアウト用スプライトの初期化
-    blackSprite_ = std::make_unique<Sprite>();
+    blackSprite_ = std::make_unique<Object2d>();
     blackSprite_->Initialize("White"); // 1x1の白テクスチャ
     blackSprite_->SetPosition({ windowWidth / 2.0f, windowHeight /2.0f });
     Service::GraphicsResourceGetter::GetWindowWidth();
@@ -106,14 +106,14 @@ void GameOverAnimation::Draw() {
     // スプライト描画フェーズ以降でゲームオーバースプライトを描画
     if (phase_ == Phase::DrawSprite || phase_ == Phase::ShakeSprite) {
         if (gameOverSprite_) {
-            gameOverSprite_->Draw(MiiEngine::GroundType::Front, MiiEngine::BlendMode::KBlendModeNormal);
+            gameOverSprite_->SetIsDraw(true);
         }
     }
 
     // ブラックアウトの描画（最前面）
     if (phase_ == Phase::ShakeSprite && blackAlpha_ > 0.0f) {
         if (blackSprite_) {
-            blackSprite_->Draw(MiiEngine::GroundType::Front, MiiEngine::BlendMode::KBlendModeNormal);
+            blackSprite_->SetIsDraw(true);
         }
     }
 }
