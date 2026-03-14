@@ -198,8 +198,11 @@
 └── └── └──     ├── Base/
 └── └── └──     └── ├── SceneTransitionBase.cpp
 └── └── └──     └── └── SceneTransitionBase.h
-└── └── └──     ├── SceneTransitionManager.cpp
-└── └── └──     ├── SceneTransitionManager.h
+└── └── └──     ├── BlackOutTransition.cpp
+└── └── └──     ├── BlackOutTransition.h
+└── └── └──     ├── Manager/
+└── └── └──     └── ├── SceneTransitionManager.cpp
+└── └── └──     └── └── SceneTransitionManager.h
 └── └── └──     ├── ShatterGlassTransition.cpp
 └── └── └──     └── ShatterGlassTransition.h
 └── └── └── System/
@@ -250,6 +253,8 @@
 └── └──         ├── SRVManager.h
 └── └──         ├── SceneManager.cpp
 └── └──         ├── SceneManager.h
+└── └──         ├── SpriteManager.cpp
+└── └──         ├── SpriteManager.h
 └── └──         ├── TextureManager.cpp
 └── └──         └── TextureManager.h
 └── ├── FallenAscent.vcxproj
@@ -342,12 +347,14 @@
 └── └── ├── PostEffect.cpp
 └── └── ├── PostEffect.h
 └── └── ├── Render.cpp
-└── └── └── Render.h
+└── └── ├── Render.h
+└── └── ├── Sprite.cpp
+└── └── └── Sprite.h
 └── ├── application/
 └── └── ├── Drawing/
 └── └── └── ├── 2d/
-└── └── └── └── ├── Sprite.cpp
-└── └── └── └── └── Sprite.h
+└── └── └── └── ├── Object2d.cpp
+└── └── └── └── └── Object2d.h
 └── └── └── └── 3d/
 └── └── └──     ├── Line.cpp
 └── └── └──     ├── Line.h
@@ -6200,6 +6207,7 @@ File Path: Project/Engine/Graphics/2d/Sprite/SpriteCommon.cpp
 // Engine
 #include "Service/GraphicsResourceGetter.h"
 #include "Service/Render.h"
+#include "Service/Sprite.h"
 // Math
 #include "Math/MatrixMath.h"
 
@@ -6211,12 +6219,34 @@ namespace MiiEngine {
 		vertex_.reset();
 		index_.reset();
 		common_.reset();
+		// SpriteManagerから登録解除
+		Service::Sprite::RemoveSprite(this);
 	}
+
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	//GroundTypeの取得
+	const GroundType& SpriteCommon::GetGroundType() const { return groundType_; }
+	// BlendModeの取得
+	const BlendMode& SpriteCommon::GetBlendMode() const { return blendMode_; }
+	// 描画フラグの取得
+	const bool& SpriteCommon::GetIsDraw() const { return isDraw_; }
+
+	///-------------------------------------------/// 
+	/// Setter
+	///-------------------------------------------///
+	// GroundTypeの設定
+	void SpriteCommon::SetGroundType(const GroundType& type) { groundType_ = type; }
+	// BlendModeの設定
+	void SpriteCommon::SetBlendMode(const BlendMode& mode) { blendMode_ = mode; }
+	// 描画フラグの設定
+	void SpriteCommon::SetIsDraw(const bool& isDraw) { isDraw_ = isDraw; }
 
 	///-------------------------------------------/// 
 	/// 初期化
 	///-------------------------------------------///
-	void SpriteCommon::Initialize(const std::string textureFilePath) {
+	void SpriteCommon::Initialize(const std::string textureFilePath, GroundType type) {
 
 		/// ===コマンドリストのポインタの取得=== ///
 		ID3D12Device* device = Service::GraphicsResourceGetter::GetDXDevice();
@@ -6224,6 +6254,9 @@ namespace MiiEngine {
 		/// ===テクスチャ=== ///
 		filePath_ = textureFilePath;
 		AdjustTextureSize(textureFilePath);
+
+		/// ===Typeの取得=== ///
+		groundType_ = type;
 
 		/// ===生成=== ///
 		vertex_ = std::make_unique<VertexBuffer2D>();
@@ -6260,6 +6293,9 @@ namespace MiiEngine {
 
 		/// ===WorldTransformの設定=== ///
 		worldTransform_ = { {1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f, }, { 0.0f, 0.0f, 0.0f } };
+
+		// SpriteManagerに登録
+		Service::Sprite::AddSprite(this);
 	}
 
 
@@ -6278,18 +6314,12 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// 描画
 	///-------------------------------------------///
-	void SpriteCommon::Draw(GroundType type, BlendMode mode) {
+	void SpriteCommon::Draw() {
 
 		/// ===コマンドリストのポインタの取得=== ///
 		ID3D12GraphicsCommandList* commandList = Service::GraphicsResourceGetter::GetDXCommandList();
 
 		/// ===コマンドリストに設定=== ///
-		// PSOの設定
-		if (type == GroundType::Front) {
-			Service::Render::SetPSO(commandList, PipelineType::ForGround2D, mode);
-		} else if (type == GroundType::Back) {
-			Service::Render::SetPSO(commandList, PipelineType::BackGround2D, mode);
-		}
 		// VertexBufferViewの設定
 		commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
 		// IndexBufferViewの設定
@@ -6301,7 +6331,6 @@ namespace MiiEngine {
 		// 描画(ドローコール)
 		commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 	}
-
 
 	///-------------------------------------------/// 
 	/// VertexResourceの書き込み
@@ -6467,19 +6496,33 @@ namespace MiiEngine {
 		/// 初期化処理
 		/// </summary>
 		/// <param name="textureFilePath">読み込むテクスチャファイルへのパス。関数はこのファイルからテクスチャを読み込み初期化を行います。</param>
-		virtual void Initialize(const std::string textureFilePath);
+		virtual void Initialize(const std::string textureFilePath, GroundType type);
 
 		/// <summary>
 		/// 更新処理
 		/// </summary>
-		virtual void Update();
+		void Update();
 
 		/// <summary>
 		/// 描画処理
 		/// </summary>
-		/// <param name="type">描画する地面の種類を指定します（GroundType）。</param>
-		/// <param name="mode">描画に使用するブレンドモードを指定します（BlendMode）。</param>
-		virtual void Draw(GroundType type, BlendMode mode);
+		void Draw();
+
+	public:/// ===Getter=== ///
+		// GroundTypeの取得
+		const GroundType& GetGroundType() const;
+		// BlendModeの取得
+		const BlendMode& GetBlendMode() const;
+		// 描画フラグの取得
+		const bool& GetIsDraw() const;
+
+	public:/// ===Setter=== ///
+		// GroundTypeの設定
+		void SetGroundType(const GroundType& type);
+		// BlendModeの設定
+		void SetBlendMode(const BlendMode& mode);
+		// 描画フラグの設定
+		void SetIsDraw(const bool& isDraw);
 
 	private:/// ===Variables(変数)=== ///
 
@@ -6500,6 +6543,15 @@ namespace MiiEngine {
 		// バッファビュー
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
 		D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
+
+		// GroundType
+		GroundType groundType_ = GroundType::Front; // 描画する地面の種類
+
+		// BlendMode
+		BlendMode blendMode_ = BlendMode::KBlendModeNormal; // 描画に使用するブレンドモード
+
+		// 描画フラグ
+		bool isDraw_ = true; // 描画するかどうかのフラグ
 
 	protected:
 
@@ -15232,7 +15284,7 @@ namespace MiiEngine {
 		/// 描画処理
 		/// </summary>
 		/// <param name="mode">描画時の合成（ブレンド）モードを指定します。</param>
-		void Draw(BlendMode mode);
+		void Draw(BlendMode mode = BlendMode::kBlendModeAdd);
 
 		/// <summary>
 		/// 停止処理
@@ -19074,6 +19126,8 @@ namespace MiiEngine {
 		// ColliderManager
 		colliderManager_ = std::make_unique<ColliderManager>();
 		colliderManager_->Initialize();
+		// SpriteManager
+		spriteManager_ = std::make_unique<SpriteManager>();
 		// DeltaTime
 		gameTime_ = std::make_unique<GameTime>();
 
@@ -19099,6 +19153,7 @@ namespace MiiEngine {
 			cameraManager_.get(),
 			particleManager_.get(),
 			colliderManager_.get(),
+			spriteManager_.get(),
 			gameTime_.get()
 		};
 		Service::Locator::ProvideAll(registry);
@@ -19117,6 +19172,8 @@ namespace MiiEngine {
 		particleManager_.reset();
 		// ColliderManager
 		colliderManager_.reset();
+		// SpriteManager
+		spriteManager_.reset();
 		// MiiEngine
 		Engine_->Finalize();
 		Engine_.reset();
@@ -19131,8 +19188,11 @@ namespace MiiEngine {
 		cameraManager_->UpdateAllCameras();
 		// ParticleManager
 		particleManager_->Update();
+		// SpriteManager
+		spriteManager_->Update();
 		// ColliderManager
 		colliderManager_->CheckAllCollisions();
+		
 	}
 
 	///-------------------------------------------/// 
@@ -19168,6 +19228,8 @@ namespace MiiEngine {
 	void Framework::PreDraw() {
 		// フレームの開始
 		Engine_->BeginFrame();
+		// SpriteManager
+		spriteManager_->BackDraw();
 	}
 
 	///-------------------------------------------/// 
@@ -19176,7 +19238,8 @@ namespace MiiEngine {
 	void Framework::PostDraw() {
 		// ParticleManager
 		particleManager_->Draw(BlendMode::kBlendModeAdd);
-
+		// SpriteManager
+		spriteManager_->FrontDraw();
 		// フレームの終了
 		Engine_->EndFrame();
 	}
@@ -19198,6 +19261,8 @@ File Path: Project/Engine/Scene/Framework.h
 #include "Engine/System/Managers/ParticleManager.h"
 // ColliderManager
 #include "Engine/System/Managers/ColliderManager.h"
+// SpriteManager
+#include "Engine/System/Managers/SpriteManager.h"
 // DeltaTime
 #include "Engine/System/GameTime/GameTime.h"
 // ｃ++
@@ -19269,6 +19334,8 @@ namespace MiiEngine {
 		bool endRequest_ = false;
 		// シーンファクトリー
 		std::unique_ptr<AbstractSceneFactory> sceneFactory_;
+		// SpriteManager
+		std::unique_ptr<SpriteManager> spriteManager_;
 	};
 }
 
@@ -19442,7 +19509,7 @@ namespace MiiEngine {
 		sceneFactory_ = std::make_unique<SceneFactory>();
 		// シーンマネージャの初期化
 		sceneManager_ = std::make_unique<SceneManager>();
-		sceneManager_->Initialize(sceneFactory_.get());
+		sceneManager_->Initialize(sceneFactory_.get(), spriteManager_.get());
 		sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
 	}
 
@@ -19537,7 +19604,6 @@ namespace MiiEngine {
 		Loader::LoadTexture("leftStick", "GameUI/xbox_stick_l.png");
 		Loader::LoadTexture("rightStick", "GameUI/xbox_stick_r.png");
 		Loader::LoadTexture("menuButton", "GameUI/xbox_button_menu.png");
-
 		// OptionUI
 		Loader::LoadTexture("OptionTitle", "OptionUI/OptionTitle.png");
 		Loader::LoadTexture("OptionVolume", "OptionUI/Volume.png");
@@ -19570,7 +19636,6 @@ namespace MiiEngine {
 		Loader::LoadModel("Bridge2", "Object/Bridge/Bridge2.gltf");						// 橋
 		Loader::LoadModel("Stone", "Object/Object/Stone/Stone.gltf");					// 石
 		Loader::LoadModel("BossStageWall", "Object/Object/Wall/BossStageWall.gltf");	// 壁
-
 	}
 
 	///-------------------------------------------/// 
@@ -19825,7 +19890,7 @@ namespace MiiEngine {
 		animation_.isPlaying = false;
 		animation_.isFinished = false;
 		animation_.currentTime = 0.0f;
-		animation_.duration = 1.2f;
+		animation_.duration = 1.0f;
 		currentState_ = FadeState::None;
 	}
 }
@@ -19921,11 +19986,180 @@ namespace MiiEngine {
 
 
 ============================================================
-File Path: Project/Engine/Scene/Transition/SceneTransitionManager.cpp
+File Path: Project/Engine/Scene/Transition/BlackOutTransition.cpp
+============================================================
+#include "BlackOutTransition.h"
+// Service
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/Sprite.h"
+// Math
+#include "Math/EasingMath.h"
+#include <algorithm>
+
+namespace MiiEngine {
+
+	///-------------------------------------------/// 
+	/// デストラクタ
+	///-------------------------------------------///
+	BlackOutTransition::~BlackOutTransition() {
+		if (sprite_) {
+			sprite_.reset();
+		}
+	}
+
+	///-------------------------------------------/// 
+	/// フェードイン開始処理（シーンに入るとき：明転）
+	///-------------------------------------------///
+	void BlackOutTransition::StartFadeIn(float duration) {
+		// スプライトがない場合は作成
+		if (!sprite_) {
+			sprite_ = std::make_unique<Object2d>();
+			sprite_->Initialize("White");
+			sprite_->SetAnchorPoint({ 0.5f, 0.5f });
+			sprite_->SetPosition({ static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()) / 2.0f, static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight()) / 2.0f });
+			sprite_->SetSize({ static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()), static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight()) });
+		}
+		
+		// 完全に真っ黒な状態からスタート
+		sprite_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+
+		// フェードイン開始
+		SceneTransitionBase::StartFadeIn(duration);
+	}
+
+	///-------------------------------------------/// 
+	/// フェードアウト開始処理（シーンから出るとき：暗転）
+	///-------------------------------------------///
+	void BlackOutTransition::StartFadeOut(float duration) {
+		// スプライトの設定
+		sprite_ = std::make_unique<Object2d>();
+		sprite_->Initialize("White");
+		sprite_->SetAnchorPoint({ 0.5f, 0.5f });
+		// 画面中央に配置し、画面全体を覆うサイズにする
+		sprite_->SetPosition({ static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()) / 2.0f, static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight()) / 2.0f });
+		sprite_->SetSize({ static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()), static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight()) });
+		
+		// 最初は完全に透明な黒
+		sprite_->SetColor({ 0.0f, 0.0f, 0.0f, 0.0f });
+
+		// フェードアウト開始
+		SceneTransitionBase::StartFadeOut(duration);
+	}
+
+	///-------------------------------------------/// 
+	/// 描画
+	///-------------------------------------------///
+	void BlackOutTransition::Draw() {}
+
+	///-------------------------------------------/// 
+	/// フェードイン固有の更新処理（徐々に明るく）
+	///-------------------------------------------///
+	void BlackOutTransition::OnFadeInUpdate() {
+		// 進行度を計算（0.0 ~ 1.0）
+		float normalizedTime = (std::min)(animation_.currentTime / animation_.duration, 1.0f);
+
+		// イージング適用
+		float easedTime = Easing::EaseOutCubic(normalizedTime);
+
+		// アルファ値を 1.0(黒) から 0.0(透明) へ向かわせる
+		float alpha = 1.0f - easedTime;
+		sprite_->SetColor({ 0.0f, 0.0f, 0.0f, alpha });
+		sprite_->Update();
+
+		// アニメーション終了判定
+		if (normalizedTime >= 1.0f) {
+			animation_.isPlaying = false;
+			animation_.isFinished = true;
+		}
+	}
+
+	///-------------------------------------------/// 
+	/// フェードアウト固有の更新処理（徐々に暗く）
+	///-------------------------------------------///
+	void BlackOutTransition::OnFadeOutUpdate() {
+		// 進行度を計算（0.0 ~ 1.0）
+		float normalizedTime = (std::min)(animation_.currentTime / animation_.duration, 1.0f);
+
+		// イージング適用
+		float easedTime = Easing::EaseOutCubic(normalizedTime);
+
+		// アルファ値を 0.0(透明) から 1.0(黒) へ向かわせる
+		float alpha = easedTime;
+		sprite_->SetColor({ 0.0f, 0.0f, 0.0f, alpha });
+		sprite_->Update();
+
+		// アニメーション終了判定
+		if (normalizedTime >= 1.0f) {
+			animation_.isPlaying = false;
+			animation_.isFinished = true;
+		}
+	}
+}
+
+
+
+============================================================
+File Path: Project/Engine/Scene/Transition/BlackOutTransition.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Engine/Scene/Transition/Base/SceneTransitionBase.h"
+#include "application/Drawing/2d/Object2d.h"
+
+namespace MiiEngine {
+	///=====================================================/// 
+	/// BlackOutTransition
+	///=====================================================///
+	class BlackOutTransition : public SceneTransitionBase {
+	public:
+
+		BlackOutTransition() = default;
+		~BlackOutTransition();
+
+		/// <summary>
+        /// フェードイン開始処理
+        /// </summary>
+        /// <param name="duration">フェードインにかかる時間（秒）。省略時は1.2秒が使用されます。</param>
+        void StartFadeIn(float duration = 1.0f) override;
+
+        /// <summary>
+        /// フェードアウト開始処理
+        /// </summary>
+        /// <param name="duration">フェードアウトの継続時間（秒）。省略した場合の既定値は1.0秒です。</param>
+        void StartFadeOut(float duration = 1.2f) override;
+
+        /// <summary>
+        /// 描画処理
+        /// </summary>
+        void Draw() override;
+
+    private:
+
+        // Sprite
+		std::unique_ptr<Object2d> sprite_;
+
+        /// <summary>
+        /// フェードイン固有の更新処理
+        /// </summary>
+        void OnFadeInUpdate() override;
+
+        /// <summary>
+        /// フェードアウト固有の更新処理
+        /// </summary>
+        void OnFadeOutUpdate() override;
+	};
+}
+
+
+
+
+============================================================
+File Path: Project/Engine/Scene/Transition/Manager/SceneTransitionManager.cpp
 ============================================================
 #include "SceneTransitionManager.h"
 // Transition
 #include "Engine/Scene/Transition/ShatterGlassTransition.h"
+#include "Engine/Scene/Transition/BlackOutTransition.h"
 
 namespace MiiEngine {
 	///-------------------------------------------/// 
@@ -20025,6 +20259,14 @@ namespace MiiEngine {
 				// 現在のトランジションタイプを更新
 				currentType_ = type;
 				break;
+			case TransitionType::BlackOut:
+				// 既存のトランジションを破棄
+				currentTransition_.reset();
+				// 新しいトランジションを作成
+				currentTransition_ = std::move(std::make_unique<BlackOutTransition>());
+				// 現在のトランジションタイプを更新
+				currentType_ = type;
+				break;
 			default:
 				break;
 			}
@@ -20033,7 +20275,7 @@ namespace MiiEngine {
 }
 
 ============================================================
-File Path: Project/Engine/Scene/Transition/SceneTransitionManager.h
+File Path: Project/Engine/Scene/Transition/Manager/SceneTransitionManager.h
 ============================================================
 #pragma once
 /// ===Include=== ///
@@ -20046,6 +20288,7 @@ File Path: Project/Engine/Scene/Transition/SceneTransitionManager.h
 enum class TransitionType {
 	None,
 	ShatterGlass,
+	BlackOut,
 };
 
 namespace MiiEngine {
@@ -20151,10 +20394,6 @@ namespace MiiEngine {
 	void ShatterGlassTransition::StartFadeIn(float duration) {
 		// エフェクトタイプの設定
 		Service::PostEffect::SetOffScreenType(OffScreenType::ShatterGlass);
-		// Spriteの色をリセット
-		if (sprite_) {
-			sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 透明で初期化
-		}
 
 		// デフォルトパラメータの設定
 		data_.progress = 0.0f;
@@ -20168,6 +20407,9 @@ namespace MiiEngine {
 		// 新しいランダムパターンを生成
 		data_.randomSeed = static_cast<float>(rand() % 10000) / 10.0f;
 
+		// 設定
+		Service::PostEffect::SetShatterGlassData(data_);
+
 		// フェードアウト開始
 		SceneTransitionBase::StartFadeIn(duration);
 	}
@@ -20177,13 +20419,12 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void ShatterGlassTransition::StartFadeOut(float duration) {
 		// Sprite
-		sprite_ = std::make_unique<Sprite>();
+		sprite_ = std::make_unique<Object2d>();
 		sprite_->Initialize("ShatterGlass");
 		sprite_->SetAnchorPoint({ 0.5f, 0.5f });
 		sprite_->SetPosition({static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()) / 2.0f, static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight()) / 2.0f});
 		sprite_->SetSize({0.0f, 0.0f});
 		sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f }); // 透明で初期化
-		sprite_->Update();
 
 		// フェードイン開始
 		SceneTransitionBase::StartFadeOut(duration);
@@ -20192,16 +20433,13 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// 描画
 	///-------------------------------------------///
-	void ShatterGlassTransition::Draw() {
-		if (sprite_) {
-			sprite_->Draw(GroundType::Front, BlendMode::KBlendModeNormal);
-		}
-	}
+	void ShatterGlassTransition::Draw() {}
 
 	///-------------------------------------------/// 
 	/// フェードイン固有の更新処理
 	///-------------------------------------------///
 	void ShatterGlassTransition::OnFadeInUpdate() {
+
 		// 進行度を計算（0.0 ~ 1.0）
 		float normalizedTime = (std::min)(animation_.currentTime / animation_.duration, 1.0f);
 
@@ -20231,9 +20469,9 @@ namespace MiiEngine {
 
 		// 設定
 		Service::PostEffect::SetShatterGlassData(data_);
-		if (sprite_) {
-			sprite_->Update();
-		}
+
+		// スプライトは描画しない
+		sprite_->SetIsDraw(false); 
 	}
 
 	///-------------------------------------------/// 
@@ -20272,7 +20510,7 @@ File Path: Project/Engine/Scene/Transition/ShatterGlassTransition.h
 /// ===Include=== ///
 #include "Engine/Scene/Transition/Base/SceneTransitionBase.h"
 #include "Engine/Graphics/OffScreen/Effect/ShatterGlassEffect.h"
-#include "application/Drawing/2d/Sprite.h"
+#include "application/Drawing/2d/Object2d.h"
 
 namespace MiiEngine {
     ///=====================================================/// 
@@ -20303,7 +20541,7 @@ namespace MiiEngine {
 
     private:
         // Sprite
-        std::unique_ptr<Sprite> sprite_;
+        std::unique_ptr<Object2d> sprite_;
         // Data
         ShatterGlassData data_;
 
@@ -26450,7 +26688,9 @@ File Path: Project/Engine/System/Managers/SceneManager.cpp
 // c++
 #include <cassert>
 // SceneTransitionManager
-#include "Engine/Scene/Transition/SceneTransitionManager.h"
+#include "Engine/Scene/Transition/Manager/SceneTransitionManager.h"
+// SpriteManager
+#include "SpriteManager.h"
 // 各シーン
 #include "application/Scene/Title/TitleScene.h"
 #include "application/Scene/Select/SelectScene.h"
@@ -26488,13 +26728,16 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// 初期化
 	///-------------------------------------------///
-	void SceneManager::Initialize(AbstractSceneFactory* sceneFactor) {
+	void SceneManager::Initialize(AbstractSceneFactory* sceneFactor, SpriteManager* spriteManager) {
 		// シーンファクトリーのセット
 		SetSceneFactory(sceneFactor);
 
 		// シーントランジションマネージャの生成
 		sceneTransitionManager_ = std::make_unique<SceneTransitionManager>();
 		sceneTransitionManager_->Initialize();
+
+		// SpriteManagerのセット
+		spriteManager_ = spriteManager;
 	}
 
 	///-------------------------------------------/// 
@@ -26624,6 +26867,8 @@ namespace MiiEngine {
 		if (currentScene_) {
 			// 現在のシーンの初期化
 			currentScene_->Initialize();
+			// シーンの最初にスプライトを更新
+			spriteManager_->Update();
 		}
 	}
 }
@@ -26639,7 +26884,7 @@ File Path: Project/Engine/System/Managers/SceneManager.h
 // Game
 #include "Engine/Scene/AbstractSceneFactory.h"
 // SceneTransitionManager
-#include "Engine/Scene/Transition/SceneTransitionManager.h"
+#include "Engine/Scene/Transition/Manager/SceneTransitionManager.h"
 // IScene
 #include "Engine/Scene/IScene.h"
 
@@ -26649,6 +26894,9 @@ File Path: Project/Engine/System/Managers/SceneManager.h
 #endif // USE_IMGUI
 
 namespace MiiEngine {
+
+	class SpriteManager;
+
 	///=====================================================/// 
 	/// シーンマネージャー
 	///=====================================================///
@@ -26661,7 +26909,7 @@ namespace MiiEngine {
 		/// <summary>
 		/// 初期化処理
 		/// </summary>
-		void Initialize(AbstractSceneFactory* sceneFactor);
+		void Initialize(AbstractSceneFactory* sceneFactor, SpriteManager* spriteManager);
 
 		/// <summary>
 		/// 現在のシーンの更新処理
@@ -26726,6 +26974,9 @@ namespace MiiEngine {
 		// シーントランジションマネージャ
 		std::unique_ptr<SceneTransitionManager> sceneTransitionManager_;
 
+		// SpriteManager
+		SpriteManager* spriteManager_ = nullptr;
+
 		// 現在のシーン
 		SceneType currentSceneType_ = SceneType::Title; // 初期のシーン
 		std::unique_ptr<IScene> currentScene_; // 現在のシーン
@@ -26742,6 +26993,153 @@ namespace MiiEngine {
 		void SceneInit();
 	};
 }
+
+
+============================================================
+File Path: Project/Engine/System/Managers/SpriteManager.cpp
+============================================================
+#include "SpriteManager.h"
+// Engine
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/Render.h"
+
+namespace MiiEngine {
+
+	///-------------------------------------------/// 
+	/// 更新処理 
+	///-------------------------------------------///
+	void SpriteManager::Update() {
+		for (auto& sprite : sprites_) {
+			sprite->Update();
+		}
+	}
+
+	///-------------------------------------------/// 
+	/// 背景描画処理 
+	///-------------------------------------------///
+	void MiiEngine::SpriteManager::BackDraw() {
+		for (auto& sprite : sprites_) {
+			// 早期リターン
+			if (sprite->GetGroundType() != GroundType::Back || !sprite->GetIsDraw()) continue;
+
+			/// ===コマンドリストのポインタの取得=== ///
+			ID3D12GraphicsCommandList* commandList = Service::GraphicsResourceGetter::GetDXCommandList();
+
+			// PSOの設定
+			Service::Render::SetPSO(commandList, PipelineType::BackGround2D, sprite->GetBlendMode());
+
+			// 描画
+			sprite->Draw();
+		}
+	}
+
+
+	///-------------------------------------------///
+	/// 前景描画処理
+	///-------------------------------------------///
+	void MiiEngine::SpriteManager::FrontDraw() {
+		for (auto& sprite : sprites_) {
+			// 早期リターン
+			if (sprite->GetGroundType() != GroundType::Front || !sprite->GetIsDraw()) continue;
+
+			/// ===コマンドリストのポインタの取得=== ///
+			ID3D12GraphicsCommandList* commandList = Service::GraphicsResourceGetter::GetDXCommandList();
+
+			// PSOの設定
+			Service::Render::SetPSO(commandList, PipelineType::ForGround2D, sprite->GetBlendMode());
+
+			// 描画
+			sprite->Draw();
+		}
+	}
+
+	///-------------------------------------------/// 
+	/// スプライトの追加 
+	///-------------------------------------------///
+	void SpriteManager::AddSprite(SpriteCommon* sprite) {
+		// スプライトを配列に追加
+		sprites_.emplace_back(sprite);
+	}
+
+	///-------------------------------------------/// 
+	/// スプライトのクリア 
+	///-------------------------------------------///
+	void SpriteManager::ClearSprites() {
+		// スプライトの配列をクリア
+		sprites_.clear();
+	}
+
+	///-------------------------------------------/// 
+	///	スプライトの削除
+	///-------------------------------------------///
+	void SpriteManager::RemoveSprite(SpriteCommon* sprite) {
+		// スプライトを配列から削除
+		sprites_.erase(std::remove(sprites_.begin(), sprites_.end(), sprite), sprites_.end());
+	}
+}
+
+
+
+============================================================
+File Path: Project/Engine/System/Managers/SpriteManager.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// SpriteCommon
+#include "Engine/Graphics/2d/Sprite/SpriteCommon.h"
+// C++
+#include <memory>
+#include <vector>
+
+namespace MiiEngine {
+	///=====================================================/// 
+	/// スプライトマネージャ
+	///=====================================================///
+	class SpriteManager {
+	public:
+
+		SpriteManager() = default;
+		~SpriteManager() = default;
+
+		/// <summary>
+		/// 更新処理
+		/// </summary>
+		void Update();
+
+		/// <summary>
+		/// 描画処理（背景）
+		/// </summary>
+		void BackDraw();
+
+		/// <summary>
+		/// 描画処理（前景）
+		/// </summary>
+		void FrontDraw();
+
+		/// <summary>
+		/// スプライトを追加します。
+		/// </summary>
+		/// <param name="sprite">追加するスプライトへのポインタ。</param>
+		void AddSprite(SpriteCommon* sprite);
+
+		/// <summary>
+		/// すべてのスプライトをクリアします。
+		/// </summary>
+		void ClearSprites();
+
+		/// <summary>
+		/// スプライトを削除します。
+		/// </summary>
+		/// <param name="sprite">削除するスプライトへのポインタ。</param>
+		void RemoveSprite(SpriteCommon* sprite);
+
+	private: /// ===メンバ変数=== ///
+		// スプライトの配列
+		std::vector<MiiEngine::SpriteCommon*> sprites_;
+	};
+
+}
+
 
 
 ============================================================
@@ -27214,6 +27612,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyHitReactionState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.cpp" />
+    <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSCompiler.cpp" />
     <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSRootSignature.cpp" />
@@ -27303,7 +27702,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\3d\Base\IndexBuffer3D.cpp" />
     <ClCompile Include="Engine\Graphics\Base\BufferBase.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="application\Drawing\2d\Sprite.cpp" />
+    <ClCompile Include="application\Drawing\2d\Object2d.cpp" />
     <ClCompile Include="Engine\System\Managers\TextureManager.cpp" />
     <ClCompile Include="Engine\Core\StringUtility.cpp" />
     <ClCompile Include="Engine\Graphics\2d\Base\Transform2D.cpp" />
@@ -27369,7 +27768,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\OceanWaveCompute.cpp" />
     <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp" />
-    <ClCompile Include="Engine\Scene\Transition\SceneTransitionManager.cpp" />
+    <ClCompile Include="Engine\Scene\Transition\Manager\SceneTransitionManager.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp" />
@@ -27379,6 +27778,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\MoveBossState.cpp" />
     <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp" />
+    <ClCompile Include="Engine\System\Managers\SpriteManager.cpp" />
+    <ClCompile Include="Service\Sprite.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\BossEnemy.h" />
@@ -27386,6 +27787,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\UI\SpriteBaseScale.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.h" />
+    <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSCompiler.h" />
     <ClInclude Include="Engine\Camera\Base\CameraCommon.h" />
     <ClInclude Include="Engine\Collider\ColliderConcept.h" />
@@ -27501,7 +27903,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Core\ComPtr.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\GS\DepthStencil.h" />
     <ClInclude Include="application\Scene\Game\GameScene.h" />
-    <ClInclude Include="application\Drawing\2d\Sprite.h" />
+    <ClInclude Include="application\Drawing\2d\Object2d.h" />
     <ClInclude Include="Engine\System\Managers\TextureManager.h" />
     <ClInclude Include="Engine\Core\StringUtility.h" />
     <ClInclude Include="Engine\Graphics\2d\Base\Transform2D.h" />
@@ -27570,7 +27972,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h" />
     <ClInclude Include="Engine\Graphics\Ocean\OceanWaveCompute.h" />
     <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h" />
-    <ClInclude Include="Engine\Scene\Transition\SceneTransitionManager.h" />
+    <ClInclude Include="Engine\Scene\Transition\Manager\SceneTransitionManager.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h" />
@@ -27580,6 +27982,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\MoveBossState.h" />
     <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h" />
+    <ClInclude Include="Engine\System\Managers\SpriteManager.h" />
+    <ClInclude Include="Service\Sprite.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -27960,7 +28364,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Player\State\RootState.cpp">
       <Filter>application\Game\Entity\Player\State</Filter>
     </ClCompile>
-    <ClCompile Include="application\Drawing\2d\Sprite.cpp">
+    <ClCompile Include="application\Drawing\2d\Object2d.cpp">
       <Filter>application\Drawing\2D</Filter>
     </ClCompile>
     <ClCompile Include="application\Drawing\3d\Line.cpp">
@@ -28287,7 +28691,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp">
       <Filter>Engine\Scene\Transition\Base</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Scene\Transition\SceneTransitionManager.cpp">
+    <ClCompile Include="Engine\Scene\Transition\Manager\SceneTransitionManager.cpp">
       <Filter>Engine\Scene\Transition</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp">
@@ -28458,6 +28862,9 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Engine\Graphics\Ocean\OceanWaveCompute.cpp">
       <Filter>Engine\Graphics\Ocean</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\System\Managers\SpriteManager.cpp" />
+    <ClCompile Include="Service\Sprite.cpp" />
+    <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -28505,7 +28912,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Player\State\RootState.h">
       <Filter>application\Game\Entity\Player\State</Filter>
     </ClInclude>
-    <ClInclude Include="application\Drawing\2d\Sprite.h">
+    <ClInclude Include="application\Drawing\2d\Object2d.h">
       <Filter>application\Drawing\2D</Filter>
     </ClInclude>
     <ClInclude Include="application\Drawing\3d\Line.h">
@@ -28874,7 +29281,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h">
       <Filter>Engine\Scene\Transition\Base</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Scene\Transition\SceneTransitionManager.h">
+    <ClInclude Include="Engine\Scene\Transition\Manager\SceneTransitionManager.h">
       <Filter>Engine\Scene\Transition</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h">
@@ -29055,6 +29462,9 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\Graphics\Ocean\OceanWaveCompute.h">
       <Filter>Engine\Graphics\Ocean</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\System\Managers\SpriteManager.h" />
+    <ClInclude Include="Service\Sprite.h" />
+    <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -30616,6 +31026,7 @@ Quaternion Normalize(const Quaternion& quaternion) {
     };
 }
 
+
 ============================================================
 File Path: Project/Math/Quaternion.h
 ============================================================
@@ -30684,6 +31095,7 @@ Quaternion Multiply(const Quaternion& lhs, const Quaternion& rhs);
 
 /// ===正規化したQuaternionを返す=== ///
 Quaternion Normalize(const Quaternion& quaternion);
+
 
 ============================================================
 File Path: Project/Math/Vector2.cpp
@@ -31738,7 +32150,6 @@ File Path: Project/Service/Audio.cpp
 // Locator
 #include "Locator.h"
 
-using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// 音声の再生
@@ -32796,6 +33207,8 @@ namespace Service {
 		assert(registry.particleManager);
 		// ColliderManager
 		assert(registry.colliderManager);
+		// SpriteManager
+		assert(registry.spriteManager);
 		// DeltaTime
 		assert(registry.gameTime);
 
@@ -32836,6 +33249,8 @@ namespace Service {
 		particleManager_ = registry.particleManager;
 		// ColliderManager
 		colliderManager_ = registry.colliderManager;
+		// SpriteManager
+		spriteManager_ = registry.spriteManager;
 		// DeltaTime
 		gameTime_ = registry.gameTime;
 	}
@@ -32844,6 +33259,7 @@ namespace Service {
 	/// 全てのサービスを終了
 	///-------------------------------------------///
 	void Locator::Finalize() {
+		spriteManager_ = nullptr;
 		colliderManager_ = nullptr;
 		particleManager_ = nullptr;
 		cameraManager_ = nullptr;
@@ -32960,6 +33376,11 @@ namespace Service {
 	MiiEngine::ColliderManager* Locator::GetColliderManager() { return colliderManager_; }
 
 	///-------------------------------------------/// 
+	/// SpriteManager
+	///-------------------------------------------///
+	MiiEngine::SpriteManager* Locator::GetSpriteManager() { return spriteManager_; }
+
+	///-------------------------------------------/// 
 	/// GameTime
 	///-------------------------------------------///
 	MiiEngine::GameTime* Locator::GetGameTime() { return gameTime_; }
@@ -33005,6 +33426,8 @@ namespace MiiEngine {
 	class ParticleManager;
 	// ColliderManager
 	class ColliderManager;
+	// SpriteManager
+	class SpriteManager;
 	// GameTime
 	class GameTime;
 }
@@ -33032,6 +33455,7 @@ namespace Service {
 		MiiEngine::CameraManager* cameraManager = nullptr;
 		MiiEngine::ParticleManager* particleManager = nullptr;
 		MiiEngine::ColliderManager* colliderManager = nullptr;
+		MiiEngine::SpriteManager* spriteManager = nullptr;
 		MiiEngine::GameTime* gameTime = nullptr;
 	};
 
@@ -33083,6 +33507,8 @@ namespace Service {
 		static MiiEngine::ParticleManager* GetParticleManager();
 		// ColliderManager
 		static MiiEngine::ColliderManager* GetColliderManager();
+		// SpriteManager
+		static MiiEngine::SpriteManager* GetSpriteManager();
 		// GameTime
 		static MiiEngine::GameTime* GetGameTime();
 
@@ -33112,6 +33538,7 @@ namespace Service {
 		static inline MiiEngine::CameraManager* cameraManager_ = nullptr;
 		static inline MiiEngine::ParticleManager* particleManager_ = nullptr;
 		static inline MiiEngine::ColliderManager* colliderManager_ = nullptr;
+		static inline MiiEngine::SpriteManager* spriteManager_ = nullptr;
 		static inline MiiEngine::GameTime* gameTime_ = nullptr;
 	};
 }
@@ -33539,9 +33966,79 @@ namespace Service {
 
 
 ============================================================
-File Path: Project/application/Drawing/2d/Sprite.cpp
+File Path: Project/Service/Sprite.cpp
 ============================================================
 #include "Sprite.h"
+#include "Engine/System/Managers/SpriteManager.h"
+// Locator
+#include "Locator.h"
+
+namespace Service {
+	///-------------------------------------------/// 
+	/// スプライトの追加
+	///-------------------------------------------///
+	void Sprite::AddSprite(MiiEngine::SpriteCommon* sprite) {
+		Locator::GetSpriteManager()->AddSprite(sprite);
+	}
+
+	///-------------------------------------------/// 
+	/// スプライトのクリア
+	///-------------------------------------------///
+	void Sprite::ClearSprites() {
+		Locator::GetSpriteManager()->ClearSprites();
+	}
+
+	///-------------------------------------------/// 
+	///	スプライトの削除
+	///-------------------------------------------///
+	void Sprite::RemoveSprite(MiiEngine::SpriteCommon* sprite) {
+		Locator::GetSpriteManager()->RemoveSprite(sprite);
+	}
+}
+
+
+============================================================
+File Path: Project/Service/Sprite.h
+============================================================
+#pragma once
+/// ===前方宣言=== ///
+namespace MiiEngine {
+	class SpriteCommon;
+}
+
+namespace Service {
+	///=====================================================/// 
+	/// Sprite Service
+	///=====================================================///
+	class Sprite {
+	public:
+
+		/// <summary>
+		/// スプライトを追加します。
+		/// </summary>
+		/// <param name="sprite">追加するスプライト。</param>
+		static void AddSprite(MiiEngine::SpriteCommon* sprite);
+
+		/// <summary>
+		/// すべてのスプライトをクリアします。
+		/// </summary>
+		static void ClearSprites();
+
+		/// <summary>
+		/// スプライトを削除します。
+		/// </summary>
+		/// <param name="sprite">削除するスプライトへのポインタ。</param>
+		static void RemoveSprite(MiiEngine::SpriteCommon* sprite);
+	};
+
+}
+
+
+
+============================================================
+File Path: Project/application/Drawing/2d/Object2d.cpp
+============================================================
+#include "Object2d.h"
 // c++
 #include <cassert>
 // Engine
@@ -33554,81 +34051,62 @@ using namespace MiiEngine;
 ///-------------------------------------------/// 
 /// コンストラクタ、デストラクタ
 ///-------------------------------------------///
-Sprite::~Sprite() = default;
+Object2d::~Object2d() = default;
 
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
 // 座標
-const Vector2& Sprite::GetPosition() const { return position_; }
+const Vector2& Object2d::GetPosition() const { return position_; }
 // 回転
-const float& Sprite::GetRotation() const { return rotation_; }
+const float& Object2d::GetRotation() const { return rotation_; }
 // サイズ
-const Vector2& Sprite::GetSize() const { return size_; }
+const Vector2& Object2d::GetSize() const { return size_; }
 // 色
-const Vector4& Sprite::GetColor() const { return color_; }
+const Vector4& Object2d::GetColor() const { return color_; }
 
 
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
 // 座標
-void Sprite::SetPosition(const Vector2& position) { position_ = position; }
+void Object2d::SetPosition(const Vector2& position) { position_ = position; }
 // 回転
-void Sprite::SetRotation(const float& rotation) { rotation_ = rotation; }
+void Object2d::SetRotation(const float& rotation) { rotation_ = rotation; }
 // サイズ
-void Sprite::SetSize(const Vector2& size) { size_ = size; }
+void Object2d::SetSize(const Vector2& size) { size_ = size; }
 // 色
-void Sprite::SetColor(const Vector4& color) { color_ = color; }
+void Object2d::SetColor(const Vector4& color) { color_ = color; }
 // アンカーポイント
-void Sprite::SetAnchorPoint(const Vector2& anchorPoint) { anchorPoint_ = anchorPoint; }
+void Object2d::SetAnchorPoint(const Vector2& anchorPoint) { anchorPoint_ = anchorPoint; }
 // フリップ
-void Sprite::SetFlipX(const bool& flip) { isFlipX_ = flip; }
-void Sprite::SetFlipY(const bool& flip) { isFlipY_ = flip; }
+void Object2d::SetFlipX(const bool& flip) { isFlipX_ = flip; }
+void Object2d::SetFlipY(const bool& flip) { isFlipY_ = flip; }
 // テクスチャ左上座標
-void Sprite::SetTextureLeftTop(const Vector2& textureLeftTop) { textureLeftTop_ = textureLeftTop; }
+void Object2d::SetTextureLeftTop(const Vector2& textureLeftTop) { textureLeftTop_ = textureLeftTop; }
 // テクスチャ切り出しサイズ
-void Sprite::SetTextureSize(const Vector2& textureSize) { textureSize_ = textureSize; }
+void Object2d::SetTextureSize(const Vector2& textureSize) { textureSize_ = textureSize; }
 
 
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void Sprite::Initialize(const std::string textureFilePath) {
+void Object2d::Initialize(const std::string textureFilePath, MiiEngine::GroundType type) {
 
 	/// ===テクスチャ=== ///
 	filePath_ = textureFilePath;
 
 	/// ===SpriteCommonの初期化=== ///
-	SpriteCommon::Initialize(filePath_);
+	SpriteCommon::Initialize(filePath_, type);
 
 	/// ===WorldTransformの設定=== ///
 	worldTransform_ = { {1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f, }, { 0.0f, 0.0f, 0.0f } };
 }
 
 
-///-------------------------------------------/// 
-/// 更新
-///-------------------------------------------///
-void Sprite::Update() {
-	/// ===SpriteCommonの更新=== ///
-	SpriteCommon::Update();
-}
-
-///-------------------------------------------/// 
-/// 描画
-///-------------------------------------------///
-void Sprite::Draw(GroundType type, BlendMode mode) {
-
-	/// ===SpriteCommonの描画=== ///
-	SpriteCommon::Draw(type, mode);
-}
-
-
-
 
 ============================================================
-File Path: Project/application/Drawing/2d/Sprite.h
+File Path: Project/application/Drawing/2d/Object2d.h
 ============================================================
 #pragma once
 /// ===include=== ///
@@ -33636,31 +34114,19 @@ File Path: Project/application/Drawing/2d/Sprite.h
 #include "Engine/Graphics/2d/Sprite/SpriteCommon.h"
 
 ///=====================================================/// 
-/// スプライト
+/// Object2d
 ///=====================================================///
-class Sprite : public MiiEngine::SpriteCommon {
+class Object2d : public MiiEngine::SpriteCommon {
 public: /// ===基本的な関数=== ///
 
-	Sprite() = default;
-	~Sprite();
+	Object2d() = default;
+	~Object2d();
 
 	/// <summary>
 	/// 初期化処理
 	/// </summary>
 	/// <param name="textureFilePath">初期化に使用するテクスチャファイルのパスを表す文字列。</param>
-	void Initialize(const std::string textureFilePath) override;
-
-	/// <summary>
-	/// 更新処理
-	/// </summary>
-	void Update() override;
-
-	/// <summary>
-	/// 描画処理
-	/// </summary>
-	/// <param name="type">描画するグラウンドの種類。既定値は GroundType::Front。</param>
-	/// <param name="mode">使用するブレンドモード。既定値は BlendMode::KBlendModeNormal。</param>
-	void Draw(MiiEngine::GroundType type = MiiEngine::GroundType::Front, MiiEngine::BlendMode mode = MiiEngine::BlendMode::KBlendModeNormal) override;
+	void Initialize(const std::string textureFilePath, MiiEngine::GroundType type = MiiEngine::GroundType::Front) override;
 
 public:/// ===Getter=== ///
 
@@ -33852,6 +34318,71 @@ void Line::DrawSphere(const MiiEngine::Sphere& sphere, const Vector4 & color) {
 
 			DrawLine(a, b, color);
 			DrawLine(a, c, color);
+		}
+	}
+}
+
+///-------------------------------------------/// 
+/// Torus
+///-------------------------------------------///
+void Line::DrawTorus(const Vector3& center, const Quaternion& rotate, float holeRadius, const Vector4& color) {
+	// 固定値
+	const uint32_t kSubdivision = 16;
+	//const float kMajorRadius = 20.0f;
+	const float radius = 2.0f;
+
+	// 0以下は描かない（暴走防止）
+	if (holeRadius <= 0.0f) {
+		return;
+	}
+
+	const float uStep = 2.0f * Math::Pi() / float(kSubdivision); // メジャー方向
+	const float vStep = 2.0f * Math::Pi() / float(kSubdivision); // マイナー方向
+
+	// ローカル点生成（XY平面上にメジャー円、断面はXZで回す）
+	auto MakeLocalPoint = [&](float u, float v) -> Vector3 {
+		const float cu = cos(u);
+		const float su = sin(u);
+		const float cv = cos(v);
+		const float sv = sin(v);
+
+		// トーラスのパラメトリック式（軸Y回りを想定）
+		// x = (R + r*cos(v)) * cos(u)
+		// y = r * sin(v)
+		// z = (R + r*cos(v)) * sin(u)
+		const float rr = holeRadius + radius * cv;
+
+		return Vector3{
+			rr * cu,
+			radius* sv,
+			rr * su
+		};
+		};
+
+	// 点を回転 + 平行移動してワールドへ
+	auto ToWorld = [&](const Vector3& local) -> Vector3 {
+		Vector3 rotated = Math::RotateVector(local, rotate);
+		return rotated + center;
+		};
+
+	for (uint32_t i = 0; i < kSubdivision; ++i) {
+		const uint32_t iNext = (i + 1) % kSubdivision;
+		const float u0 = uStep * float(i);
+		const float u1 = uStep * float(iNext);
+
+		for (uint32_t j = 0; j < kSubdivision; ++j) {
+			const uint32_t jNext = (j + 1) % kSubdivision;
+			const float v0 = vStep * float(j);
+			const float v1 = vStep * float(jNext);
+
+			// 4点（セルの角）
+			const Vector3 p00 = ToWorld(MakeLocalPoint(u0, v0));
+			const Vector3 p10 = ToWorld(MakeLocalPoint(u1, v0));
+			const Vector3 p01 = ToWorld(MakeLocalPoint(u0, v1));
+
+			// 2方向の線（メジャー方向・マイナー方向）
+			DrawLine(p00, p10, color); // u方向
+			DrawLine(p00, p01, color); // v方向
 		}
 	}
 }
@@ -34168,6 +34699,15 @@ public:
 	void DrawSphere(const MiiEngine::Sphere& sphere, const Vector4& color);
 
 	/// <summary>
+	/// トーラスを線で描画
+	/// </summary>
+	/// <param name="center">中心座標</param>
+	/// <param name="rotate">回転（クォータニオン）</param>
+	/// <param name="holeRadius">ドーナツ状の穴の大きさ半径（= マイナー半径）</param>
+	/// <param name="color">線の色（RGBA）</param>
+	void DrawTorus(const Vector3& center, const Quaternion& rotate, float holeRadius, const Vector4& color);
+
+	/// <summary>
 	/// グリッドを描画
 	/// </summary>
 	/// <param name="center">グリッドの中心座標</param>
@@ -34237,7 +34777,7 @@ private:
 	Vector3 CalculateCubicBezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t);
 
 	/// <summary>
-	/// De Casteljauのアルゴリズムでベジェ曲線上の点を計算（任意の制御点数に対応）
+	/// DeCasteljauのアルゴリズムでベジェ曲線上の点を計算（任意の制御点数に対応）
 	/// </summary>
 	Vector3 CalculateBezierPointDeCasteljau(const std::vector<MiiEngine::BezierControlPointData>& controlPoints, float t);
 };
@@ -34796,7 +35336,7 @@ void GameOverAnimation::Initialize(MiiEngine::FollowCamera* camera) {
     camera_ = camera;
 
     // スプライトの初期化
-    gameOverSprite_ = std::make_unique<Sprite>();
+    gameOverSprite_ = std::make_unique<Object2d>();
     gameOverSprite_->Initialize("GameOverAnimation");
 
     // ウィンドウサイズの取得
@@ -34810,7 +35350,7 @@ void GameOverAnimation::Initialize(MiiEngine::FollowCamera* camera) {
     gameOverSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 初期は透明
 
     // ブラックアウト用スプライトの初期化
-    blackSprite_ = std::make_unique<Sprite>();
+    blackSprite_ = std::make_unique<Object2d>();
     blackSprite_->Initialize("White"); // 1x1の白テクスチャ
     blackSprite_->SetPosition({ windowWidth / 2.0f, windowHeight /2.0f });
     Service::GraphicsResourceGetter::GetWindowWidth();
@@ -34871,14 +35411,14 @@ void GameOverAnimation::Draw() {
     // スプライト描画フェーズ以降でゲームオーバースプライトを描画
     if (phase_ == Phase::DrawSprite || phase_ == Phase::ShakeSprite) {
         if (gameOverSprite_) {
-            gameOverSprite_->Draw(MiiEngine::GroundType::Front, MiiEngine::BlendMode::KBlendModeNormal);
+            gameOverSprite_->SetIsDraw(true);
         }
     }
 
     // ブラックアウトの描画（最前面）
     if (phase_ == Phase::ShakeSprite && blackAlpha_ > 0.0f) {
         if (blackSprite_) {
-            blackSprite_->Draw(MiiEngine::GroundType::Front, MiiEngine::BlendMode::KBlendModeNormal);
+            blackSprite_->SetIsDraw(true);
         }
     }
 }
@@ -35004,7 +35544,7 @@ File Path: Project/application/Game/Animation/GameOverAnimation.h
 ============================================================
 #pragma once
 /// ===Include=== ///
-#include "application/Drawing/2d/Sprite.h"
+#include "application/Drawing/2d/Object2d.h"
 #include <memory>
 
 /// ===前方宣言=== ///
@@ -35050,8 +35590,8 @@ private:
 	MiiEngine::FollowCamera* camera_ = nullptr;  // カメラ
 
 	/// ===Sprite=== ///
-	std::unique_ptr<Sprite> gameOverSprite_;  // ゲームオーバースプライト
-	std::unique_ptr<Sprite> blackSprite_;     // ブラックアウト用スプライト
+	std::unique_ptr<Object2d> gameOverSprite_;  // ゲームオーバースプライト
+	std::unique_ptr<Object2d> blackSprite_;     // ブラックアウト用スプライト
 
 	/// ===アニメーション制御=== ///
 	bool isCompleted_ = false;
@@ -44161,13 +44701,11 @@ void GameSceneUI::Initialize() {
 	};
 
 	/// ===OptionSprite=== ///
-	optionMenuSprite_ = std::make_unique<Sprite>();
+	optionMenuSprite_ = std::make_unique<Object2d>();
 	optionMenuSprite_->Initialize("menuButton");
 	optionMenuSprite_->SetPosition({ windowSize.x - 100.0f, 100.0f});
 	optionMenuSprite_->SetSize({ 100.0f, 100.0f });
 	optionMenuSprite_->SetAnchorPoint({ 0.5f, 0.5f });
-	optionMenuSprite_->Update();
-
 }
 
 ///-------------------------------------------/// 
@@ -44176,16 +44714,6 @@ void GameSceneUI::Initialize() {
 void GameSceneUI::Update() {
 	// PlayerUIの更新
 	playerUI_->Update();
-}
-
-///-------------------------------------------/// 
-/// 描画処理
-///-------------------------------------------///
-void GameSceneUI::Draw() {
-	// PlayerUIの描画
-	playerUI_->Draw();
-	// オプションメニュースプライトの描画
-	optionMenuSprite_->Draw();
 }
 
 ============================================================
@@ -44217,11 +44745,6 @@ public:
 	/// </summary>
 	void Update();
 
-	/// <summary>
-	/// 描画処理
-	/// </summary>
-	void Draw();
-
 public: /// ===Setter=== ///
 	// Playerのセット
 	void SetPlayer(Player* player);
@@ -44232,8 +44755,8 @@ private:
 	// PlayerUI
 	std::unique_ptr<PlayerUI> playerUI_;
 
-	/// ===Sprite=== ///
-	std::unique_ptr<Sprite> optionMenuSprite_;
+	/// ===Object2d=== ///
+	std::unique_ptr<Object2d> optionMenuSprite_;
 };
 
 
@@ -44286,7 +44809,7 @@ void PlayerUI::Initialize() {
 	float controllerPosY = point.y + (90.0f * scale_.y);
 
 	// 移動UIの初期化
-	moveUI_ = std::make_shared<Sprite>();
+	moveUI_ = std::make_shared<Object2d>();
 	moveUI_->Initialize("MoveUI");
 	moveUI_->SetPosition({ point.x + spaceX, point.y });
 	moveUIPos_ = moveUI_->GetPosition();
@@ -44294,53 +44817,54 @@ void PlayerUI::Initialize() {
 	moveUI_->SetAnchorPoint({ 0.5f, 0.5f });
 	moveUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// 左スティックUIの初期化
-	leftStick_ = std::make_shared<Sprite>();
+	leftStick_ = std::make_shared<Object2d>();
 	leftStick_->Initialize("leftStick");
 	leftStick_->SetPosition({ moveUI_->GetPosition().x, controllerPosY });
 	leftStick_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
 	leftStick_->SetAnchorPoint({ 0.5f, 0.5f });
 
 	// カメラUIの初期化
-	cameraUI_ = std::make_shared<Sprite>();
+	cameraUI_ = std::make_shared<Object2d>();
 	cameraUI_->Initialize("CameraUI");
 	cameraUI_->SetPosition({ point.x + (spaceX * 3.0f), point.y });
 	cameraUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	cameraUI_->SetAnchorPoint({ 0.5f, 0.5f });
 	cameraUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// 右スティックUI初期化
-	rightStick_ = std::make_shared<Sprite>();
+	rightStick_ = std::make_shared<Object2d>();
 	rightStick_->Initialize("rightStick");
 	rightStick_->SetPosition({ cameraUI_->GetPosition().x, controllerPosY });
 	rightStick_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
 	rightStick_->SetAnchorPoint({ 0.5f, 0.5f });
 
 	// 攻撃UIの初期化
-	attackUI_ = std::make_shared<Sprite>();
+	attackUI_ = std::make_shared<Object2d>();
 	attackUI_->Initialize("AttackUI");
 	attackUI_->SetPosition({ point.x + (spaceX * 5.0f), point.y });
 	attackUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	attackUI_->SetAnchorPoint({ 0.5f, 0.5f });
 	attackUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// XボタンUIの初期化
-	xButton_ = std::make_shared<Sprite>();
+	xButton_ = std::make_shared<Object2d>();
 	xButton_->Initialize("xButton");
 	xButton_->SetPosition({ attackUI_->GetPosition().x,  controllerPosY });
 	xButton_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
 	xButton_->SetAnchorPoint({ 0.5f, 0.5f });
 
 	// 回避UIの初期化
-	avoidanceUI_ = std::make_shared<Sprite>();
+	avoidanceUI_ = std::make_shared<Object2d>();
 	avoidanceUI_->Initialize("AvoidanceUI");
 	avoidanceUI_->SetPosition({ point.x + (spaceX * 7.0f), point.y });
 	avoidanceUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	avoidanceUI_->SetAnchorPoint({ 0.5f, 0.5f });
 	avoidanceUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// AボタンUIの初期化
-	aButton_ = std::make_shared<Sprite>();
+	aButton_ = std::make_shared<Object2d>();
 	aButton_->Initialize("aButton");
 	aButton_->SetPosition({ avoidanceUI_->GetPosition().x, controllerPosY });
 	aButton_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
 	aButton_->SetAnchorPoint({ 0.5f, 0.5f });
+	aButton_->Update();
 
 	// UIの位置の保存
 	moveUIPos_ = moveUI_->GetPosition();
@@ -44365,45 +44889,6 @@ void PlayerUI::Update() {
 
 	// 色の更新処理
 	ColorUpdate();
-
-	// 移動UIの更新
-	moveUI_->Update();
-	// カメラUIの更新
-	cameraUI_->Update();
-	// 攻撃UIの更新
-	attackUI_->Update();
-	// 回避UIの更新
-	avoidanceUI_->Update();
-	// XボタンUiの更新
-	xButton_->Update();
-	// AボタンUIの更新
-	aButton_->Update();
-	// 左スティックUIの更新
-	leftStick_->Update();
-	// 右スティックUIの更新
-	rightStick_->Update();
-}
-
-///-------------------------------------------/// 
-/// 描画処理
-///-------------------------------------------///
-void PlayerUI::Draw() {
-	// 移動UIの描画
-	moveUI_->Draw();
-	// カメラUIの描画
-	cameraUI_->Draw();
-	// 攻撃UIの描画
-	attackUI_->Draw();
-	// 回避UIの描画
-	avoidanceUI_->Draw();
-	// XButtonUIの描画
-	xButton_->Draw();
-	// AButtonUIの描画
-	aButton_->Draw();
-	// 左スティックUIの描画
-	leftStick_->Draw();
-	// 右スティックUIの描画
-	rightStick_->Draw();
 }
 
 ///-------------------------------------------/// 
@@ -44471,7 +44956,7 @@ File Path: Project/application/Game/UI/Game/PlayerUI.h
 ============================================================
 #pragma once
 /// ===Include=== ///
-#include "application/Drawing/2d/Sprite.h"
+#include "application/Drawing/2d/Object2d.h"
 
 /// ===前方宣言=== ///
 class Player;
@@ -44495,11 +44980,6 @@ public:
 	/// </summary>
 	void Update();
 
-	/// <summary>
-	/// 描画処理
-	/// </summary>
-	void Draw();
-
 public: /// ===Setter=== ///
 	// Playerのセット
 	void SetPlayer(Player* player) { player_ = player; }
@@ -44508,17 +44988,17 @@ private:
 	// Player
 	Player* player_;
 
-	/// ===Sprite=== ///
+	/// ===Object2d=== ///
 	// アクション
-	std::shared_ptr<Sprite> moveUI_;      // 移動UI
-	std::shared_ptr<Sprite> cameraUI_;    // カメラUI
-	std::shared_ptr<Sprite> attackUI_;    // 攻撃UI
-	std::shared_ptr<Sprite> avoidanceUI_; // 回避UI
+	std::shared_ptr<Object2d> moveUI_;      // 移動UI
+	std::shared_ptr<Object2d> cameraUI_;    // カメラUI
+	std::shared_ptr<Object2d> attackUI_;    // 攻撃UI
+	std::shared_ptr<Object2d> avoidanceUI_; // 回避UI
 	// コントローラー
-	std::shared_ptr<Sprite> xButton_;	  // X
-	std::shared_ptr<Sprite> aButton_;	  // A
-	std::shared_ptr<Sprite> leftStick_;	  // 左スティック
-	std::shared_ptr<Sprite> rightStick_;  // 右スティック
+	std::shared_ptr<Object2d> xButton_;	  // X
+	std::shared_ptr<Object2d> aButton_;	  // A
+	std::shared_ptr<Object2d> leftStick_;	  // 左スティック
+	std::shared_ptr<Object2d> rightStick_;  // 右スティック
 
 	/// ===位置=== ///
 	Vector2 moveUIPos_ = { 100.0f, 500.0f };      // 移動UI位置
@@ -44594,43 +45074,47 @@ void OptionUI::Initialize() {
 	scale_ = GetBaseScale();
 
 	// 薄暗いオーバーレイ
-	dimSprite_ = std::make_unique<Sprite>();
+	dimSprite_ = std::make_unique<Object2d>();
 	dimSprite_->Initialize("White");
+	dimSprite_->SetBlendMode(MiiEngine::BlendMode::kBlendModeAdd);
 	dimSprite_->SetPosition({ 0.0f, 0.0f });
 	dimSprite_->SetSize({ windowSize.x, windowSize.y });
 	dimSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 0.7f }); // 半透明の黒
-	dimSprite_->Update();
+	dimSprite_->SetIsDraw(false);
 
 	/// ===AudioSprite=== ///
-	audioButtonSprite_ = std::make_unique<Sprite>();
+	audioButtonSprite_ = std::make_unique<Object2d>();
 	audioButtonSprite_->Initialize("OptionVolume");
 	audioButtonSprite_->SetPosition({ audioButtonPos_.x * scale_.x, audioButtonPos_.y * scale_.y });
 	audioButtonSprite_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
 	audioButtonSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	audioButtonSprite_->SetColor({ 1.0f, 1.0f, 0.0f, 1.0f }); // 黄色
-	audioButtonSprite_->Update();
+	audioButtonSprite_->SetIsDraw(false);
 
 	// オーディオスプライト
-	audioHandleSprite_ = std::make_unique<Sprite>();
+	audioHandleSprite_ = std::make_unique<Object2d>();
 	audioHandleSprite_->Initialize("White");
 	audioHandleSprite_->SetColor({ 1.0f, 1.0f, 0.0f, 1.0f }); // 黄色
+	audioHandleSprite_->SetIsDraw(false);
 
-	audioTextSprite_ = std::make_unique<Sprite>();
+	audioTextSprite_ = std::make_unique<Object2d>();
 	audioTextSprite_->Initialize("White");
 	audioTextSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f }); // 黒色
+	audioTextSprite_->SetIsDraw(false);
 
-	audioSliderSprite_ = std::make_unique<Sprite>();
+	audioSliderSprite_ = std::make_unique<Object2d>();
 	audioSliderSprite_->Initialize("White");
 	audioSliderSprite_->SetColor({ 0.8f, 0.8f, 0.8f, 1.0f }); // 灰色
+	audioSliderSprite_->SetIsDraw(false);
 	UpdateAudioSprite();
 
 	// タイトルボタンスプライト
-	titleButtonSprite_ = std::make_unique<Sprite>();
+	titleButtonSprite_ = std::make_unique<Object2d>();
 	titleButtonSprite_->Initialize("OptionTitle");
 	titleButtonSprite_->SetPosition({ windowSize.x / 2.0f, windowSize.y / 2.0f + 150.0f * scale_.y });
 	titleButtonSprite_->SetSize({ 400.0f * scale_.x, 150.0f * scale_.y });
 	titleButtonSprite_->SetAnchorPoint({ 0.5f, 0.5f });
-	titleButtonSprite_->Update();
+	titleButtonSprite_->SetIsDraw(false);
 
 	// 初期値設定
 	returnToTitle_ = false;
@@ -44640,102 +45124,96 @@ void OptionUI::Initialize() {
 ///-------------------------------------------/// 
 /// 更新処理（タイトル）
 ///-------------------------------------------///
-void OptionUI::TitleUpdate() {
+void OptionUI::TitleUpdate(bool flag) {
+	if (flag) {
 #ifdef USE_IMGUI
 
-	ImGui::Begin("OptionUI");
-	ImGui::Text("OptionUI");
-	ImGui::DragFloat2("audioSpritePos", &audioButtonPos_.x, 1.0f);
-	ImGui::DragFloat2("spritePos_", &spritePos_.x, 1.0f);
-	ImGui::DragFloat2("spritePos_2_", &spritePos_2_.x, 1.0f);
-	ImGui::DragFloat2("spriteSize_", &spriteSize_.x, 1.0f);
-	ImGui::DragFloat2("spriteSize_2_", &spriteSize_2_.x, 1.0f);
-	ImGui::End();
+		ImGui::Begin("OptionUI");
+		ImGui::Text("OptionUI");
+		ImGui::DragFloat2("audioSpritePos", &audioButtonPos_.x, 1.0f);
+		ImGui::DragFloat2("spritePos_", &spritePos_.x, 1.0f);
+		ImGui::DragFloat2("spritePos_2_", &spritePos_2_.x, 1.0f);
+		ImGui::DragFloat2("spriteSize_", &spriteSize_.x, 1.0f);
+		ImGui::DragFloat2("spriteSize_2_", &spriteSize_2_.x, 1.0f);
+		ImGui::End();
 
 #endif // USE_IMGUI
 
 
-	// 音量調整（左右）
-	if (Service::Input::PushButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
-		volumeBGM_ = (std::min)(volumeBGM_ + 1, 100);
-		Service::Audio::AllVolumeSound(volumeBGM_ / 100.0f);
-	}
-	if (Service::Input::PushButton(stickNo_, ControllerButtonType::DPadLEFT)) {
-		volumeBGM_ = (std::max)(volumeBGM_ - 1, 0);
-		Service::Audio::AllVolumeSound(volumeBGM_ / 100.0f);
+		// 音量調整（左右）
+		if (Service::Input::PushButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
+			volumeBGM_ = (std::min)(volumeBGM_ + 1, 100);
+			Service::Audio::AllVolumeSound(volumeBGM_ / 100.0f);
+		}
+		if (Service::Input::PushButton(stickNo_, ControllerButtonType::DPadLEFT)) {
+			volumeBGM_ = (std::max)(volumeBGM_ - 1, 0);
+			Service::Audio::AllVolumeSound(volumeBGM_ / 100.0f);
+		}
+
+		// スプライトの更新
+		UpdateAudioSprite();
 	}
 
-	// スプライトの更新
-	UpdateAudioSprite();
-
+	// 描画
+	dimSprite_->SetIsDraw(flag);
+	audioButtonSprite_->SetIsDraw(flag);
+	audioHandleSprite_->SetIsDraw(flag);
+	audioTextSprite_->SetIsDraw(flag);
+	audioSliderSprite_->SetIsDraw(flag);
+	titleButtonSprite_->SetIsDraw(false);
 }
 
 ///-------------------------------------------/// 
 /// 更新処理（ゲーム）
 ///-------------------------------------------///
-void OptionUI::GameUpdate() {
+void OptionUI::GameUpdate(bool flag) {
+	if (flag) {
+		// 項目選択（上下）
+		if (Service::Input::TriggerButton(stickNo_, ControllerButtonType::DPadUP) ||
+			Service::Input::TriggerButton(stickNo_, ControllerButtonType::DPadDOWN) || 
+			Service::Input::TriggerKey(DIK_UP) || Service::Input::TriggerKey(DIK_DOWN)) {
+			// Audio <-> Title をトグル
+			if (optionState_ == OptionState::Audio) {
+				optionState_ = OptionState::Title;
+				titleButtonSprite_->SetColor({ 1.0f, 1.0f, 0.0f, 1.0f }); // 選択中は黄色
+				audioHandleSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f }); // 白色
+				audioButtonSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f }); // 白色
+			} else {
+				optionState_ = OptionState::Audio;
+				titleButtonSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f }); // 非選択中は白色
+				audioHandleSprite_->SetColor({ 1.0f, 1.0f, 0.0f, 1.0f }); // 黄色
+				audioButtonSprite_->SetColor({ 1.0f, 1.0f, 0.0f, 1.0f }); // 黄色
+			}
+		}
 
-	// 項目選択（上下）
-	if (Service::Input::TriggerButton(stickNo_, ControllerButtonType::DPadUP) ||
-		Service::Input::TriggerButton(stickNo_, ControllerButtonType::DPadDOWN)) {
-		// Audio <-> Title をトグル
-		if (optionState_ == OptionState::Audio) {
-			optionState_ = OptionState::Title;
-			titleButtonSprite_->SetColor({ 1.0f, 1.0f, 0.0f, 1.0f }); // 選択中は黄色
-			audioHandleSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f }); // 白色
-			audioButtonSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f }); // 白色
-		} else {
-			optionState_ = OptionState::Audio;
-			titleButtonSprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f }); // 非選択中は白色
-			audioHandleSprite_->SetColor({ 1.0f, 1.0f, 0.0f, 1.0f }); // 黄色
-			audioButtonSprite_->SetColor({ 1.0f, 1.0f, 0.0f, 1.0f }); // 黄色
+		// 音量調整（左右）
+		if (optionState_ == OptionState::Audio) { // BGM
+			if (Service::Input::PushButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
+				volumeBGM_ = (std::min)(volumeBGM_ + 1, 100);
+				Service::Audio::AllVolumeSound(volumeBGM_ / 100.0f);
+			}
+			if (Service::Input::PushButton(stickNo_, ControllerButtonType::DPadLEFT)) {
+				volumeBGM_ = (std::max)(volumeBGM_ - 1, 0);
+				Service::Audio::AllVolumeSound(volumeBGM_ / 100.0f);
+			}
+		}
+
+		// スプライトの更新
+		UpdateAudioSprite();
+
+		// タイトルに戻る
+		if (optionState_ == OptionState::Title && Service::Input::TriggerButton(stickNo_, ControllerButtonType::A) || Service::Input::TriggerKey(DIK_SPACE)) {
+			returnToTitle_ = true;
 		}
 	}
-
-    // 音量調整（左右）
-    if (optionState_ == OptionState::Audio) { // BGM
-        if (Service::Input::PushButton(stickNo_, ControllerButtonType::DPadRIGHT)) {
-            volumeBGM_ = (std::min)(volumeBGM_ + 1, 100);
-			Service::Audio::AllVolumeSound(volumeBGM_ / 100.0f);
-        }
-        if (Service::Input::PushButton(stickNo_, ControllerButtonType::DPadLEFT)) {
-            volumeBGM_ = (std::max)(volumeBGM_ - 1, 0);
-			Service::Audio::AllVolumeSound(volumeBGM_ / 100.0f);
-        }
-    }
-
-	// スプライトの更新
-	titleButtonSprite_->Update();
-	// スプライトの更新
-	UpdateAudioSprite();
-
-    // タイトルに戻る
-    if (optionState_ == OptionState::Title && Service::Input::TriggerButton(stickNo_, ControllerButtonType::A)) {
-        returnToTitle_ = true;
-    }
-}
-
-///-------------------------------------------/// 
-/// 描画処理
-///-------------------------------------------///
-void OptionUI::TitleDraw() {
-	dimSprite_->Draw(MiiEngine::GroundType::Front, MiiEngine::BlendMode::kBlendModeAdd);
-	audioButtonSprite_->Draw(MiiEngine::GroundType::Front);
-	audioHandleSprite_->Draw(MiiEngine::GroundType::Front);
-	audioTextSprite_->Draw(MiiEngine::GroundType::Front);
-	audioSliderSprite_->Draw(MiiEngine::GroundType::Front);
-}
-
-///-------------------------------------------/// 
-/// 描画処理 
-///-------------------------------------------///
-void OptionUI::GameDraw() {
-	dimSprite_->Draw(MiiEngine::GroundType::Front, MiiEngine::BlendMode::kBlendModeAdd);
-	audioButtonSprite_->Draw(MiiEngine::GroundType::Front);
-	audioHandleSprite_->Draw(MiiEngine::GroundType::Front);
-	audioTextSprite_->Draw(MiiEngine::GroundType::Front);
-	audioSliderSprite_->Draw(MiiEngine::GroundType::Front);
-	titleButtonSprite_->Draw(MiiEngine::GroundType::Front);
+	
+	// 描画するかを判別
+	dimSprite_->SetIsDraw(flag);
+	audioButtonSprite_->SetIsDraw(flag);
+	audioHandleSprite_->SetIsDraw(flag);
+	audioTextSprite_->SetIsDraw(flag);
+	audioSliderSprite_->SetIsDraw(flag);
+	titleButtonSprite_->SetIsDraw(flag);
 }
 
 ///-------------------------------------------/// 
@@ -44744,24 +45222,19 @@ void OptionUI::GameDraw() {
 void OptionUI::UpdateAudioSprite() {
 
 	audioButtonSprite_->SetPosition({ audioButtonPos_.x * scale_.x, audioButtonPos_.y * scale_.y });
-	audioButtonSprite_->Update();
 
 	// オーディオスプライト
 	audioHandleSprite_->SetPosition({ spritePos_.x * scale_.x, spritePos_.y * scale_.y });
 	audioHandleSprite_->SetAnchorPoint({ 0.0f, 0.0f });
 	audioHandleSprite_->SetSize({ spriteSize_.x * scale_.x, spriteSize_.y * scale_.y });
-	audioHandleSprite_->Update();
 
 	audioTextSprite_->SetPosition({ spritePos_2_.x * scale_.x, spritePos_2_.y * scale_.y });
 	audioTextSprite_->SetAnchorPoint({ 0.0f, 0.0f });
 	audioTextSprite_->SetSize({ (spriteSize_2_.x * 100.0f) * scale_.x, spriteSize_2_.y * scale_.y });
-	audioTextSprite_->Update();
 
 	audioSliderSprite_->SetPosition({ spritePos_2_.x * scale_.x, spritePos_2_.y * scale_.y });
 	audioSliderSprite_->SetAnchorPoint({ 0.0f, 0.0f });
 	audioSliderSprite_->SetSize({ (spriteSize_2_.x * static_cast<float>(volumeBGM_)) * scale_.x, spriteSize_2_.y * scale_.y });
-	audioSliderSprite_->Update();
-
 }
 
 
@@ -44771,7 +45244,7 @@ File Path: Project/application/Game/UI/Option/OptionUI.h
 #pragma once
 /// ===Include=== ///
 // Sprite
-#include "application/Drawing/2d/Sprite.h"
+#include "application/Drawing/2d/Object2d.h"
 // C++
 #include <memory>
 
@@ -44791,22 +45264,12 @@ public:
 	/// <summary>
 	/// 更新処理(タイトル)
 	/// </summary>
-	void TitleUpdate();
+	void TitleUpdate(bool flag);
 
 	/// <summary>
 	/// 更新処理(ゲーム中)
 	/// </summary>
-	void GameUpdate();
-
-	/// <summary>
-	/// 描画処理
-	/// </summary>
-	void TitleDraw();
-
-	/// <summary>
-	/// 描画処理
-	/// </summary>
-	void GameDraw();
+	void GameUpdate(bool flag);
 
 public: /// ===Getter=== ///
 	// タイトルに戻るフラグの取得
@@ -44814,13 +45277,13 @@ public: /// ===Getter=== ///
 
 private: /// ===メンバ変数=== ///
 
-	/// ===スプライト=== ///
-	std::unique_ptr<Sprite> dimSprite_;          // 薄暗いオーバーレイ
-	std::unique_ptr<Sprite> titleButtonSprite_;  // タイトルに戻るボタン
-	std::unique_ptr<Sprite> audioButtonSprite_;  // オーディオボタン
-	std::unique_ptr<Sprite> audioTextSprite_;    // 音量調整テキスト
-	std::unique_ptr<Sprite> audioSliderSprite_;  // 音量調整スライダー
-	std::unique_ptr<Sprite> audioHandleSprite_;  // 音量調整ハンドル
+	/// ===Object2d=== ///
+	std::unique_ptr<Object2d> dimSprite_;          // 薄暗いオーバーレイ
+	std::unique_ptr<Object2d> titleButtonSprite_;  // タイトルに戻るボタン
+	std::unique_ptr<Object2d> audioButtonSprite_;  // オーディオボタン
+	std::unique_ptr<Object2d> audioTextSprite_;    // 音量調整テキスト
+	std::unique_ptr<Object2d> audioSliderSprite_;  // 音量調整スライダー
+	std::unique_ptr<Object2d> audioHandleSprite_;  // 音量調整ハンドル
 
 	/// ===参照スケール倍率=== ///
 	Vector2 scale_ = { 1.0f, 1.0f };
@@ -45667,7 +46130,7 @@ void GameSceneExitState::Enter(GameScene* gameScene) {
 	float fadeInDuration = 1.0f;
 
 	// シーンマネージャーでフェードインを開始
-	sceneManager_->StartFadeOut(TransitionType::None, fadeInDuration);
+	sceneManager_->StartFadeOut(TransitionType::BlackOut, fadeInDuration);
 }
 
 ///-------------------------------------------/// 
@@ -45679,9 +46142,6 @@ void GameSceneExitState::Update() {
 		// タイトルへ遷移
 		sceneManager_->ChangeScene(MiiEngine::SceneType::Title);
 	}
-
-	// タイトルへ遷移
-	sceneManager_->ChangeScene(MiiEngine::SceneType::Title);
 }
 
 ///-------------------------------------------/// 
@@ -45985,7 +46445,6 @@ void GameSceneInGameState::Enter(GameScene* gameScene) {
 	/// ===OptionUI=== ///
 	optionUI_ = std::make_unique<OptionUI>();
 	optionUI_->Initialize();
-	optionUI_->GameUpdate();
 	isOptionActive_ = false;
 }
 
@@ -45995,7 +46454,7 @@ void GameSceneInGameState::Enter(GameScene* gameScene) {
 void GameSceneInGameState::Update() {
 
 	// オプションアクティブ
-	if (Service::Input::TriggerButton(0, ControllerButtonType::Start)) {
+	if (Service::Input::TriggerButton(0, ControllerButtonType::Start) || Service::Input::TriggerKey(DIK_ESCAPE)) {
 		if (isOptionActive_) {
 			Service::DeltaTime::SetDeltaTime(1.0f / 60.0f);
 			isOptionActive_ = false;
@@ -46005,11 +46464,11 @@ void GameSceneInGameState::Update() {
 		}
 	}
 
-	// UIの更新
-	if (isOptionActive_) {
-		// OptionUIの更新
-		optionUI_->GameUpdate();
-	} else {
+	// OptionUIの更新
+	optionUI_->GameUpdate(isOptionActive_);
+
+	// 更新
+	if (!isOptionActive_) {
 		// EnemyManagerの更新
 		gameScene_->GetEnemyManager()->Update();
 		// Playerの更新
@@ -46035,14 +46494,7 @@ void GameSceneInGameState::Update() {
 ///-------------------------------------------/// 
 /// 描画処理
 ///-------------------------------------------///
-void GameSceneInGameState::Draw() {
-	
-	if (isOptionActive_) {
-		optionUI_->GameDraw();
-	} else {
-		ui_->Draw();
-	}
-}
+void GameSceneInGameState::Draw() {}
 
 ///-------------------------------------------/// 
 /// 終了処理
@@ -46498,8 +46950,8 @@ private:/// ===メンバ変数=== ///
 File Path: Project/application/Scene/Title/Animation/TitleSceneAnimation.cpp
 ============================================================
 #include "TitleSceneAnimation.h"
-// Camera
-#include "Engine/Camera/Base/CameraCommon.h"
+// Object
+#include "application/Drawing/3d/Object3d.h"
 // Service
 #include "Service/DeltaTime.h"
 #include "Service/PostEffect.h"
@@ -46520,41 +46972,74 @@ bool TitleSceneAnimation::GetStartFadeOut() const {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void TitleSceneAnimation::Initialize(MiiEngine::CameraCommon* camera) {
-	// カメラの設定
-	camera_ = camera;
+void TitleSceneAnimation::Initialize() {
+	/// ===乱数エンジンの初期化=== ///
+	std::random_device rd;
+	randomEngine_.seed(rd());
+
+	/// ===Rotation初期化=== ///
+	ringRotations_.assign(2, Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f });
+
+	/// ===Color初期化=== ///
+	ringColorFrom_ = { 1.0f, 1.0f, 1.0f, 1.0f };
+	ringColorTo_ = { 1.0f, 1.0f, 1.0f, 1.0f };
+	ringColorT_ = 1.0f;
+
+	/// ===Scale初期化=== ///
+	ringScaleXZFrom_ = 10.0f;
+	ringScaleXZTo_ = 10.0f;
+	ringScaleT_ = 10.0f;
 
 	// ラジアスブラーの初期設定
 	radiusBlurData_ = {
-		.center = { 0.5f, 0.7f }, // ブラーの中心を画面中央に設定
+		.center = { 0.5f, 0.5f }, // ブラーの中心を画面中央に設定
 		.numSamples = 0,           // サンプリング数を初期化
 		.blurWidth = 0.005f,       // ブラーの幅を初期化
 	};
 }
 
 ///-------------------------------------------/// 
-/// カメラの更新処理
+/// オブジェクトの回転と色をまとめて更新
 ///-------------------------------------------///
-void TitleSceneAnimation::UpdateCameraAnimation(const Vector3& translate) {
-	// 回転角度の更新
-	float yawAngle = cameraAutoRotateSpeed_ * Service::DeltaTime::GetDeltaTime(); // Y軸回転の角度を計算
+void TitleSceneAnimation::UpdateObjectsAnimation() {
+	const float deltaTime = Service::DeltaTime::GetDeltaTime();
 
-	// ターゲット位置からカメラの位置を計算
-	Vector3 toCamera = camera_->GetTranslate() - translate; // ターゲットからカメラへのベクトル
+	/// ===Rotation=== ///
+	for (size_t i = 0; i < 2; ++i) {
+		// リングごとに傾きの方向を変える
+		const float sign = (i % 2 == 0) ? 1.0f : -1.0f;
+		const Vector3 diagonalAxis = Normalize(Vector3{
+			sign * 0.6f,
+			1.0f,
+			sign * 0.5f + static_cast<float>(i) * 0.3f
+			});
+		const Quaternion ringRotate = Math::MakeRotateAxisAngle(
+			diagonalAxis, sign * (0.6f + static_cast<float>(i) * 0.2f) * deltaTime);
+		ringRotations_[i] = Normalize(ringRotate * ringRotations_[i]);
+	}
 
-	// Yaw回転（ワールドのY軸周り）
-	Quaternion yawRotation = Math::MakeRotateAxisAngle(Vector3(0, 1, 0), yawAngle);
+	/// ===Color=== ///
+	ringColorT_ += ringColorSpeed_ * deltaTime;
+	if (ringColorT_ >= 1.0f) {
+		ringColorT_ = 0.0f;
+		ringColorFrom_ = ringColorTo_;
+		ringColorTo_ = GenerateRandomColor();
+	}
+	color_ = {
+		Math::Lerp(ringColorFrom_.x, ringColorTo_.x, ringColorT_),
+		Math::Lerp(ringColorFrom_.y, ringColorTo_.y, ringColorT_),
+		Math::Lerp(ringColorFrom_.z, ringColorTo_.z, ringColorT_),
+		1.0f
+	};
 
-	// Pitch回転（カメラの右方向軸周り）
-	Vector3 rightAxis = Math::RotateVector(Vector3(1, 0, 0), camera_->GetRotate());
-
-	// 回転を適用
-	Quaternion totalRotation = yawRotation;
-	camera_->SetRotate(Normalize(totalRotation * camera_->GetRotate()));
-
-	// ターゲットを中心にカメラ位置を回転
-	Vector3 newOffset = Math::RotateVector(toCamera, totalRotation);
-	camera_->SetTranslate(translate + newOffset);
+	/// ===Size=== ///
+	ringScaleT_ += ringScaleSpeed_ * deltaTime;
+	if (ringScaleT_ >= 1.0f) {
+		ringScaleT_ = 0.0f;
+		ringScaleXZFrom_ = ringScaleXZTo_;
+		ringScaleXZTo_ = GenerateRandomScale();
+	}
+	size_ = Math::Lerp(ringScaleXZFrom_, ringScaleXZTo_, ringScaleT_);
 }
 
 ///-------------------------------------------/// 
@@ -46568,6 +47053,15 @@ void TitleSceneAnimation::UpdateRadiusBlurAnimation() {
 	}
 }
 
+///-------------------------------------------/// 
+/// ランダムなRGB色（アルファ=1）を生成して返す
+///-------------------------------------------///
+Vector4 TitleSceneAnimation::GenerateRandomColor() { return { colorDist_(randomEngine_), colorDist_(randomEngine_), colorDist_(randomEngine_), 1.0f }; }
+
+///-------------------------------------------/// 
+/// 5〜30 の範囲でランダムなスケール値を生成して返す
+///-------------------------------------------///
+float TitleSceneAnimation::GenerateRandomScale() { return scaleDist_(randomEngine_); }
 
 ============================================================
 File Path: Project/application/Scene/Title/Animation/TitleSceneAnimation.h
@@ -46577,11 +47071,12 @@ File Path: Project/application/Scene/Title/Animation/TitleSceneAnimation.h
 #include "Math/Vector3.h"
 // RadiusBlurEffect
 #include "Engine/Graphics/OffScreen/Effect/RadiusBlurEffect.h"
+// C++
+#include <random>
+#include <vector>
 
 /// ===前方宣言=== ///
-namespace MiiEngine {
-	class CameraCommon;
-}
+class Object3d;
 
 ///=====================================================/// 
 /// タイトルシーンのアニメーション管理クラス
@@ -46595,12 +47090,12 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(MiiEngine::CameraCommon* camera);
+	void Initialize();
 
 	/// <summary>
-	/// カメラの更新処理
+	/// オブジェクトの回転と色をまとめて更新します。
 	/// </summary>
-	void UpdateCameraAnimation(const Vector3& translate);
+	void UpdateObjectsAnimation();
 
 	/// <summary>
 	/// ラジアスブラーの更新処理
@@ -46614,17 +47109,49 @@ public: /// ===Getter=== ///
 	/// <returns></returns>
 	bool GetStartFadeOut() const;
 
+	// TorusLineのデータを取得
+	std::vector<Quaternion> GetRotations() const { return ringRotations_; }
+	const float GetSize() const { return size_; }
+	const Vector4 GetColor() const { return color_; }
+
 private:
 
-	/// ===カメラ=== ///
-	MiiEngine::CameraCommon* camera_ = nullptr;
+	/// ===Rotation=== ///
+	std::vector<Quaternion> ringRotations_;                    // Ringごとの現在回転
 
-	/// ===カメラアニメーション=== ///
-	const float cameraAutoRotateSpeed_ = 0.3f; // カメラの自動回転速度
-	float cameraAutoRotateAngle_ = 0.0f; // カメラの自動回転角度
+	/// ===Color=== ///
+	// 乱数生成
+	std::mt19937 randomEngine_;
+	std::uniform_real_distribution<float> colorDist_{ 0.0f, 1.0f };
+
+	Vector4 ringColorFrom_;                  // Ring 補間元の色
+	Vector4 ringColorTo_;                    // Ring 補間先の色
+	float   ringColorT_;                     // Ring 補間進行度
+	float ringColorSpeed_ = 0.4f;    // Ring 色変化速度
+	Vector4 color_ = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+	/// ===Scale=== ///
+	std::uniform_real_distribution<float> scaleDist_{ 8.0f, 16.0f }; // Ringスケール範囲
+	float ringScaleXZFrom_; // Ring XZスケール 補間元
+	float ringScaleXZTo_;   // Ring XZスケール 補間先
+	float ringScaleT_;      // Ring スケール補間進行度
+	float ringScaleSpeed_ = 0.3f;		 // Ring スケール変化速度
+	float size_ = 0.0f;
 
 	/// ===ラジアスブラーのデータ=== ///
 	MiiEngine::RadiusBlurData radiusBlurData_{};
+
+private:
+
+	/// <summary>
+	/// ランダムなRGB色（アルファ=1）を生成して返す
+	/// </summary>
+	Vector4 GenerateRandomColor();
+
+	/// <summary>
+	/// 5〜30 の範囲でランダムなスケール値を生成して返す
+	/// </summary>
+	float GenerateRandomScale();
 };
 
 
@@ -46636,10 +47163,10 @@ File Path: Project/application/Scene/Title/TitleScene.cpp
 // SceneManager
 #include "Engine/System/Managers/SceneManager.h"
 // Service
-#include "Service/GraphicsResourceGetter.h"
 #include "Service/Camera.h"
-#include "Service/Collision.h"
 #include "Service/PostEffect.h"
+#include "Service/Particle.h"
+#include "Service/Sprite.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
@@ -46655,12 +47182,14 @@ File Path: Project/application/Scene/Title/TitleScene.cpp
 TitleScene::~TitleScene() {
 	// ISceneのデストラクタ
 	IScene::~IScene();
-	// Colliderのリセット
-	Service::Collision::Reset();
 	// TitleUIのリセット
 	titleUI_.reset();
-	// TitleSceneAnimationのリセット
+	lines_.clear();
+	// Animationのリセット
 	animation_.reset();
+	// Particleのリセット
+	particle_->Stop();
+	particle_ = nullptr;
 	// Cameraの解放
 	Service::Camera::Remove("Title");
 	camera_.reset();
@@ -46673,36 +47202,40 @@ void TitleScene::Initialize() {
 	// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 	IScene::Initialize();
 
+	/// ===Particle=== ///
+	Service::Particle::LoadParticleDefinition("Title.json");
+	particle_ = Service::Particle::Emit("Title", { 0.0f, 0.0f, 0.0f });
+
+	/// ===Line=== ///
+	for (uint32_t i = 0; i < 2; ++i) {
+		auto line = std::make_unique<Line>();
+		lines_.push_back(std::move(line));
+	}
+
 	/// ===Camera=== ///
-	camera_ = std::make_unique<MiiEngine::FollowCamera>();
+	camera_ = std::make_unique<MiiEngine::NormalCamera>();
 	camera_->Initialize();
-	camera_->SetFollowCamera(MiiEngine::FollowCameraType::Orbiting);
-	camera_->SetOrbitingOffset(cameraOrbitingOffset_);
-	camera_->SetRotate(cameraRotation_);
+	camera_->SetTranslate({ 0.0f, 0.0f, 0.0f });
 	// カメラの設定
 	Service::Camera::AddCamera("Title", camera_.get());
 	Service::Camera::SetActiveCamera("Title");
-
-	/// ===Stage=== ///	
-	stage_ = std::make_unique<GameStage>();
-	stage_->Initialize("Level/StageData2.json");
-
-	/// ===Playerの生成=== ///
-	player_ = std::make_unique<Player>();
-	SpawnPlayer("Level/EntityData2.json");
-	player_->SetCameraTargetPlayer();
 
 	/// ===TitleUI=== ///
 	titleUI_ = std::make_unique<TitleUI>();
 	titleUI_->Initialize();
 
-	/// ===TitleSceneAnimation=== ///
+	/// ===Animation=== ///
 	animation_ = std::make_unique<TitleSceneAnimation>();
-	animation_->Initialize(camera_.get());
+	animation_->Initialize();
 
 	/// ===Fadeの設定=== ///
 	isStartFadeOut_ = false;
-	currentFade_ = FadeState::Selecting; // デバッグ用にフェードインをスキップ
+	currentFade_ = FadeState::FadeIn;
+	float fadeDuration = 0.8f;
+	sceneManager_->StartFadeIn(TransitionType::BlackOut, fadeDuration);
+
+	/// ===PostEffectの設定=== ///
+	Service::PostEffect::SetOffScreenType(MiiEngine::OffScreenType::Vignette);
 }
 
 ///-------------------------------------------/// 
@@ -46716,39 +47249,12 @@ void TitleScene::Update() {
 	ImGui::End();
 
 	// Camera
-	if (Service::Camera::GetActiveCamera() == camera_.get()) {
-		camera_->ImGuiUpdate();
-		camera_->DebugUpdate();
-	} else {
-		defaultCamera_->ImGuiUpdate();
-		defaultCamera_->DebugUpdate();
-	}
-
-	// デバッグカメラの切り替え
-	if (Service::Input::TriggerKey(DIK_TAB)) {
-		if (Service::Camera::GetActiveCamera() == camera_.get()) {
-			Service::Camera::SetActiveCamera("Default");
-		} else {
-			Service::Camera::SetActiveCamera("Game");
-		}
-	}
-
-	// Cameraの情報表示
 	camera_->ImGuiUpdate();
-
-	// Playerの情報表示
-	player_->Information();
 
 #endif // USE_IMGUI
 
-	/// ===Player=== ///
-	player_->UpdateAnimation();
-
-	/// ===Stage=== ///
-	stage_->Update();
-
-	/// ===カメラアニメーション=== ///
-	animation_->UpdateCameraAnimation(player_->GetTransform().translate);
+	/// ===オブジェクトの回転・色アニメーション=== ///
+	animation_->UpdateObjectsAnimation();
 
 	/// ===フェーズ別更新=== ///
 	switch (currentFade_) {
@@ -46776,14 +47282,11 @@ void TitleScene::Update() {
 ///-------------------------------------------///
 void TitleScene::Draw() {
 
-	/// ===stage=== ///
-	stage_->Draw();
-
-	/// ===Player=== ///
-	player_->Draw();
-
-	/// ===TitleUIの描画=== ///
-	titleUI_->Draw();
+	// Lineの描画
+	const auto& rotations = animation_->GetRotations();
+	for (size_t i = 0; i < lines_.size() && i < rotations.size(); ++i) {
+		lines_[i]->DrawTorus({ 0.0f, 0.0f, 50.0f }, rotations[i], animation_->GetSize(), animation_->GetColor());
+	}
 
 	/// ===ISceneの描画=== ///
 	IScene::Draw();
@@ -46820,43 +47323,25 @@ void TitleScene::UpdateFadeOut() {
 	}
 }
 
-///-------------------------------------------/// 
-/// プレイヤーの生成
-///-------------------------------------------///
-void TitleScene::SpawnPlayer(const std::string& json_name) {
-	LevelData* levelData = Service::GraphicsResourceGetter::GetLevelData(json_name);
-
-	// オブジェクト分回す
-	for (const auto& obj : levelData->objects) {
-		// OBBの半分の大きさを計算
-		Vector3 obbHalfSize = obj.colliderInfo2 / 2.0f;
-
-		/// ===クラス名で分岐=== ///
-		switch (obj.classType) {
-		case LevelData::ClassTypeLevel::Player:
-			// 初期化と座標設定
-			player_->InitGame(obj.translation, camera_.get());
-			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
-			break;
-		}
-	}
-}
-
-
 ============================================================
 File Path: Project/application/Scene/Title/TitleScene.h
 ============================================================
 #pragma once
 /// ===Include=== ///
 #include "Engine/Scene/IScene.h"
-// Player
-#include "application/Game/Entity/Player/Player.h"
-// Stage
-#include "application/Game/Object/GameStage.h"
+// Line
+#include "application/Drawing/3d/Line.h"
 // UI
 #include "UI/TitleUI.h"
 // Animation
 #include "Animation/TitleSceneAnimation.h"
+// C++
+#include <random>
+
+/// ===前方宣言=== ///
+namespace MiiEngine {
+	class ParticleGroup;
+}
 
 ///=====================================================/// 
 /// タイトルシーン
@@ -46884,12 +47369,19 @@ public:/// ===メンバ関数=== ///
 
 private:/// ===メンバ変数=== ///
 	
+	/// ===ポインタ=== ///
+	// パーティクル
+	MiiEngine::ParticleGroup* particle_;
+
 	/// ===Class=== ///
-	std::unique_ptr<MiiEngine::FollowCamera> camera_; // カメラ
-	std::unique_ptr<Player> player_;	 // プレイヤー
-	std::unique_ptr<GameStage> stage_;	 // ステージ
-	std::unique_ptr<TitleUI> titleUI_;   // タイトルUI
-	std::unique_ptr<TitleSceneAnimation> animation_; // タイトルシーンアニメーション
+	// Line
+	std::vector<std::unique_ptr<Line>> lines_;
+	// カメラ
+	std::unique_ptr<MiiEngine::NormalCamera> camera_; 
+	// タイトルUI
+	std::unique_ptr<TitleUI> titleUI_;
+	// タイトルシーンアニメーション
+	std::unique_ptr<TitleSceneAnimation> animation_; 
 
 	/// ===Fade=== ///
 	enum class FadeState {
@@ -46898,10 +47390,6 @@ private:/// ===メンバ変数=== ///
 		FadeOut,
 	};
 	FadeState currentFade_ = FadeState::FadeIn;
-
-	/// ===カメラ=== ///
-	Vector3 cameraOrbitingOffset_{ 0.0f, 10.0f, -100.0f }; // カメラOffSet
-	Quaternion cameraRotation_{ 0.158f, 0.0f, 0.0f, 0.987f };   // カメラ位置
 
 	// フェードアウトフラグ
 	bool isStartFadeOut_ = false;
@@ -46917,12 +47405,6 @@ private:/// ===プライベート関数=== ///
 	/// フェードアウトの状態を更新します。
 	/// </summary>
 	void UpdateFadeOut();
-
-	/// <summary>
-	/// プレイヤーを生成します。
-	/// </summary>
-	/// <param name="json">プレイヤーの設定が記述されたJSON文字列</param>
-	void SpawnPlayer(const std::string& json_name);
 };
 
 ============================================================
@@ -47003,8 +47485,15 @@ void TitleUI::Initialize() {
 	slotIndex_[2] = 1; // 下 = Option
 
 	/// ===スプライトの初期化=== ///
+	// 背景スプライト
+	backgroundSprite_ = std::make_unique<Object2d>();
+	backgroundSprite_->Initialize("White", MiiEngine::GroundType::Back);
+	backgroundSprite_->SetSize({ 2000.0f, 2000.0f });
+	backgroundSprite_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	backgroundSprite_->Update();
+
 	// タイトルスプライト
-	titleSprite_ = std::make_unique<Sprite>();
+	titleSprite_ = std::make_unique<Object2d>();
 	titleSprite_->Initialize("Title");
 	titleSprite_->SetPosition({ startPos_.x, windowSize.y / 4.0f });
 	titleSprite_->SetSize({ 1000.0f * scale_.x, 1000.0f * scale_.y });
@@ -47012,7 +47501,7 @@ void TitleUI::Initialize() {
 	titleSprite_->Update();
 
 	// 開始スプライト
-	selectSprite_.start_ = std::make_unique<Sprite>();
+	selectSprite_.start_ = std::make_unique<Object2d>();
 	selectSprite_.start_->Initialize("Start");
 	selectSprite_.start_->SetPosition({ startPos_.x, startPos_.y });
 	selectSprite_.start_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
@@ -47021,7 +47510,7 @@ void TitleUI::Initialize() {
 	selectSprite_.start_->Update();
 
 	// オプションスプライト
-	selectSprite_.option_ = std::make_unique<Sprite>();
+	selectSprite_.option_ = std::make_unique<Object2d>();
 	selectSprite_.option_->Initialize("Option");
 	selectSprite_.option_->SetPosition({ startPos_.x, startPos_.y + spaceY_ });
 	selectSprite_.option_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
@@ -47030,7 +47519,7 @@ void TitleUI::Initialize() {
 	selectSprite_.option_->Update();
 
 	// 終了スプライト
-	selectSprite_.exit_ = std::make_unique<Sprite>();
+	selectSprite_.exit_ = std::make_unique<Object2d>();
 	selectSprite_.exit_->Initialize("Exit");
 	selectSprite_.exit_->SetPosition({ startPos_.x, startPos_.y + spaceY_ * 2.0f });
 	selectSprite_.exit_->SetSize({ 200.0f * scale_.x, 50.0f * scale_.y });
@@ -47039,7 +47528,7 @@ void TitleUI::Initialize() {
 	selectSprite_.exit_->Update();
 
 	// 選択オーバーレイスプライト
-	selectSprite_.overlay_ = std::make_unique<Sprite>();
+	selectSprite_.overlay_ = std::make_unique<Object2d>();
 	selectSprite_.overlay_->Initialize("OverLay"); // テクスチャファイルパスは適宜変更
 	selectSprite_.overlay_->SetPosition({ startPos_.x, startPos_.y }); // 初期位置は開始の位置
 	selectSprite_.overlay_->SetSize({ 400.0f * scale_.x, 80.0f * scale_.y }); // メニュー項目より少し大きめ
@@ -47054,6 +47543,9 @@ void TitleUI::Initialize() {
 	/// ===フラグの初期化=== ///
 	isOptionOpen_ = false;
 	isGameStart_ = false;
+
+	// スプライトの位置更新
+	UpdateSlotSprites();
 }
 
 ///-------------------------------------------/// 
@@ -47070,29 +47562,10 @@ void TitleUI::Update() {
 	UpdateSlotSprites();
 
 	// オプションの更新
-	if (isOptionOpen_) {
-		optionUI_->TitleUpdate();
-	}
+	optionUI_->TitleUpdate(isOptionOpen_);
 
 	// 選択状態の更新
 	UpdateSelecting();
-}
-
-///-------------------------------------------/// 
-/// 描画処理
-///-------------------------------------------///
-void TitleUI::Draw() {
-	// スプライトの描画
-	titleSprite_->Draw(MiiEngine::GroundType::Front);
-	selectSprite_.start_->Draw(MiiEngine::GroundType::Front);
-	selectSprite_.option_->Draw(MiiEngine::GroundType::Front);
-	selectSprite_.exit_->Draw(MiiEngine::GroundType::Front);
-	selectSprite_.overlay_->Draw(MiiEngine::GroundType::Front, MiiEngine::BlendMode::kBlendModeAdd);
-
-	// オプションの描画
-	if (isOptionOpen_) {
-		optionUI_->TitleDraw();
-	}
 }
 
 ///-------------------------------------------/// 
@@ -47125,14 +47598,14 @@ void TitleUI::UpdateAnimation(float deltaTime) {
 ///-------------------------------------------///
 void TitleUI::UpdateSlotSprites() {
 	// スプライトの配列（
-	Sprite* sprites[selectionIndex_] = {
+	Object2d* sprites[selectionIndex_] = {
 		selectSprite_.start_.get(),
 		selectSprite_.option_.get(),
 		selectSprite_.exit_.get()
 	};
 
 	for (int slot = 0; slot < selectionIndex_; slot++) {
-		Sprite* sp = sprites[slotIndex_[slot]];
+		Object2d* sp = sprites[slotIndex_[slot]];
 
 		sp->SetPosition({ startPos_.x, slotAnimation_.posY.itemCurrentY[slot] });
 		sp->SetSize({
@@ -47145,8 +47618,6 @@ void TitleUI::UpdateSlotSprites() {
 		} else {
 			sp->SetColor({ 0.6f, 0.6f, 0.6f, 0.6f });
 		}
-
-		sp->Update();
 	}
 }
 
@@ -47286,7 +47757,7 @@ File Path: Project/application/Scene/Title/UI/TitleUI.h
 #pragma once
 /// ===Include=== ///
 // Sprite
-#include "application/Drawing/2d/Sprite.h"
+#include "application/Drawing/2d/Object2d.h"
 #include "application/Game/UI/Option/OptionUI.h"
 // C++
 #include <memory>
@@ -47309,25 +47780,21 @@ public:
 	/// </summary>
 	void Update();
 
-	/// <summary>
-	/// 描画処理
-	/// </summary>
-	void Draw();
-
 private: /// ===メンバ変数=== ///
 
 	// オプションUI
 	std::unique_ptr<OptionUI> optionUI_;
 
 	/// ===スプライト=== ///
-	std::unique_ptr<Sprite> titleSprite_;      // タイトル
+	std::unique_ptr<Object2d> titleSprite_;      // タイトル
+	std::unique_ptr<Object2d> backgroundSprite_; // 背景
 
 	/// ===セレクトスプライト=== ///
 	struct SelectSprite {
-		std::unique_ptr<Sprite> start_;      // 開始
-		std::unique_ptr<Sprite> option_;     // オプション
-		std::unique_ptr<Sprite> exit_;       // 終了
-		std::unique_ptr<Sprite> overlay_;    // 選択中のオーバーレイ
+		std::unique_ptr<Object2d> start_;      // 開始
+		std::unique_ptr<Object2d> option_;     // オプション
+		std::unique_ptr<Object2d> exit_;       // 終了
+		std::unique_ptr<Object2d> overlay_;    // 選択中のオーバーレイ
 	};
 	SelectSprite selectSprite_;
 
